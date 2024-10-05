@@ -1,0 +1,105 @@
+
+ 
+body {
+	height: 100%;
+}
+
+table, th, td {
+  border: 1px solid;
+}
+
+.easyui-layout {
+	height: 100vh;
+}
+
+#WaitMsg {
+	margin: 10px; 
+	padding: 10px; 
+	height: 3000px; 
+	background-color: #E7F0FF; 
+	border: 1px dotted #95B8E7; 
+	border-top: 1px solid #95B8E7; 
+	color: #0E2D5F;
+}
+
+.menus {
+	width: 200px;
+}
+
+#northRegion {
+	height: 110px;
+}
+
+#westRegion {
+	width: 210px;
+}
+
+/* center
+ */
+#divEquationInputOutput {
+	overflow: auto;
+
+	.keyboardInputInitiator {
+		display: none;
+	}
+
+	.keyboardInput {
+		height: 0px;
+		width: 0px;
+		border: none;
+		background-color: transparent;
+		color: transparent;
+	}
+}
+
+#divMathTextInput {
+	margin: 0; 
+	padding: 0; 
+	height: 45%; 
+	overflow: hidden;
+}
+
+#formMathTextInput {
+	margin: 0; 
+	padding: 0; 
+	height: 100%;
+}
+
+#mathTextInput {
+	margin: 0; 
+	padding: 5px; 
+	border: none;
+}
+
+#mathVisualOutput {
+	margin: 0; 
+	padding: 5px; 
+	height: 45%; 
+	font-size: 150%; 
+	overflow: auto
+}
+
+#eastRegion {
+	width: 210px;
+}
+
+#southRegion {
+	height: 40px;
+}
+
+#divInformation {
+	padding-top: 2px; 
+	text-align: center; 
+	height: 18px; 
+	overflow: auto;
+}
+
+#wLANGUAGE_CHOISE {
+	width: 300px; 
+	height: 180px;
+} 
+
+
+.panel-body table tbody tr td a.easyui-tooltip {
+	float: left;
+}

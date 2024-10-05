@@ -1,0 +1,22 @@
+.CodeMirror{direction:ltr !important;}
+.CodeMirror-activeline-background{background:#e8f2ff !important;}
+.CodeMirror-matchingbracket{color:#ff0000 !important;}
+.cm-tab{background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAMCAYAAAAkuj5RAAAAAXNSR0IArs4c6QAAAGFJREFUSMft1LsRQFAQheHPowAKoACx3IgEKtaEHujDjORSgWTH/ZOdnZOcM/sgk/kFFWY0qV8foQwS4MKBCS3qR6ixBJvElOobYAtivseIE120FaowJPN75GMu8j/LfMwNjh4HUpwg4LUAAAAASUVORK5CYII=);background-position:right;background-repeat:no-repeat;}
+fieldset{border:none;margin:0;padding:0}
+*:focus{outline:none}
+textarea{resize:none}
+a img{border:none}
+#divMathTextInput{border-bottom:1px solid #dddddd}
+.bl{border-bottom:1px solid #dddddd}
+a.s{display:block;padding:4px;color:#777777;font-size:100%;text-decoration:none;text-align:center;}
+a.s:hover{background-color:#E6E6E6;}
+a.more{display:block;padding:4px;color:#777777;font-size:100%;text-decoration:none;text-align:center;}
+a.more:hover{background-color:#E6E6E6;}
+a.bt{padding:0 2px 0 2px;color:#777777;text-decoration:underline;font-weight:normal;}
+a.bt:hover{text-decoration:none;background-color:#E6E6E6;}
+#PARAM_EDITION_SYNTAX{float:left;display:inline-block;}
+#PARAM_EDITION_ENCLOSE{float:right;display:inline-block;}
+a#btENCLOSE_TYPE{padding:0 2px 0 2px;color:#777777;text-decoration:none;font-weight:bold;background-color:#E6E6E6;}
+a#btENCLOSE_TYPE.unselect:hover{text-decoration:none;background-color:#E6E6E6;}
+a#btENCLOSE_TYPE.unselect{background-color:transparent;font-weight:normal;font-size:80%;text-decoration:underline;}
+#HTML_TAG{border-bottom:1px solid #dddddd;text-align:right;}

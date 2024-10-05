@@ -1,0 +1,23 @@
+.CodeMirror{direction:ltr !important;}
+.CodeMirror-activeline-background{background:#222222 !important;}
+.CodeMirror-matchingbracket{color:#ff0000 !important;}
+.cm-tab{background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAMCAYAAAAkuj5RAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB90GGg80IS6PQ54AAAB0SURBVEjH7ZQxDoNADASHHKWL8ADQ1anpUSoKXswneIPhDdtGSpG7H9A4umksa6uVdw2Nxv/jUnLp7dKz7FvVHhEMZLMPcAKLSwPQV613aQ10jAQsZf4MZLM9SIwmYAYuYAwVIZcS8AKubHZELnPXXlrjZr7LYCECdZ6x1gAAAABJRU5ErkJggg==);background-position:right;background-repeat:no-repeat;}
+.MathJax_SVG svg > g, .MathJax_SVG_Display svg > g{fill:#FFF;stroke:#FFF;}
+fieldset{border:none;margin:0;padding:0}
+*:focus{outline:none}
+textarea{resize:none}
+a img{border:none}
+#divMathTextInput{border-bottom:1px solid #000000}
+.bl{border-bottom:1px solid #000000}
+a.s{display:block;border:1px solid transparent;padding:4px;color:#ffffff;font-size:100%;-moz-border-radius:3px;-webkit-border-radius:3px;-o-border-radius:3px;border-radius:3px;text-decoration:none;text-align:center;}
+a.s:hover{border:1px solid #575757;background-color:#777777;}
+a.more{display:block;border:1px solid transparent;padding:4px;color:#ffffff;font-size:100%;-moz-border-radius:3px;-webkit-border-radius:3px;-o-border-radius:3px;border-radius:3px;text-decoration:none;text-align:center;}
+a.more:hover{border:1px solid #575757;background-color:#777777;}
+a.bt{padding:0 2px 0 2px;border:1px solid transparent;color:#ffffff;-moz-border-radius:3px;-webkit-border-radius:3px;-o-border-radius:3px;border-radius:3px;text-decoration:underline;font-weight:normal;}
+a.bt:hover{text-decoration:none;border:1px solid #575757;background-color:#777777;}
+#PARAM_EDITION_SYNTAX{float:left;display:inline-block;}
+#PARAM_EDITION_ENCLOSE{float:right;display:inline-block;}
+a#btENCLOSE_TYPE{padding:0 2px 0 2px;border:1px solid #000000;color:#ffffff;-moz-border-radius:3px;-webkit-border-radius:3px;-o-border-radius:3px;border-radius:3px;text-decoration:none;font-weight:bold;background-color:#0052A3;}
+a#btENCLOSE_TYPE.unselect:hover{text-decoration:none;border:1px solid #575757;background-color:#777777;}
+a#btENCLOSE_TYPE.unselect{background-color:transparent;border:1px solid transparent;color:#ffffff;font-weight:normal;font-size:80%;text-decoration:underline;}
+#HTML_TAG{border-bottom:1px solid #000000;text-align:right;}

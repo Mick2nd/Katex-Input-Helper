@@ -1,0 +1,503 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Visual Math Editor</title>
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+	<link rel="icon" href="favicon.ico" type="image/x-icon" />
+	<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
+	<meta name="Author" content="David GRIMA" />
+	<meta name="email" content="contact@equatheque.com" />
+	<meta name="copyright" content="David GRIMA" />
+	<link rel="copyright" href="information/tCOPYRIGHT.html" />
+
+	<script type="text/javascript">
+		function openEditor(textarea) {
+			win = window.open(
+				'VisualMathEditor.html?runLocal&codeType=Latex&encloseAllFormula=false&textarea=' + textarea
+				,'VisualMathEditor'
+				,'height=580,width=780,top=100,left=100,status=yes,toolbar=no,menubar=no,location=no,resizable=no,scrollbars=no,modal=no,dependable=yes'
+			);
+			win.focus();
+		}
+	</script>
+	<style>
+		body {margin:20px;}
+		.title {text-align:center;color:#145977;}
+		.title a {font-size:200%;}
+		.title img {vertical-align:middle;}
+		.comment {color:#038208;}
+		a,a:link,a:visited,a:active {color:#145977;text-decoration:none;}
+		a:hover {color:#145977;text-decoration:underline;}
+		form,fieldset,textarea {margin:0;padding:0;}
+		fieldset {border:none;}
+	</style>
+
+</head>
+<body>
+<p class="title">
+	<img src="apple-touch-icon.png"/>
+	<a href="http://visualmatheditor.equatheque.net">Visual Math Editor</a>
+</p>
+<p>
+	<a href="VisualMathEditor.html?runLocal&equation=%5Cvec{F}%20=%20%5Cfrac{d%20%5Cvec{p}}{dt}%20=%20m%20%5Cfrac{d%20%5Cvec{v}}{dt}%20=%20m%20%5Cvec{a}">Ouvrir l'éditeur d'équation en local</a>
+	<br/><br/>
+	<a href="http://visualmatheditor.equatheque.net/VisualMathEditor.html?runLocal&equation=%5Cvec{F}%20=%20%5Cfrac{d%20%5Cvec{p}}{dt}%20=%20m%20%5Cfrac{d%20%5Cvec{v}}{dt}%20=%20m%20%5Cvec{a}">Ouvrir l'éditeur d'équation sur internet EquaThEque &reg;</a>
+</p>
+<br/>
+<pre class="comment">
+&lt;!-- COPYRIGHT
+VisualMathEditor
+Copyright © 2005-2013 David Grima, contact@equatheque.com under the terms of the GNU General Public License, version 3.
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses.
+--&gt;
+
+&lt;!-- DOC
+	Cet éditeur WYSIWYM (What You See Is What You Mean, ce que vous voyez est ce que vous voulez dire) met le paquet sur la sémantique 
+	tout en offrant un confort digne d’un éditeur WYSIWYG (What you see is what you get, ce que vous voyez est ce que vous obtenez),
+	interface « intuitive » : l’utilisateur voit directement à l’écran à quoi ressemblera le résultat final.
+--&gt;
+
+&lt;!-- HELP
+1) Could be simply call :
+	/VisualAsciiMathML/VisualMathEditor.html
+	or to call local javascript resources
+	/VisualAsciiMathML/VisualMathEditor.html?runLocal
+
+2) You could call with all or not all editor parameters :
+	/VisualAsciiMathML/VisualMathEditor.html?runLocal&amp;style=sunny&amp;localType=ru&amp;codeType=AsciiMath&amp;encloseAllFormula=true&amp;saveOptionInCookies=false&amp;equation=%3Cp%3EWhen%20%60a%20!=%200%60,%20there%20are%20two%20solutions%20to%20%60ax^2%20+%20bx%20+%20c%20=%200%60%20and%20they%20are%3C/p%3E%3Cp%20style=%22text-align:center%22%3E%60x%20=%20%28-b%20+-%20sqrt%28b^2-4ac%29%29/%282a%29%20.%60%3C/p%3E
+
+	List of URL parameters :
+	runLocal [without value] (not saved in cookie)
+	runNotCodeMirror [without value] (not saved in cookie)
+	runNotMathJax [without value] (not saved in cookie)
+	runNotVirtualKeyboard [without value] (not saved in cookie)
+	runNotColorPicker [without value] (not saved in cookie)
+	saveOptionInCookies = false or true [default = false] (saved in VME_saveOptionInCookies cookie if saveOptionInCookies is true)
+	style = aguas, gray, black, bootstrap, metro [default = aguas] (saved in VME_style cookie if saveOptionInCookies is true)
+	localType = fr_FR, en_US, ru, ar, vi_VN [default = en_US] (saved in VME_localType cookie if saveOptionInCookies is true)
+	codeType = AsciiMath or Latex [default = Latex] (saved in VME_codeType cookie if saveOptionInCookies is true)
+	encloseAllFormula = false or true [default = false] (saved in VME_encloseAllFormula cookie if saveOptionInCookies is true)
+	autoUpdateTime = in ms [default = 500] (saved in VME_autoUpdateTime cookie if saveOptionInCookies is true)
+	menuupdateType = false or true [default = true] (saved in VME_menuupdateType cookie if saveOptionInCookies is true) 
+	autoupdateType = false or true [default = true] (saved in VME_autoupdateType cookie if saveOptionInCookies is true)
+	menuMathjaxType = false or true [default = false] (saved in VME_menuMathjaxTypecookie if saveOptionInCookies is true) 
+	equation = AsciiMath or Latex formula, can be with HTML if encloseAllFormula is true [default = EMPTY] (not saved in cookie)
+
+	Other cookies saved if saveOptionInCookies is true : position of windows for exemple {left:200,top:30&quot;}
+	VME_Position_wf_BRACKET_SYMBOLS_MORE
+	VME_Position_wf_ARROW_SYMBOLS_MORE
+	VME_Position_wf_RELATION_SYMBOLS_MORE
+	VME_Position_wf_FR_CHAR_MORE
+	VME_Position_wf_BBB_CHAR_MORE
+	VME_Position_wf_L_U_GREEK_CHAR_MORE
+	VME_Position_wf_ALL_CHAR_MORE
+	VME_Position_wf_EQUATION_MORE
+	VME_Position_wf_COMMUTATIVE_DIAGRAM_MORE
+	VME_Position_wf_CHEMICAL_FORMULAE_MORE
+	VME_Position_wf_HORIZONTAL_SPACING
+	VME_Position_wf_VERTICAL_SPACING
+	VME_Position_wf_SPECIAL_CHARACTER
+
+3) The equation could be take from a texarea off the caller windows
+	/VisualAsciiMathML/VisualMathEditor.html?texarea=MyTextareaID	
+
+	for exemple :
+	&lt;html&gt;
+		&lt;head&gt;
+		&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+			&lt;script type=&quot;text/javascript&quot;&gt;
+				function openEditor(textareaID) {
+					win = window.open(
+						'VisualMathEditor.html?codeType=Latex&amp;encloseAllFormula=0&amp;textarea=' + textareaID
+						,'VisualMathEditor'
+						,'height=580,width=780,top=100,left=100,status=yes,toolbar=no,menubar=no,location=no,resizable=no,scrollbars=no,modal=no,dependable=yes'
+					);
+					win.focus();
+				}
+			&lt;/script&gt;
+		&lt;/head&gt;
+		&lt;body&gt;
+			&lt;form id=&quot;formEquation1&quot; action=&quot;#&quot; method=&quot;post&quot;&gt;
+				&lt;fieldset&gt;
+					&lt;textarea id=&quot;MyTextareaID&quot; name=&quot;equation1&quot; cols=&quot;50&quot; rows=&quot;1&quot;&gt;\sqrt{\frac{d}{dx} a^x = a^x ln(a)}&lt;/textarea&gt;
+					&lt;a href=&quot;javascript:openEditor('MyTextareaID');&quot;&gt;Editer l'équation&lt;/a&gt;
+				&lt;/fieldset&gt;
+			&lt;/form&gt;
+		&lt;/body&gt;
+	&lt;/html&gt;
+--&gt;
+</pre>
+
+<p>
+	<a href="VisualMathEditor.html?runLocal&equation=%5Cvec{F}%20=%20%5Cfrac{d%20%5Cvec{p}}{dt}%20=%20m%20%5Cfrac{d%20%5Cvec{v}}{dt}%20=%20m%20%5Cvec{a}">Visual Math Editor (with local Javascript jQuery, Easyui, MathJax)</a>
+</p>
+<p>
+	<a href="VisualMathEditor.html?runLocal&runNotCodeMirror&equation=%5Cvec{F}%20=%20%5Cfrac{d%20%5Cvec{p}}{dt}%20=%20m%20%5Cfrac{d%20%5Cvec{v}}{dt}%20=%20m%20%5Cvec{a}">Visual Math Editor (with local Javascript jQuery, Easyui, MathJax and without CodeMirror Editor)</a>
+</p>
+<p>
+	<a href="VisualMathEditor.html?equation=%5Cvec{F}%20=%20%5Cfrac{d%20%5Cvec{p}}{dt}%20=%20m%20%5Cfrac{d%20%5Cvec{v}}{dt}%20=%20m%20%5Cvec{a}">Visual Math Editor (with CDN Javascript jQuery, Easyui, MathJax)</a>
+</p>
+<p>
+	<form id="formEquation1" action="#" method="post">
+		<fieldset>
+			<textarea id="txtEquation1" name="equation1" cols="50" rows="1">\sqrt{\frac{d}{dx} a^x = a^x ln(a)}</textarea>
+			<button onclick="javascript:openEditor('txtEquation1');">Editer l'équation</button>
+		</fieldset>
+	</form>
+</p>
+<p>
+	<form id="formEquation2" action="#" method="post">
+		<fieldset>
+			<textarea id="txtEquation2" name="equation2" cols="50" rows="10">
+\begin{equation}
+
+\because
+\\
+\therefore
+\\
+=
+\neq
+\approx
+\equiv
+\perp
+\smile
+\asymp
+\frown
+\prec
+\succ
+\bowtie
+\Join
+\preceq
+\succeq
+\cong
+\mid
+\propto
+\vdash
+\dashv
+\models
+\sim
+\doteq
+\parallel
+\simeq
+\approxeq
+\eqcirc
+\succapprox
+\backepsilon
+\fallingdotseq
+\succcurlyeq
+\backsim
+\multimap
+\succsim
+\backsimeq
+\pitchfork
+\therefore
+\because
+\precapprox
+\thickapprox
+\between
+\preccurlyeq
+\thicksim
+\Bumpeq
+\precsim
+\varpropto
+\bumpeq
+\risingdotseq 
+\Vdash
+\circeq
+\shortmid
+\vDash
+\curlyeqprec
+\shortparallel
+\Vvdash
+\curlyeqsucc
+\smallfrown
+\doteqdot
+\smallsmile
+\ncong
+\nshortparallel
+\nVDash
+\nmid
+\nsim
+\precnapprox
+\nparallel
+\nsucc
+\precnsim
+\nprec
+\nsucceq
+\succnapprox
+\npreceq
+\nvDash
+\succnsim
+\nshortmid
+\nvdash
+\\
+\\
+\sqsubset
+\sqsupseteq
+\supset
+\sqsubseteq
+\subset
+\supseteq
+\sqsupset
+\subseteq
+\nsubseteq
+\subseteqq
+\supsetneqq
+\nsupseteq
+\subsetneq \varsubsetneq
+\nsupseteqq
+\subsetneqq
+\varsubsetneqq
+\sqsubset
+\Supset
+\varsupsetneq
+\sqsupset
+\supseteqq
+\varsupsetneqq
+\Subset
+\supsetneq
+
+\geq
+\gg
+\leq
+\ll
+\eqslantgtr
+\gtrdot
+\lesseqgtr
+\ngeq
+\eqslantless
+\gtreqless
+\lesseqqgtr
+\ngeqq
+\geqq
+\gtreqqless
+\lessgtr
+\ngeqslant
+\geqslant
+\gtrless
+\lesssim
+\ngtr
+\ggg
+\gtrsim
+\lll
+\nleq
+\gnapprox
+\gvertneqq
+\lnapprox
+\nleqq
+\gneq
+\leqq
+\lneq 
+\nleqslant
+\gneqq
+\leqslant
+\lneqq
+\nless
+\gnsim
+\lessapprox
+\lnsim
+\gtrapprox
+\lessdot
+\lvertneqq
+\\
+\\
+\blacktriangleleft
+\ntriangleright
+\trianglerighteq
+\blacktriangleright
+\ntrianglerighteq
+\vartriangleleft
+\ntriangleleft
+\trianglelefteq
+\vartriangleright
+\ntrianglelefteq
+\triangleq
+\\
+\\
+\ulcorner
+\urcorner
+\llcorner
+\lrcorner
+\\
+\\
+\downarrow
+\Downarrow
+[
+]
+\langle
+\rangle
+|
+\|
+\lceil
+\rceil
+\uparrow
+\Uparrow
+\lfloor
+\rfloor
+\updownarrow
+\Updownarrow
+(
+)
+\{
+\}
+/
+\backslash
+\lmoustache
+\rmoustache
+\lgroup
+\rgroup
+\arrowvert
+\Arrowvert
+\bracevert
+\\
+\\
+\newcommand{\binom}[2]{\genfrac{(}{)}{0pt}{}{#1}{#2}}
+\binom{k}{2}
+\\
+\newcommand{\braket}[2]{\left\langle #1 \middle| #2 \right\rangle}
+\braket{\phi}{\psi}
+\\
+\newcommand{\bra}[1]{\left\langle #1 \right|}
+\bra{\phi}
+\\
+\newcommand{\ket}[1]{\left| #1 \right\rangle}
+\ket{\psi}
+
+\left\backslash A \right\backslash
+\left\lmoustache A \right\rmoustache
+\left\lgroup A \right\rgroup
+\left\arrowvert A \right\arrowvert
+\left\Arrowvert A \right\Arrowvert
+\left\bracevert A \right\bracevert
+\\
+\\
+\lvert -z \rvert
+\lVert -z \rVert
+\\
+\\
+\arccos
+\cos
+\csc
+\exp
+\ker
+\lim
+\sup
+\min
+\sinh
+\arcsin
+\cosh
+\deg
+\gcd
+\lg
+\ln
+\Pr
+\sup
+\arctan
+\cot
+\det
+\hom
+\lim
+\log
+\sec
+\tan
+\arg
+\coth
+\dim
+\inf
+\lim
+\inf
+\max
+\sin
+\tanh
+\\
+\DeclareMathOperator{\rank}{rank}
+\rank(x)
+\\
+\DeclareMathOperator{\esssup}{ess\,sup}
+\esssup(y,z)
+\\
+\\
+\cdotp
+\colon
+\ldotp
+\vdots
+\cdots
+\ddots
+\ldots
+\\
+\\
+\newcommand{\Complex}{\mathbb{C}}
+\Complex
+\newcommand{\Integer}{\mathbb{Z}}
+\Integer
+\newcommand{\Natural}{\mathbb{N}}
+\Natural
+\newcommand{\Rational}{\mathbb{Q}}
+\Rational
+\newcommand{\Real}{\mathbb{R}}
+\Real
+
+\text{ABCdef123}
+\\
+\mathrm{ABCdef123}
+\\
+\mathit{ABCdef123}
+\\
+\mathcal{ABC}
+\\
+\mathscr{ABC}
+\\
+\mathbb{ABC}
+\\
+\mathfrak{ABCdef123}
+\\
+\\
+\ce{C6H5-CHO}
+\\
+\ce{$A$ ->[\ce{+H2O}] $B$}
+\\
+\ce{SO4^2- + Ba^2+ -> BaSO4 v}
+\\
+\newcommand{\water}{H_{2}O}
+\water
+\\
+\\
+\unicode{4305}
+\unicode{8822}
+\\
+\\
+\enclose{circle}[mathcolor="red"]{x}
+\enclose{circle}[mathcolor="red"]{\color{black}{x}}
+\enclose{circle,box}{x}
+\enclose{circle}{\enclose{box}{x}}
+\\
+\\
+\bbox[red]{x+y}
+\\
+\bbox[5pt]{x+1}
+\\
+\bbox[red,2pt]{x+1}
+\\
+\bbox[5px,border:2px solid red]{x+1}
+\\
+\bbox[red,5px,border:2px solid black]{x+1}
+\\
+\\
+\cancel{x+1}
+\bcancel{x+1}
+\xcancel{x+1}
+\cancelto{a}{x+1}
+
+\end{equation}
+			</textarea>
+			<button onclick="javascript:openEditor('txtEquation2');">Editer l'équation</button>
+		</fieldset>
+	</form>
+</p>
+</body>
+</html>
