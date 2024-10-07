@@ -23,6 +23,8 @@
 		</div>
 
 		<div data-options="region:'north',split:false" id="northRegion">
+			<!-- 
+			 -->
 			<div id="introduction">
 				<h3>Katex Input Helper</h3>
 				<hr/>
@@ -33,17 +35,26 @@
 				</form>
 				<div id="formula" style="display: none" ></div>
 			</div>
+			
+			<div id="menu">
+			
 			<!-- 
-			 -->
-
-			<div style="padding: 5px;" id="menu">
 				<a href="#" class="easyui-menubutton" iconcls="icon-file" menu="#mFILE"><span locate="FILE"></span></a> 
 				<a href="#" class="easyui-menubutton" iconcls="icon-insert" menu="#mINSERT"><span locate="INSERT"></span></a> 
 				<a href="#" class="easyui-menubutton" iconcls="icon-plugin" menu="#mTOOLS"><span locate="TOOLS"></span> </a>
 				<a href="#" class="easyui-menubutton" iconcls="icon-watch" menu="#mVIEW"><span locate="VIEW"></span></a> 
 				<a href="#" class="easyui-menubutton" iconcls="icon-option" menu="#mOPTIONS"><span locate="OPTIONS"></span></a> 
 				<a href="#" class="easyui-menubutton" iconcls="icon-info" menu="#mINFORMATIONS"><span locate="INFORMATIONS"></span></a>
+			 -->
+
+				<a href="#" class="easyui-menubutton" data-options="iconCls:'icon-file',menu:'#mFILE'"><span locate="FILE"></span></a> 
+				<a href="#" class="easyui-menubutton" data-options="iconCls:'icon-insert',menu:'#mINSERT'"><span locate="INSERT"></span></a> 
+				<a href="#" class="easyui-menubutton" data-options="iconCls:'icon-plugin',menu:'#mTOOLS'"><span locate="TOOLS"></span> </a>
+				<a href="#" class="easyui-menubutton" data-options="iconCls:'icon-watch',menu:'#mVIEW'"><span locate="VIEW"></span></a> 
+				<a href="#" class="easyui-menubutton" data-options="iconCls:'icon-option',menu:'#mOPTIONS'"><span locate="OPTIONS"></span></a> 
+				<a href="#" class="easyui-menubutton" data-options="iconCls:'icon-info',menu:'#mINFORMATIONS'"><span locate="INFORMATIONS"></span></a>
 			</div>
+			 			 
 			<div id="mFILE" class="menus">
 				<div iconcls="icon-new" id="mNEW_EDITOR">
 					<span class='rtl-menu-item' locate="NEW_EDITOR"></span>
@@ -271,10 +282,10 @@
 					class="easyui-linkbutton easyui-tooltip" iconcls="icon-link" id="btHTML_A"></a> <a href="#" title="img"
 					class="easyui-linkbutton easyui-tooltip" iconcls="icon-picture" id="btHTML_IMG"></a>
 			</div>
-			<div style="margin: 0; padding: 0; height: 50%; overflow: hidden;" id="divMathTextInput">
+			<div id="divMathTextInput">
 				<form action="#" method="post" style="margin: 0; padding: 0; height: 100%;" id="formMathTextInput">
 					<fieldset style="height: 100%;">
-						<textarea id="mathTextInput" name="equation" style="margin: 0; padding: 5px; border: none;"
+						<textarea id="mathTextInput" name="equation" 
 							rows="30" cols="30" dir="ltr"></textarea>
 					</fieldset>
 				</form>
@@ -295,8 +306,8 @@
 					style="overflow: auto;" id="f_INTEGRAL_SYMBOLS"></div>
 				<div title="<span information='SUM_PROD_SYMBOLS' class='rtl-title-withicon' style='font-size:70%;'>$\sum$ &nbsp;&nbsp; $\prod$ </span>"
 					style="overflow: auto;" id="f_SUM_PROD_SYMBOLS"></div>
-				<!-- THIS MAY CAUSE FILE NOT FOUND 
-				<div title="<span information='MATRIX_SYMBOLS' class='rtl-title-withicon'><img class='symbol_btn icon-matrix_13_black' src='js/jquery-easyui/themes/default/images/blank.gif' width='15' height='20' />  &nbsp;&nbsp; <img class='symbol_btn icon-matrix_33_black' src='js/jquery-easyui/themes/default/images/blank.gif' width='15' height='20' /></span>"
+				<!-- THIS MAY CAUSE FILE NOT FOUND : replacement see below
+				<div title="<span information='MATRIX_SYMBOLS' class='rtl-title-withicon'><img class='symbol_btn icon-matrix_13_black' src='jquery-easyui/themes/default/images/blank.gif' width='15' height='20' />  &nbsp;&nbsp; <img class='symbol_btn icon-matrix_33_black' src='jquery-easyui/themes/default/images/blank.gif' width='15' height='20' /></span>"
 					style="overflow: auto;" id="f_MATRIX_SYMBOLS"></div>
 				 -->
 				<div title="<span information='MATRIX_SYMBOLS' class='rtl-title-withicon'><img class='symbol_btn icon-matrix_13_black' width='15' height='20' />  &nbsp;&nbsp; <img class='symbol_btn icon-matrix_33_black' width='15' height='20' /></span>"
@@ -530,13 +541,13 @@
 			<div id="tINFORMATIONS" class="easyui-tabs" border="false" fit="true" plain="false">
 				<!-- 
 				<div title="<span locate='COPYRIGHT'></span>" id="tCOPYRIGHT" iconcls="icon-copyright" closable="false"
-					style="padding: 10px;" cache="true" href="information/tCOPYRIGHT.html"></div>
+					style="padding: 10px;" cache="true" href="../information/tCOPYRIGHT.html"></div>
 				<div title="<span locate='VERSION'></span>" id="tVERSION" iconcls="icon-history" closable="false"
-					style="padding: 10px;" cache="true" href="information/tVERSION.html"></div>
+					style="padding: 10px;" cache="true" href="../information/tVERSION.html"></div>
 				<div title="<span locate='BUGS'></span>" id="tBUGS" iconcls="icon-bugs" closable="false"
-					style="padding: 10px;" cache="true" href="information/tBUGS.html"></div>
+					style="padding: 10px;" cache="true" href="../information/tBUGS.html"></div>
 				<div title="<span locate='EQUATION_SAMPLE'></span>" id="tEQUATION" iconcls="icon-equation" closable="false"
-					style="padding: 10px;" cache="true" href="information/tEQUATION.html"></div>
+					style="padding: 10px;" cache="true" href="../information/tEQUATION.html"></div>
 				--> 
 				<div title="<span locate='COPYRIGHT'></span>" id="tCOPYRIGHT" iconcls="icon-copyright" closable="false"
 					style="padding: 10px;" cache="true" href=""></div>

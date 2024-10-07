@@ -59,7 +59,7 @@
 	"EDITION": "<span id='PARAM_EDITION_SYNTAX'>Edit in <span id='title_Edition_Current_Syntax'>&nbsp;</span> <a href='#' id='btTITLE_EDITION_SYNTAX' class='bt'>switch to <span id='title_Edition_Other_Syntax'>&nbsp;</span></a></span><span id='PARAM_EDITION_ENCLOSE'><a id='btENCLOSE_TYPE' href='#'>HTML</a></span>",
 	"SYNTAX": "Syntax",
 	"UPDATE": "Equation update",
-	"AUTHOR": "<a id='btCOPYRIGHT' href='${this.location}information/tCOPYRIGHT.html' target='_blank' class='bt'>Copyright</a> &copy; <a href='http://visualmatheditor.equatheque.net' target='_blank' class='bt'>VisualMathEditor</a> <span id='VMEversionInf'></span> created by <a href='mailto:contact@equatheque.com?subject=VisualMathEditor' target='_blank' class='bt' >David Grima</a> - <a href='http://www.equatheque.net' target='_blank' class='bt' >EquaThEque</a>.",
+	"AUTHOR": "<a id='btCOPYRIGHT' href='${this.location}../information/tCOPYRIGHT.html' target='_blank' class='bt'>Copyright</a> &copy; <a href='http://visualmatheditor.equatheque.net' target='_blank' class='bt'>VisualMathEditor</a> <span id='VMEversionInf'></span> created by <a href='mailto:contact@equatheque.com?subject=VisualMathEditor' target='_blank' class='bt' >David Grima</a> - <a href='http://www.equatheque.net' target='_blank' class='bt' >EquaThEque</a>.",
 	"WAIT_FOR_EDITOR_DOWNLOAD": "Editor is downloading...",
 	"CHAR": "Characters",
 	"L_GREEK_CHAR": "Lower greek characters",

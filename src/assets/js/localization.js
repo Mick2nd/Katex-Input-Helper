@@ -9,7 +9,7 @@ class Localizer {
 	location = "";
 	
 	constructor() {
-		this.location = getScriptLocation() + 'js/';
+		this.location = getScriptLocation();
 		this.load('en_US', true);
 	}
 	

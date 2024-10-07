@@ -60,8 +60,11 @@ export class Dialog
 	public loadCss = async function(handle) : Promise<void> {
 		var css = [
 			/*
+				Ergebnis der Versuche soweit:
+				- alles nachladen funktioniert nicht so gut
+				- mit diesem Stand erst mal weiter arbeiten
 			*/
-			"./assets/js/jquery-easyui/themes/aguas/easyui.css",
+			"./assets/js/jquery-easyui/themes/default/easyui.css",
 			"./assets/js/jquery-easyui/themes/icon.css",
 			"./assets/js/jquery-easyui-MathEditorExtend/themes/aguas/easyui.css",
 			"./assets/js/jquery-easyui-MathEditorExtend/themes/icon.css",
@@ -71,7 +74,7 @@ export class Dialog
 			"./assets/js/codemirror/lib/codemirror.css",
 			"./assets/js/keyboard/Keyboard.css",
 			"./assets/js/katex/katex.min.css",
-			"./assets/dialog.css"
+			"./assets/js/dialog.css"
 		];
 		
 		for (const path of css) {
@@ -89,7 +92,10 @@ export class Dialog
 			// "./assets/pre-process.js",
 			// "./assets/test.js"
 			"./assets/js/localization.js",
-			"./assets/dialog.js"			
+			"./assets/js/themes.js",
+			"./assets/js/math.js",
+			"./assets/js/parserExtension.js",
+			"./assets/js/dialog.js"			
 		];
 		
 		for (const path of js) {

@@ -1,49 +1,7 @@
 
-/*
-function getIframeDocument() : Document | null {
-	try {
-		var iframe = document.getElementById('mathIframe') as HTMLIFrameElement;
-		console.info(iframe);
-		var iframeDocument = iframe.contentDocument;
-		if (iframeDocument == null) {
-			iframeDocument = iframe.contentWindow.document;
-		}
-		console.info(iframeDocument);
-		return iframeDocument;
-	}
-	catch(e) {
-		console.warn(`Katex: ${e}`);
-		return null;
-	}
-};
-
-function mathChanged(event) {
-	var element = event.target;
-	const tag = element.tagName ? element.tagName : '';
-	console.info(`Katex: In input handler: ${element} : ${tag}`);
-	if (tag === 'TEXTAREA') {
-		// var textArea = getIframeDocument().getElementById('mathTextInput') as HTMLTextAreaElement;
-		var textArea = element as HTMLTextAreaElement;
-		console.dir(textArea)
-		var text = textArea.nodeValue;
-		(document.getElementById('hidden') as HTMLInputElement).value = text;
-	}
-}
-
-function initialize() {
-	var textArea = getIframeDocument().getElementById('mathTextInput') as HTMLTextAreaElement;
-	textArea.nodeValue = `\\mathbb{ABC}`;
-	getIframeDocument().addEventListener('input', mathChanged);
-	document.addEventListener('unload', (event) => {
-		console.info(`Katex: onUnload : ${event}`);
-	});
-
-	// test output
-	(document.getElementById('hidden') as HTMLInputElement).value = `\\mathbb{ABC}`;
-	console.info(`Katex Test: ${JSON.stringify(textArea.outerHTML)}`);
-};
-*/
-
+/**
+ *	Vom Vorbild kopiert, nicht funktional
+ *  
 function initialScript() {
 	var runLocal = (window.location.search.indexOf("runLocal", 0) > 0); 
 	var runNotCodeMirror = (window.location.search.indexOf("runNotCodeMirror", 0) > 0); 
@@ -79,24 +37,22 @@ function initialScript() {
 		document.write("<link rel=\"stylesheet\" type=\"text\/css\" href=\"js\/keyboard\/keyboard.css\">");
 	}	
 }
+ */
+
+/**
+ *	Former initial script invocation, no longer used.
+ *  
+	this.url = $.url(true);
+	this.runLocal = eval($.url(document.getElementById("vmeScript").src).param('runLocal'));
+	this.runNotCodeMirror = eval($.url(document.getElementById("vmeScript").src).param('runNotCodeMirror'));
+	this.runNotMathJax = eval($.url(document.getElementById("vmeScript").src).param('runNotMathJax')); 
+	this.runNotVirtualKeyboard = eval($.url(document.getElementById("vmeScript").src).param('runNotVirtualKeyboard')); 
+	this.runNotColorPicker = eval($.url(document.getElementById("vmeScript").src).param('runNotColorPicker')); 
+*/
+
 
 var console; 
 if (window.console) console = window.console; else console = { log: function(msg) { }, error: function(msg) { } }; 
-var vme; 
-window.vme = vme; 
-
-/*
-$(document).ready(function() { 
-	$.parser.onComplete = function() { 
-		if (!vme) { 
-			vme = new KatexInputHelper(); 
-			if (!vme.isBuild) { 
-				$("body").html("VisualMathEditor Error. The editor does not load properly. You can try to refresh the page by pressing the F5 key."); 
-			} 
-		} 
-	}; 
-}); 
-*/
 
 class KatexInputHelper {
 
@@ -132,15 +88,19 @@ class KatexInputHelper {
 
 	location = "";
 	localizer = null;
+	themes = null;
+	math = null;
 	
+	/**
+	 * Constructor
+	 */
 	constructor() {
-		var vme = this;
 		window.vme = this;
 	
 		// independant of plugin variant
 		this.location = getScriptLocation();
-		console.info(`Script location: ${this.location}`);
 		
+		// Probably not needed
 		var adr = "https://visualmatheditor.equatheque.net/VisualMathEditor.html?runLocal&codeType=Latex&encloseAllFormula=false&style=default&localType=en_US&equation=\\vec{F} = \\frac{d \\vec{p}}{dt} = m \\frac{d \\vec{v}}{dt} = m \\vec{a}";
 		var pars = "?runLocal&codeType=Latex&encloseAllFormula=false&style=default&localType=en_US&equation=\\vec{F} = \\frac{d \\vec{p}}{dt} = m \\frac{d \\vec{v}}{dt} = m \\vec{a}";
 		
@@ -150,7 +110,7 @@ class KatexInputHelper {
 					runLocal: true,
 					codeType: "Latex",
 					encloseAllFormula: false,
-					style: "default",
+					style: "aguas",
 					localType: "en_US",
 					equation: "\\vec{F} = \\frac{d \\vec{p}}{dt} = m \\frac{d \\vec{v}}{dt} = m \\vec{a}"				
 				};
@@ -159,95 +119,24 @@ class KatexInputHelper {
 		};
 		
 		this.localizer = new Localizer();
+		this.themes = new Themes();
+		this.math = new MathFormulae(false, this.localizer, null);
+		this.parser = new ParserExtension();
 
-		/*
-		this.url = $.url(true);
-		this.runLocal = eval($.url(document.getElementById("vmeScript").src).param('runLocal'));
-		this.runNotCodeMirror = eval($.url(document.getElementById("vmeScript").src).param('runNotCodeMirror'));
-		this.runNotMathJax = eval($.url(document.getElementById("vmeScript").src).param('runNotMathJax')); 
-		this.runNotVirtualKeyboard = eval($.url(document.getElementById("vmeScript").src).param('runNotVirtualKeyboard')); 
-		this.runNotColorPicker = eval($.url(document.getElementById("vmeScript").src).param('runNotColorPicker')); 
-		*/
 		this.mathTextInput = document.getElementById('mathTextInput'); 
 		this.mathVisualOutput = document.getElementById('mathVisualOutput'); 
 		
 		for (var i = 65; i <= 90; i++) if ($.inArray(i, this.allowedCtrlKeys) == -1) this.notAllowedCtrlKeys.push(i); 
 		for (var i = 65; i < 90; i++) this.notAllowedAltKeys.push(i); 
 	}
-	
-	/**
-	 * Appends a series of required CSS files to head of html.
-	 * The HTML itself cannot do this.
-	 */
-	appendCss(activeTheme) {
-		console.info(`Active theme is ${activeTheme}`);
-		var csss = [
-			{
-				title: "aguas",
-				uitheme: "js/jquery-easyui/themes/aguas/easyui.css",
-				metheme: "js/jquery-easyui-MathEditorExtend/themes/aguas/easyui.css",
-			},
-			{
-				title: "gray",
-				uitheme: "js/jquery-easyui/themes/gray/easyui.css",
-				metheme: "js/jquery-easyui-MathEditorExtend/themes/gray/easyui.css",
-			},
-			{
-				title: "metro",
-				uitheme: "js/jquery-easyui/themes/metro/easyui.css",
-				metheme: "js/jquery-easyui-MathEditorExtend/themes/metro/easyui.css",
-			},
-			{
-				title: "bootstrap",
-				uitheme: "js/jquery-easyui/themes/bootstrap/easyui.css",
-				metheme: "js/jquery-easyui-MathEditorExtend/themes/bootstrap/easyui.css",
-			},
-			{
-				title: "black",
-				uitheme: "js/jquery-easyui/themes/black/easyui.css",
-				metheme: "js/jquery-easyui-MathEditorExtend/themes/black/easyui.css",
-			}
-		];
-		
-		var uiicon = "js/jquery-easyui/themes/icon.css";
-		var meicon = "js/jquery-easyui-MathEditorExtend/themes/icon.css";
-		var rtl = "js/jquery-easyui-MathEditorExtend/themes/rtl.css";
-		
-		var vme = this;
-		function appendSingleBasic(css) {
-			var location = vme.location;
-			$('head')
-			.append('<link rel="stylesheet" type="text/css" />')
-			.attr('href', `${location}${css}`)
-		};
-		function appendSingle(css, title, disable) {
-			$('head')
-			.append('<link rel="stylesheet" type="text/css" />')
-			.attr('href', `${location}${css}`)
-			.attr('title', title)
-			.attr('disable', `${disable}`);
-		};
-		function appendSingleId(css, id) {
-			$('head')
-			.append('<link rel="stylesheet" type="text/css" />')
-			.attr('href', `${location}${css}`)
-			.attr('id', id)
-			.attr('disable', true);
-		};
-			
-		for (var css of csss) {
-			appendSingle(css.uitheme, css.title, activeTheme == css.title);
-			appendSingle(css.metheme, css.title, activeTheme == css.title);
-		};
-		
-		appendSingleBasic(uiicon);
-		appendSingleBasic(meicon);
-		appendSingleId(rtl, "RTLstyle");
-	}
 
+	/**
+	 * initialize. Performs the whole initialization. Part of it is invoked after Local Type initialisation
+	 * by a calback.
+	 */
 	initialise() { 
 		var vme = this; 
-		//vme.appendCss(this.style);
+		vme.themes.appendCss(this.style);
 		$.messager.progress({ 
 			title: "VisualMathEditor", 
 			text: vme.getLocalText("WAIT_FOR_EDITOR_DOWNLOAD"), 
@@ -255,6 +144,7 @@ class KatexInputHelper {
 			interval: 300 
 		}); 
 		this.initialiseLocalType(() => {
+			vme.updateInfo();
 			vme.initialiseUI(); 
 			vme.initialiseParameters(); 
 			if (!vme.runNotCodeMirror) vme.initialiseCodeMirror(); 
@@ -266,7 +156,6 @@ class KatexInputHelper {
 			vme.initialiseVirtualKeyboard(); 
 			if (!vme.runNotMathJax) vme.initialiseMathJax(); else vme.endWait(); 
 			vme.isBuild = true;
-			$('#myContainer').layout({fit: true});
 		}); 
 	}
 	
@@ -301,7 +190,8 @@ class KatexInputHelper {
 	}
 	
 	initialiseVirtualKeyboard() { 
-		if (!this.runNotVirtualKeyboard) this.loadScript(`${this.location}js/keyboard/keyboard.js`, function() { return true; }); }
+		if (!this.runNotVirtualKeyboard) this.loadScript(`${this.location}keyboard/keyboard.js`, function() { return true; }); 
+	}
 	
 	initialiseCodeMirror() { 
 		var vme = this; 
@@ -327,10 +217,16 @@ class KatexInputHelper {
 			$('#mINSERT').menu('show', { left: event.pageX, top: event.pageY }); 
 			return false; 
 		}); 
+		
+		this.math.setEditorInstance(this.codeMirrorEditor);
 	}
 	
+	/**
+	 * Initializes the User Interface.
+	 */
 	initialiseUI() {
-		var vme = this; 
+		var vme = this;
+		this.math.updateLatexMenu();
 		$("a.easyui-linkbutton").linkbutton({ plain: true }); 
 		$(document).bind('contextmenu', function(event) { event.preventDefault(); return false; }); 
 		$("#mFILE, #mINSERT, #mTOOLS, #mVIEW, #mOPTIONS, #mINFORMATIONS").menu({
@@ -377,55 +273,160 @@ class KatexInputHelper {
 				}
 			}
 		}); 
-		if (!window.opener) { $("#mQUIT_EDITOR").addClass("menu-item-disabled").click(function(event) { vme.closeEditor(); }); }
-		if (typeof (FileReader) == "undefined") { $("#mOPEN_EQUATION").addClass("menu-item-disabled").click(function(event) { vme.testOpenFile(); }); }
+		if (!window.opener) { 
+			$("#mQUIT_EDITOR").addClass("menu-item-disabled").click(function(event) { vme.closeEditor(); }); 
+		}
+		if (typeof (FileReader) == "undefined") { 
+			$("#mOPEN_EQUATION").addClass("menu-item-disabled").click(function(event) { vme.testOpenFile(); }); 
+		}
 		$("#fOPEN_EQUATION").change(function(event) { vme.openFile(event); }); 
 		this.initialiseUIaccordion("#f_SYMBOLS"); 
 		this.initialiseUIaccordion("#f_SYMBOLS2"); 
 		$('#tINFORMATIONS').tabs({
 			onLoad: function(panel) {
 				switch (panel.attr("id")) { 
-					case "tCOPYRIGHT": $("#VMEdate").html((new Date()).getFullYear()); break; 
-					case "tVERSION": $("#VMEversion").html("<table>" + "<tr><td><b>" + vme.version + "</b></td><td><b>Visual Math Editor</b>, (This software)</td></tr>" + (vme.runNotMathJax ? "" : ("<tr><td>" + MathJax.version + " </td><td>Math Jax</td></tr>")) + (vme.runNotCodeMirror ? "" : ("<tr><td>" + CodeMirror.version + " </td><td>Code Mirror</td></tr>")) + (vme.runNotVirtualKeyboard ? "" : ("<tr><td>" + VKI_version + " </td><td>Virtual Keyboard</td></tr>")) + "<tr><td>" + $.fn.jquery + " </td><td>Jquery</td></tr>" + "<tr><td>" + "1.3.3" + " </td><td>Jquery Easyui</td></tr>" + (vme.runNotColorPicker ? "" : ("<tr><td>" + "23/05/2009" + " </td><td>Jquery Color Picker</td></tr>")) + "<table>"); break; 
-					case "tEQUATION": vme.initialiseSymbolContent(panel.attr("id")); if (!vme.runNotMathJax) MathJax.Hub.Queue(["Typeset", MathJax.Hub, panel.attr("id")]); break; }
+					case "tCOPYRIGHT": 
+						$("#VMEdate").html((new Date()).getFullYear()); 
+						break; 
+					case "tVERSION": 
+						$("#VMEversion").html("<table>" + "<tr><td><b>" + vme.version + "</b></td><td><b>Visual Math Editor</b>, (This software)</td></tr>" + (vme.runNotMathJax ? "" : ("<tr><td>" + MathJax.version + " </td><td>Math Jax</td></tr>")) + (vme.runNotCodeMirror ? "" : ("<tr><td>" + CodeMirror.version + " </td><td>Code Mirror</td></tr>")) + (vme.runNotVirtualKeyboard ? "" : ("<tr><td>" + VKI_version + " </td><td>Virtual Keyboard</td></tr>")) + "<tr><td>" + $.fn.jquery + " </td><td>Jquery</td></tr>" + "<tr><td>" + "1.3.3" + " </td><td>Jquery Easyui</td></tr>" + (vme.runNotColorPicker ? "" : ("<tr><td>" + "23/05/2009" + " </td><td>Jquery Color Picker</td></tr>")) + "<table>"); 
+						break; 
+					case "tEQUATION": 
+						vme.initialiseSymbolContent(panel.attr("id")); 
+						if (!vme.runNotMathJax) MathJax.Hub.Queue(["Typeset", MathJax.Hub, panel.attr("id")]); 
+						break; 
+				}
 			}
 		}); 
-		$('#btMATRIX_CLOSE').click(function(event) { event.preventDefault(); $('#wMATRIX').dialog('close'); vme.setFocus(); }); 
-		$('#btMATRIX_SET').click(function(event) { event.preventDefault(); if (vme.codeType == "AsciiMath") vme.setAsciiMatrixInEditor(); else vme.setLatexMatrixInEditor(); vme.updateOutput(); 
-		$('#wMATRIX').dialog('close'); vme.setFocus(); }); 
-		$('#colsMATRIX, #rowsMATRIX').keyup(function(event) { vme.updateMatrixWindow(); }); 
-		$('#btSTYLE_CHOISE_CLOSE').click(function(event) { event.preventDefault(); $('#wSTYLE_CHOISE').dialog('close'); vme.setFocus(); }); 
-		$('#btLANGUAGE_CHOISE_CLOSE').click(function(event) { event.preventDefault(); $('#wLANGUAGE_CHOISE').dialog('close'); vme.setFocus(); }); 
-		$('#btEDITOR_PARAMETERS_CLOSE').click(function(event) { event.preventDefault(); $('#wEDITOR_PARAMETERS').dialog('close'); vme.setFocus(); }); 
-		
+		$('#btMATRIX_CLOSE').click(function(event) { 
+			event.preventDefault(); 
+			$('#wMATRIX').dialog('close'); 
+			vme.setFocus(); 
+		}); 
+		$('#btMATRIX_SET').click(function(event) { 
+			event.preventDefault(); 
+			if (vme.codeType == "AsciiMath") vme.setAsciiMatrixInEditor(); else vme.setLatexMatrixInEditor(); 
+			vme.updateOutput(); 
+			$('#wMATRIX').dialog('close'); vme.setFocus(); 
+		}); 
+		$('#colsMATRIX, #rowsMATRIX').keyup(function(event) { 
+			vme.updateMatrixWindow(); 
+		}); 
+		$('#btSTYLE_CHOISE_CLOSE').click(function(event) { 
+			event.preventDefault(); 
+			$('#wSTYLE_CHOISE').dialog('close'); 
+			vme.setFocus(); 
+		}); 
+		$('#btLANGUAGE_CHOISE_CLOSE').click(function(event) { 
+			event.preventDefault(); 
+			$('#wLANGUAGE_CHOISE').dialog('close'); 
+			vme.setFocus(); 
+		}); 
+		$('#btEDITOR_PARAMETERS_CLOSE').click(function(event) { 
+			event.preventDefault(); 
+			$('#wEDITOR_PARAMETERS').dialog('close'); 
+			vme.setFocus(); 
+		}); 
 		$("input[name='localType']").change(function() { 
 			vme.localType = $("input[name='localType']:checked").val(); 
 			vme.localize(); 
 			if (vme.saveOptionInCookies) vme.setCookie("VME_localType", vme.localType, 1000); 
 			vme.printCodeType(); 
 		}); 
-		
-		$("input[name='codeType']").change(function() { vme.codeType = $("input[name='codeType']:checked").val(); vme.printCodeType(); vme.updateOutput(); }); 
-		$("input[name='style']").change(function() { vme.style = $("input[name='style']:checked").val(); vme.chooseStyle(); if (vme.saveOptionInCookies) vme.setCookie("VME_style", vme.style, 1000); }); 
-		$("#encloseType").change(function() {
-			if (!(typeof ($('#encloseType').attr('checked')) == "undefined")) { vme.encloseAllFormula = true; $("#btENCLOSE_TYPE").removeClass("unselect"); $('#HTML_TAG').show(); if (!vme.runNotCodeMirror) { vme.codeMirrorEditor.setOption("mode", "text/html"); vme.codeMirrorEditor.setOption("autoCloseTags", true); } } else { vme.encloseAllFormula = false; $("#btENCLOSE_TYPE").addClass("unselect"); $('#HTML_TAG').hide(); if (!vme.runNotCodeMirror) { vme.codeMirrorEditor.setOption("mode", "text/x-latex"); vme.codeMirrorEditor.setOption("autoCloseTags", false); } }
-			vme.resizeDivInputOutput(); vme.updateOutput(); if (vme.saveOptionInCookies) vme.setCookie("VME_encloseAllFormula", vme.encloseAllFormula, 1000);
+		$("input[name='codeType']").change(function() { 
+			vme.codeType = $("input[name='codeType']:checked").val(); 
+			vme.printCodeType(); 
+			vme.updateOutput(); 
 		}); 
-		$("#autoUpdateTime").change(function() { vme.autoUpdateTime = $("#autoUpdateTime").val(); if (vme.saveOptionInCookies) vme.setCookie("VME_autoUpdateTime", vme.autoUpdateTime, 1000); }); 
-		$("#menuupdateType").change(function() { (typeof ($('#menuupdateType').attr('checked')) == "undefined") ? vme.menuupdateType = false : vme.menuupdateType = true; if (vme.saveOptionInCookies) vme.setCookie("VME_menuupdateType", vme.menuupdateType, 1000); }); 
-		$("#autoupdateType").change(function() { (typeof ($('#autoupdateType').attr('checked')) == "undefined") ? vme.autoupdateType = false : vme.autoupdateType = true; if (vme.saveOptionInCookies) vme.setCookie("VME_autoupdateType", vme.autoupdateType, 1000); }); 
-		$("#menuMathjaxType").change(function() { vme.switchMathJaxMenu(); if (vme.saveOptionInCookies) vme.setCookie("VME_menuMathjaxType", vme.menuMathjaxType, 1000); }); 
-		$("#cookieType").change(function() { (typeof ($('#cookieType').attr('checked')) == "undefined") ? vme.saveOptionInCookies = false : vme.saveOptionInCookies = true; vme.saveCookies(); }); 
-		$(window).resize(function() { setTimeout('vme.resizeDivInputOutput();', 500); }); 
-		$("#mathVisualOutput").bind('contextmenu', function(event) { event.preventDefault(); $('#mVIEW').menu('show', { left: event.pageX, top: event.pageY }); return false; }); 
-		if (vme.runNotCodeMirror) { $("#mathTextInput").bind('contextmenu', function(event) { event.preventDefault(); $('#mINSERT').menu('show', { left: event.pageX, top: event.pageY }); return false; }).keyup(function(event) { var key = event.keyCode || event.which; if (($.inArray(key, vme.notAllowedKeys) == -1) && !($.inArray(key, vme.notAllowedCtrlKeys) != -1 && event.ctrlKey) && !($.inArray(key, vme.notAllowedAltKeys) != -1 && event.altKey)) { vme.autoUpdateOutput(); } else { } }); this.mathTextInput.setSelectionRange(this.mathTextInput.value.length, this.mathTextInput.value.length); }
-		$("[information]").mouseover(function(event) { $("#divInformation").html(vme.getLocalText($(this).attr("information"))); }); 
-		$("[information]").mouseout(function(event) { $("#divInformation").html("&nbsp;"); }); 
-		$('#unicodeChoise').combobox({ valueField: 'value', textField: 'text', onSelect: function(record) { var range = record.value.split(","); vme.setUniCodesValues(vme.h2d(range[0]), vme.h2d(range[1])); }, onLoadSuccess: function() { $(this).combobox("select", "0x25A0,0x25FF"); vme.setUniCodesValues(0x25A0, 0x25FF); } });
+		$("input[name='style']").change(function() { 
+			vme.style = $("input[name='style']:checked").val(); 
+			vme.chooseStyle(); 
+			if (vme.saveOptionInCookies) vme.setCookie("VME_style", vme.style, 1000); 
+		}); 
+		$("#encloseType").change(function() {
+			if (!(typeof ($('#encloseType').attr('checked')) == "undefined")) { 
+				vme.encloseAllFormula = true; 
+				$("#btENCLOSE_TYPE").removeClass("unselect"); 
+				$('#HTML_TAG').show(); 
+				if (!vme.runNotCodeMirror) { 
+					vme.codeMirrorEditor.setOption("mode", "text/html"); 
+					vme.codeMirrorEditor.setOption("autoCloseTags", true); 
+				} 
+			} else { 
+				vme.encloseAllFormula = false; 
+				$("#btENCLOSE_TYPE").addClass("unselect"); 
+				$('#HTML_TAG').hide(); 
+				if (!vme.runNotCodeMirror) { 
+					vme.codeMirrorEditor.setOption("mode", "text/x-latex"); 
+					vme.codeMirrorEditor.setOption("autoCloseTags", false); 
+				} 
+			}
+			vme.resizeDivInputOutput(); 
+			vme.updateOutput(); 
+			if (vme.saveOptionInCookies) vme.setCookie("VME_encloseAllFormula", vme.encloseAllFormula, 1000);
+		}); 
+		$("#autoUpdateTime").change(function() { 
+			vme.autoUpdateTime = $("#autoUpdateTime").val(); 
+			if (vme.saveOptionInCookies) vme.setCookie("VME_autoUpdateTime", vme.autoUpdateTime, 1000); 
+		}); 
+		$("#menuupdateType").change(function() { 
+			(typeof ($('#menuupdateType').attr('checked')) == "undefined") ? vme.menuupdateType = false : vme.menuupdateType = true; 
+			if (vme.saveOptionInCookies) vme.setCookie("VME_menuupdateType", vme.menuupdateType, 1000); 
+		}); 
+		$("#autoupdateType").change(function() { 
+			(typeof ($('#autoupdateType').attr('checked')) == "undefined") ? vme.autoupdateType = false : vme.autoupdateType = true; 
+			if (vme.saveOptionInCookies) vme.setCookie("VME_autoupdateType", vme.autoupdateType, 1000); 
+		}); 
+		$("#menuMathjaxType").change(function() { 
+			vme.switchMathJaxMenu(); 
+			if (vme.saveOptionInCookies) vme.setCookie("VME_menuMathjaxType", vme.menuMathjaxType, 1000); 
+		}); 
+		$("#cookieType").change(function() { 
+			(typeof ($('#cookieType').attr('checked')) == "undefined") ? vme.saveOptionInCookies = false : vme.saveOptionInCookies = true; 
+			vme.saveCookies(); 
+		}); 
+		$(window).resize(function() { 
+			setTimeout('vme.resizeDivInputOutput();', 500); 
+		}); 
+		$("#mathVisualOutput").bind('contextmenu', function(event) { 
+			event.preventDefault(); 
+			$('#mVIEW').menu('show', { left: event.pageX, top: event.pageY }); 
+			return false; 
+		}); 
+		if (vme.runNotCodeMirror) { 
+			$("#mathTextInput").bind('contextmenu', function(event) { 
+				event.preventDefault(); 
+				$('#mINSERT').menu('show', { left: event.pageX, top: event.pageY }); 
+				return false; 
+			})
+			.keyup(function(event) { 
+				var key = event.keyCode || event.which; 
+				if (($.inArray(key, vme.notAllowedKeys) == -1) && !($.inArray(key, vme.notAllowedCtrlKeys) != -1 && event.ctrlKey) && !($.inArray(key, vme.notAllowedAltKeys) != -1 && event.altKey)) { 
+					vme.autoUpdateOutput(); 
+				} else { } 
+			}); 
+			this.mathTextInput.setSelectionRange(this.mathTextInput.value.length, this.mathTextInput.value.length); 
+		}
+		$("[information]").mouseover(function(event) { 
+			$("#divInformation").html(vme.getLocalText($(this).attr("information"))); 
+		}); 
+		$("[information]").mouseout(function(event) { 
+			$("#divInformation").html("&nbsp;"); 
+		}); 
+		$('#unicodeChoise').combobox({ 
+			valueField: 'value', 
+			textField: 'text', 
+			onSelect: function(record) { var range = record.value.split(","); vme.setUniCodesValues(vme.h2d(range[0]), vme.h2d(range[1])); }, 
+			onLoadSuccess: function() { $(this).combobox("select", "0x25A0,0x25FF"); vme.setUniCodesValues(0x25A0, 0x25FF); } 
+		});
 	}
 	
+	/**
+	 * Activates information tabs on the information dialog.
+	 */
 	openInformationTab(numTab) { 
-		$('#wINFORMATIONS').window('open'); $('#tINFORMATIONS').tabs('select', numTab); 
+		$('#wINFORMATIONS').window('open'); 
+		$('#tINFORMATIONS').tabs('select', numTab); 
 	}
 	
 	resizeDivInputOutput() { 
@@ -457,7 +458,7 @@ class KatexInputHelper {
 			}); 
 			$(fPanelMore).dialog('open'); 
 			if (!vme.runNotMathJax) MathJax.Hub.Queue(["Typeset", MathJax.Hub, fPanelMoreID + "_TITLE"]); 
-			$(fPanelMore).dialog('refresh', `${vme.location}formulas/` + fPanelID + "_MORE.html");
+			$(fPanelMore).dialog('refresh', `${vme.location}../formulas/` + fPanelID + "_MORE.html");
 			if (cookie && typeof (cookie) != "undefined") { 
 				$(fPanelMore).dialog('move', eval('(' + cookie + ')')); 
 			} else { 
@@ -696,7 +697,7 @@ class KatexInputHelper {
 			html = html + "\n</table>"; 
 			$("#cUNICODES_LIST").html(html); 
 			this.uniCodesListLoaded = true; 
-			$('#unicodeChoise').combobox("reload", `${vme.location}formulas/unicodeChoiseData.json`);
+			$('#unicodeChoise').combobox("reload", `${vme.location}../formulas/unicodeChoiseData.json`);
 		}
 	}
 	
@@ -820,8 +821,8 @@ class KatexInputHelper {
 		console.log(`Entry into localize, localType is: ${this.localType}`);
 		var inst = this;
 		this.localizer.load(this.localType, false, () => {
-			inst.localizeIt();
-			// inst.initialiseLanguage();
+			// inst.localizeIt();
+			inst.initialiseLanguage();
 		});
 	}
 	
@@ -949,7 +950,7 @@ class KatexInputHelper {
 		
 		// REPLACE next statement
 		// $(vme.mathVisualOutput).html(content);
-		this.insertMath(content); 
+		this.math.insertMath(content); 
 		
 		if (!vme.runNotMathJax) MathJax.Hub.Queue(["Typeset", MathJax.Hub, vme.mathVisualOutput]);
 	}
@@ -1247,8 +1248,11 @@ class KatexInputHelper {
 			var tags = ['link', 'style']; 
 			var t, s, title; 
 			var colorImg = "black", codemirrorCSS = "default", colorpickerCSS = "gray", colorType = null; 
+			/*
+			*/
 			for (t = 0; t < (tags.length); t++) { 
-				var styles = document.getElementsByTagName(tags[t]); 
+				var styles = document.getElementsByTagName(tags[t]);
+				console.info(`chooseStyle: have entries for tag ${tags[t]} : ${styles.length > 0}`);
 				for (s = 0; s < (styles.length); s++) { 
 					title = styles[s].getAttribute("title"); 
 					if (title) { 
@@ -1261,9 +1265,29 @@ class KatexInputHelper {
 					} 
 				} 
 			}
+			
+			/* TRIAL with jquery solution - NOT WORKING ==> try function version
+			var vme = this;
+			for (var tag of tags) {
+				var entries = false;
+				$(`${tag}[title]`).each(() => {
+					entries = true;
+					var title = $(this).attr("title");
+					if (title != vme.style) {
+						$(this).attr("disabled", true);
+					} else {
+						$(this).attr("disabled", false);
+						colorType = $(this).attr("colorType");
+					}					
+				});
+				console.info(`chooseStyle: have entries for tag ${tag} : ${entries}`);
+			}
+			*/
+			
 			if (colorType == "black") {
 				colorImg = "white"
-				codemirrorCSS = "twilight"; colorpickerCSS = "black";
+				codemirrorCSS = "twilight"; 
+				colorpickerCSS = "black";
 			}
 			if (!this.runNotCodeMirror) this.codeMirrorEditor.setOption("theme", codemirrorCSS); 
 			if (!this.runNotColorPicker) { 
@@ -1286,9 +1310,9 @@ class KatexInputHelper {
 	
 	setRTLstyle() {
 		/* TODO: needs extra css style element
-		var dir = this.getLocalText("_i18n_HTML_Dir"); 
-		document.getElementById("RTLstyle").disabled = (dir != "rtl"); 
 		 */
+		var dir = this.getLocalText("_i18n_HTML_Dir");
+		this.themes.setRTLstyle(dir);
 	}
 	
 	saveCookies() { 
@@ -1389,9 +1413,9 @@ class KatexInputHelper {
 					var fPanelID = $(fPanel).attr("id"); 
 					if (vme.symbolPanelsLoaded.indexOf(fPanelID) == -1) { 
 						vme.symbolPanelsLoaded[vme.symbolPanelsLoaded.length] = fPanelID; 
-						$(fPanel).html(`<img src='${vme.location}js/jquery-easyui/themes/default/images/loading.gif' />`); 
+						$(fPanel).html(`<img src='${vme.location}jquery-easyui/themes/default/images/loading.gif' />`); 
 						$(fPanel).load(
-							`${vme.location}formulas/` + fPanelID + ".html", 
+							`${vme.location}../formulas/` + fPanelID + ".html", 
 							function() { 
 								vme.initialiseSymbolContent(fPanelID); 
 								$("#" + fPanelID + " a.more").click(
@@ -1410,7 +1434,7 @@ class KatexInputHelper {
 		}); 
 		var p = $(accordionID).accordion('getSelected'); 
 		if (p) { p.panel('collapse', false); }
-		this.updateHeaders();
+		this.math.updateHeaders();
 	}
 	
 	initialiseSymbolContent(fPanelID) { 
@@ -1464,106 +1488,53 @@ class KatexInputHelper {
 		.addClass("easyui-tooltip")
 		.attr("title", function(index, attr) { return "Loading more formulae"; });
 
-		$.parser.parse("#" + fPanelID); 
+		// REPLACE with improved handling
+		// $.parser.parse("#" + fPanelID);
+		vme.parser.parse("#" + fPanelID, 1, function(selector, ctx) {}) 
 		if (!vme.runNotMathJax) MathJax.Hub.Queue(["Typeset", MathJax.Hub, fPanelID]); 
-		this.updateTables();
+		this.math.updateTables();
 	}
 	
-	insertMath(text, element = null, multiple = false) {
-		try {
-			var target = element;
-			if (target == null) {
-				target = this.mathVisualOutput;
+	updateInfo() {
+		var vme = this;
+		$('div[href]')
+		.each(function( idx ) {
+			var href = $(this).attr('href');
+			var id = $(this).attr('id');
+			if (href.length == 0) {												// info html !
+				console.info(`Info dialog with : id : ${id}, href : ${href}`);
+				var newHref = `${vme.location}../information/${id}.html`;
+				$(this).attr('href', newHref);
+				$(this).load(newHref);
 			}
-			
-			if (text.startsWith('$')) {
-				if (! multiple) {
-					text = text.substring(1, text.length - 1);
-				} else {
-					text = text.replace(/&nbsp;&nbsp;/g, '\\quad');
-					text = text.replace(/\$/g, '');
-				}
-			}
-			
-			katex.render(text, target, { thrownOnError: false, strict: false, macros: { '\\box': '□' } });
-		} catch(e) {
-			console.error(`Katex: insertMath : ${e}`);
-		}
-	}
-	
-	updateTables() {
-		try {
-			var entries = $('.panel-body table tbody tr td a.easyui-tooltip');
-			console.info(`Katex: ${entries.length} td items`);
-			entries.each((idx, a) => {
-				if (a) {
-					var html = a.innerHTML;
-					var count = html.split('$').length - 1;
-					if (count == 2) {								// normal case: math
-						var text = a.innerText;
-						text = text.replace(/□/g, '\\square');
-						this.insertMath(text, a);
-					} else if (count > 2) {							// image with surrounding characters
-						var text1 = a.firstChild.textContent;
-						text1 = text1.substring(1, text1.length - 1);
-
-						var text2 = a.lastChild.textContent;
-						text2 = text2.substring(1, text2.length - 1);
-
-						var img = a.children[0];
-						var src = img.attributes['src'];
-						img.setAttribute('src', this.location + src.value);
-						
-						this.insertMath(text2, a);
-						var ch = a.children[0];
-						this.insertMath(text1, a);
-						a.appendChild(img);
-						a.appendChild(ch);
-					
-					} else {										// direct image case
-						var img = a.firstChild;
-						if (img && img.hasAttribute('src')) {
-							var src = img.attributes['src'].value;
-							if (!src.startsWith('file')) {
-								src = this.location + src;
-							}
-							img.setAttribute('src', src);
-						}
-					}
-				}
-			})
-		} catch(e) {
-			console.error(`Katex: updateTables : ${e}`);
-		}
-	}
-	
-	updateHeaders() {
-		try {
-			var entries = $('.panel-title span');
-			console.info(`Katex: ${entries.length} header items`);
-			entries.each((idx, a) => {
-				if (a) {
-					var text = a.innerText;
-					if (text.startsWith('$')) {
-						this.insertMath(text, a, true);
-					}
-				}
-			})
-		} catch(e) {
-			console.error(`Katex: updateHeaders : ${e}`);
-		}
+		});
+		/*
+		*/ 
+		vme.parser.parse(
+			'div[href]',
+			0,
+			function(selector, ctx) {
+				console.info(`Parse completed for : ${selector}`);
+				vme.math.inplaceUpdate('#tEQUATION div a.s[latex]');			// where and when to do that
+			},
+			100
+		);
 	}
 }
 
 	
 function getScriptLocation() {
-		return $("script[src]")
+		var location = $("script[src]")
 			.last()
 			.attr("src")
 			.split('/')
 			.slice(0, -1)
 			.join('/')
-			.replace(/ /g, '%20') + '/';
+			.replace(/ /g, '%20')
+			.replace('file:///', 'file://')
+			.replace('file://', 'file:///') + '/';
+		console.info(`Script location is : ${location}`);
+		return location;
 }
 
 
@@ -1574,14 +1545,15 @@ $(document).ready(function() {
 	console.info('Document ready.');
 	
 	// What triggers this parser event?
-	$.parser.onComplete = function() {
-		console.info('onComplete ready.');
-	};
+	// $.parser.onComplete = function(node, ctx) {
+	//	console.info(`onComplete ready for ${JSON.stringify(ctx)}.`);
+	// };
 	
 	/*
+	 */	
 	vme = new KatexInputHelper();
 	vme.initialise();
-	*/	
+	$('#myContainer').layout({fit: true});
 }); 
 
 
@@ -1592,9 +1564,15 @@ var timer = setInterval(() => {
 	console.info(`Katex: First timeout started`);
 
 	/*
-	*/
+		TODO LIST
+		- icons im main menu sind falsch dargestellt
+		- Umschalten des Themes brachte Falschdarstellungen der Header mit sich, war also unvollständig
+		- Nachladen der CSS Files für Themes mit ungeklärten Fehlern
+		- COPYRIGHT Eintrag in lang.json Files noch modifizieren 
 	vme = new KatexInputHelper();
 	vme.initialise();
+	*/
+	// vme.math.inplaceUpdate('#tEQUATION div a.s[latex]', displayMode = true);			// where and when to do that
 	clearInterval(timer);
 
 }, 1000);

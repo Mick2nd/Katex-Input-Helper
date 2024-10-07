@@ -22,12 +22,22 @@ table, th, td {
 	color: #0E2D5F;
 }
 
-.menus {
-	width: 200px;
-}
-
 #northRegion {
 	height: 110px;
+}
+
+#menu {
+	padding: 5px;
+	height: 20px; 
+}
+
+.easyui-menubutton {
+	overflow: hidden;
+}
+
+.menus {
+	width: 200px;
+	overflow: hidden !important;
 }
 
 #westRegion {
@@ -37,7 +47,7 @@ table, th, td {
 /* center
  */
 #divEquationInputOutput {
-	overflow: auto;
+	overflow: hidden !important;
 
 	.keyboardInputInitiator {
 		display: none;
@@ -55,7 +65,7 @@ table, th, td {
 #divMathTextInput {
 	margin: 0; 
 	padding: 0; 
-	height: 45%; 
+	height: 50vh; 
 	overflow: hidden;
 }
 
@@ -67,16 +77,16 @@ table, th, td {
 
 #mathTextInput {
 	margin: 0; 
-	padding: 5px; 
+	padding: 2px; 
 	border: none;
 }
 
 #mathVisualOutput {
 	margin: 0; 
 	padding: 5px; 
-	height: 45%; 
+	height: 50vh; 
 	font-size: 150%; 
-	overflow: auto
+	overflow: hidden
 }
 
 #eastRegion {
