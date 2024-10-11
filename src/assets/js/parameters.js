@@ -10,7 +10,7 @@ class Parameters {
 	equation = "";
 	style = "aguas";
 	localType = "en_US";
-	equationCollection = { };
+	equationCollection = [ ];
 	dialogSettingsPrefix = "KIH_Location_";
 	
 	constructor() {

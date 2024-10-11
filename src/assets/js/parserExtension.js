@@ -26,11 +26,12 @@ class ParserExtension {
 				ctx: ctx,
 				delay: delay,
 				selector: selector,
-				promise: this.promisify(this, this.startParseAsync),
+				promise: null,
 				onComplete: null
 			};
 			this.queue.push(item);
 			this.nextAsync(ctx);
+			item.promise = this.promisify(this, this.startParseAsync);
 			
 			return item.promise;
 		} catch(err) {
@@ -50,7 +51,7 @@ class ParserExtension {
 	
 	startParseAsync(cb) {
 		this.item.onComplete = cb;
-		$.parser.parse(item.selector);			
+		$.parser.parse(this.item.selector);			
 	}
 
 	onCompleteAsync(ctx) { 

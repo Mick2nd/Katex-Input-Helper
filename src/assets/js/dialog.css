@@ -117,3 +117,7 @@ table, th, td {
 .panel-body table tbody tr td a.easyui-tooltip {
 	float: left;
 }
+
+.katex {
+	pointer-events: none;
+}

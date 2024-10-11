@@ -1,4 +1,254 @@
 
+
+/**
+ * This embedded class is solely responsible for the Dynamic Panel for Custom Equations.
+ */
+class DynamicPanel {
+	parent = null;
+	panelId = "";
+	gridSelector = "";
+	gridSelectorOfCopy = "";
+	initialised = false;
+	
+	/**
+	 * Constructor.
+	 */
+	constructor(panelId, parent) {
+		this.panelId = panelId;
+		this.parent = parent;
+		this.gridSelector = `#${panelId} .easyui-datagrid`;
+		this.gridSelectorOfCopy = `#${panelId} table:not(.easyui-datagrid)`;
+	}
+
+	/**
+	 * It is intended to create this Panel dynamically taking the content from the Settings.
+	 */
+	async initialise() {
+		var inst = this;
+		var fPanelMoreID = this.panelId;
+		var fPanelMore = $('#' + fPanelMoreID); 
+		
+		if (!this.initialised) { 
+			this.initialised = true; 
+			console.info(`Here in DynamicPanel.initialise 1`);
+			$(fPanelMore).dialog({ 
+				onLoad: 
+					function() {  }, 
+				onMove: 
+					function(left, top) { 
+						console.info(`Panel with id ${fPanelMoreID} moved : ${left},${top}`);
+						inst.parent.parameters.onPanelMove(fPanelMoreID, left, top);
+					}, 
+				onResize:
+					function(width, height) {
+						console.info(`Panel with id ${fPanelMoreID} resized : ${width},${height}`);
+						inst.parent.parameters.onPanelResize(fPanelMoreID, width, height);
+					},
+				title: $("#" + fPanelMoreID + "_TITLE").html()
+			})
+			.dialog('open')
+			.html(`${inst.buildCustomEquations()}`);
+
+			console.info(`Here in DynamicPanel.initialise 2`);
+			await inst.parent.parser.parseAsync(`#${inst.panelId}`, 1);
+			inst.parent.inplaceUpdate(`${inst.gridSelector} a.s`);
+			await inst.parent.parser.parseAsync(`#${inst.panelId}`, 1);
+			await inst.initialiseDatagrid(`${inst.gridSelector}`);
+			inst.equipDatagridWithInteractivity();
+			
+			/* add sample row
+			var formula = "\\sum{\\vec{F} } = \\vec{0} \\Rightarrow \\frac{d\\vec{v}}{dt} = 0 ";
+			var title = "Newton's first law";
+			await this.addEquation(title, formula);
+			*/
+			
+			await inst.customEquationsFromParameters();
+
+		} else { 
+			$(fPanelMore).dialog('open'); 
+		}
+	}
+	
+	/**
+	 * Intention is to build grid content from Settings.
+	 */
+	buildCustomEquations() {
+		var no = 1;
+		var formula = "\\sum{\\vec{F} } = \\vec{0} \\Rightarrow \\frac{d\\vec{v}}{dt} = 0 ";
+		var title = "Newton's first law";
+		
+		return `<table id="customDatagrid" class="easyui-datagrid" cellspacing=0 style="border-spacing:0px; border-collapse:collapse;width:100%">
+	    <thead>
+	        <tr>
+	            <th data-options="field:'title',editor:'text',width:200">Titel</th>
+	            <th data-options="field:'formula',width:200">Formel</th>
+	        </tr>
+	    </thead>
+	    <tbody>
+	    	<!--
+			<tr>
+				<td class=bl>${title}</td>
+				<td class="bl"><a style="text-align:left;" href="#" class="s easyui-tooltip" title="${formula}" latex="${formula}">$${formula}$</a></td>
+			</tr>
+			-->
+		</tbody>
+		</table>
+		<div style="position: absolute; right: 10px; bottom: 10px;" >
+			<a href="#" id="btCUSTOM_EQUATIONS_SAVE" class="easyui-linkbutton" iconcls="icon-save">
+				<span locate="SAVE">${this.parent.localizer.getLocalText('SAVE')}</span>
+			</a>
+		</div>`
+		.replace(/\n\s*?/sg, '\n');
+	}
+	
+	/**
+	 * Reads the Custom Equations from the parameters.
+	 */
+	async customEquationsFromParameters() {
+		try {
+			for (const equation of this.parent.parameters.equationCollection) {
+				if (typeof(equation[1]) == "string" && equation[1] != "[object Object]") {
+					await this.addEquation(equation[0], equation[1]);
+				}
+		}
+		} catch(e) {
+			
+		}
+	}
+	
+	customEquationsToParameters() {
+		var data = $(this.gridSelector)
+		.datagrid('getData');
+		console.dir(data);
+		
+		var customEquations = data.rows.map(function(row) {
+			var title = row.title;
+			var fragment = $.parseHTML(row.formula)[0];
+			console.dir(fragment);	
+			var formula = fragment.attributes['latex'].value;
+			return [ title, formula ];
+		})
+		this.parent.parameters.equationCollection = customEquations;
+		
+		this.parent.parameters.writeParameters();
+	}
+	
+	/**
+	 * Adds an Equation to the grid.
+	 */
+	async addEquation(title, formula) {
+		$(this.gridSelector)
+		.datagrid(
+			'appendRow', {
+			title: title,
+			formula: this.buildAnchor(formula)	 
+		})
+		.datagrid('acceptChanges', {});
+		
+		await this.parent.parser.parseAsync(this.gridSelector, 1);
+		
+		var anchor = $(`${this.gridSelectorOfCopy} a`);
+		this.parent.inplaceUpdate(anchor);
+		this.equipDatagridWithInteractivity();
+	}
+	
+	/**
+	 * Builds a single Anchor from formula.
+	 */
+	buildAnchor(formula) {
+		return `<a style="text-align:left;" href="#" class="s easyui-tooltip" title="${formula}" latex="${formula}">$${formula}$</a>`;
+	}
+	
+	/**
+	 * Initialises a Data Grid given by the selector
+	 */
+	async initialiseDatagrid(selector) {
+		var inst = this;
+		await this.parent.parser.parseAsync(selector, 1);
+		console.info(`initialiseDatagrid for ${selector}`);
+		$(selector)
+		.datagrid({
+			onAfterEdit: function(idx, row, changes) {
+				console.info(`onAfterEdit for ${selector}`);
+				inst.parent.inplaceUpdate(`${inst.gridSelectorOfCopy} a`);
+				inst.customEquationsToParameters();
+				return true;
+			},
+			onCancelEdit: function(idx, row) {
+				console.info(`onCancelEdit for ${selector}`);
+				inst.parent.inplaceUpdate(`${inst.gridSelectorOfCopy} a`);
+				return true;
+			}
+		})
+		.datagrid('enableCellEditing')
+		.datagrid('gotoCell', {
+            index: 0,
+            field: 'title'
+    	});
+		
+		$('#btCUSTOM_EQUATIONS_SAVE')
+		.click(async function(event) { 
+			event.preventDefault();
+			var selectedText = inst.parent.codeMirror.getSelection();
+			if (selectedText != "") {
+				await inst.addEquation('Placeholder', selectedText);
+			} else {
+				$.messager.show({
+					title: 'Formula Editor',
+					msg: 'Please, select some text'
+				});
+				return;
+			}
+			
+			var data = $(`${inst.gridSelector} a`).eq(0).attr('latex');
+			console.info(`Datagrid data: ${data}`);
+		});
+	}
+
+	/**
+	 * Equips the data grid anchors with interactivity. This is necessary because original event handlers
+	 * do not stay active.
+	 */
+	equipDatagridWithInteractivity() {
+		var inst = this;
+		function getSymbol(obj) { 
+			if ($(obj).attr("latex") != undefined) { 
+				return $(obj).attr("latex"); 
+			} else { 
+				return undefined; 
+			} 
+		}; 
+		var selector = `${this.gridSelectorOfCopy}`;
+		
+		try {
+			var grid = $(selector);
+			grid
+			.on('mouseover', 'a', function(event) { 
+				var latex = getSymbol(event.target);
+				if (latex) $("#divInformation").html(latex); 
+			})
+			.on('mouseout', 'a', function(event) { $("#divInformation").html("&nbsp;"); })
+			.on('click', 'a', function(event) {
+				event.preventDefault(); 
+				var a = $(event.target);
+				var latex = a.attr("latex");
+				console.info(`Click on equation: ${latex}`);
+				if (latex != undefined) { 
+					inst.parent.insert(latex); 
+				} else { 
+					$.messager.show({ 
+						title: "<span class='rtl-title-withicon'>" + inst.parent.localizer.getLocalText("INFORMATION") + "</span>", 
+						msg: inst.parent.localizer.getLocalText("NO_LATEX") 
+					}); 
+				} 
+			});
+		} catch(e) {
+			console.error(`Katex: equipDatagridWithInteractivity : ${e}`);
+		}
+	}
+}
+
+
 /**
  * Class responsible for Math Formula handling.
  * The framework supported here is Katex.
@@ -16,6 +266,7 @@ class MathFormulae {
 	codeMirror = null;
 	parameters = null;
 	parser = null;
+	dynamicPanel = null;
 	dynamicPanels = [];
 	
 	/**
@@ -25,11 +276,12 @@ class MathFormulae {
 		this.location = getScriptLocation();
 		this.mathTextInput = document.getElementById('mathTextInput'); 
 		this.mathVisualOutput = document.getElementById('mathVisualOutput');
+		this.dynamicPanel = new DynamicPanel("wf_CUSTOM_EQUATIONS_MORE", this);
 		this.codeMirror = codeMirror;
 		this.runNotKatex = runNotKatex;
 		this.localizer = localizer;
 		this.parameters = parameters;
-		this.parser = parser;	
+		this.parser = parser;
 	}
 	
 	/**
@@ -161,103 +413,21 @@ class MathFormulae {
 	/**
 	 * It is intended to create this Panel dynamically taking the content from the Settings.
 	 */
-	initialiseDynamicPanel(id) {
-		var inst = this;
-		var fPanelMoreID = `w${id}_MORE`;
-		var fPanelMore = $('#' + fPanelMoreID); 
-		
-		if (inst.dynamicPanels.indexOf(fPanelMoreID) == -1) { 
-			inst.dynamicPanels.push(fPanelMoreID); 
-			console.info(`Here in initialiseDynamicPanel 1`);
-			$(fPanelMore).dialog({ 
-				onLoad: 
-					function() {  }, 
-				onMove: 
-					function(left, top) { 
-						console.info(`Panel with id ${fPanelMoreID} moved : ${left},${top}`);
-						inst.parameters.onPanelMove(fPanelMoreID, left, top);
-					}, 
-				onResize:
-					function(width, height) {
-						console.info(`Panel with id ${fPanelMoreID} resized : ${width},${height}`);
-						inst.parameters.onPanelResize(fPanelMoreID, width, height);
-					},
-				title: $("#" + fPanelMoreID + "_TITLE").html()
-			})
-			.dialog('open')
-			.html(`${inst.buildCustomEquations()}`);
-
-			console.info(`Here in initialiseDynamicPanel 2`);
-			inst.inplaceUpdate(`#${fPanelMoreID} table tbody tr td a.s`);
-			inst.parser.parse(`#${fPanelMoreID}`, 1, function(selector, ctx) {
-				inst.inplaceUpdate(`#${fPanelMoreID} table a.s`, true);
-				inst.initialiseDatagrid(`#${fPanelMoreID} .easyui-datagrid`);
-			}); 
-
-		} else { 
-			$(fPanelMore).dialog('open'); 
-		}
-	}
-	
-	buildCustomEquations() {
-		var no = 1;
-		var formula = "\\sum{\\vec{F} } = \\vec{0} \\Rightarrow \\frac{d\\vec{v}}{dt} = 0 ";
-		var title = "Newton's first law";
-		
-		return `<table id="customDatagrid" class="easyui-datagrid" cellspacing=0 style="border-spacing:0px; border-collapse:collapse;width:100%">
-	    <thead>
-	        <tr>
-	            <th data-options="field:'title',editor:'text',width:200">Titel</th>
-	            <th data-options="field:'formula',width:200">Formel</th>
-	        </tr>
-	    </thead>
-	    <tbody>
-			<tr>
-				<td class=bl>${title}</td>
-				<td class="bl"><a style="text-align:left;" href="#" class="s" latex="${formula}">$${formula}$</a></td>
-			</tr>
-		</tbody>
-		</table>
-		<div style="position: absolute; right: 10px; bottom: 10px;" >
-			<a href="#" id="btCUSTOM_EQUATIONS_SAVE" class="easyui-linkbutton" iconcls="icon-save">
-				<span locate="SAVE">${this.localizer.getLocalText('SAVE')}</span>
-			</a>
-		</div>`
-		.replace(/\n\s*?/sg, '\n');
-	}
-	
-	initialiseDatagrid(selector) {
-		this.parser.parse(selector, 1, function(selector, ctx) {
-			console.info(`initialiseDatagrid with callback for ${selector}`);
-			$(selector)
-			.datagrid('enableCellEditing')
-			.datagrid('gotoCell', {
-	            index: 0,
-	            field: 'title'
-        	});
-        	//.datagrid('acceptChanges');
-        });
-		
-		$('#btCUSTOM_EQUATIONS_SAVE')
-		.click( function(event) { 
-			event.preventDefault();
-		});
+	async initialiseDynamicPanel(id) {
+		await this.dynamicPanel.initialise();
 	}
 	
 	/**
 	 * For some dialogs which are initialized lazily updates the Math.
 	 */
-	inplaceUpdate(selector, interactivityOnly = false) {
+	inplaceUpdate(selector) {
 		try {
 			var inst = this;
 			var entries = $(selector);
 			console.info(`Katex: ${entries.length} in-place items for selector ${selector}`);
 			entries.each(function(idx, a) {
 				if (a && !inst.runNotKatex) {
-					if (!interactivityOnly) {
-						inst.updateAnchor(a);
-					}
-					inst.equipWithInteractivity($(this));
+					inst.updateAnchor(a);
 				}
 			});
 		} catch(e) {
@@ -275,40 +445,6 @@ class MathFormulae {
 		text = text.replace(/^\s{0,5}\"?\${1,2}(.*?)\${1,2}\"?\s{0,5}$/s, '$1');
 		console.info(`Processed text: ${text.substring(0, 20)}`);
 		if (mathText) this.insertMath(text, a, false, dm);
-	}
-	
-	/**
-	 * Equips some anchors with interactivity which they do not already have.
-	 */
-	equipWithInteractivity(a) {
-		var vme = this;
-		function getSymbol(obj) { 
-			if (typeof ($(obj).attr("latex")) != "undefined") { 
-				return $(obj).attr("latex"); 
-			} else { 
-				return vme.localizer.getLocalText("NO_LATEX"); 
-			} 
-		}; 
-
-		console.info(`equipWithInteractivity ${a.attr('latex')}`);
-		a
-		.addClass("easyui-tooltip")
-		.attr("title", function(index, attr) { return getSymbol(a); })
-		.mouseover(function(event) { $("#divInformation").html(getSymbol(a)); })
-		.mouseout(function(event) { $("#divInformation").html("&nbsp;"); })
-		.click(function(event) { 
-			event.preventDefault(); 
-			var latex = a.attr("latex");
-			console.info(`Click on equation: ${latex}`);
-			if (latex != undefined) { 
-				vme.insert(latex); 
-			} else { 
-				$.messager.show({ 
-					title: "<span class='rtl-title-withicon'>" + vme.localizer.getLocalText("INFORMATION") + "</span>", 
-					msg: vme.localizer.getLocalText("NO_LATEX") 
-				}); 
-			} 
-		}); 
 	}
 	
 	/**
