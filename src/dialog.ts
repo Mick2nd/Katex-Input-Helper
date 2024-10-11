@@ -1,5 +1,6 @@
 import joplin from 'api';
 import { DialogResult, ButtonSpec } from 'api/types';
+import { Settings } from './settings';
 
 const fs = require('fs-extra');
 const os = require('os');
@@ -14,7 +15,7 @@ var handle: any = null;
 export class Dialog
 {
 	id = 'Katex Input Helper Dialog';
-	lines: string[];
+	settings: Settings;
 	archive: string;
 	
 	/**
@@ -23,11 +24,7 @@ export class Dialog
 	public constructor(archive: string)
 	{
 		this.archive = archive;
-		this.lines = [];
-		for (var i = 1; i <= 50; i++)
-		{
-			this.lines.push(`<div>Line ${i}</div>`);
-		} 
+		this.settings = new Settings();
 	}
 	
 	/**
@@ -37,6 +34,27 @@ export class Dialog
 	{
 		if (handle == null)
 			handle = await joplin.views.dialogs.create(this.id);
+
+		var inst = this;
+		await this.settings.register();
+		await joplin.views.panels.onMessage(handle, async function(msg: any) {
+			console.info(`Message from Webview: ${JSON.stringify(msg)}`);
+			var text = await joplin.commands.execute('selectedText') as string;					// the text of the selection
+			if (msg.id == 'Katex Input Helper' && msg.cmd == 'getparams') {
+				// if (text == "") text = await inst.settings.equation();						// the last known equation
+				msg.equation = text;
+				msg.style = await inst.settings.style();										// the style as stored in settings
+				msg.localType = await inst.settings.localType();								// the localType
+				msg.equationCollection = await inst.settings.equationCollection();				// TBD
+				for (const id of inst.settings.dialogIds()) {
+					const location = await inst.settings.location(id);							// locations of dialogs
+					msg[id] = location;
+				}
+				return msg;
+			}
+			return false;
+		});
+
 		const ok = { id: 'okay', title: 'Okay' };
 		await joplin.views.dialogs.setButtons(handle, [ok]);
 		await joplin.views.dialogs.setFitToContent(handle, false);
@@ -47,7 +65,18 @@ export class Dialog
 	
 	public open = async function() : Promise<DialogResult>
 	{
-		return await joplin.views.dialogs.open(handle);
+		let res = await joplin.views.dialogs.open(handle);
+		let parameters = JSON.parse(res.formData.KATEX.hidden);
+		console.info(`Return from dialog: ${JSON.stringify(parameters)}` );
+		await joplin.commands.execute(
+			'editor.execCommand', 
+			{
+				name: 'replaceSelection',
+				args: [ parameters.equation ]
+			});
+		await this.settings.writeSettings(parameters);
+		
+		return res;
 	}
 	
 	public load = async function(fileName: string) : Promise<string>
@@ -86,15 +115,18 @@ export class Dialog
 		var js = [
 			"./assets/js/jquery-easyui/jquery.min.js",
 			"./assets/js/jquery-easyui/jquery.easyui.min.js",
+			"./assets/js/jquery-easyui/datagrid-cellediting.js",
 			"./assets/js/jquery-colorpicker/js/colorpicker.js",
 			"./assets/js/codemirror/lib/codemirror.js",
 			"./assets/js/katex/katex.min.js",
+			"./assets/js/katex/mhchem.min.js",
 			// "./assets/pre-process.js",
 			// "./assets/test.js"
 			"./assets/js/localization.js",
 			"./assets/js/themes.js",
 			"./assets/js/math.js",
 			"./assets/js/parserExtension.js",
+			"./assets/js/parameters.js",
 			"./assets/js/dialog.js"			
 		];
 		

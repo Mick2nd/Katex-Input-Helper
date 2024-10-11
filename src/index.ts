@@ -14,10 +14,6 @@ const dialog_command = async () =>
 		var dlg = new Dialog(archive);
 		await dlg.create();
 		let res = await dlg.open();
-		let text = res.formData.KATEX.hidden;
-		await joplin.commands.execute('insertText', text);
-		
-		console.info(text)
 		console.dir(res);
 	}
 	catch(e)
