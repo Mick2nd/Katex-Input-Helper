@@ -255,7 +255,7 @@
 				</style>
 				 -->
 				<input value="" class="keyboardInput" id="tKEYBOARD" />
-				<div id="HTML_TAG" style="display: none; overflow: hidden;">
+				<div id="HTML_TAG" class=" north easyui-panel" style="display: none; overflow: hidden; height: 40px;" data-options="region:'north',split:'false',collapsed:true,noheader:'true'">
 					<a href="#" title="Latex" class="easyui-linkbutton easyui-tooltip" id="btHTML_Latex"><strong>$</strong></a>
 					<a href="#" title="AsciiMath" class="easyui-linkbutton easyui-tooltip" id="btHTML_AsciiMath"><strong>`</strong></a> | 
 					<a href="#" title="span color" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_color" id="btHTML_TEXTCOLOR"></a> 
@@ -280,7 +280,7 @@
 					<a href="#" title="a" class="easyui-linkbutton easyui-tooltip" iconcls="icon-link" id="btHTML_A"></a> 
 					<a href="#" title="img" class="easyui-linkbutton easyui-tooltip" iconcls="icon-picture" id="btHTML_IMG"></a>
 				</div>
-				<div id="divMathTextInput" class="north easyui-panel" data-options="region:'north',split:'true'">
+				<div id="divMathTextInput" class="center easyui-panel" data-options="region:'center',split:'false',noheader:'true'">
 					<form action="#" method="post" id="formMathTextInput">
 						<fieldset>
 							<textarea id="mathTextInput" name="equation" 
@@ -288,7 +288,7 @@
 						</fieldset>
 					</form>
 				</div>
-				<div id="mathVisualOutput" class="center easyui-panel" dir="ltr" data-options="region:'center',split:'true',noheader:'true'"></div>
+				<div id="mathVisualOutput" class="south easyui-panel" dir="ltr" data-options="region:'south',split:'true',noheader:'true'" style="height: 50%"></div>
 			</div>
 
 

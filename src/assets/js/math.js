@@ -80,8 +80,8 @@ class DynamicPanel {
 		return `<table id="customDatagrid" class="easyui-datagrid" cellspacing=0 style="border-spacing:0px; border-collapse:collapse;width:100%">
 	    <thead>
 	        <tr>
-	            <th data-options="field:'title',editor:'text',width:200">Titel</th>
-	            <th data-options="field:'formula',width:200">Formel</th>
+	            <th data-options="field:'title',editor:'text',width:'40%'">Titel</th>
+	            <th data-options="field:'formula',width:'60%'">Formel</th>
 	        </tr>
 	    </thead>
 	    <tbody>
@@ -96,6 +96,11 @@ class DynamicPanel {
 		<div style="position: absolute; right: 10px; bottom: 10px;" >
 			<a href="#" id="btCUSTOM_EQUATIONS_SAVE" class="easyui-linkbutton" iconcls="icon-save">
 				<span locate="SAVE">${this.parent.localizer.getLocalText('SAVE')}</span>
+			</a>
+		</div>
+		<div style="position: absolute; right: 90px; bottom: 10px;" >
+			<a href="#" id="btCUSTOM_EQUATIONS_DELETE" class="easyui-linkbutton" iconcls="icon-remove">
+				<span locate="DELETE">${this.parent.localizer.getLocalText('DELETE')}</span>
 			</a>
 		</div>`
 		.replace(/\n\s*?/sg, '\n');
@@ -152,6 +157,25 @@ class DynamicPanel {
 		this.equipDatagridWithInteractivity();
 	}
 	
+	editCell(index = -1) {
+		if (index == -1) {
+			index = $(this.gridSelector).datagrid('getRows').length - 1;
+		}
+		
+		var input = $(this.gridSelector)
+		.datagrid('editCell', {
+			index: index,
+			field: 'title'
+		})
+		.datagrid('input', {
+			index: index,
+			field: 'title'
+		});
+		if (input) {
+			input.select();
+		}	
+	}
+	
 	/**
 	 * Builds a single Anchor from formula.
 	 */
@@ -192,16 +216,31 @@ class DynamicPanel {
 			var selectedText = inst.parent.codeMirror.getSelection();
 			if (selectedText != "") {
 				await inst.addEquation('Placeholder', selectedText);
+				inst.editCell();
 			} else {
 				$.messager.show({
 					title: 'Formula Editor',
-					msg: 'Please, select some text'
+					msg: 'Please, select some text!'
 				});
 				return;
 			}
-			
-			var data = $(`${inst.gridSelector} a`).eq(0).attr('latex');
-			console.info(`Datagrid data: ${data}`);
+		});
+
+		$('#btCUSTOM_EQUATIONS_DELETE')
+		.click(async function(event) { 
+			event.preventDefault();
+			var dg = $(inst.gridSelector);
+			var cell = dg.datagrid('cell');
+			if (cell) {
+				console.dir(cell);
+				dg.datagrid('deleteRow', cell.index);	  	  
+			} else {
+				$.messager.show({
+					title: 'Formula Editor',
+					msg: 'Please, select a cell!'
+				});
+				return;
+			}
 		});
 	}
 
@@ -428,11 +467,46 @@ class MathFormulae {
 			entries.each(function(idx, a) {
 				if (a && !inst.runNotKatex) {
 					inst.updateAnchor(a);
+					inst.equipWithInteractivity($(this));
 				}
 			});
 		} catch(e) {
 			console.error(`Katex: inplaceUpdate : ${e}`);
 		}
+	}
+	
+	/**
+	 * Equips some anchors with interactivity which they do not already have.
+	 */
+	equipWithInteractivity(a) {
+		var vme = this;
+		function getSymbol(obj) { 
+			if (typeof ($(obj).attr("latex")) != "undefined") { 
+				return $(obj).attr("latex"); 
+			} else { 
+				return vme.localizer.getLocalText("NO_LATEX"); 
+			} 
+		}; 
+
+		console.info(`equipWithInteractivity ${a.attr('latex')}`);
+		a
+		.addClass("easyui-tooltip")
+		.attr("title", function(index, attr) { return getSymbol(a); })
+		.mouseover(function(event) { $("#divInformation").html(getSymbol(a)); })
+		.mouseout(function(event) { $("#divInformation").html("&nbsp;"); })
+		.click(function(event) { 
+			event.preventDefault(); 
+			var latex = a.attr("latex");
+			console.info(`Click on equation: ${latex}`);
+			if (latex != undefined) { 
+				vme.insert(latex); 
+			} else { 
+				$.messager.show({ 
+					title: "<span class='rtl-title-withicon'>" + vme.localizer.getLocalText("INFORMATION") + "</span>", 
+					msg: vme.localizer.getLocalText("NO_LATEX") 
+				}); 
+			} 
+		}); 
 	}
 
 	/**

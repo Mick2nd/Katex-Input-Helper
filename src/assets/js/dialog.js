@@ -822,17 +822,22 @@ class KatexInputHelper {
 			vme.setFocus(); 
 		}); 
 		// TODO: correct here or part of previous onclick handler?
+		/*
 		if (!vme.encloseAllFormula) { 
 			$("#btENCLOSE_TYPE").addClass("unselect"); 
-			$('#HTML_TAG').hide(); 
+			$('#HTML_TAG').hide();
+			//$('#HTML_TAG').panel({collapsed: true});
 		} else { 
 			$("#btENCLOSE_TYPE").removeClass("unselect"); 
 			$('#HTML_TAG').show(); 
 		}
-		vme.resizeDivInputOutput(); 
+		vme.resizeDivInputOutput();
+		*/ 
+		vme.switchHtmlMode(vme.encloseAllFormula);
 		$("#btENCLOSE_TYPE").click(function(event) {
 			event.preventDefault(); 
 			vme.encloseAllFormula = !vme.encloseAllFormula; 
+			/*
 			if (vme.encloseAllFormula) { 
 				$("#encloseType").attr("checked", "checked"); 
 				$("#btENCLOSE_TYPE").removeClass("unselect"); 
@@ -846,7 +851,9 @@ class KatexInputHelper {
 				vme.codeMirrorEditor.setOption("mode", "text/x-latex"); 
 				vme.codeMirrorEditor.setOption("autoCloseTags", false); 
 			}
-			vme.resizeDivInputOutput(); 
+			vme.resizeDivInputOutput();
+			*/ 
+			vme.switchHtmlMode(vme.encloseAllFormula);
 			vme.updateOutput(); 
 			vme.setFocus(); 
 		}); 
@@ -873,6 +880,25 @@ class KatexInputHelper {
 		$("#btHTML_JUSTIFY").click(function(event) { event.preventDefault(); vme.tag("<p style=\"text-align:justify\">", "</p>"); }); 
 		$("#btHTML_INDENT").click(function(event) { event.preventDefault(); vme.tag("<p style=\"margin-left:40px;text-align:justify\">", "</p>"); }); if (!vme.runNotColorPicker) { $('#btHTML_TEXTCOLOR').ColorPicker({ color: '#0000ff', flat: false, onShow: function(colpkr) { $(colpkr).fadeIn(500); return false; }, onHide: function(colpkr) { $(colpkr).fadeOut(500); return false; }, onChange: function(hsb, hex, rgb) { $('#btHTML_TEXTCOLOR').css('backgroundColor', '#' + hex); }, onSubmit: function(hsb, hex, rgb, el) { $(el).css('backgroundColor', '#' + hex); $(el).ColorPickerHide(); vme.tag("<span style=\"color:#" + hex + "\">", "</span>"); } }); $('#btHTML_FORECOLOR').ColorPicker({ color: '#0000ff', flat: false, onShow: function(colpkr) { $(colpkr).fadeIn(500); return false; }, onHide: function(colpkr) { $(colpkr).fadeOut(500); return false; }, onChange: function(hsb, hex, rgb) { $('#btHTML_FORECOLOR').css('backgroundColor', '#' + hex); }, onSubmit: function(hsb, hex, rgb, el) { $(el).css('backgroundColor', '#' + hex); $(el).ColorPickerHide(); vme.tag("<span style=\"background-color:#" + hex + "\">", "</span>"); } }); }
 		$("#btCOPYRIGHT").click(function(event) { event.preventDefault(); vme.openInformationTab(0); vme.setFocus(); }); $("#VMEversionInf").html(vme.version);
+	}
+	
+	switchHtmlMode(toEnclose) {
+		if (toEnclose) { 
+			$("#encloseType").attr("checked", "checked"); 
+			$("#btENCLOSE_TYPE").removeClass("unselect"); 
+			//$('#HTML_TAG').show(); 
+			$('#HTML_TAG').panel({collapsed: false});
+			vme.codeMirrorEditor.setOption("mode", "text/html"); 
+			vme.codeMirrorEditor.setOption("autoCloseTags", true); 
+		} else { 
+			$("#encloseType").removeAttr("checked"); 
+			$("#btENCLOSE_TYPE").addClass("unselect"); 
+			//$('#HTML_TAG').hide(); 
+			$('#HTML_TAG').panel({collapsed: true});
+			vme.codeMirrorEditor.setOption("mode", "text/x-latex"); 
+			vme.codeMirrorEditor.setOption("autoCloseTags", false); 
+		}
+		$('#divEquationInputOutput').layout();
 	}
 	
 	async initialiseLangRessourcesList() {

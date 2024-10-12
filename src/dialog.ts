@@ -56,7 +56,8 @@ export class Dialog
 		});
 
 		const ok = { id: 'okay', title: 'Okay' };
-		await joplin.views.dialogs.setButtons(handle, [ok]);
+		const cancel = { id: 'cancel', title: 'Cancel' };
+		await joplin.views.dialogs.setButtons(handle, [ok, cancel]);
 		await joplin.views.dialogs.setFitToContent(handle, false);
 		await this.loadCss(handle);
 		await this.loadJs(handle);
@@ -66,15 +67,16 @@ export class Dialog
 	public open = async function() : Promise<DialogResult>
 	{
 		let res = await joplin.views.dialogs.open(handle);
-		let parameters = JSON.parse(res.formData.KATEX.hidden);
-		console.info(`Return from dialog: ${JSON.stringify(parameters)}` );
-		await joplin.commands.execute(
-			'editor.execCommand', 
-			{
-				name: 'replaceSelection',
-				args: [ parameters.equation ]
-			});
-		await this.settings.writeSettings(parameters);
+		if (res.id == 'okay') {
+			let parameters = JSON.parse(res.formData.KATEX.hidden);
+			await joplin.commands.execute(
+				'editor.execCommand', 
+				{
+					name: 'replaceSelection',
+					args: [ parameters.equation ]
+				});
+			await this.settings.writeSettings(parameters);
+		}
 		
 		return res;
 	}
