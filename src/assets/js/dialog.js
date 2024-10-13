@@ -191,7 +191,6 @@ class KatexInputHelper {
 		$.messager.progress('close'); 
 		$("#WaitMsg").hide(); 
 		this.setFocus(); 
-		this.resizeDivInputOutput(); 
 	}
 	
 	setFocus() { 
@@ -258,7 +257,7 @@ class KatexInputHelper {
 		$("#mFILE, #mINSERT, #mTOOLS, #mVIEW, #mOPTIONS, #mINFORMATIONS").menu({
 			onClick: async function(item) {
 				switch (item.target.id) {
-					case "mEDITOR_PARAMETERS": $('#wEDITOR_PARAMETERS').dialog('open'); break; 
+					case "mEDITOR_PARAMETERS": /* vme.initialiseAdditionalEvents('wEDITOR_PARAMETERS'); */ $('#wEDITOR_PARAMETERS').dialog('open'); break; 
 					case "mSTYLE_CHOISE": $('#wSTYLE_CHOISE').dialog('open'); break; 
 					case "mLANGUAGE_CHOISE": $('#wLANGUAGE_CHOISE').dialog('open'); break; 
 					case "mMATRIX": vme.showMatrixWindow(3, 3); break; 
@@ -383,7 +382,6 @@ class KatexInputHelper {
 				vme.codeMirrorEditor.setOption("mode", "text/x-latex"); 
 				vme.codeMirrorEditor.setOption("autoCloseTags", false); 
 			}
-			vme.resizeDivInputOutput(); 
 			vme.updateOutput(); 
 		}); 
 		$("#autoUpdateTime").change(function() { 
@@ -400,8 +398,8 @@ class KatexInputHelper {
 		}); 
 		$("#cookieType").change(function() { 
 		}); 
-		$(window).resize(function() { 
-			setTimeout('vme.resizeDivInputOutput();', 500); 
+		$(window).resize(function() {
+			/// TODO : any functionality, fit property used 
 		}); 
 		$("#mathVisualOutput").bind('contextmenu', function(event) { 
 			event.preventDefault(); 
@@ -428,18 +426,7 @@ class KatexInputHelper {
 	openInformationTab(numTab) { 
 		$('#wINFORMATIONS').window('open'); 
 		$('#tINFORMATIONS').tabs('select', numTab); 
-	}
-	
-	resizeDivInputOutput() { 
-		var htmlTagHeight = 0; 
-		if ($('#HTML_TAG').is(':visible')) htmlTagHeight = $('#HTML_TAG').height() + 1; 
-		var inputOutputHeight = $("#divEquationInputOutput").height(); 
-		var inputOutputWidth = $("#divEquationInputOutput").width(); 
-		$("#divMathTextInput").height(inputOutputHeight / 2 - htmlTagHeight / 2); 
-		$("#mathTextInput").height(inputOutputHeight / 2 - 10 - htmlTagHeight / 2); 
-		$("#mathTextInput").width(inputOutputWidth - 10); 
-		$("#mathVisualOutput").height(inputOutputHeight / 2 - 11 - htmlTagHeight / 2); 
-		this.codeMirrorEditor.setSize($("#divMathTextInput").width() + 1, $("#divMathTextInput").height()); 
+		// this.initialiseAdditionalEvents('wINFORMATIONS');
 	}
 	
 	async initialiseUImoreDialogs(fPanelID) {
@@ -447,32 +434,38 @@ class KatexInputHelper {
 		var fPanelMore = $('#' + fPanelMoreID); 
 		if (vme.symbolPanelsLoaded.indexOf(fPanelMoreID) == -1) { 
 			vme.symbolPanelsLoaded[vme.symbolPanelsLoaded.length] = fPanelMoreID; 
-			var cookie = vme.getCookie("VME_Position_" + fPanelMoreID); 
 			$(fPanelMore).dialog({ 
 				onLoad: 
 					async function() { await vme.initialiseSymbolContent(fPanelMoreID); }, 
-				onMove: 
-					function(left, top) { 
-						console.info(`Panel with id ${fPanelMoreID} moved : ${left},${top}`);
-						vme.parameters.onPanelMove(fPanelMoreID, left, top);
-					}, 
-				onResize:
-					function(width, height) {
-						console.info(`Panel with id ${fPanelMoreID} resized : ${width},${height}`);
-						vme.parameters.onPanelResize(fPanelMoreID, width, height);
-					},
 				title: $("#" + fPanelMoreID + "_TITLE").html() 
 			}); 
+			vme.initialiseAdditionalEvents(fPanelMoreID);
 			$(fPanelMore).dialog('open'); 
 			$(fPanelMore).dialog('refresh', `${vme.location}../formulas/` + fPanelID + "_MORE.html");
-			if (cookie && typeof (cookie) != "undefined") { 
-				$(fPanelMore).dialog('move', eval('(' + cookie + ')')); 
-			} else { 
-				$(fPanelMore).dialog('move', eval('(' + $(fPanelMore).attr("position") + ')')); 
-			} 
 		} else { 
 			$(fPanelMore).dialog('open'); 
 		}
+	}
+	
+	/**
+	 * This method registers 2 events for the MORE dialogs and intentionally also for 2 additional
+	 * dialogs. 
+	 * TODO: The latter not working at the moment
+	 */
+	initialiseAdditionalEvents(id) {
+		var handlers = {
+			onMove: 
+				function(left, top) { 
+					console.info(`Panel with id ${id} moved : ${left},${top}`);
+					vme.parameters.onPanelMove(id, left, top);
+				}, 
+			onResize:
+				function(width, height) {
+					console.info(`Panel with id ${id} resized : ${width},${height}`);
+					vme.parameters.onPanelResize(id, width, height);
+				}
+		};
+		$(`#${id}`).dialog(handlers);
 	}
 	
 	switchCodeType() { 
@@ -821,38 +814,10 @@ class KatexInputHelper {
 			event.preventDefault(); 
 			vme.setFocus(); 
 		}); 
-		// TODO: correct here or part of previous onclick handler?
-		/*
-		if (!vme.encloseAllFormula) { 
-			$("#btENCLOSE_TYPE").addClass("unselect"); 
-			$('#HTML_TAG').hide();
-			//$('#HTML_TAG').panel({collapsed: true});
-		} else { 
-			$("#btENCLOSE_TYPE").removeClass("unselect"); 
-			$('#HTML_TAG').show(); 
-		}
-		vme.resizeDivInputOutput();
-		*/ 
 		vme.switchHtmlMode(vme.encloseAllFormula);
 		$("#btENCLOSE_TYPE").click(function(event) {
 			event.preventDefault(); 
 			vme.encloseAllFormula = !vme.encloseAllFormula; 
-			/*
-			if (vme.encloseAllFormula) { 
-				$("#encloseType").attr("checked", "checked"); 
-				$("#btENCLOSE_TYPE").removeClass("unselect"); 
-				$('#HTML_TAG').show(); 
-				vme.codeMirrorEditor.setOption("mode", "text/html"); 
-				vme.codeMirrorEditor.setOption("autoCloseTags", true); 
-			} else { 
-				$("#encloseType").removeAttr("checked"); 
-				$("#btENCLOSE_TYPE").addClass("unselect"); 
-				$('#HTML_TAG').hide(); 
-				vme.codeMirrorEditor.setOption("mode", "text/x-latex"); 
-				vme.codeMirrorEditor.setOption("autoCloseTags", false); 
-			}
-			vme.resizeDivInputOutput();
-			*/ 
 			vme.switchHtmlMode(vme.encloseAllFormula);
 			vme.updateOutput(); 
 			vme.setFocus(); 
@@ -882,23 +847,24 @@ class KatexInputHelper {
 		$("#btCOPYRIGHT").click(function(event) { event.preventDefault(); vme.openInformationTab(0); vme.setFocus(); }); $("#VMEversionInf").html(vme.version);
 	}
 	
+	/**
+	 * Switches the Html mode into a given state.
+	 */
 	switchHtmlMode(toEnclose) {
 		if (toEnclose) { 
 			$("#encloseType").attr("checked", "checked"); 
 			$("#btENCLOSE_TYPE").removeClass("unselect"); 
-			//$('#HTML_TAG').show(); 
-			$('#HTML_TAG').panel({collapsed: false});
+			$('#HTML_TAG').show(); 
 			vme.codeMirrorEditor.setOption("mode", "text/html"); 
 			vme.codeMirrorEditor.setOption("autoCloseTags", true); 
 		} else { 
 			$("#encloseType").removeAttr("checked"); 
 			$("#btENCLOSE_TYPE").addClass("unselect"); 
-			//$('#HTML_TAG').hide(); 
-			$('#HTML_TAG').panel({collapsed: true});
+			$('#HTML_TAG').hide(); 
 			vme.codeMirrorEditor.setOption("mode", "text/x-latex"); 
 			vme.codeMirrorEditor.setOption("autoCloseTags", false); 
 		}
-		$('#divEquationInputOutput').layout();
+		$('#innerLayout').layout();
 	}
 	
 	async initialiseLangRessourcesList() {
@@ -1063,12 +1029,6 @@ class KatexInputHelper {
 				navigator.msSaveBlob(blob, name); 
 				return; 
 			} catch (e) { } 
-		}
-		if ($.browser.msie) { 
-			var dociframe = ieFrameForSaveContent.document; 
-			dociframe.body.innerHTML = content; 
-			dociframe.execCommand("SaveAs", true, name); 
-			return; 
 		}
 		var bloburl = null; 
 		if (blob) { 

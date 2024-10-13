@@ -379,7 +379,7 @@ class MathFormulae {
 						var html = a.innerHTML;
 						var count = html.split('$').length - 1;
 						var text = a.innerText;
-						var dm = (text.includes('$$') || text.includes('{equation}'));		// $$ triggers display mode
+						var dm = (text.startsWith('$$') || text.includes('{equation}'));	// $$ triggers display mode
 						if (count == 2 || text == '$\\$$' || text.includes('\\ce')) {		// normal case: math
 							text = text.replace(/□/g, '\\square');
 							inst.insertMath(text, a);
@@ -403,7 +403,7 @@ class MathFormulae {
 							inst.updateAnchor(a);
 						} else {															// direct image case
 							var img = a.firstChild;
-							if (img && img.hasAttribute('src')) {
+							if (img && img.nodeType != Node.TEXT_NODE && img.hasAttribute('src')) {
 								var src = img.attributes['src'].value;
 								if (!src.startsWith('file')) {
 									src = inst.location + src;

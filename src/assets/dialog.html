@@ -22,9 +22,7 @@
 				can try to find the page by pressing the F5 key.
 			</div>
 
-			<div data-options="region:'north',split:false" id="northRegion">
-				<!-- 
-				 -->
+			<div id="northRegion" data-options="region:'north',split:false" >
 				<div id="introduction">
 					<h3>Katex Input Helper</h3>
 					<hr/>
@@ -36,17 +34,7 @@
 					<div id="formula" style="display: none" ></div>
 				</div>
 				
-				<div id="menu">
-				
-				<!-- 
-					<a href="#" class="easyui-menubutton" iconcls="icon-file" menu="#mFILE"><span locate="FILE"></span></a> 
-					<a href="#" class="easyui-menubutton" iconcls="icon-insert" menu="#mINSERT"><span locate="INSERT"></span></a> 
-					<a href="#" class="easyui-menubutton" iconcls="icon-plugin" menu="#mTOOLS"><span locate="TOOLS"></span> </a>
-					<a href="#" class="easyui-menubutton" iconcls="icon-watch" menu="#mVIEW"><span locate="VIEW"></span></a> 
-					<a href="#" class="easyui-menubutton" iconcls="icon-option" menu="#mOPTIONS"><span locate="OPTIONS"></span></a> 
-					<a href="#" class="easyui-menubutton" iconcls="icon-info" menu="#mINFORMATIONS"><span locate="INFORMATIONS"></span></a>
-				 -->
-	
+				<div id="menu">				
 					<a href="#" class="easyui-menubutton" data-options="iconCls:'icon-file',menu:'#mFILE'"><span locate="FILE"></span></a> 
 					<a href="#" class="easyui-menubutton" data-options="iconCls:'icon-insert',menu:'#mINSERT'"><span locate="INSERT"></span></a> 
 					<a href="#" class="easyui-menubutton" data-options="iconCls:'icon-plugin',menu:'#mTOOLS'"><span locate="TOOLS"></span> </a>
@@ -208,7 +196,7 @@
 				</div>
 			</div>
 
-			<div data-options="region:'south',split:false" id="southRegion">
+			<div id="southRegion" data-options="region:'south',split:false" >
 				<div id="divInformation">&nbsp;
 				</div>
 				<div style="padding-top: 2px; text-align: center;">
@@ -216,7 +204,7 @@
 				</div>
 			</div>
 
-			<div data-options="region:'west',title:'<span locate=FORMULA class=rtl-title-withicon></span>&nbsp;',split:false" id="westRegion">
+			<div id="westRegion" data-options="region:'west',title:'<span locate=FORMULA class=rtl-title-withicon></span>&nbsp;',split:false" >
 				<div class="easyui-accordion" id="f_SYMBOLS" border="false">
 					<div collapsed="true"
 						title="<span information='OPERATOR_SYMBOLS' class='rtl-title-withicon'>$\pm$ &nbsp;&nbsp; $\times$  &nbsp;&nbsp; $\div$</span>"
@@ -238,59 +226,46 @@
 				</div>
 			</div>
 
-			<div data-options="region:'center',title:'<span locate=EDITION></span>&nbsp;'" class="center easyui-layout" id="divEquationInputOutput">
-				<!-- 
-				<style>
-					.keyboardInputInitiator {
-						display: none;
-					}
-		
-					.keyboardInput {
-						height: 0px;
-						width: 0px;
-						border: none;
-						background-color: transparent;
-						color: transparent;
-					}
-				</style>
-				 -->
+			<div id="divEquationInputOutput" data-options="region:'center',title:'<span locate=EDITION></span>&nbsp;'" class="center" >
 				<input value="" class="keyboardInput" id="tKEYBOARD" />
-				<div id="HTML_TAG" class=" north easyui-panel" style="display: none; overflow: hidden; height: 40px;" data-options="region:'north',split:'false',collapsed:true,noheader:'true'">
-					<a href="#" title="Latex" class="easyui-linkbutton easyui-tooltip" id="btHTML_Latex"><strong>$</strong></a>
-					<a href="#" title="AsciiMath" class="easyui-linkbutton easyui-tooltip" id="btHTML_AsciiMath"><strong>`</strong></a> | 
-					<a href="#" title="span color" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_color" id="btHTML_TEXTCOLOR"></a> 
-					<a href="#" title="span background-color" class="easyui-linkbutton easyui-tooltip" iconcls="icon-fore_color" id="btHTML_FORECOLOR"></a> | 
-					<a href="#" title="h1" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_heading_1" id="btHTML_H1"></a> 
-					<a href="#" title="h2" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_heading_2" id="btHTML_H2"></a> 
-					<a href="#" title="h3" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_heading_3" id="btHTML_H3"></a> | 
-					<a href="#" title="strong" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_bold" id="btHTML_STRONG"></a> 
-					<a href="#" title="em" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_italic" id="btHTML_EM"></a> 
-					<a href="#" title="s" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_strikethrough" id="btHTML_S"></a>
-					<a href="#" title="u" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_underline" id="btHTML_U"></a> | 
-					<a href="#" title="br" class="easyui-linkbutton easyui-tooltip" iconcls="icon-break_line" id="btHTML_BR"></a> 
-					<a href="#" title="p" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_paragraph" id="btHTML_P"></a> 
-					<a href="#" title="hr" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_horizontalrule" id="btHTML_HR"></a> 
-					<a href="#" title="p margin-left" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_indent" id="btHTML_INDENT"></a> | 
-					<a href="#" title="p left" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_align_left" id="btHTML_LEFT"></a> 
-					<a href="#" title="p center" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_align_center" id="btHTML_CENTER"></a> 
-					<a href="#" title="p right" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_align_right" id="btHTML_RIGHT"></a> 
-					<a href="#" title="p justify" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_align_justify" id="btHTML_JUSTIFY"></a> | 
-					<a href="#" title="ul" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_list_bullets" id="btHTML_UL"></a> 
-					<a href="#" title="ol" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_list_numbers" id="btHTML_OL"></a> | 
-					<a href="#" title="a" class="easyui-linkbutton easyui-tooltip" iconcls="icon-link" id="btHTML_A"></a> 
-					<a href="#" title="img" class="easyui-linkbutton easyui-tooltip" iconcls="icon-picture" id="btHTML_IMG"></a>
-				</div>
-				<div id="divMathTextInput" class="center easyui-panel" data-options="region:'center',split:'false',noheader:'true'">
-					<form action="#" method="post" id="formMathTextInput">
-						<fieldset>
-							<textarea id="mathTextInput" name="equation" 
-								rows="30" cols="30" dir="ltr"></textarea>
-						</fieldset>
-					</form>
-				</div>
-				<div id="mathVisualOutput" class="south easyui-panel" dir="ltr" data-options="region:'south',split:'true',noheader:'true'" style="height: 50%"></div>
-			</div>
 
+				<div id="innerLayout" data-options="fit:true,title:'<span locate=EDITION></span>&nbsp;'" class="easyui-layout">
+					<div id="HTML_TAG" class="north easyui-panel" data-options="region:'north',split:'false',noheader:'true'">
+						<a href="#" title="Latex" class="easyui-linkbutton easyui-tooltip" id="btHTML_Latex"><strong>$</strong></a>
+						<a href="#" title="AsciiMath" class="easyui-linkbutton easyui-tooltip" id="btHTML_AsciiMath"><strong>`</strong></a> | 
+						<a href="#" title="span color" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_color" id="btHTML_TEXTCOLOR"></a> 
+						<a href="#" title="span background-color" class="easyui-linkbutton easyui-tooltip" iconcls="icon-fore_color" id="btHTML_FORECOLOR"></a> | 
+						<a href="#" title="h1" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_heading_1" id="btHTML_H1"></a> 
+						<a href="#" title="h2" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_heading_2" id="btHTML_H2"></a> 
+						<a href="#" title="h3" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_heading_3" id="btHTML_H3"></a> | 
+						<a href="#" title="strong" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_bold" id="btHTML_STRONG"></a> 
+						<a href="#" title="em" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_italic" id="btHTML_EM"></a> 
+						<a href="#" title="s" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_strikethrough" id="btHTML_S"></a>
+						<a href="#" title="u" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_underline" id="btHTML_U"></a> | 
+						<a href="#" title="br" class="easyui-linkbutton easyui-tooltip" iconcls="icon-break_line" id="btHTML_BR"></a> 
+						<a href="#" title="p" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_paragraph" id="btHTML_P"></a> 
+						<a href="#" title="hr" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_horizontalrule" id="btHTML_HR"></a> 
+						<a href="#" title="p margin-left" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_indent" id="btHTML_INDENT"></a> | 
+						<a href="#" title="p left" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_align_left" id="btHTML_LEFT"></a> 
+						<a href="#" title="p center" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_align_center" id="btHTML_CENTER"></a> 
+						<a href="#" title="p right" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_align_right" id="btHTML_RIGHT"></a> 
+						<a href="#" title="p justify" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_align_justify" id="btHTML_JUSTIFY"></a> | 
+						<a href="#" title="ul" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_list_bullets" id="btHTML_UL"></a> 
+						<a href="#" title="ol" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_list_numbers" id="btHTML_OL"></a> | 
+						<a href="#" title="a" class="easyui-linkbutton easyui-tooltip" iconcls="icon-link" id="btHTML_A"></a> 
+						<a href="#" title="img" class="easyui-linkbutton easyui-tooltip" iconcls="icon-picture" id="btHTML_IMG"></a>
+					</div>
+					<div id="divMathTextInput" class="center easyui-panel" data-options="region:'center',split:'false',noheader:'true',fit:true">
+						<form action="#" method="post" id="formMathTextInput">
+							<fieldset>
+								<textarea id="mathTextInput" name="equation" 
+									rows="30" cols="30" dir="ltr"></textarea>
+							</fieldset>
+						</form>
+					</div>
+					<div id="mathVisualOutput" class="south easyui-panel" dir="ltr" data-options="region:'south',split:'true',noheader:'true'" style="height: 50%"></div>
+				</div>
+			</div>
 
 			<div data-options="region:'east',title:'<span locate=FORMULA class=rtl-title-withicon></span>&nbsp;',split:false" id="eastRegion">
 				<div class="easyui-accordion" id="f_SYMBOLS2" border="false">
@@ -321,9 +296,9 @@
 		 -->
 		</div>
 		
-		<div class="easyui-dialog" iconcls="icon-option" closed="true" modal="true" buttons="#btEDITOR_PARAMETERS"
-			id="wEDITOR_PARAMETERS" title="<span locate='EDITOR_PARAMETERS' class='rtl-title-withicon'></span>"
-			style="width: 420px; height: 320px;">
+		<div id="wEDITOR_PARAMETERS" class="easyui-dialog" iconcls="icon-option" closed="true" modal="true" buttons="#btEDITOR_PARAMETERS"
+			title="<span locate='EDITOR_PARAMETERS' class='rtl-title-withicon'></span>"
+			style="width: 420px; height: 320px;" resizable="true">
 			<form id="formEDITOR_PARAMETERS" action="#" method="post">
 				<fieldset>
 					<legend>
@@ -540,7 +515,7 @@
 		</div>
 		<div class="easyui-window" iconcls="icon-info" closed="true" modal="false" collapsible="false" minimizable="false"
 			maximizable="false" closable="true" id="wINFORMATIONS"
-			title="<span locate='INFORMATIONS' class='rtl-title-withicon'></span>" style="height: 450px; width: 600px">
+			title="<span locate='INFORMATIONS' class='rtl-title-withicon'></span>" style="height: 450px; width: 600px" resizable="true">
 			<div id="tINFORMATIONS" class="easyui-tabs" border="false" fit="true" plain="false">
 				<!-- 
 				<div title="<span locate='COPYRIGHT'></span>" id="tCOPYRIGHT" iconcls="icon-copyright" closable="false"

@@ -66,6 +66,13 @@ table, th, td {
 		color: transparent;
 		display: none;
 	}
+	
+}
+
+#HTML_TAG {
+	display: none; 
+	overflow: hidden; 
+	height: 40px; 	
 }
 
 #divMathTextInput {
@@ -111,7 +118,18 @@ table, th, td {
 #wLANGUAGE_CHOISE {
 	width: 300px; 
 	height: 180px;
-} 
+}
+
+#formEDITOR_PARAMETERS {
+	input {
+		margin-top: 10px !important;
+		margin-left: 15px !important;
+	}
+	legend {
+		margin-top: 5px !important;
+		margin-left: 10px !important;
+	}
+}
 
 
 .panel-body table tbody tr td a.easyui-tooltip {

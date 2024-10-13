@@ -29,7 +29,10 @@ export class Settings
 			"wf_HORIZONTAL_SPACING_MORE", 
 			"wf_VERTICAL_SPACING_MORE", 
 			"wf_SPECIAL_CHARACTER_MORE", 
-			"wf_CUSTOM_EQUATIONS_MORE" 
+			"wf_CUSTOM_EQUATIONS_MORE",
+			
+			"wEDITOR_PARAMETERS",
+			"wINFORMATIONS"
 		];
 
 	}
