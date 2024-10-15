@@ -129,6 +129,7 @@ export class Dialog
 			"./assets/js/math.js",
 			"./assets/js/parserExtension.js",
 			"./assets/js/parameters.js",
+			"./assets/js/fileHandling.js",
 			"./assets/js/dialog.js"			
 		];
 		

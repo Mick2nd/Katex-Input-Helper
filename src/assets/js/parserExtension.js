@@ -3,11 +3,15 @@ class ParserExtension {
 	queue = [];
 	item = null;
 	async = false;
+	completeCount = 0;
 	
 	constructor(async = false) {
-		var inst = this;
 		this.async = async;
-		if (!async) {
+	}
+	
+	initialise() {
+		var inst = this;
+		if (!inst.async) {
 			$.parser.onComplete = function(ctx) {
 				inst.onComplete(ctx);
 				inst.next(ctx);
@@ -54,10 +58,15 @@ class ParserExtension {
 		$.parser.parse(this.item.selector);			
 	}
 
-	onCompleteAsync(ctx) { 
+	onCompleteAsync(ctx) {
+		this.completeCount ++;
+		if (typeof ctx != "string") {
+			console.warn(`onCompleteAsync for external source - not handled.`);
+			return;
+		}
 		var item = this.item;
 		if (item != null) {
-			console.info(`onCompleteAsync: ${this}`);
+			console.info(`onCompleteAsync for ${ctx}: ${this}`);
 			this.item = null;
 			if (item.delay > 0) {
 				var timer = setInterval(
@@ -70,7 +79,7 @@ class ParserExtension {
 				item.onComplete(null, item.ctx);
 			}
 		} else {
-			console.warn(`onComplete without active item: ${this}`);
+			console.warn(`onCompleteAsync for ${ctx} without active item: ${this}`);
 		}
 	}
 	
@@ -117,7 +126,7 @@ class ParserExtension {
 	}
 	
 	toString() {
-		return `Diagnostic info: active item: ${JSON.stringify(this.item)}, queue: ${JSON.stringify(this.queue)}`;
+		return `Diagnostic info: number: ${this.completeCount}, active item: ${JSON.stringify(this.item)}, queue: ${JSON.stringify(this.queue)}`;
 	}
 	
 	/**
@@ -141,4 +150,27 @@ class ParserExtension {
 			}});
 		});
 	}
+}
+
+	
+/**
+ * @abstract Converts a method with given signature and callback to a Promise returning method
+ * 
+ */
+async function promisify(ob, fnc, ...args)
+{
+	return new Promise((resolve, reject) =>
+	{			
+		fnc.bind(ob)(...args, (err, result) => {
+			
+		if (err)
+		{
+			console.error('Error occurred: ' + err)		
+			reject(err);
+		}
+		else
+		{
+			resolve(result);
+		}});
+	});
 }

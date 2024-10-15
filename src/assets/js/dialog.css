@@ -131,6 +131,19 @@ table, th, td {
 	}
 }
 
+/*
+#btCUSTOM_EQUATIONS_SAVE {
+	position: absolute; 
+	right: 10px; 
+	bottom: 10px;
+}
+
+#btCUSTOM_EQUATIONS_DELETE {
+	position: absolute; 
+	right: 90px; 
+	bottom: 10px;
+}
+ */
 
 .panel-body table tbody tr td a.easyui-tooltip {
 	float: left;

@@ -44,22 +44,10 @@
 				</div>
 				 			 
 				<div id="mFILE" class="menus">
-					<div iconcls="icon-new" id="mNEW_EDITOR">
-						<span class='rtl-menu-item' locate="NEW_EDITOR"></span>
-					</div>
-					<div iconcls="icon-quit" id="mQUIT_EDITOR" disable="true">
-						<span class='rtl-menu-item' locate="QUIT_EDITOR"></span>
-					</div>
-					<div class="menu-sep"></div>
 					<div iconcls="icon-save" id="mSAVE_EQUATION">
 						<span class='rtl-menu-item' locate="SAVE_EQUATION"></span>
 					</div>
 					<a id="fSAVE_EQUATION" href="#" style="display: none">saveFile</a>
-					<!--  THIS MAY CAUSE FILE NOT FOUND
-					<iframe id="ieFrameForSaveContent" name="ieFrameForSaveContent" src="ieFrameForSaveContent.html" width="0"
-						height="0" frameborder="0" scrolling="no" seamless="seamless"
-						style="width: 0; height: 0; border: 0"></iframe>
-					 -->
 					<div iconcls="icon-open" id="mOPEN_EQUATION">
 						<span class='rtl-menu-item' locate="OPEN_EQUATION"></span>
 					</div>
@@ -124,7 +112,7 @@
 					</div>
 				</div>
 				<div id="mTOOLS" class="menus">
-					<div iconcls="icon-html_off" id="mHTML_MODE">
+					<div iconcls="icon-html_off" id="mHTML_MODE" disabled="true">
 						<span class='rtl-menu-item' locate="HTML_MODE"></span>
 					</div>
 					<div class="menu-sep"></div>
@@ -133,18 +121,11 @@
 					</div>
 				</div>
 				<div id="mVIEW" class="menus">
-					<div iconcls="icon-mml" id="mMATH_ML">
-						<span class='rtl-menu-item' locate="MATH_ML"></span>
-					</div>
-					<div class="menu-sep"></div>
 					<div iconcls="icon-codes" id="mUNICODES_LIST">
 						<span class='rtl-menu-item' locate="UNICODES_LIST"></span>
 					</div>
 					<div iconcls="icon-symbols" id="mLATEX_CODES_LIST">
 						<span class='rtl-menu-item' locate="LATEX_CODES_LIST"></span>
-					</div>
-					<div iconcls="icon-symbols" id="mASCIIMATH_CODES_LIST">
-						<span class='rtl-menu-item' locate="ASCIIMATH_CODES_LIST"></span>
 					</div>
 					<div class="menu-sep"></div>
 					<div iconcls="icon-langressource" id="mLANG_RESSOURCE_LIST">
@@ -229,8 +210,9 @@
 			<div id="divEquationInputOutput" data-options="region:'center',title:'<span locate=EDITION></span>&nbsp;'" class="center" >
 				<input value="" class="keyboardInput" id="tKEYBOARD" />
 
-				<div id="innerLayout" data-options="fit:true,title:'<span locate=EDITION></span>&nbsp;'" class="easyui-layout">
-					<div id="HTML_TAG" class="north easyui-panel" data-options="region:'north',split:'false',noheader:'true'">
+				<div id="innerLayout" data-options="fit:true" class="easyui-layout">
+					
+					<div id="HTML_TAG" class="north easyui-panel" data-options="region:'north',split:'false',noheader:'true'" disabled="true">
 						<a href="#" title="Latex" class="easyui-linkbutton easyui-tooltip" id="btHTML_Latex"><strong>$</strong></a>
 						<a href="#" title="AsciiMath" class="easyui-linkbutton easyui-tooltip" id="btHTML_AsciiMath"><strong>`</strong></a> | 
 						<a href="#" title="span color" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_color" id="btHTML_TEXTCOLOR"></a> 
@@ -304,10 +286,6 @@
 					<legend>
 						<span locate='SYNTAX'></span>
 					</legend>
-					<input type="radio" name="codeType" id="AsciiMath_codeType" value="AsciiMath" /> <label
-						for="AsciiMath_codeType">AsciiMath</label>
-					<input type="radio" name="codeType" id="Latex_codeType" value="Latex" /> <label
-						for="Latex_codeType">Latex</label> <br />
 					<input type="checkbox" name="encloseType" id="encloseType" /> <label for="encloseType"><span
 							locate='ENCLOSE_ALL_FORMULAS'></span></label>
 				</fieldset>
@@ -331,11 +309,6 @@
 					<legend>MathJax</legend>
 					<input type="checkbox" name="menuMathjaxType" id="menuMathjaxType" />
 					<label for="menuMathjaxType"><span locate='MATHJAX_MENU'></span></label>
-				</fieldset>
-				<hr />
-				<fieldset>
-					<input type="checkbox" name="cookieType" id="cookieType" /> <label for="cookieType"><span
-							locate='COOKIE_SAVE'></span></label>
 				</fieldset>
 			</form>
 			<div id="btEDITOR_PARAMETERS">
@@ -474,8 +447,35 @@
 		<div class="easyui-dialog" iconcls="icon-equation" closed="true" modal="false" shadow="false"
 			resizable="true" collapsible="true" id="wf_CUSTOM_EQUATIONS_MORE"
 			title="<span id='wf_CUSTOM_EQUATIONS_MORE_TITLE' locate='CUSTOM_EQUATIONS' class='rtl-title-withicon'></span>"
-			buttons="btCUSTOM_EQUATIONS_SAVE"
-			style="width: 500px; height: 320px;">some text 1</div>
+			buttons="#btCUSTOM_EQUATIONS_BUTTONS"
+			style="width: 500px; height: 320px;">
+			<table id="customDatagrid" class="easyui-datagrid" cellspacing=0 style="border-spacing:0px; border-collapse:collapse;width:100%">
+			    <thead>
+			        <tr>
+			            <th data-options="field:'title',editor:'text',width:'40%'">Titel</th>
+			            <th data-options="field:'formula',width:'60%'">Formel</th>
+			        </tr>
+			    </thead>
+			    <tbody>
+				</tbody>
+			</table>
+			<div id="btCUSTOM_EQUATIONS_BUTTONS">
+				<a href="#" id="btCUSTOM_EQUATIONS_ADD" class="easyui-linkbutton" iconcls="icon-add">
+					<span locate="ADD">ADD</span>
+				</a>
+				<a href="#" id="btCUSTOM_EQUATIONS_REMOVE" class="easyui-linkbutton" iconcls="icon-remove">
+					<span locate="REMOVE">REMOVE</span>
+				</a>
+				<a href="#" id="btCUSTOM_EQUATIONS_LOAD" class="easyui-linkbutton" iconcls="icon-open">
+					<span locate="LOAD">LOAD</span>
+				</a>
+				<a href="#" id="btCUSTOM_EQUATIONS_SAVE" class="easyui-linkbutton" iconcls="icon-save">
+					<span locate="SAVE">SAVE</span>
+				</a>
+			</div>
+			<input type="file" id="fOPEN_CUSTOM_EQUATIONS" style="display: none" />
+			<a id="fSAVE_CUSTOM_EQUATIONS" href="#" />
+		</div>
 		<div class="easyui-dialog" iconcls="icon-hspace" closed="true" modal="false" shadow="false"
 			resizable="true" collapsible="true" id="wf_HORIZONTAL_SPACING_MORE" title="&nbsp;"
 			style="width: 110px; height: 250px;"></div>
@@ -517,16 +517,6 @@
 			maximizable="false" closable="true" id="wINFORMATIONS"
 			title="<span locate='INFORMATIONS' class='rtl-title-withicon'></span>" style="height: 450px; width: 600px" resizable="true">
 			<div id="tINFORMATIONS" class="easyui-tabs" border="false" fit="true" plain="false">
-				<!-- 
-				<div title="<span locate='COPYRIGHT'></span>" id="tCOPYRIGHT" iconcls="icon-copyright" closable="false"
-					style="padding: 10px;" cache="true" href="../information/tCOPYRIGHT.html"></div>
-				<div title="<span locate='VERSION'></span>" id="tVERSION" iconcls="icon-history" closable="false"
-					style="padding: 10px;" cache="true" href="../information/tVERSION.html"></div>
-				<div title="<span locate='BUGS'></span>" id="tBUGS" iconcls="icon-bugs" closable="false"
-					style="padding: 10px;" cache="true" href="../information/tBUGS.html"></div>
-				<div title="<span locate='EQUATION_SAMPLE'></span>" id="tEQUATION" iconcls="icon-equation" closable="false"
-					style="padding: 10px;" cache="true" href="../information/tEQUATION.html"></div>
-				--> 
 				<div title="<span locate='COPYRIGHT'></span>" id="tCOPYRIGHT" iconcls="icon-copyright" closable="false"
 					style="padding: 10px;" cache="true" href=""></div>
 				<div title="<span locate='VERSION'></span>" id="tVERSION" iconcls="icon-history" closable="false"

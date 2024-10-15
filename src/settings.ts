@@ -32,7 +32,14 @@ export class Settings
 			"wf_CUSTOM_EQUATIONS_MORE",
 			
 			"wEDITOR_PARAMETERS",
-			"wINFORMATIONS"
+			"wINFORMATIONS",
+			"wLANGUAGE_CHOISE",
+			"wSTYLE_CHOISE",
+			"wMATRIX",
+			"wLATEX_CODES_LIST",
+			"wASCIIMATH_CODES_LIST",
+			"wUNICODES_LIST",
+			"wLANGUAGE_LIST"
 		];
 
 	}

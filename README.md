@@ -1,5 +1,47 @@
-# Joplin Plugin
+# Katex Input Helper Joplin Plugin
 
-This is your new Joplin plugin. It is suggested that you use this README file to document your plugin.
+This plugin can be used to support the input of Mathematical formulae. It does this by opening an input dialog by command, then generating the formula and finally returning the edited formula back to the original note.
 
-For information on how to build or publish the plugin, please see [GENERATOR_DOC.md](./GENERATOR_DOC.md)
+## Basic Instructions
+
+1. Open a note with a formula area, select a piece of the formula to be processed.
+2. Invoke the Katex Input Helper dialog with a keyboard shortcut.
+3. Process the formula in the upper part of the dialog in Katex format.
+4. Get feedback in the lower part of the dialog where the generated formula is displayed.
+5. Finally leave the dialog either by pressing the **Okay** or the **Cancel** button.
+6. By pressing Okay the changed content is returned to the note and replaces the original selection.
+7. By pressing Cancel nothing is changed.
+
+## Origin of the Software
+
+The plugin is based on the *Visual Math Editor* by David Grima, a freeware which can be changed and distributed freely. I made the following changes to this software:
+
+1. Reverse engineering
+2. Updated the included software libraries to current ones.
+3. Replaced the MathJax package by a Katex package.
+4. Removed some components of the software not needed for this purpose, like:
+   1. AsciiMath support
+   2. Translation of the Katex expression into MathML
+   3. A HTML mode to support html input
+   4. Some dialogs and menu items
+   5. Some MathJax expressions are not supported in Katex and removed for this reason
+5. But most components are left as is and the external appearance is preserved
+
+As You can see, this software is feature rich and alleviates the creation of formluae. My hope is one will get further support by the integration into *Joplin* as a plugin.
+
+This software is available on the net [here](https://visualmatheditor.equatheque.net/VisualMathEditor.html?runLocal&codeType=Latex&encloseAllFormula=false&style=aguas&localType=en_US) and You can view at it to get an impression.
+
+## Features
+
+1. Editing in a text editor like the one in Joplin
+2. Feedback in the formula output area
+3. 16 palettes with formula templates like Sum and Product, Integral and much more
+4. Formula dialogs with samples with can be incorporated easily or studied for learning the Katex language
+5. A **custom equations** dialog which can be used to maintain one's own formula library and with the possibility to Add, Remove, Load, Save the formula set. This set is persisted through invocations of Joplin as hidden setting.
+6. Window positions and sizes are persisted
+
+## Release Notes
+
+### 1.0.0
+
+Initial release

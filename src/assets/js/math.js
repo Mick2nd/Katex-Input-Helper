@@ -46,8 +46,7 @@ class DynamicPanel {
 					},
 				title: $("#" + fPanelMoreID + "_TITLE").html()
 			})
-			.dialog('open')
-			.html(`${inst.buildCustomEquations()}`);
+			.dialog('open');
 
 			console.info(`Here in DynamicPanel.initialise 2`);
 			await inst.parent.parser.parseAsync(`#${inst.panelId}`, 1);
@@ -55,12 +54,6 @@ class DynamicPanel {
 			await inst.parent.parser.parseAsync(`#${inst.panelId}`, 1);
 			await inst.initialiseDatagrid(`${inst.gridSelector}`);
 			inst.equipDatagridWithInteractivity();
-			
-			/* add sample row
-			var formula = "\\sum{\\vec{F} } = \\vec{0} \\Rightarrow \\frac{d\\vec{v}}{dt} = 0 ";
-			var title = "Newton's first law";
-			await this.addEquation(title, formula);
-			*/
 			
 			await inst.customEquationsFromParameters();
 
@@ -70,61 +63,49 @@ class DynamicPanel {
 	}
 	
 	/**
-	 * Intention is to build grid content from Settings.
-	 */
-	buildCustomEquations() {
-		var no = 1;
-		var formula = "\\sum{\\vec{F} } = \\vec{0} \\Rightarrow \\frac{d\\vec{v}}{dt} = 0 ";
-		var title = "Newton's first law";
-		
-		return `<table id="customDatagrid" class="easyui-datagrid" cellspacing=0 style="border-spacing:0px; border-collapse:collapse;width:100%">
-	    <thead>
-	        <tr>
-	            <th data-options="field:'title',editor:'text',width:'40%'">Titel</th>
-	            <th data-options="field:'formula',width:'60%'">Formel</th>
-	        </tr>
-	    </thead>
-	    <tbody>
-	    	<!--
-			<tr>
-				<td class=bl>${title}</td>
-				<td class="bl"><a style="text-align:left;" href="#" class="s easyui-tooltip" title="${formula}" latex="${formula}">$${formula}$</a></td>
-			</tr>
-			-->
-		</tbody>
-		</table>
-		<div style="position: absolute; right: 10px; bottom: 10px;" >
-			<a href="#" id="btCUSTOM_EQUATIONS_SAVE" class="easyui-linkbutton" iconcls="icon-save">
-				<span locate="SAVE">${this.parent.localizer.getLocalText('SAVE')}</span>
-			</a>
-		</div>
-		<div style="position: absolute; right: 90px; bottom: 10px;" >
-			<a href="#" id="btCUSTOM_EQUATIONS_DELETE" class="easyui-linkbutton" iconcls="icon-remove">
-				<span locate="DELETE">${this.parent.localizer.getLocalText('DELETE')}</span>
-			</a>
-		</div>`
-		.replace(/\n\s*?/sg, '\n');
-	}
-	
-	/**
 	 * Reads the Custom Equations from the parameters.
 	 */
 	async customEquationsFromParameters() {
 		try {
-			for (const equation of this.parent.parameters.equationCollection) {
-				if (typeof(equation[1]) == "string" && equation[1] != "[object Object]") {
-					await this.addEquation(equation[0], equation[1]);
-				}
-		}
+			await this.fromJson(this.parent.parameters.equationCollection);
 		} catch(e) {
 			
 		}
 	}
 	
 	customEquationsToParameters() {
+		var customEquations = this.toJson();
+		this.parent.parameters.equationCollection = customEquations;		
+		this.parent.parameters.writeParameters();
+	}
+	
+	/**
+	 * Uses the given JSON compatible data to fill the data grid.
+	 */
+	async fromJson(json) {
+		$(this.gridSelector)
+		.datagrid('loadData', []);
+		
+		try {
+			for (const equation of json) {
+				if (typeof(equation[1]) == "string" && equation[1] != "[object Object]") {
+					await this.addEquation(equation[0], equation[1]);
+				}
+			}
+		} catch(e) {
+			$.messager.show({
+				title: 'Formula Editor',
+				msg: `Could not load formulae : ${e}`
+			});
+		}
+	}
+	
+	/**
+	 * Reads the Equations from data grid and returns them.
+	 */
+	toJson() {
 		var data = $(this.gridSelector)
 		.datagrid('getData');
-		console.dir(data);
 		
 		var customEquations = data.rows.map(function(row) {
 			var title = row.title;
@@ -133,9 +114,8 @@ class DynamicPanel {
 			var formula = fragment.attributes['latex'].value;
 			return [ title, formula ];
 		})
-		this.parent.parameters.equationCollection = customEquations;
 		
-		this.parent.parameters.writeParameters();
+		return customEquations;
 	}
 	
 	/**
@@ -210,9 +190,10 @@ class DynamicPanel {
             field: 'title'
     	});
 		
-		$('#btCUSTOM_EQUATIONS_SAVE')
+		$('#btCUSTOM_EQUATIONS_ADD')
 		.click(async function(event) { 
 			event.preventDefault();
+			
 			var selectedText = inst.parent.codeMirror.getSelection();
 			if (selectedText != "") {
 				await inst.addEquation('Placeholder', selectedText);
@@ -226,7 +207,7 @@ class DynamicPanel {
 			}
 		});
 
-		$('#btCUSTOM_EQUATIONS_DELETE')
+		$('#btCUSTOM_EQUATIONS_REMOVE')
 		.click(async function(event) { 
 			event.preventDefault();
 			var dg = $(inst.gridSelector);
@@ -241,6 +222,25 @@ class DynamicPanel {
 				});
 				return;
 			}
+		});
+		
+		$('#btCUSTOM_EQUATIONS_SAVE')
+		.click(async function(event) {
+			event.preventDefault();
+			console.info('Click on btCUSTOM_EQUATIONS_SAVE');
+			var data = JSON.stringify(inst.toJson());					// must be a JSON string
+			var type = 'application/json';
+			
+			var fileHandler = new FileHandler();
+			fileHandler.saveFile(data, type, "fSAVE_CUSTOM_EQUATIONS");
+		});
+		
+		$('#btCUSTOM_EQUATIONS_LOAD')
+		.click(async function(event) {
+			event.preventDefault();
+			var fileHandler = new FileHandler();
+			var json = await fileHandler.loadFile("fOPEN_CUSTOM_EQUATIONS");
+			await inst.fromJson(JSON.parse(json));
 		});
 	}
 
