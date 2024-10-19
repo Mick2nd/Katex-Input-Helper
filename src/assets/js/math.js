@@ -5,10 +5,13 @@
  */
 class DynamicPanel {
 	parent = null;
+	messager = null;
+	utilities = null;
 	panelId = "";
 	gridSelector = "";
 	gridSelectorOfCopy = "";
 	initialised = false;
+	renderComplete = false
 	
 	/**
 	 * Constructor.
@@ -16,12 +19,37 @@ class DynamicPanel {
 	constructor(panelId, parent) {
 		this.panelId = panelId;
 		this.parent = parent;
+		this.messager = new Messager(this.parent.localizer);
+		this.utilities = new Utilities(this.parent.localizer);
 		this.gridSelector = `#${panelId} .easyui-datagrid`;
 		this.gridSelectorOfCopy = `#${panelId} table:not(.easyui-datagrid)`;
+		
+		// TODO: TEST
+		this.parent.localizer.subscribe(this.onLocaleChanged.bind(this));
 	}
+	
+	/**
+	 * @abstract An Observer for the Locale Changed notifications.
+	 * 
+	 * This changes all localized text in the dialog and beyond.
+	 * TODO: the used selector does include the whole HTML document, to be shrinked to the current
+	 * dialog, if possible.
+	 */
+	onLocaleChanged(localizer) {
+		var inst = this;
+		console.debug(`onLocaleChanged : ${localizer.currentLocale} `);
+
+		$(`#${this.panelId} span[locate]`).each(
+			function() { 
+				if (typeof ($(this).attr("locate")) != "undefined") { 
+					var localText = localizer.getLocalText($(this).attr("locate")); 
+					if (typeof (localText) != "undefined") $(this).html(localText); 
+				} 
+			}); 
+	}	
 
 	/**
-	 * It is intended to create this Panel dynamically taking the content from the Settings.
+	 * @abstract It is intended to create this Panel dynamically taking the content from the Settings.
 	 */
 	async initialise() {
 		var inst = this;
@@ -31,9 +59,8 @@ class DynamicPanel {
 		if (!this.initialised) { 
 			this.initialised = true; 
 			console.info(`Here in DynamicPanel.initialise 1`);
+			
 			$(fPanelMore).dialog({ 
-				onLoad: 
-					function() {  }, 
 				onMove: 
 					function(left, top) { 
 						console.info(`Panel with id ${fPanelMoreID} moved : ${left},${top}`);
@@ -44,18 +71,17 @@ class DynamicPanel {
 						console.info(`Panel with id ${fPanelMoreID} resized : ${width},${height}`);
 						inst.parent.parameters.onPanelResize(fPanelMoreID, width, height);
 					},
-				title: $("#" + fPanelMoreID + "_TITLE").html()
+				title: this.utilities.localizeOption(this.panelId, 'title')		// first time initialisation for title only
 			})
 			.dialog('open');
 
 			console.info(`Here in DynamicPanel.initialise 2`);
 			await inst.parent.parser.parseAsync(`#${inst.panelId}`, 1);
-			inst.parent.inplaceUpdate(`${inst.gridSelector} a.s`);
-			await inst.parent.parser.parseAsync(`#${inst.panelId}`, 1);
 			await inst.initialiseDatagrid(`${inst.gridSelector}`);
-			inst.equipDatagridWithInteractivity();
-			
 			await inst.customEquationsFromParameters();
+			
+			// TODO: WORKAROUND!
+			this.onLocaleChanged(this.parent.localizer);						// first time initialisation for title and table headers
 
 		} else { 
 			$(fPanelMore).dialog('open'); 
@@ -67,12 +93,17 @@ class DynamicPanel {
 	 */
 	async customEquationsFromParameters() {
 		try {
-			await this.fromJson(this.parent.parameters.equationCollection);
+			await this.fromJson(JSON.stringify(this.parent.parameters.equationCollection));
+			$(this.gridSelector)
+			.datagrid('doFilter');
 		} catch(e) {
 			
 		}
 	}
-	
+
+	/**
+	 * @abstract Called after each change of the content writes the Custom Equations back to the parameters.
+	 */	
 	customEquationsToParameters() {
 		var customEquations = this.toJson();
 		this.parent.parameters.equationCollection = customEquations;		
@@ -81,27 +112,29 @@ class DynamicPanel {
 	
 	/**
 	 * Uses the given JSON compatible data to fill the data grid.
+	 * 
+	 * @param json - a json string used to fill the data grid
 	 */
 	async fromJson(json) {
 		$(this.gridSelector)
 		.datagrid('loadData', []);
 		
 		try {
-			for (const equation of json) {
+			var equations = JSON.parse(json);
+			for (const equation of equations) {
 				if (typeof(equation[1]) == "string" && equation[1] != "[object Object]") {
 					await this.addEquation(equation[0], equation[1]);
 				}
 			}
 		} catch(e) {
-			$.messager.show({
-				title: 'Formula Editor',
-				msg: `Could not load formulae : ${e}`
-			});
+			this.messager.error('LOAD_ERROR', e);
 		}
 	}
 	
 	/**
-	 * Reads the Equations from data grid and returns them.
+	 * @abstract Reads the Equations from data grid and returns them.
+	 * 
+	 * @returns An array of the equations, JSON compatible
 	 */
 	toJson() {
 		var data = $(this.gridSelector)
@@ -110,7 +143,6 @@ class DynamicPanel {
 		var customEquations = data.rows.map(function(row) {
 			var title = row.title;
 			var fragment = $.parseHTML(row.formula)[0];
-			console.dir(fragment);	
 			var formula = fragment.attributes['latex'].value;
 			return [ title, formula ];
 		})
@@ -119,7 +151,10 @@ class DynamicPanel {
 	}
 	
 	/**
-	 * Adds an Equation to the grid.
+	 * @abstract Adds an Equation to the grid.
+	 * 
+	 * @param title - the title of the equation
+	 * @param formula - the formula itself
 	 */
 	async addEquation(title, formula) {
 		$(this.gridSelector)
@@ -129,14 +164,24 @@ class DynamicPanel {
 			formula: this.buildAnchor(formula)	 
 		})
 		.datagrid('acceptChanges', {});
-		
-		await this.parent.parser.parseAsync(this.gridSelector, 1);
-		
+	}
+	
+	/**
+	 * @abstract Equips the datagrid (after render update).
+	 * 
+	 * a.) inplace update of the content
+	 * b.) interactivity, e.g. certain event handlers are registered
+	 */
+	async equipDatagrid() {
+		await this.parent.parser.parseAsync(this.gridSelector, 1);		
 		var anchor = $(`${this.gridSelectorOfCopy} a`);
-		this.parent.inplaceUpdate(anchor);
+		this.parent.inplaceUpdate(anchor, true);
 		this.equipDatagridWithInteractivity();
 	}
 	
+	/**
+	 * @abstract Initiates cell editing.
+	 */
 	editCell(index = -1) {
 		if (index == -1) {
 			index = $(this.gridSelector).datagrid('getRows').length - 1;
@@ -157,11 +202,22 @@ class DynamicPanel {
 	}
 	
 	/**
-	 * Builds a single Anchor from formula.
+	 * @abstract Builds a single Anchor from formula.
+	 * 
+	 * @param formula - the formula is capable of providing an interactive anchor
+	 * @returns - the calculated anchor
 	 */
 	buildAnchor(formula) {
-		return `<a style="text-align:left;" href="#" class="s easyui-tooltip" title="${formula}" latex="${formula}">$${formula}$</a>`;
+		var title = `<span style='background:yellow; color: brown;'>${formula}</span>`;
+		return `<a style="text-align:left;" href="#" class="s easyui-tooltip" title="${title}" latex="${formula}">$${formula}$</a>`;
 	}
+
+
+	alphaSorter(a, b) {
+		console.debug(`SORT comparing ${a} < ${b}`);
+		return a < b;
+	}
+
 	
 	/**
 	 * Initialises a Data Grid given by the selector
@@ -172,23 +228,39 @@ class DynamicPanel {
 		console.info(`initialiseDatagrid for ${selector}`);
 		$(selector)
 		.datagrid({
+			remoteSort: false,
+			pagination: true,
+			rownumbers: true,
+			fit: true,
 			onAfterEdit: function(idx, row, changes) {
 				console.info(`onAfterEdit for ${selector}`);
-				inst.parent.inplaceUpdate(`${inst.gridSelectorOfCopy} a`);
-				inst.customEquationsToParameters();
+				inst.parent.inplaceUpdate(`${inst.gridSelectorOfCopy} a`, true);
 				return true;
 			},
 			onCancelEdit: function(idx, row) {
 				console.info(`onCancelEdit for ${selector}`);
-				inst.parent.inplaceUpdate(`${inst.gridSelectorOfCopy} a`);
+				inst.parent.inplaceUpdate(`${inst.gridSelectorOfCopy} a`, true);
 				return true;
-			}
+			},
+			clickToEdit: false,
+			dblclickToEdit: true,
+			columns: [[
+				{ field: 'title', title: '<span locate="TITLE">Title</span>', width: '40%', sortable: true,  sorter: inst.alphaSorter.bind(inst) },
+				{ field:'formula', title: '<span locate="FORMULA">Formula</span>', width:'60%' }
+			]]
 		})
 		.datagrid('enableCellEditing')
 		.datagrid('gotoCell', {
             index: 0,
             field: 'title'
-    	});
+    	})
+    	.datagrid(await inst.viewRender())									// adds onAfterRender to view
+		.datagrid('enableFilter')
+		.datagrid('addFilterRule', {
+			field: 'title',
+			op: 'contains',
+			value: ''
+		});
 		
 		$('#btCUSTOM_EQUATIONS_ADD')
 		.click(async function(event) { 
@@ -199,10 +271,8 @@ class DynamicPanel {
 				await inst.addEquation('Placeholder', selectedText);
 				inst.editCell();
 			} else {
-				$.messager.show({
-					title: 'Formula Editor',
-					msg: 'Please, select some text!'
-				});
+				
+				inst.messager.show('FORMULA_EDITOR', 'NO_SELECTION_TEXT');
 				return;
 			}
 		});
@@ -214,12 +284,10 @@ class DynamicPanel {
 			var cell = dg.datagrid('cell');
 			if (cell) {
 				console.dir(cell);
-				dg.datagrid('deleteRow', cell.index);	  	  
+				dg.datagrid('deleteRow', cell.index);
+				dg.datagrid('acceptChanges');
 			} else {
-				$.messager.show({
-					title: 'Formula Editor',
-					msg: 'Please, select a cell!'
-				});
+				inst.messager.show('FORMULA_EDITOR', 'NO_SELECTION_CELL');
 				return;
 			}
 		});
@@ -240,13 +308,41 @@ class DynamicPanel {
 			event.preventDefault();
 			var fileHandler = new FileHandler();
 			var json = await fileHandler.loadFile("fOPEN_CUSTOM_EQUATIONS");
-			await inst.fromJson(JSON.parse(json));
+			await inst.fromJson(json);
 		});
+	}
+	
+	/**
+	 * @abstract Returns an object with view property, assigning overrides for render methods.
+	 */
+	async viewRender() {
+		var inst = this;
+		return {
+			view: $.extend(true, {}, $.fn['datagrid'].defaults.view, {
+				render: async function(target, container, frozen){
+					$.fn['datagrid'].defaults.view.render.call(this, target, container, frozen);
+					console.log('Render');
+				},
+				onBeforeRender: async function(target){
+					$.fn['datagrid'].defaults.view.onBeforeRender.call(this, target);
+					console.log('Before render');
+				},
+				onAfterRender: async function(target){
+					$.fn['datagrid'].defaults.view.onAfterRender.call(this, target);
+					await inst.equipDatagrid();
+					inst.customEquationsToParameters();
+					console.log('After render');
+					console.dir(target);
+				}
+			})
+		};
 	}
 
 	/**
-	 * Equips the data grid anchors with interactivity. This is necessary because original event handlers
-	 * do not stay active.
+	 * @abstract Equips the data grid anchors with interactivity. 
+	 * 
+	 * This is necessary because original event handlers
+	 * do not stay active after changes.
 	 */
 	equipDatagridWithInteractivity() {
 		var inst = this;
@@ -307,6 +403,7 @@ class MathFormulae {
 	parser = null;
 	dynamicPanel = null;
 	dynamicPanels = [];
+	messager = null;
 	
 	/**
 	 * Constructor.
@@ -315,12 +412,13 @@ class MathFormulae {
 		this.location = getScriptLocation();
 		this.mathTextInput = document.getElementById('mathTextInput'); 
 		this.mathVisualOutput = document.getElementById('mathVisualOutput');
-		this.dynamicPanel = new DynamicPanel("wf_CUSTOM_EQUATIONS_MORE", this);
 		this.codeMirror = codeMirror;
 		this.runNotKatex = runNotKatex;
 		this.localizer = localizer;
 		this.parameters = parameters;
 		this.parser = parser;
+		this.dynamicPanel = new DynamicPanel("wf_CUSTOM_EQUATIONS_MORE", this);
+		this.messager = new Messager(localizer);
 	}
 	
 	/**
@@ -361,6 +459,7 @@ class MathFormulae {
 			}
 		} catch(e) {
 			console.warn(`Katex: insertMath : ${e}`);
+			this.messager.show('KATEX', 'KATEX_NOT_RENDERED', e)
 		}
 	}
 	
@@ -459,7 +558,7 @@ class MathFormulae {
 	/**
 	 * For some dialogs which are initialized lazily updates the Math.
 	 */
-	inplaceUpdate(selector) {
+	inplaceUpdate(selector, javascript = false) {
 		try {
 			var inst = this;
 			var entries = $(selector);
@@ -467,7 +566,7 @@ class MathFormulae {
 			entries.each(function(idx, a) {
 				if (a && !inst.runNotKatex) {
 					inst.updateAnchor(a);
-					inst.equipWithInteractivity($(this));
+					inst.equipWithInteractivity($(this), javascript);
 				}
 			});
 		} catch(e) {
@@ -476,9 +575,13 @@ class MathFormulae {
 	}
 	
 	/**
-	 * Equips some anchors with interactivity which they do not already have.
+	 * @abstract Equips some anchors with interactivity which they do not already have.
+	 * 
+	 * If the anchor does not have a latext attribute, it will not be equipped
+	 * 
+	 * @param a - the anchor to be equipped
 	 */
-	equipWithInteractivity(a) {
+	equipWithInteractivity(a, javascript = false) {
 		var vme = this;
 		function getSymbol(obj) { 
 			if (typeof ($(obj).attr("latex")) != "undefined") { 
@@ -486,13 +589,35 @@ class MathFormulae {
 			} else { 
 				return vme.localizer.getLocalText("NO_LATEX"); 
 			} 
-		}; 
+		};
 
+		if (typeof ($(a).attr("latex")) == "undefined") {
+			return;
+		}
+		
 		console.info(`equipWithInteractivity ${a.attr('latex')}`);
-		a
-		.addClass("easyui-tooltip")
-		.attr("title", function(index, attr) { return getSymbol(a); })
-		.mouseover(function(event) { $("#divInformation").html(getSymbol(a)); })
+		a.addClass("easyui-tooltip s");
+		
+		// TODO: TEST: TRIAL WITH JAVASCRIPT
+		// .attr("title", function(index, attr) { return getSymbol(a); })
+		if (javascript) {
+			a.attr("href", "javascript:void(0)")
+			.tooltip({
+				// position: 'center', // => not working, causes flickering
+				content: `<span style="color:black">${getSymbol(a)}</span>`,
+				onShow: function(){
+					$(this).tooltip('tip').css({
+						backgroundColor: 'lightyellow',
+						borderColor: 'red'
+					});
+				}
+			});
+		} else {
+			a.attr("href", "#")
+			.attr("title", function(index, attr) { return getSymbol(a); });
+		}		
+		
+		a.mouseover(function(event) { $("#divInformation").html(getSymbol(a)); })
 		.mouseout(function(event) { $("#divInformation").html("&nbsp;"); })
 		.click(function(event) { 
 			event.preventDefault(); 

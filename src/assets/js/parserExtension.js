@@ -48,7 +48,7 @@ class ParserExtension {
 			var item = this.queue.shift();
 			this.item = item;
 		} catch(e) {
-			console.warn(`next without queued item: ${this}`);
+			console.warn(`nextAsync without queued item for ${ctx} : ${this}`);
 			this.item = null;
 		}
 	}

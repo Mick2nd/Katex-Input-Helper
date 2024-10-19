@@ -18,6 +18,10 @@ table, th, td {
 }
 */
 
+h3 {
+	text-align: center;
+}
+
 #WaitMsg {
 	margin: 10px; 
 	padding: 10px; 
@@ -126,9 +130,15 @@ table, th, td {
 		margin-left: 15px !important;
 	}
 	legend {
-		margin-top: 5px !important;
+		margin-top: 10px !important;
 		margin-left: 10px !important;
 	}
+}
+
+#customDatagrid {
+	border-spacing: 0px;
+	border-collapse: collapse;
+	width: 100%;
 }
 
 /*
@@ -148,6 +158,33 @@ table, th, td {
 .panel-body table tbody tr td a.easyui-tooltip {
 	float: left;
 }
+
+/* TOOLTIP styling from NET
+a.easyui-tooltip:hover:after {
+    opacity: 1;
+    transition: all 0.1s ease 0.5s;
+    visibility: visible;
+}
+a.easyui-tooltip:after {
+    content: attr(title);
+    background-color: #00FF00;
+    color: #111;
+    font-size: 150%;
+    position: absolute;
+    padding: 1px 5px 2px 5px;
+    bottom: -1.6em;
+    left: 100%;
+    white-space: nowrap;
+    box-shadow: 1px 1px 3px #222222;
+    opacity: 0;
+    border: 1px solid #111111;
+    z-index: 99999;
+    visibility: hidden;
+}
+a.easyui-tooltip {
+    position: relative;
+}
+ */
 
 .katex {
 	pointer-events: none;

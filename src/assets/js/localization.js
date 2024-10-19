@@ -1,17 +1,35 @@
 
-
-class Localizer {
+/**
+ * @abstract Supports the localization of this application.
+ * 
+ * This is an Observable as it recognizes the change of Language and notifies its observers.
+ */
+class Localizer extends Observable {
 	
 	current = null;
 	fallback = null;
-	locales = ['vi_VN', 'ar', 'de_DE', 'en_US', 'fr_FR', 'es_ES', 'ru'];
+	locales = ['ar', 'de_DE', 'en_US', 'es_ES', 'fr_FR', 'ru', 'vi_VN'];
 	currentLocale = 'en_US';
 	location = "";
 	
+	/**
+	 * @abstract Constructor. The script location is queried as needed to locate the language files.
+	 */
 	constructor() {
+		super();
 		this.location = getScriptLocation();
 	}
 	
+	/**
+	 * @abstract Override of the Observable.
+	 */
+	subscribe(func) {
+		super.subscribe(func, this);
+	}
+
+	/**
+	 * @abstract The basic load method. Reads a language file given by its language code.
+	 */
 	async basicLoad(langCode) {
 		var pathname = this.location;
 		var langFile = `${pathname}/localization/${langCode}/lang.json`;
@@ -19,6 +37,12 @@ class Localizer {
 		return await response.json();
 	}
 	
+	/**
+	 * @abstract The main load method.
+	 * 
+	 * Loads the fallback variant for en_US and the given languages language files and stores
+	 * them in this instance. Notifies observers about this event.
+	 */
 	async load(langCode) {
 		var inst = this;
 		
@@ -27,9 +51,14 @@ class Localizer {
 		}
 		
 		inst.current = await inst.basicLoad(langCode);
+		inst.currentLocale = langCode;
+		await inst.notifyAsync(inst);
 		console.info(`Read language file for ${langCode}`);
 	}
 	
+	/**
+	 * @abstract Queries the languages version of some text given by its key(code).
+	 */
 	getLocalText(code) {
 		if (this.current != null) {
 			var text = this.current[code];
@@ -43,6 +72,10 @@ class Localizer {
 		return code;
 	}
 	
+	/**
+	 * @abstract Assembles the content of the Language selection dialog using the existing language 
+	 * 			 files.
+	 */
 	async buildLocalTypes() {
 		var html = "<fieldset dir='ltr'>"; 
 		var inst = this;
@@ -53,12 +86,21 @@ class Localizer {
 			var langCode = json["_i18n_HTML_Lang"]; 
 			var langDir = json["_i18n_HTML_Dir"]; 
 			var langAuthor = json["_i18n_Author"]; 
-			html += "\n\t<input type='radio' name='localType' id='" + lang + "_localType' value='" + lang + "' /> <label for='" + lang + "_localType' dir='" + langDir + "'><!--img src='js/i18n/icons/" + langCode + ".png' width='16' height='11' alt='" + langCode + "' / -->" + langage + "</label> - " + langAuthor + "<br />";
+			
+			html += 
+				"\n\t" + 
+				"<input type='radio' name='localType' id='" + lang + "_localType' value='" + lang + "' />" + 
+				"<label for='" + lang + "_localType' dir='" + langDir + "'>" + 
+				"<!--img src='js/i18n/icons/" + langCode + ".png' width='16' height='11' alt='" + langCode + "' / -->" + langage + "</label> - " + 
+				langAuthor + "<br />";
 		}
 		html += "\n</fieldset>";
 		return html; 
 	}
 	
+	/**
+	 * @abstract Assembles the content of the Language Resources dialog.
+	 */
 	async buildLocalResources() {
 		var inst = this;
 
@@ -70,11 +112,14 @@ class Localizer {
 				var list = "<table border='1' cellspacing='0' style='border-spacing:0px;border-collapse:collapse;margin:20px;width:580px'>"; 
 				var dir = json["_i18n_HTML_Dir"]; 
 				for (var ressource in json) { 
-					list += ("<tr><td valign='top'><b>" + ressource + "</b> : </td><td valign='top' class='rtl-align-right'" + ((dir == "rtl") ? "style='text-align:right;'" : "") + " dir='" + dir + "'>" + json[ressource].replace(/</gi, "&lt;") + "</td></tr>\n"); 
+					list += (
+						"<tr><td valign='top'><b>" + ressource + "</b> : </td>" + 
+						"<td valign='top' class='rtl-align-right'" + ((dir == "rtl") ? "style='text-align:right;'" : "") + " dir='" + dir + "'>" + json[ressource].replace(/</gi, "&lt;") + "</td></tr>\n"); 
 				}
 				list += "</table>"; 
 				$('#tLANGUAGE_LIST').tabs('add', { title: title, content: list, closable: false });
 			}			
 		}
+		$('#tLANGUAGE_LIST').tabs('select', inst.currentLocale);
 	}
 }

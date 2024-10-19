@@ -8,8 +8,8 @@
 	"author": "Jürgen Habelt",
 	"homepage_url": "https://github.com/Mick2nd/Katex-Input-Helper#readme",
 	"repository_url": "https://github.com/Mick2nd/Katex-Input-Helper",
-	"keywords": [],
-	"categories": [],
+	"keywords": ["joplin-plugin", "katex"],
+	"categories": ["productivity"],
 	"screenshots": [],
 	"icons": {}
 }

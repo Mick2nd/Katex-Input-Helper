@@ -1,69 +1,15 @@
 
-/**
- *	Vom Vorbild kopiert, nicht funktional
- *  
-function initialScript() {
-	var runLocal = (window.location.search.indexOf("runLocal", 0) > 0); 
-	var runNotCodeMirror = (window.location.search.indexOf("runNotCodeMirror", 0) > 0); 
-	var runNotMathJax = (window.location.search.indexOf("runNotMathJax", 0) > 0); 
-	var runNotVirtualKeyboard = (window.location.search.indexOf("runNotVirtualKeyboard", 0) > 0); 
-	var runNotColorPicker = (window.location.search.indexOf("runNotColorPicker", 0) > 0); 
-	runLocal ? document.write("<script type=\"text\/javascript\" src=\"js\/jquery-plugin\/jquery.min.js\"><\/script>") : document.write("<script type=\"text\/javascript\" src=\"https:\/\/ajax.googleapis.com\/ajax\/libs\/jquery\/1.8.0\/jquery.min.js\"><\/script>"); document.write("<script type=\"text\/javascript\" src=\"js\/jquery-plugin\/jquery.url.js\"><\/script>"); document.write("<script type=\"text\/javascript\" src=\"js\/jquery-easyui\/jquery.easyui.min.js\"><\/script>"); if (!runNotColorPicker) {document.write("<link rel=\"stylesheet\" id=\"colorpickerCSSblack\" type=\"text\/css\" href=\"js\/jquery-colorpicker\/css\/colorpicker.css\" disabled=\"true\" >"); document.write("<link rel=\"stylesheet\" id=\"colorpickerCSSgray\" type=\"text\/css\" href=\"js\/jquery-colorpicker\/css\/colorpicker_gray.css\" disabled=\"true\" >"); document.write("<script type=\"text\/javascript\" src=\"js\/jquery-colorpicker\/js\/colorpicker.js\"><\/script>");}
-	if (!runNotMathJax) {
-		var vmeURL = window.location.protocol + "//" + window.location.host + window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1); 
-		runLocal ? document.write("<script type=\"text\/javascript\" id=\"MathJaxScript\" src=\"js\/mathjax\/MathJax.js?config=" + vmeURL + "js\/mathjax-MathEditorExtend\/x-mathjax-config.js\"><\/script>") : document.write("<script type=\"text\/javascript\" id=\"MathJaxScript\" src=\"http:\/\/cdn.mathjax.org\/mathjax\/latest\/MathJax.js?config=" + vmeURL + "js\/mathjax-MathEditorExtend\/x-mathjax-config.js\"><\/script>");
-	}
-	var vmeRunParam = ""; 
-	if (runLocal) vmeRunParam += "runLocal=true"; 
-	if (runNotCodeMirror) {
-		if (vmeRunParam.length > 0) vmeRunParam += "&"; 
-		vmeRunParam += "runNotCodeMirror=true";
-	}
-	if (runNotMathJax) {
-		if (vmeRunParam.length > 0) vmeRunParam += "&"; 
-		vmeRunParam += "runNotMathJax=true";
-	}
-	if (runNotVirtualKeyboard) {
-		if (vmeRunParam.length > 0) vmeRunParam += "&"; 
-		vmeRunParam += "runNotVirtualKeyboard=true";
-	}
-	if (runNotColorPicker) {
-		if (vmeRunParam.length > 0) vmeRunParam += "&"; 
-		vmeRunParam += "runNotColorPicker=true";
-	}
-	if (vmeRunParam.length > 0) vmeRunParam = "?" + vmeRunParam; 
-	document.write("<script type=\"text\/javascript\" id=\"vmeScript\" src=\"js\/VisualMathEditor.js" + vmeRunParam + "\"><\/script>"); if (!runNotCodeMirror) {document.write("<link rel=\"stylesheet\" type=\"text\/css\" href=\"js\/codemirror\/lib\/codemirror.css\">"); document.write("<link rel=\"stylesheet\" type=\"text\/css\" href=\"js\/codemirror\/theme\/twilight.css\">"); document.write("<script src=\"js\/codemirror\/lib\/codemirror.js\"><\/script>");}
-	if (!runNotVirtualKeyboard) {
-		document.write("<link rel=\"stylesheet\" type=\"text\/css\" href=\"js\/keyboard\/keyboard.css\">");
-	}	
-}
- */
-
-/**
- *	Former initial script invocation, no longer used.
- *  
-	this.url = $.url(true);
-	this.runLocal = eval($.url(document.getElementById("vmeScript").src).param('runLocal'));
-	this.runNotCodeMirror = eval($.url(document.getElementById("vmeScript").src).param('runNotCodeMirror'));
-	this.runNotMathJax = eval($.url(document.getElementById("vmeScript").src).param('runNotMathJax')); 
-	this.runNotVirtualKeyboard = eval($.url(document.getElementById("vmeScript").src).param('runNotVirtualKeyboard')); 
-	this.runNotColorPicker = eval($.url(document.getElementById("vmeScript").src).param('runNotColorPicker')); 
-*/
-
-
 var console; 
 if (window.console) console = window.console; else console = { log: function(msg) { }, error: function(msg) { } }; 
 
+/**
+ * @abstract The main class Katex Input Helper
+ */
 class KatexInputHelper {
 
 	version = "1.0.0"; 
 	codeType = 'Latex'; 
-	encloseAllFormula = false; 
 	saveOptionInCookies = false; 
-	autoUpdateTime = 500; 
-	menuupdateType = true; 
-	autoupdateType = true; 
-	menuMathjaxType = false; 
 	isBuild = false; 
 	windowIsOpenning = false; 
 	textareaIgnore = false; 
@@ -71,7 +17,6 @@ class KatexInputHelper {
 	textAreaForSaveASCII = null; 
 	codeMirrorEditor = null; 
 	symbolPanelsLoaded = []; 
-	asciiMathCodesListLoaded = false; 
 	latexMathjaxCodesListLoaded = false; 
 	uniCodesListLoaded = false; 
 	autoUpdateOutputTimeout = null; 
@@ -89,32 +34,26 @@ class KatexInputHelper {
 	themes = null;
 	math = null;
 	parameters = null;
+	utilities = null;
+	messager = null;
 	
 	/**
 	 * Constructor
 	 */
 	constructor() {
 		window.vme = this;
-		var vme = this;
 	
 		// independant of plugin variant
 		this.location = getScriptLocation();
 		
 		// Probably not needed
 		console.info(`Url: ${window.location}`);
-		var adr = "https://visualmatheditor.equatheque.net/VisualMathEditor.html?runLocal&codeType=Latex&encloseAllFormula=false&style=default&localType=en_US&equation=\\vec{F} = \\frac{d \\vec{p}}{dt} = m \\frac{d \\vec{v}}{dt} = m \\vec{a}";
-		var pars = "?runLocal&codeType=Latex&encloseAllFormula=false&style=default&localType=en_US&equation=\\vec{F} = \\frac{d \\vec{p}}{dt} = m \\frac{d \\vec{v}}{dt} = m \\vec{a}";
 		
 		this.url = {
 			param: function(name) {
 				var params = {
 					runLocal: true,
 					codeType: "Latex",
-					encloseAllFormula: false,
-					
-					style: "aguas",
-					localType: "en_US",
-					equation: "\\vec{F} = \\frac{d \\vec{p}}{dt} = m \\frac{d \\vec{v}}{dt} = m \\vec{a}"				
 				};
 				try {
 					return vme.parameters[name];				
@@ -127,6 +66,8 @@ class KatexInputHelper {
 		
 		this.parameters = new Parameters();
 		this.localizer = new Localizer();
+		this.messager = new Messager(this.localizer);
+		this.utilities = new Utilities(this.localizer);
 		this.themes = new Themes();
 		this.parser = new ParserExtension(true);
 		this.math = new MathFormulae(false, this.localizer, null, this.parameters, this.parser);	// code mirror per method injection
@@ -135,7 +76,7 @@ class KatexInputHelper {
 		this.mathVisualOutput = document.getElementById('mathVisualOutput'); 
 		
 		for (var i = 65; i <= 90; i++) if ($.inArray(i, this.allowedCtrlKeys) == -1) this.notAllowedCtrlKeys.push(i); 
-		for (var i = 65; i < 90; i++) this.notAllowedAltKeys.push(i); 
+		for (var i = 65; i < 90; i++) this.notAllowedAltKeys.push(i);
 	}
 
 	get localType() {
@@ -143,7 +84,8 @@ class KatexInputHelper {
 	}
 	set localType(value) {
 		this.parameters.localType = value;
-		this.parameters.writeParameters();
+		// Seems to be unnecessary (setter interceptor in parameters)
+		// this.parameters.writeParameters();
 	}
 
 	get style() {
@@ -151,7 +93,63 @@ class KatexInputHelper {
 	}
 	set style(value) {
 		this.parameters.style = value;
-		this.parameters.writeParameters();
+		// Seems to be unnecessary (setter interceptor in parameters)
+		// this.parameters.writeParameters();
+	}
+	
+	get encloseAllFormula() {
+		return this.parameters.encloseAllFormula;
+	}
+	set encloseAllFormula(value) {
+		this.parameters.encloseAllFormula = value;
+		// Seems to be unnecessary (setter interceptor in parameters)
+		// this.parameters.writeParameters();
+	}
+	
+	get autoUpdateTime() {
+		return this.parameters.autoUpdateTime;
+	}
+	set autoUpdateTime(value) {
+		this.parameters.autoUpdateTime = value;
+		// Seems to be unnecessary (setter interceptor in parameters)
+		// this.parameters.writeParameters();
+	}
+	
+	get menuupdateType() {
+		return this.parameters.menuupdateType;
+	}
+	set menuupdateType(value) {
+		this.parameters.menuupdateType = value;
+		// Seems to be unnecessary (setter interceptor in parameters)
+		// this.parameters.writeParameters();
+	}
+	
+	get autoupdateType() {
+		return this.parameters.autoupdateType;
+	}
+	set autoupdateType(value) {
+		this.parameters.autoupdateType = value;
+		// Seems to be unnecessary (setter interceptor in parameters)
+		// this.parameters.writeParameters();
+	}
+
+	
+	get persistWindowPositions() {
+		return this.parameters.persistWindowPositions;
+	}
+	set persistWindowPositions(value) {
+		this.parameters.persistWindowPositions = value;
+		// Seems to be unnecessary (setter interceptor in parameters)
+		// this.parameters.writeParameters();
+	}
+	
+	get persistEquations() {
+		return this.parameters.persistEquations;
+	}
+	set persistEquations(value) {
+		this.parameters.persistEquations = value;
+		// Seems to be unnecessary (setter interceptor in parameters)
+		// this.parameters.writeParameters();
 	}
 
 
@@ -170,16 +168,17 @@ class KatexInputHelper {
 		$('#form').hide();
 
 		this.parser.initialise();		
-		await this.parameters.queryParameters();
-		await this.initialiseLocalType();
-		vme.themes.appendCss(this.style);
-		await vme.updateInfo();
+		await this.parameters.queryParameters();				// from Plugin
+		await this.initialiseLocalType();						// setting up the localizer including preparation of selection dialog
+		vme.themes.appendCss(this.style);						// setting up the themes by loading the css files
+		await vme.updateInfo();									// updates a few dialogs
 		await vme.initialiseUI(); 
-		vme.initialiseParameters(); 
 		vme.initialiseCodeMirror(); 
+		vme.initialiseParameters(); 
 		vme.initialiseStyle(); 
 		await vme.initialiseLanguage();
-		vme.localType = vme.url.param('localType');
+		// seems to be redundant
+		// vme.localType = vme.url.param('localType');
 		vme.initialiseCodeType(); 
 		vme.initialiseVirtualKeyboard(); 
 		vme.endWait(); 
@@ -188,7 +187,6 @@ class KatexInputHelper {
 	
 	endWait() { 
 		this.initialiseEquation(); 
-		this.switchMathJaxMenu(); 
 		$.messager.progress('close'); 
 		$("#WaitMsg").hide(); 
 		this.setFocus(); 
@@ -219,6 +217,14 @@ class KatexInputHelper {
 		if (!this.runNotVirtualKeyboard) this.loadScript(`${this.location}keyboard/keyboard.js`, function() { return true; }); 
 	}
 	
+	/**
+	 * @abstract Initialise the Code Mirror Editor.
+	 * 
+	 * This includes:
+	 * - instance creation with parameters
+	 * - change handler -> auto update of formula
+	 * - context menu binding
+	 */
 	initialiseCodeMirror() { 
 		var vme = this; 
 		vme.codeMirrorEditor = CodeMirror.fromTextArea(document.getElementById("mathTextInput"), { 
@@ -238,6 +244,7 @@ class KatexInputHelper {
 			theme: "default"
 		}); 
 		vme.codeMirrorEditor.on("change", function() { vme.autoUpdateOutput(); }); 
+		
 		$(".CodeMirror").bind('contextmenu', function(event) { 
 			event.preventDefault(); 
 			$('#mINSERT').menu('show', { left: event.pageX, top: event.pageY }); 
@@ -248,7 +255,14 @@ class KatexInputHelper {
 	}
 	
 	/**
-	 * Initializes the User Interface.
+	 * @abstract Initializes the User Interface.
+	 * 
+	 * This includes:
+	 * - assignes menu commands
+	 * - prepares the accordion panels with symbol templates
+	 * - prepares the **info** dialog
+	 * - assigns button handlers
+	 * - additional handlers ...
 	 */
 	async initialiseUI() {
 		var vme = this;
@@ -261,7 +275,7 @@ class KatexInputHelper {
 					case "mEDITOR_PARAMETERS": await vme.openWindow('wEDITOR_PARAMETERS'); break; 
 					case "mSTYLE_CHOISE": await vme.openWindow('wSTYLE_CHOISE'); break; 
 					case "mLANGUAGE_CHOISE": await vme.openWindow('wLANGUAGE_CHOISE'); break; 
-					case "mMATRIX": vme.showMatrixWindow(3, 3); break; 
+					case "mMATRIX": await vme.showMatrixWindow(3, 3); break; 
 					case "mCOMMUTATIVE_DIAGRAM": await vme.initialiseUImoreDialogs("f_COMMUTATIVE_DIAGRAM"); break; 
 					case "mCHEMICAL_FORMULAE": await vme.initialiseUImoreDialogs("f_CHEMICAL_FORMULAE"); break; 
 					case "mNEW_EDITOR": vme.newEditor(); break; 
@@ -308,6 +322,7 @@ class KatexInputHelper {
 			$("#mOPEN_EQUATION").addClass("menu-item-disabled").click(function(event) { vme.testOpenFile(); }); 
 		}
 		$("#fOPEN_EQUATION").change(function(event) { vme.openFile(event); }); 
+		
 		this.initialiseUIaccordion("#f_SYMBOLS"); 
 		this.initialiseUIaccordion("#f_SYMBOLS2"); 
 		
@@ -368,39 +383,6 @@ class KatexInputHelper {
 		$("input[name='style']").change(function() { 
 			vme.style = $("input[name='style']:checked").val(); 
 			vme.chooseStyle(); 
-		}); 
-		$("#encloseType").change(function() {
-			if (!(typeof ($('#encloseType').attr('checked')) == "undefined")) { 
-				vme.encloseAllFormula = true; 
-				$("#btENCLOSE_TYPE").removeClass("unselect"); 
-				$('#HTML_TAG').show(); 
-				vme.codeMirrorEditor.setOption("mode", "text/html"); 
-				vme.codeMirrorEditor.setOption("autoCloseTags", true); 
-			} else { 
-				vme.encloseAllFormula = false; 
-				$("#btENCLOSE_TYPE").addClass("unselect"); 
-				$('#HTML_TAG').hide(); 
-				vme.codeMirrorEditor.setOption("mode", "text/x-latex"); 
-				vme.codeMirrorEditor.setOption("autoCloseTags", false); 
-			}
-			vme.updateOutput(); 
-		}); 
-		$("#autoUpdateTime").change(function() { 
-			vme.autoUpdateTime = $("#autoUpdateTime").val(); 
-		}); 
-		$("#menuupdateType").change(function() { 
-			(typeof ($('#menuupdateType').attr('checked')) == "undefined") ? vme.menuupdateType = false : vme.menuupdateType = true; 
-		}); 
-		$("#autoupdateType").change(function() { 
-			(typeof ($('#autoupdateType').attr('checked')) == "undefined") ? vme.autoupdateType = false : vme.autoupdateType = true; 
-		}); 
-		$("#menuMathjaxType").change(function() { 
-			vme.switchMathJaxMenu(); 
-		}); 
-		$("#cookieType").change(function() { 
-		}); 
-		$(window).resize(function() {
-			/// TODO : any functionality, fit property used 
 		}); 
 		$("#mathVisualOutput").bind('contextmenu', function(event) { 
 			event.preventDefault(); 
@@ -506,41 +488,47 @@ class KatexInputHelper {
 	}
 	
 	initialiseCodeType() {
-		var param = this.url.param('codeType'); 
-		if (param && typeof (param) != "undefined") { 
-			this.codeType = param; 
-		}
 		this.printCodeType();
 	}
 	
+	/**
+	 * @abstract Initialises the configured style.
+	 * 
+	 * This includes setting up the whole ui with the given style.
+	 */
 	initialiseStyle() {
-		var param = this.url.param('style'); 
-		if (param && typeof (param) != "undefined") { 
-			this.style = param; 
-		}
 		$("[name='style']").filter("[value=" + this.style + "]").attr("checked", "checked"); 
 		this.chooseStyle();
 	}
 	
+	/**
+	 * @abstract Loads the Locales file according to current language code.
+	 * 
+	 * It updates in turn the Languages selection dialog. 
+	 */
 	async initialiseLocalType() {
-		var param = this.url.param('localType'); 
-		if (param && typeof (param) != "undefined") { 
-			this.localType = param; 
-		} 
-
 		await this.localizer.load(this.localType);
 		var html = await this.localizer.buildLocalTypes();
 		$("#formLANGUAGE_CHOISE").html(html);
 	}
 	
+	/**
+	 * @abstract Initializes the configured language.
+	 * 
+	 * This includes setting up the whole ui with the given language.
+	 */
 	async initialiseLanguage() { 
 		$("[name='localType']").filter("[value=" + this.localType + "]").attr("checked", "checked"); 
 		await this.localizeIt(); 
 	}
-	
+
+	/**
+	 * @abstract Initializes the Equation from the parameters.
+	 * 
+	 * This includes copying it to the editor and displaying it in the output field.
+	 */
 	initialiseEquation() {
-		var param = this.url.param('equation'); 
-		param = this.parameters.equation;
+		var param = this.parameters.equation;
 		if (param && typeof (param) != "undefined") {
 			this.codeMirrorEditor.setValue(param); 
 			this.setCodeMirrorCursorAtEnd(); 
@@ -553,42 +541,69 @@ class KatexInputHelper {
 			$("#mSET_EQUATION").addClass("menu-item-disabled").click(function(event) { vme.setEquationInCaller(); }); }
 	}
 	
+	/**
+	 * @abstract Initialises all **configuration** parameters including start time initialisation and change
+	 * handlers.
+	 * 
+	 */
 	initialiseParameters() {
-		var param = null; 
-		var param = this.url.param('encloseAllFormula'); 
-		if (param && typeof (param) != "undefined") { 
-			this.encloseAllFormula = this.getBoolean(param); 
-		} 
-		this.encloseAllFormula ? $("#encloseType").attr("checked", "checked") : $("#btENCLOSE_TYPE").addClass("unselect"); 
-		var param = this.url.param('autoUpdateTime'); 
-		if (param && typeof (param) != "undefined") { 
-			this.autoUpdateTime = param; 
+		var vme = this;
+		function onChange(target, value) {
+			console.debug(`Checkbox content of ${$(target).attr('id')} changed to : ${value} `);
+			if (value) {
+				$(target).attr('checked', 'checked');
+			} else {
+				$(target).removeAttr('checked');
+			}
 		}
-		if (this.autoUpdateTime) $("#autoUpdateTime").val(this.autoUpdateTime); 
-		var param = this.url.param('menuupdateType'); 
-		if (param && typeof (param) != "undefined") { 
-			this.menuupdateType = this.getBoolean(param); 
+		
+		function onAdditionalChange(value) {
+			if (value) {
+				$("#btENCLOSE_TYPE").removeClass("unselect"); 
+				$('#HTML_TAG').show(); 
+				vme.codeMirrorEditor.setOption("mode", "text/html"); 
+				vme.codeMirrorEditor.setOption("autoCloseTags", true); 
+			} else {
+				$("#btENCLOSE_TYPE").addClass("unselect"); 
+				$('#HTML_TAG').hide(); 
+				vme.codeMirrorEditor.setOption("mode", "text/x-latex"); 
+				vme.codeMirrorEditor.setOption("autoCloseTags", false); 
+			}
 		}
-		if (this.menuupdateType) $("#menuupdateType").attr("checked", "checked"); 
-		var param = this.url.param('autoupdateType'); 
-		if (param && typeof (param) != "undefined") { 
-			this.autoupdateType = this.getBoolean(param); 
-		}
-		if (this.autoupdateType) $("#autoupdateType").attr("checked", "checked"); 
-		var param = this.url.param('menuMathjaxType'); 
-		if (param && typeof (param) != "undefined") { 
-			this.menuMathjaxType = this.getBoolean(param); 
-		} 
-		if (this.menuMathjaxType) $("#menuMathjaxType").attr("checked", "checked"); 
-		this.switchMathJaxMenu();
-	}
-	
-	switchMathJaxMenu() { 
-		if (typeof ($('#menuMathjaxType').attr('checked')) == "undefined") { 
-			this.menuMathjaxType = false; 
-		} else { 
-			this.menuMathjaxType = true; 
-		} 
+
+		onChange('#encloseType', this.encloseAllFormula);
+		onAdditionalChange(this.encloseAllFormula);
+		$("#autoUpdateTime").val(this.autoUpdateTime);
+		onChange('#menuupdateType', this.menuupdateType);
+		onChange('#autoupdateType', this.autoupdateType);
+		onChange('#persistWindowPositions', this.persistWindowPositions);
+		onChange('#persistEquations', this.persistEquations);
+		
+		$("#encloseType").change(function(event) {
+			vme.encloseAllFormula = !vme.encloseAllFormula;
+			onChange(event.target, vme.encloseAllFormula);
+			onAdditionalChange(vme.encloseAllFormula);
+			vme.updateOutput(); 
+		}); 
+		$("#autoUpdateTime").change(function(event) { 
+			vme.autoUpdateTime = $("#autoUpdateTime").val(); 
+		});
+		$("#menuupdateType").change(function(event) {
+			vme.menuupdateType = !vme.menuupdateType;
+			onChange(event.target, vme.menuupdateType);
+		}); 
+		$("#autoupdateType").change(function(event) { 
+			vme.autoupdateType = !vme.autoupdateType;
+			onChange(event.target, vme.autoupdateType);
+		}); 
+		$("#persistWindowPositions").change(function(event) { 
+			vme.persistWindowPositions = !vme.persistWindowPositions;
+			onChange(event.target, vme.persistWindowPositions);
+		}); 
+		$("#persistEquations").change(function(event) { 
+			vme.persistEquations = !vme.persistEquations;
+			onChange(event.target, vme.persistEquations);
+		}); 
 	}
 	
 	async initialiseLatexMathjaxCodesList() {
@@ -690,7 +705,7 @@ class KatexInputHelper {
 		this.updateMatrixWindow(rows, cols); 
 	}
 	
-	updateMatrixWindow(rows, cols) {
+	async updateMatrixWindow(rows, cols) {
 		if (typeof (rows != "undefined") && rows != null) document.formMATRIX.rowsMATRIX.value = rows; 
 		if (typeof (cols != "undefined") && cols != null) document.formMATRIX.colsMATRIX.value = cols; 
 		rows = document.formMATRIX.rowsMATRIX.value; 
@@ -706,9 +721,10 @@ class KatexInputHelper {
 		}
 		html += "</table>"; 
 		$("#showMATRIX").html(html); 
+		await this.parser.parseAsync('#wMATRIX');										// after dynamically set the content
 		$('#wMATRIX').dialog('open'); 
 		var width = 20 + $("#tableMATRIX").width(); 
-		var height = 80 + $("#tableMATRIX").height(); 
+		var height = 100 + $("#tableMATRIX").height(); 
 		if (width < 240) width = 240; 
 		if (height < 160) height = 160; 
 		$('#wMATRIX').dialog({ title: vme.getLocalText("MATRIX"), width: width, height: height }); 
@@ -1081,6 +1097,9 @@ class KatexInputHelper {
 		}
 	}
 	
+	/**
+	 * @abstract The style chosen is set up for the UI.
+	 */
 	chooseStyle() {
 		try {
 			var tags = ['link', 'style']; 
@@ -1254,24 +1273,33 @@ class KatexInputHelper {
 		this.math.updateTables();
 	}
 	
+	/**
+	 * @abstract Updates a few dialogs with formulae.
+	 * 
+	 * The candidates here are:
+	 * - the panels of the info dialog
+	 * - the equation dialog
+	 * - the special characters dialog
+	 */
 	async updateInfo() {
 		var vme = this;
 		$('div[href]')
 		.each(function( idx ) {
 			var href = $(this).attr('href');
 			var id = $(this).attr('id');
-			if (href.length == 0) {												// info html !
+			if (href.length == 0) {													// info html !
 				console.info(`Info dialog with : id : ${id}, href : ${href}`);
-				var newHref = `${vme.location}../information/${id}.html`;
+				var newHref = `${vme.location}../information/${id}.html`;			// lazily load html info
 				$(this).attr('href', newHref);
 				$(this).load(newHref);
 			}
 		});
-		/*
-		*/ 
+
 		await vme.parser.parseAsync('div[href]', 0, 100);
 		console.info(`Parse completed for : div[href]`);
-		vme.math.inplaceUpdate('#tEQUATION div a.s[latex], #mSPECIAL_CHARACTER div a.s[latex]');			// where and when to do that
+		// updates exactly 2 dialogs (see selectors)
+		// TODO: necessary and additional ones required?
+		vme.math.inplaceUpdate('#tEQUATION div a.s[latex], #mSPECIAL_CHARACTER div a.s[latex]');	// where and when to do that
 	}
 }
 
@@ -1315,18 +1343,3 @@ $(window).on(
 	}
 );
 
-
-/**
- * @abstract This invocation guarantees initialization after page load.
- */
-var timer = setInterval(() => { 
-	console.info(`Katex: First timeout started`);
-
-	/*
-		TODO LIST
-		- Nachladen der CSS Files für Themes mit ungeklärten Fehlern
-		- COPYRIGHT Eintrag in lang.json Files noch modifizieren 
-	*/
-	clearInterval(timer);
-
-}, 1000);

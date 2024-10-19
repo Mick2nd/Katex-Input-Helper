@@ -41,15 +41,8 @@ export class Dialog
 			console.info(`Message from Webview: ${JSON.stringify(msg)}`);
 			var text = await joplin.commands.execute('selectedText') as string;					// the text of the selection
 			if (msg.id == 'Katex Input Helper' && msg.cmd == 'getparams') {
-				// if (text == "") text = await inst.settings.equation();						// the last known equation
+				await inst.settings.readSettings(msg, text);
 				msg.equation = text;
-				msg.style = await inst.settings.style();										// the style as stored in settings
-				msg.localType = await inst.settings.localType();								// the localType
-				msg.equationCollection = await inst.settings.equationCollection();				// TBD
-				for (const id of inst.settings.dialogIds()) {
-					const location = await inst.settings.location(id);							// locations of dialogs
-					msg[id] = location;
-				}
 				return msg;
 			}
 			return false;
@@ -67,16 +60,16 @@ export class Dialog
 	public open = async function() : Promise<DialogResult>
 	{
 		let res = await joplin.views.dialogs.open(handle);
+		let parameters = JSON.parse(res.formData.KATEX.hidden);
 		if (res.id == 'okay') {
-			let parameters = JSON.parse(res.formData.KATEX.hidden);
-			await joplin.commands.execute(
+			await joplin.commands.execute(										// okay button -> save equation
 				'editor.execCommand', 
 				{
 					name: 'replaceSelection',
 					args: [ parameters.equation ]
 				});
-			await this.settings.writeSettings(parameters);
 		}
+		await this.settings.writeSettings(parameters, res.id != 'okay');		// save settings according to policy
 		
 		return res;
 	}
@@ -118,18 +111,21 @@ export class Dialog
 			"./assets/js/jquery-easyui/jquery.min.js",
 			"./assets/js/jquery-easyui/jquery.easyui.min.js",
 			"./assets/js/jquery-easyui/datagrid-cellediting.js",
+			"./assets/js/jquery-easyui/datagrid-filter.js",
 			"./assets/js/jquery-colorpicker/js/colorpicker.js",
 			"./assets/js/codemirror/lib/codemirror.js",
 			"./assets/js/katex/katex.min.js",
 			"./assets/js/katex/mhchem.min.js",
 			// "./assets/pre-process.js",
 			// "./assets/test.js"
+			"./assets/js/patterns/observable.js",
 			"./assets/js/localization.js",
 			"./assets/js/themes.js",
 			"./assets/js/math.js",
 			"./assets/js/parserExtension.js",
 			"./assets/js/parameters.js",
 			"./assets/js/fileHandling.js",
+			"./assets/js/helpers.js",
 			"./assets/js/dialog.js"			
 		];
 		

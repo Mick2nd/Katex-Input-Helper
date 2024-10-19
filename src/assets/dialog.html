@@ -283,6 +283,15 @@
 			style="width: 420px; height: 320px;" resizable="true">
 			<form id="formEDITOR_PARAMETERS" action="#" method="post">
 				<fieldset>
+					<legend><span locate='PERSISTENCE'></span></legend>
+					<input type="checkbox" name="persistWindowPositions" id="persistWindowPositions" /> 
+					<label for="persistWindowPositions"><span locate='PERSIST_WINDOW_POSITIONS'></span></label>
+					<br />
+					<input type="checkbox" name="persistEquations" id="persistEquations" /> 
+					<label for="persistEquations"><span locate="PERSIST_EQUATIONS"></span></label>
+				</fieldset>
+				<hr />
+				<fieldset>
 					<legend>
 						<span locate='SYNTAX'></span>
 					</legend>
@@ -307,7 +316,7 @@
 				<hr />
 				<fieldset>
 					<legend>MathJax</legend>
-					<input type="checkbox" name="menuMathjaxType" id="menuMathjaxType" />
+					<input type="checkbox" name="menuMathjaxType" id="menuMathjaxType" disabled />
 					<label for="menuMathjaxType"><span locate='MATHJAX_MENU'></span></label>
 				</fieldset>
 			</form>
@@ -449,11 +458,12 @@
 			title="<span id='wf_CUSTOM_EQUATIONS_MORE_TITLE' locate='CUSTOM_EQUATIONS' class='rtl-title-withicon'></span>"
 			buttons="#btCUSTOM_EQUATIONS_BUTTONS"
 			style="width: 500px; height: 320px;">
-			<table id="customDatagrid" class="easyui-datagrid" cellspacing=0 style="border-spacing:0px; border-collapse:collapse;width:100%">
+			<table id="customDatagrid" class="easyui-datagrid" >
 			    <thead>
 			        <tr>
-			            <th data-options="field:'title',editor:'text',width:'40%'">Titel</th>
-			            <th data-options="field:'formula',width:'60%'">Formel</th>
+			        <!-- Without these entries datagrid wouldn't work -->
+			            <th data-options="field:'title',editor:'text',width:'40%',sortable:true">Titel</th>
+			            <th data-options="field:'formula',width:'55%'">Formel</th>
 			        </tr>
 			    </thead>
 			    <tbody>

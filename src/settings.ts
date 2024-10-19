@@ -108,6 +108,36 @@ export class Settings
 				type: SettingItemType.String,
 				description: 'The Local Type of the plugin.'
 			},
+
+			'enclose_all_formula':
+			{
+				section: 'KatexInputHelper.settings',
+				public: false,
+				value: false,
+				type: SettingItemType.Bool				
+			},
+			'auto_update_time':
+			{
+				section: 'KatexInputHelper.settings',
+				public: false,
+				value: 500,
+				type: SettingItemType.Int				
+			},
+			'menu_update_type':
+			{
+				section: 'KatexInputHelper.settings',
+				public: false,
+				value: true,
+				type: SettingItemType.Bool				
+			},
+			'auto_update_type':
+			{
+				section: 'KatexInputHelper.settings',
+				public: false,
+				value: true,
+				type: SettingItemType.Bool				
+			},
+			
 			'equation':
 			{
 				section: 'KatexInputHelper.settings',
@@ -125,6 +155,22 @@ export class Settings
 				value: [ ],
 				type: SettingItemType.Object,
 				description: 'A Equation Collection to be maintained by the customer'
+			},
+			'persist_equations_on_cancel':
+			{
+				section: 'KatexInputHelper.settings',
+				public: false,
+				label: 'Persist Equations On Cancel',
+				value: true,
+				type: SettingItemType.Bool
+			},
+			'persist_window_locations':
+			{
+				section: 'KatexInputHelper.settings',
+				public: false,
+				label: 'Persist Window Locations',
+				value: true,
+				type: SettingItemType.Bool
 			}
 		};
 		
@@ -160,18 +206,47 @@ export class Settings
 		return this.dialogs.map(id => `${this.dialogSettingsPrefix}${id}`);
 	}
 	
-	async writeSettings(parameters: any) : Promise<void> {
+	async readSettings(parameters: any, text: string) : Promise<void> {
+		parameters.equation = text;
+		parameters.style = await this.style();										// the style as stored in settings
+		parameters.localType = await this.localType();								// the localType
+		parameters.encloseAllFormula = await this.encloseAllFormula();
+		parameters.autoUpdateTime = await this.autoUpdateTime();
+		parameters.autoupdateType = await this.autoUpdateType();
+		parameters.menuupdateType = await this.menuUpdateType();
+		
+		parameters.persistEquations = await this.persistEquations();
+		parameters.persistWindowPositions = await this.persistWindowPositions();
+		parameters.equationCollection = await this.equationCollection();
+		for (const id of this.dialogIds()) {
+			const location = await this.location(id);
+			parameters[id] = location;
+		}		
+	}
+	
+	async writeSettings(parameters: any, cancel: boolean = false) : Promise<void> {
 		console.info(`writeSettings: ${JSON.stringify(parameters)}`);
 		await this.setEquation(parameters.equation);
 		await this.setStyle(parameters.style);
 		await this.setLocalType(parameters.localType);
-		await this.setEquationCollection(parameters.equationCollection);
-		
-		for (const id of this.dialogs) {
-			if (id in parameters) {
-				await this.setLocation(id, parameters[id]);
-			}
+		await this.setEncloseAllFormula(parameters.encloseAllFormula);
+		await this.setAutoUpdateTime(parameters.autoUpdateTime);
+		await this.setAutoUpdateType(parameters.autoupdateType);
+		await this.setMenuUpdateType(parameters.menuupdateType);
+
+		await this.setPersistEquations(parameters.persistEquations);
+		await this.setPersistWindowPositions(parameters.persistWindowPositions);
+				
+		if (parameters.persistEquations || !cancel) {
+			await this.setEquationCollection(parameters.equationCollection);
 		}
+		if (parameters.persistWindowPositions) {
+			for (const id of this.dialogs) {
+				if (id in parameters) {
+					await this.setLocation(id, parameters[id]);
+				}
+			}			
+		}		
 	}
 	
 	async style() : Promise<string> {
@@ -191,6 +266,44 @@ export class Settings
 	async setLocalType(type: string) : Promise<void> {
 		await joplin.settings.setValue('local_type', type);
 	}
+
+	async encloseAllFormula() : Promise<Boolean>
+	{
+		return await joplin.settings.value('enclose_all_formula');
+	}
+	
+	async setEncloseAllFormula(enclose: Boolean) : Promise<void> {
+		await joplin.settings.setValue('enclose_all_formula', enclose);
+	}
+	
+	async autoUpdateTime() : Promise<Number>
+	{
+		return await joplin.settings.value('auto_update_time');
+	}
+	
+	async setAutoUpdateTime(time: Number) : Promise<void> {
+		await joplin.settings.setValue('auto_update_time', time);
+	}
+
+	async menuUpdateType() : Promise<Boolean>
+	{
+		return await joplin.settings.value('menu_update_type');
+	}
+	
+	async setMenuUpdateType(type: Boolean) : Promise<void> {
+		await joplin.settings.setValue('menu_update_type', type);
+	}
+	
+
+	async autoUpdateType() : Promise<Boolean>
+	{
+		return await joplin.settings.value('auto_update_type');
+	}
+	
+	async setAutoUpdateType(type: Boolean) : Promise<void> {
+		await joplin.settings.setValue('auto_update_type', type);
+	}
+	
 	
 	async equation() : Promise<string> {
 		return await joplin.settings.value('equation');
@@ -198,6 +311,22 @@ export class Settings
 	
 	async setEquation(equation: string) : Promise<void> {
 		await joplin.settings.setValue('equation', equation);
+	}
+	
+	async persistEquations() : Promise<boolean> {
+		return await joplin.settings.value('persist_equations_on_cancel');
+	}
+	
+	async setPersistEquations(persist: boolean) : Promise<void> {
+		await joplin.settings.setValue('persist_equations_on_cancel', persist);
+	}
+	
+	async persistWindowPositions() : Promise<boolean> {
+		return await joplin.settings.value('persist_window_locations');
+	}
+	
+	async setPersistWindowPositions(persist: boolean) : Promise<void> {
+		await joplin.settings.setValue('persist_window_locations', persist);
 	}
 	
 	async equationCollection() : Promise<any> {
