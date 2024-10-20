@@ -10,6 +10,9 @@
 	"repository_url": "https://github.com/Mick2nd/Katex-Input-Helper",
 	"keywords": ["joplin-plugin", "katex"],
 	"categories": ["productivity"],
-	"screenshots": ["./img/Katex-Input-Helper.png", "./img/Custom-Equations.png"],
+	"screenshots": [
+		{ "src": "img/Katex-Input-Helper.png", "label": "Katex Input Helper Main Dialog"},
+		{ "src": "img/Custom-Equations.png", "label": "Custom Equations Dialog"}
+	],
 	"icons": {}
 }
