@@ -40,7 +40,26 @@ This software is available on the net [here](https://visualmatheditor.equatheque
 5. A **custom equations** dialog which can be used to maintain one's own formula library and with the possibility to Add, Remove, Load, Save the formula set. This set is persisted through invocations of Joplin as hidden setting.
 6. Window positions and sizes are persisted
 
+## Some Screenshots
+
+The main dialog window
+
+![Main Dialog Window](./img/Katex-Input-Helper.png)
+
+The custom equations dialog
+
+![Custom Equations Dialog](./img/Custom-Equations.png)
+
 ## Release Notes
+
+### 1.0.1
+
+Bug fixes and improvements
+
+- Some localizations in Custom Equations dialog have been improved
+- Persistence concept was improved
+- Added filtering to the Custom Equations dialog
+- Architectural changes
 
 ### 1.0.0
 

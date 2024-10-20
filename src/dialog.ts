@@ -112,6 +112,8 @@ export class Dialog
 			"./assets/js/jquery-easyui/jquery.easyui.min.js",
 			"./assets/js/jquery-easyui/datagrid-cellediting.js",
 			"./assets/js/jquery-easyui/datagrid-filter.js",
+			// "./assets/js/jquery-easyui/locale/easyui-lang-en.js",
+			// "./assets/js/jquery-easyui/locale/easyui-lang-de.js",
 			"./assets/js/jquery-colorpicker/js/colorpicker.js",
 			"./assets/js/codemirror/lib/codemirror.js",
 			"./assets/js/katex/katex.min.js",

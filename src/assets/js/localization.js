@@ -52,6 +52,15 @@ class Localizer extends Observable {
 		
 		inst.current = await inst.basicLoad(langCode);
 		inst.currentLocale = langCode;
+		
+		// TODO: Added, test!
+		var shortCode = inst.current._i18n_HTML_Lang;
+		var pathname = this.location;
+		var langFile = `${pathname}/jquery-easyui/locale/easyui-lang-${shortCode}.js`;
+		var response = await fetch(langFile);
+		var responseTxt = await response.text();
+		eval(responseTxt);
+		
 		await inst.notifyAsync(inst);
 		console.info(`Read language file for ${langCode}`);
 	}

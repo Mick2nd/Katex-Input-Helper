@@ -24,23 +24,22 @@ class DynamicPanel {
 		this.gridSelector = `#${panelId} .easyui-datagrid`;
 		this.gridSelectorOfCopy = `#${panelId} table:not(.easyui-datagrid)`;
 		
-		// TODO: TEST
 		this.parent.localizer.subscribe(this.onLocaleChanged.bind(this));
 	}
 	
 	/**
 	 * @abstract An Observer for the Locale Changed notifications.
 	 * 
-	 * This changes all localized text in the dialog and beyond.
-	 * TODO: the used selector does include the whole HTML document, to be shrinked to the current
-	 * dialog, if possible.
+	 * This changes all localized text in the dialog.
 	 */
-	onLocaleChanged(localizer) {
+	async onLocaleChanged(localizer) {
 		var inst = this;
 		console.debug(`onLocaleChanged : ${localizer.currentLocale} `);
 
-		$(`#${this.panelId} span[locate]`).each(
+		$('span[locate].custom-equations')
+		.each(
 			function() { 
+				console.debug(`Custom-Equations: ${$(this).attr("locate")}`);
 				if (typeof ($(this).attr("locate")) != "undefined") { 
 					var localText = localizer.getLocalText($(this).attr("locate")); 
 					if (typeof (localText) != "undefined") $(this).html(localText); 
@@ -70,21 +69,27 @@ class DynamicPanel {
 					function(width, height) {
 						console.info(`Panel with id ${fPanelMoreID} resized : ${width},${height}`);
 						inst.parent.parameters.onPanelResize(fPanelMoreID, width, height);
-					},
-				title: this.utilities.localizeOption(this.panelId, 'title')		// first time initialisation for title only
+					}
+				// title: this.utilities.localizeOption(this.panelId, 'title')			// first time initialisation for title only
 			})
 			.dialog('open');
 
 			console.info(`Here in DynamicPanel.initialise 2`);
-			await inst.parent.parser.parseAsync(`#${inst.panelId}`, 1);
 			await inst.initialiseDatagrid(`${inst.gridSelector}`);
 			await inst.customEquationsFromParameters();
 			
-			// TODO: WORKAROUND!
-			this.onLocaleChanged(this.parent.localizer);						// first time initialisation for title and table headers
+			// Experiences:
+			// proper update of all locale texts requires exactly this:
+			// - after-creation-localization for all the span elements of this dialog
+			await this.onLocaleChanged(this.parent.localizer);						// first time initialisation includes all elements
+
+			// Building the dialog more than once was not the intention, but this comes at a low
+			// price and enables language update of the pagination bar over invocations.
+			this.initialised = false;
 
 		} else { 
-			$(fPanelMore).dialog('open'); 
+			$(fPanelMore)
+			.dialog('open');
 		}
 	}
 	
@@ -245,8 +250,8 @@ class DynamicPanel {
 			clickToEdit: false,
 			dblclickToEdit: true,
 			columns: [[
-				{ field: 'title', title: '<span locate="TITLE">Title</span>', width: '40%', sortable: true,  sorter: inst.alphaSorter.bind(inst) },
-				{ field:'formula', title: '<span locate="FORMULA">Formula</span>', width:'60%' }
+				{ field: 'title', title: '<span class="custom-equations" locate="TITLE">Title</span>', width: '40%', sortable: true,  sorter: inst.alphaSorter.bind(inst) },
+				{ field:'formula', title: '<span class="custom-equations" locate="FORMULA">Formula</span>', width:'60%' }
 			]]
 		})
 		.datagrid('enableCellEditing')
@@ -331,8 +336,8 @@ class DynamicPanel {
 					$.fn['datagrid'].defaults.view.onAfterRender.call(this, target);
 					await inst.equipDatagrid();
 					inst.customEquationsToParameters();
+					$(inst.gridSelector).datagrid('fixRowHeight');
 					console.log('After render');
-					console.dir(target);
 				}
 			})
 		};
