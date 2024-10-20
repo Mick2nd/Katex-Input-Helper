@@ -48,7 +48,7 @@ The main dialog window
 
 The custom equations dialog
 
-![Custom Equations Dialog](./img/Custom-Equations.png)
+<img src="img/Custom-Equations.png" width="500" />
 
 ## Release Notes
 
