@@ -60,7 +60,7 @@
 						<span class='rtl-menu-item' locate="SET_EQUATION"></span>
 					</div>
 				</div>
-				<div id="mINSERT" class="easyui-menu menus"">
+				<div id="mINSERT" class="easyui-menu menus">
 					<div iconcls="icon-char" id="mCHARS">
 						<span class='rtl-menu-item' locate="CHAR"></span>
 						<div style="width: 200px;">
@@ -261,16 +261,23 @@
 						style="overflow: auto;" id="f_INTEGRAL_SYMBOLS"></div>
 					<div title="<span information='SUM_PROD_SYMBOLS' class='rtl-title-withicon' style='font-size:70%;'>$\sum$ &nbsp;&nbsp; $\prod$ </span>"
 						style="overflow: auto;" id="f_SUM_PROD_SYMBOLS"></div>
+					
 					<!-- THIS MAY CAUSE FILE NOT FOUND : replacement see below
-					<div title="<span information='MATRIX_SYMBOLS' class='rtl-title-withicon'><img class='symbol_btn icon-matrix_13_black' src='jquery-easyui/themes/default/images/blank.gif' width='15' height='20' />  &nbsp;&nbsp; <img class='symbol_btn icon-matrix_33_black' src='jquery-easyui/themes/default/images/blank.gif' width='15' height='20' /></span>"
-						style="overflow: auto;" id="f_MATRIX_SYMBOLS"></div>
+					<div title="<span information='MATRIX_SYMBOLS' class='rtl-title-withicon'><img class='symbol_btn icon-matrix_13_black' src='jquery-easyui/themes/default/images/blank.gif' width='15' height='20' />  &nbsp;&nbsp; 
+						<img class='symbol_btn icon-matrix_33_black' src='jquery-easyui/themes/default/images/blank.gif' width='15' height='20' /></span>"
+						style="overflow: auto;" id="f_MATRIX_SYMBOLS">
+					</div>
 					 -->
+					
 					<div title="<span information='MATRIX_SYMBOLS' class='rtl-title-withicon'><img class='symbol_btn icon-matrix_13_black' width='15' height='20' />  &nbsp;&nbsp; <img class='symbol_btn icon-matrix_33_black' width='15' height='20' /></span>"
-						style="overflow: auto;" id="f_MATRIX_SYMBOLS"></div>
+						style="overflow: auto;" id="f_MATRIX_SYMBOLS">
+					</div>
 					<div title="<span information='BRACKET_SYMBOLS' class='rtl-title-withicon'>$(\ )$ &nbsp;&nbsp; $[\ \ ]$ &nbsp;&nbsp; $\|\ \|$ </span>"
-						style="overflow: auto;" id="f_BRACKET_SYMBOLS"></div>
+						style="overflow: auto;" id="f_BRACKET_SYMBOLS">
+					</div>
 					<div title="<span information='FUNCTION_SYMBOLS' class='rtl-title-withicon'>$\ln$ &nbsp;&nbsp; $\cos$ &nbsp;&nbsp; $\lim$ </span>"
-						style="overflow: auto;" id="f_FUNCTION_SYMBOLS"></div>
+						style="overflow: auto;" id="f_FUNCTION_SYMBOLS">
+					</div>
 				</div>
 			</div>
 
@@ -278,9 +285,9 @@
 		 -->
 		</div>
 		
-		<div id="wEDITOR_PARAMETERS" class="easyui-dialog" iconcls="icon-option" closed="true" modal="true" buttons="#btEDITOR_PARAMETERS"
+		<div id="wEDITOR_PARAMETERS" class="easyui-dialog" iconcls="icon-option" data-options="closed:'true',modal:'true',buttons:'#btEDITOR_PARAMETERS',resizable:'true'"
 			title="<span locate='EDITOR_PARAMETERS' class='rtl-title-withicon'></span>"
-			style="width: 420px; height: 320px;" resizable="true">
+			style="width: 420px; height: 320px;" >
 			<form id="formEDITOR_PARAMETERS" action="#" method="post">
 				<fieldset>
 					<legend><span locate='PERSISTENCE'></span></legend>
@@ -325,31 +332,35 @@
 						locate="CLOSE"></span></a>
 			</div>
 		</div>
-		<div class="easyui-dialog" iconcls="icon-language" closed="true" modal="true" buttons="#btLANGUAGE_CHOISE"
+		<div class="easyui-dialog" iconcls="icon-language" data-options="closed:'true',modal:'true',buttons:'#btLANGUAGE_CHOISE'"
 			id="wLANGUAGE_CHOISE" title="<span locate='LANGUAGE_CHOISE' class='rtl-title-withicon'></span>"
 			>
 			<form id="formLANGUAGE_CHOISE" action="#" method="post"></form>
 			<div id="btLANGUAGE_CHOISE">
-				<a href="#" id="btLANGUAGE_CHOISE_CLOSE" class="easyui-linkbutton" iconcls="icon-cancel"><span
-						locate="CLOSE"></span></a>
+				<a href="#" id="btLANGUAGE_CHOISE_CLOSE" class="easyui-linkbutton" iconcls="icon-cancel">
+					<span locate="CLOSE"></span>
+				</a>
 			</div>
 		</div>
-		<div class="easyui-dialog" iconcls="icon-style" closed="true" modal="true" buttons="#btSTYLE_CHOISE"
+		<div class="easyui-dialog" iconcls="icon-style" data-options="closed:'true',modal:'true',buttons:'#btSTYLE_CHOISE'"
 			id="wSTYLE_CHOISE" title="<span locate='STYLE_CHOISE' class='rtl-title-withicon'></span>"
 			style="width: 250px; height: 200px;">
 			<form id="formSTYLE_CHOISE" action="#" method="post">
 				<fieldset dir='ltr'>
-					<input type="radio" name="style" id="aguas_style" value="aguas" /> <label for="aguas_style">&laquo;
-						Aguas &raquo;</label> <br />
-					<input type="radio" name="style" id="gray_style" value="gray" /> <label for="gray_style">&laquo; Gray
-						&raquo;</label> <br />
-					<input type="radio" name="style" id="black_style" value="black" /> <label for="black_style">&laquo;
-						Black &raquo;</label> <br />
-					<input type="radio" name="style" id="bootstrap_style" value="bootstrap" /> <label
-						for="bootstrap_style">&laquo;
-						Bootstrap &raquo;</label> <br />
-					<input type="radio" name="style" id="metro_style" value="metro" /> <label for="metro_style">&laquo;
-						Metro &raquo;</label>
+					<input type="radio" name="style" id="aguas_style" value="aguas" /> 
+					<label for="aguas_style">&laquo; Aguas &raquo;</label> <br />
+					
+					<input type="radio" name="style" id="gray_style" value="gray" /> 
+					<label for="gray_style">&laquo; Gray &raquo;</label> <br />
+					
+					<input type="radio" name="style" id="black_style" value="black" /> 
+					<label for="black_style">&laquo; Black &raquo;</label> <br />
+					
+					<input type="radio" name="style" id="bootstrap_style" value="bootstrap" /> 
+					<label for="bootstrap_style">&laquo; Bootstrap &raquo;</label> <br />
+					
+					<input type="radio" name="style" id="metro_style" value="metro" /> 
+					<label for="metro_style">&laquo; Metro &raquo;</label>
 				</fieldset>
 			</form>
 			<div id="btSTYLE_CHOISE">
@@ -357,16 +368,14 @@
 						locate="CLOSE"></span></a>
 			</div>
 		</div>
-		<div class="easyui-dialog" iconcls="icon-matrix" closed="true" modal="true" buttons="#btMATRIX" id="wMATRIX"
-			title="<span locate='MATRIX' class='rtl-title-withicon'></span>" style="width: 310px; height: 200px;" resizable="true">
+		<div id="wMATRIX" class="easyui-dialog" iconcls="icon-matrix" data-options="closed:'true',modal:'true',buttons:'#btMATRIX',resizable:'true'"
+			title="<span locate='MATRIX' class='rtl-title-withicon'></span>" style="width: 310px; height: 200px;" >
 			<form id="formMATRIX" name="formMATRIX" action="#" method="post">
 				<table style="border-spacing: 0px; border-collapse: collapse;" id="tableMATRIX" dir="ltr">
 					<tr>
 						<td colspan="2">&nbsp;</td>
 						<td>
-							<center>
-								<input name="colsMATRIX" id="colsMATRIX" size="1" maxlength="2" value="3" />
-							</center>
+							<input name="colsMATRIX" id="colsMATRIX" size="1" maxlength="2" value="3" />
 						</td>
 						<td>&nbsp;</td>
 					</tr>
@@ -386,9 +395,7 @@
 								<option value=":)">&gt;</option>
 							</select></td>
 						<td>
-							<center>
-								<div id="showMATRIX"></div>
-							</center>
+							<div id="showMATRIX"></div>
 						</td>
 						<td><select name="rightbracketMATRIX">
 								<option value=")" selected="selected">)</option>
@@ -413,51 +420,69 @@
 			</div>
 		</div>
 
-		<div class="easyui-dialog" iconcls="icon-diagram" closed="true" modal="false" shadow="false"
-			resizable="true" collapsible="true" id="wf_COMMUTATIVE_DIAGRAM_MORE"
+		<div id="wf_COMMUTATIVE_DIAGRAM_MORE" class="easyui-dialog" iconcls="icon-diagram" 
+			data-options="closed:'true',modal:'false',shadow:'false',resizable:'true',collapsible:'true'"
 			title="<span id='wf_COMMUTATIVE_DIAGRAM_MORE_TITLE' locate='COMMUTATIVE_DIAGRAM' class='rtl-title-withicon'></span>"
-			style="width: 260px; height: 320px;"></div>
-		<div class="easyui-dialog" iconcls="icon-chemical" closed="true" modal="false" shadow="false"
-			resizable="true" collapsible="true" id="wf_CHEMICAL_FORMULAE_MORE"
-			title="<span id='wf_CHEMICAL_FORMULAE_MORE_TITLE' locate='CHEMICAL_FORMULAE' class='rtl-title-withicon'></span>"
-			style="width: 220px; height: 140px;"></div>
-		<div class="easyui-dialog" closed="true" modal="false" shadow="false" resizable="true"
-			collapsible="true" id="wf_BRACKET_SYMBOLS_MORE"
-			title="<span id='wf_BRACKET_SYMBOLS_MORE_TITLE' class='rtl-title-withicon'>$(\ )$ &nbsp;&nbsp; $[\ \ ]$ &nbsp;&nbsp; $\|\ \|$</span>"
-			style="width: 250px; height: 440px;"></div>
-		<div class="easyui-dialog" closed="true" modal="false" shadow="false" resizable="true"
-			collapsible="true" id="wf_RELATION_SYMBOLS_MORE"
-			title="<span id='wf_RELATION_SYMBOLS_MORE_TITLE' class='rtl-title-withicon'>$\leq$ &nbsp;&nbsp; $\cong$ &nbsp;&nbsp; $\approx$</span>"
-			style="width: 240px; height: 300px;"></div>
-		<div class="easyui-dialog" closed="true" modal="false" shadow="false" resizable="true"
-			collapsible="true" id="wf_ARROW_SYMBOLS_MORE"
-			title="<span id='wf_ARROW_SYMBOLS_MORE_TITLE' class='rtl-title-withicon'>$\Rightarrow$ &nbsp;&nbsp; $\circlearrowleft$ &nbsp;&nbsp; $\looparrowright$</span>"
-			style="width: 240px; height: 330px;"></div>
-		<div class="easyui-dialog" closed="true" modal="false" shadow="false" resizable="true"
-			collapsible="true" id="wf_FR_CHAR_MORE"
-			title="<span id='wf_FR_CHAR_MORE_TITLE' class='rtl-title-withicon'>$\mathfrak{A}$ &nbsp;&nbsp; $\mathfrak{B}$ &nbsp;&nbsp; $\mathfrak{C}$</span>"
-			style="width: 240px; height: 340px;"></div>
-		<div class="easyui-dialog" closed="true" modal="false" shadow="false" resizable="true"
-			collapsible="true" id="wf_BBB_CHAR_MORE"
-			title="<span id='wf_BBB_CHAR_MORE_TITLE' class='rtl-title-withicon'>$\mathbb{A}$ &nbsp;&nbsp; $\mathbb{B}$ &nbsp;&nbsp; $\mathbb{C}$</span>"
-			style="width: 240px; height: 340px;"></div>
-		<div class="easyui-dialog" closed="true" modal="false" shadow="false" resizable="true"
-			collapsible="true" id="wf_L_U_GREEK_CHAR_MORE"
-			title="<span id='wf_L_U_GREEK_CHAR_MORE_TITLE' class='rtl-title-withicon'>$\varepsilon$ &nbsp;&nbsp; $\pi$ &nbsp;&nbsp; $\Psi$</span>"
-			style="width: 240px; height: 470px;"></div>
-		<div class="easyui-dialog" closed="true" modal="false" shadow="false" resizable="true"
-			collapsible="true" id="wf_ALL_CHAR_MORE"
-			title="<span id='wf_ALL_CHAR_MORE_TITLE' class='rtl-title-withicon'>A B C</span>"
-			style="width: 540px; height: 320px;"></div>
-		<div class="easyui-dialog" iconcls="icon-equation" closed="true" modal="false" shadow="false"
-			resizable="true" collapsible="true" id="wf_EQUATION_MORE"
-			title="<span id='wf_EQUATION_MORE_TITLE' locate='EQUATION' class='rtl-title-withicon'></span>"
-			style="width: 500px; height: 320px;"></div>
+			style="width: 260px; height: 320px;">
+		</div>
 		
-		<div id="wf_CUSTOM_EQUATIONS_MORE" class="easyui-dialog" iconcls="icon-equation" closed="true" 
-			resizable="true" collapsible="true" modal="false" shadow="false"
+		<div id="wf_CHEMICAL_FORMULAE_MORE" class="easyui-dialog" iconcls="icon-chemical" 
+			data-options="closed:'true',modal:'false',shadow:'false',resizable:'true',collapsible:'true'"
+			title="<span id='wf_CHEMICAL_FORMULAE_MORE_TITLE' locate='CHEMICAL_FORMULAE' class='rtl-title-withicon'></span>"
+			style="width: 220px; height: 140px;">
+		</div>
+		
+		<div id="wf_BRACKET_SYMBOLS_MORE" class="easyui-dialog" 
+			data-options="closed:'true',modal:'false',shadow:'false',resizable:'true',collapsible:'true'"
+			title="<span id='wf_BRACKET_SYMBOLS_MORE_TITLE' class='rtl-title-withicon'>$(\ )$ &nbsp;&nbsp; $[\ \ ]$ &nbsp;&nbsp; $\|\ \|$</span>"
+			style="width: 250px; height: 440px;">
+		</div>
+		
+		<div id="wf_RELATION_SYMBOLS_MORE" class="easyui-dialog" 
+			data-options="closed:'true',modal:'false',shadow:'false',resizable:'true',collapsible:'true'"
+			title="<span id='wf_RELATION_SYMBOLS_MORE_TITLE' class='rtl-title-withicon'>$\leq$ &nbsp;&nbsp; $\cong$ &nbsp;&nbsp; $\approx$</span>"
+			style="width: 240px; height: 300px;">
+		</div>
+		
+		<div id="wf_ARROW_SYMBOLS_MORE" class="easyui-dialog" 
+			data-options="closed:'true',modal:'false',shadow:'false',resizable:'true',collapsible:'true'"
+			title="<span id='wf_ARROW_SYMBOLS_MORE_TITLE' class='rtl-title-withicon'>$\Rightarrow$ &nbsp;&nbsp; $\circlearrowleft$ &nbsp;&nbsp; $\looparrowright$</span>"
+			style="width: 240px; height: 330px;">
+		</div>
+		
+		<div id="wf_FR_CHAR_MORE" class="easyui-dialog" 
+			data-options="closed:'true',modal:'false',shadow:'false',resizable:'true',collapsible:'true'"
+			title="<span id='wf_FR_CHAR_MORE_TITLE' class='rtl-title-withicon'>$\mathfrak{A}$ &nbsp;&nbsp; $\mathfrak{B}$ &nbsp;&nbsp; $\mathfrak{C}$</span>"
+			style="width: 240px; height: 340px;">
+		</div>
+		
+		<div id="wf_BBB_CHAR_MORE" class="easyui-dialog" 
+			data-options="closed:'true',modal:'false',shadow:'false',resizable:'true',collapsible:'true'"
+			title="<span id='wf_BBB_CHAR_MORE_TITLE' class='rtl-title-withicon'>$\mathbb{A}$ &nbsp;&nbsp; $\mathbb{B}$ &nbsp;&nbsp; $\mathbb{C}$</span>"
+			style="width: 240px; height: 340px;">
+		</div>
+		
+		<div id="wf_L_U_GREEK_CHAR_MORE" class="easyui-dialog" 
+			data-options="closed:'true',modal:'false',shadow:'false',resizable:'true',collapsible:'true'"
+			title="<span id='wf_L_U_GREEK_CHAR_MORE_TITLE' class='rtl-title-withicon'>$\varepsilon$ &nbsp;&nbsp; $\pi$ &nbsp;&nbsp; $\Psi$</span>"
+			style="width: 240px; height: 470px;">
+		</div>
+		
+		<div id="wf_ALL_CHAR_MORE" class="easyui-dialog" 
+			data-options="closed:'true',modal:'false',shadow:'false',resizable:'true',collapsible:'true'"
+			title="<span id='wf_ALL_CHAR_MORE_TITLE' class='rtl-title-withicon'>A B C</span>"
+			style="width: 540px; height: 320px;">
+		</div>
+		
+		<div id="wf_EQUATION_MORE" class="easyui-dialog" iconcls="icon-equation" 
+			data-options="closed:'true',modal:'false',shadow:'false',resizable:'true',collapsible:'true'"
+			title="<span id='wf_EQUATION_MORE_TITLE' locate='EQUATION' class='rtl-title-withicon'></span>"
+			style="width: 500px; height: 320px;">
+		</div>
+		
+		<div id="wf_CUSTOM_EQUATIONS_MORE" class="easyui-dialog" iconcls="icon-equation" 
+			data-options="closed:'true',modal:'false',shadow:'false',resizable:'true',collapsible:'true',buttons:'#btCUSTOM_EQUATIONS_BUTTONS'"
 			title="<span id='wf_CUSTOM_EQUATIONS_MORE_TITLE' class='custom-equations' locate='CUSTOM_EQUATIONS' class='rtl-title-withicon'></span>"
-			buttons="#btCUSTOM_EQUATIONS_BUTTONS"
 			style="width: 500px; height: 320px;">
 			<table id="customDatagrid" class="easyui-datagrid" >
 			    <thead>
@@ -485,32 +510,44 @@
 				</a>
 			</div>
 			<input type="file" id="fOPEN_CUSTOM_EQUATIONS" style="display: none" />
-			<a id="fSAVE_CUSTOM_EQUATIONS" href="#" />
+			<a id="fSAVE_CUSTOM_EQUATIONS" href="#" ></a>
 		</div>
 		
-		<div class="easyui-dialog" iconcls="icon-hspace" closed="true" modal="false" shadow="false"
-			resizable="true" collapsible="true" id="wf_HORIZONTAL_SPACING_MORE" title="&nbsp;"
-			style="width: 110px; height: 250px;"></div>
-		<div class="easyui-dialog" iconcls="icon-vspace" closed="true" modal="false" shadow="false"
-			resizable="true" collapsible="true" id="wf_VERTICAL_SPACING_MORE" title="&nbsp;"
-			style="width: 210px; height: 120px;"></div>
-		<div class="easyui-dialog" iconcls="icon-special_char" closed="true" modal="false" shadow="false"
-			resizable="true" collapsible="true" id="wf_SPECIAL_CHARACTER_MORE" title="&nbsp;"
-			style="width: 65px; height: 240px;"></div>
-		<div class="easyui-window" iconcls="icon-symbols" closed="true" modal="false" collapsible="false"
-			minimizable="false" maximizable="false" closable="true" id="wLATEX_CODES_LIST"
-			title="<span locate='LATEX_CODES_LIST' class='rtl-title-withicon'></span>" style="height: 450px; width: 240px">
+		<div id="wf_HORIZONTAL_SPACING_MORE" class="easyui-dialog" iconcls="icon-hspace" 
+			data-options="closed:'true',modal:'false',shadow:'false',resizable:'true',collapsible:'true'"
+			title="&nbsp;"
+			style="width: 110px; height: 250px;">
+		</div>
+		
+		<div id="wf_VERTICAL_SPACING_MORE" class="easyui-dialog" iconcls="icon-vspace" 
+			data-options="closed:'true',modal:'false',shadow:'false',resizable:'true',collapsible:'true'"
+			title="&nbsp;"
+			style="width: 210px; height: 120px;">
+		</div>
+		
+		<div id="wf_SPECIAL_CHARACTER_MORE" class="easyui-dialog" iconcls="icon-special_char" 
+			data-options="closed:'true',modal:'false',shadow:'false',resizable:'true',collapsible:'true'"
+			title="&nbsp;"
+			style="width: 65px; height: 240px;">
+		</div>
+		
+		<div id="wLATEX_CODES_LIST" class="easyui-window" iconcls="icon-symbols" 
+			data-options="closed:'true',modal:'false',collapsible:'false',minimizable:'false',maximizable:'false',closable:'true'"
+			title="<span locate='LATEX_CODES_LIST' class='rtl-title-withicon'></span>" 
+			style="height: 450px; width: 240px">
 			<div id="cLATEX_CODES_LIST"></div>
 		</div>
-		<div class="easyui-window" iconcls="icon-symbols" closed="true" modal="false" collapsible="false"
-			minimizable="false" maximizable="false" closable="true" id="wASCIIMATH_CODES_LIST"
+		
+		<div id="wASCIIMATH_CODES_LIST" class="easyui-window" iconcls="icon-symbols" 
+			data-options="closed:'true',modal:'false',collapsible:'false',minimizable:'false',maximizable:'false',closable:'true'"
 			title="<span locate='ASCIIMATH_CODES_LIST' class='rtl-title-withicon'></span>"
 			style="height: 450px; width: 330px">
 			<div id="cASCIIMATH_CODES_LIST"></div>
 			``
 		</div>
-		<div class="easyui-window" iconcls="icon-codes" resizable="false" closed="true" modal="false" collapsible="false"
-			minimizable="false" maximizable="false" closable="true" id="wUNICODES_LIST"
+		
+		<div id="wUNICODES_LIST" class="easyui-window" iconcls="icon-codes"
+			data-options="resizable:'false',closed:'true',modal:'false',collapsible:'false',minimizable:'false',maximizable:'false',closable:'true'"
 			title="<span locate='UNICODES_LIST' class='rtl-title-withicon'></span>" style="height: 560px; width: 580px">
 			<div style="margin-top: 10px; margin-bottom: 10px; margin-left: 4px;">
 				<form action="#" method="post">
@@ -520,26 +557,27 @@
 			<div id="cUNICODES_LIST" style="float: left; width: 350px; height: 480px; overflow: auto;"></div>
 			<div id="cUNICODES_VALUES" style="float: right; width: 170px; height: 480px; overflow: auto;"></div>
 		</div>
-		<div class="easyui-window" iconcls="icon-langressource" closed="true" modal="false" collapsible="false"
-			minimizable="false" maximizable="false" closable="true" id="wLANGUAGE_LIST"
+		
+		<div id="wLANGUAGE_LIST" class="easyui-window" iconcls="icon-langressource" 
+			data-options="closed:'true',modal:'false',collapsible:'false',minimizable:'false',maximizable:'false',closable:'true'"
 			title="<span locate='LANGUAGE_LIST' class='rtl-title-withicon'></span>" style="height: 450px; width: 650px">
 			<div id="tLANGUAGE_LIST" class="easyui-tabs" border="false" fit="true" plain="false"></div>
 		</div>
-		<div class="easyui-window" iconcls="icon-info" closed="true" modal="false" collapsible="false" minimizable="false"
-			maximizable="false" closable="true" id="wINFORMATIONS"
-			title="<span locate='INFORMATIONS' class='rtl-title-withicon'></span>" style="height: 450px; width: 600px" resizable="true">
+		
+		<div id="wINFORMATIONS" class="easyui-window" iconcls="icon-info" 
+			data-options="resizable:'true',closed:'true',modal:'false',collapsible:'false',minimizable:'false',maximizable:'false',closable:'true'"
+			title="<span locate='INFORMATIONS' class='rtl-title-withicon'></span>" 
+			style="height: 450px; width: 600px" >
 			<div id="tINFORMATIONS" class="easyui-tabs" border="false" fit="true" plain="false">
 				<div title="<span locate='COPYRIGHT'></span>" id="tCOPYRIGHT" iconcls="icon-copyright" closable="false"
-					style="padding: 10px;" cache="true" href=""></div>
+					style="padding: 10px;" cache="true" href="#"></div>
 				<div title="<span locate='VERSION'></span>" id="tVERSION" iconcls="icon-history" closable="false"
-					style="padding: 10px;" cache="true" href=""></div>
+					style="padding: 10px;" cache="true" href="#"></div>
 				<div title="<span locate='BUGS'></span>" id="tBUGS" iconcls="icon-bugs" closable="false"
-					style="padding: 10px;" cache="true" href=""></div>
+					style="padding: 10px;" cache="true" href="#"></div>
 				<div title="<span locate='EQUATION_SAMPLE'></span>" id="tEQUATION" iconcls="icon-equation" closable="false"
-					style="padding: 10px;" cache="true" href=""></div>
+					style="padding: 10px;" cache="true" href="#"></div>
 			</div>
 		</div>
-	<script id="additionalScripts">
-	</script>
 	</body>
 </html>

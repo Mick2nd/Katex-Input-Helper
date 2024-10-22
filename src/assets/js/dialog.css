@@ -129,6 +129,10 @@ h3 {
 	}
 }
 
+#tableMATRIX td {
+	text-align: center;
+}
+
 #customDatagrid {
 	border-spacing: 0px;
 	border-collapse: collapse;

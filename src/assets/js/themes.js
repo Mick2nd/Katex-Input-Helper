@@ -1,14 +1,24 @@
 
-
-class Themes {
+/**
+ * @abstract Themes or Styles support.
+ */
+class Themes extends Observable {
 	location = "";
-	dir = 'ltr';
+	dir = "";
 	cssActive = false;
+	activeTheme = "";
 	
+	/**
+	 * @abstract Constructor.
+	 */
 	constructor() {
+		super();
 		this.location = getScriptLocation();
 	}
 	
+	/**
+	 * @abstract Appends attributes of one or more elements to another. 
+	 */
 	universalLoad(where, what) {
 		for (var entry of what) {
 			$(where)
@@ -18,10 +28,58 @@ class Themes {
 			);
 		}
 	}
+	
+	/**
+	 * @abstract Initializes the theme choice.
+	 */
+	initialiseThemeChoice(activeTheme, dir = 'ltr') {
+		var inst = this;
+		this.appendCss(activeTheme, dir);													// initialisation -> 'load' css files
+		$("[name='style']").filter(`[value=${activeTheme}]`).attr("checked", "checked"); 	// select Radio button
+
+		$("input[name='style']").change(function() { 										// change handler of style changes
+			var activeTheme = $("input[name='style']:checked").val(); 
+			inst.activateStyle(activeTheme);
+		}); 
+		
+		this.activateStyle(activeTheme);
+	}
+	
+	/**
+	 * @abstract Activate the style setting.
+	 */
+	activateStyle(activeTheme) {
+		if (activeTheme == this.activeTheme) {												// no change
+			return;
+		}
+		this.activeTheme = activeTheme;
+		var styles = document.getElementsByTagName('link');									// all link entries are potential css files
+		console.info(`chooseStyle: have entries for tag 'link' : ${styles.length > 0}`);
+		var colorType = null;
+		
+		for (const style of styles) { 														// enable / disable css files
+			var title = style.getAttribute("title"); 
+			if (title) { 
+				if (title != activeTheme) { 
+					style.disabled = true; 
+				} else { 
+					style.disabled = false; 
+					colorType = style.getAttribute("colorType"); 							// and determine color type
+				} 
+			} 
+		}
+		
+		this.notify(activeTheme, this.dir, colorType);										// finally notify observers
+	}
 
 	/**
-	 * Appends a series of required CSS files to head of html.
-	 * The HTML itself cannot do this.
+	 * @abstract Appends a series of required CSS files to head of html.
+	 * 
+	 * The HTML itself cannot do this, because the active theme dynamically changes. This is a
+	 * initialisation time task.
+	 * 
+	 * @param activeTheme - the active theme
+	 * @param dir - direction of the active language (ltr or rtl)
 	 */
 	appendCss(activeTheme, dir = 'ltr') {
 		console.info(`Active theme is ${activeTheme}`);
@@ -88,13 +146,21 @@ class Themes {
 		this.cssActive = true;
 	}
 	
+	/**
+	 * @abstract Sets the RTL style.
+	 */
 	setRTLstyle(dir = 'ltr') {
+		if (dir == this.dir) {
+			return;
+		}
+		this.dir = dir;
 		if (this.cssActive) {
 			console.info(`Html Dir is: ${dir}`);
-			if (dir == 'rtl') {
-				document.getElementById("RTLstyle").disabled = false; 
-			} else {
-				document.getElementById("RTLstyle").disabled = true; 
+			var disabled = document.getElementById("RTLstyle").disabled;
+			var newDisabled = dir !== 'rtl';										// suppress unnecessary changes => measure did not help
+			if (newDisabled != disabled) {
+				document.getElementById("RTLstyle").disabled = newDisabled;
+				console.info(`RTL style set to: ${newDisabled}`);
 			}
 		}
 	}

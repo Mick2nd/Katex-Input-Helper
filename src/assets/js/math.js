@@ -250,7 +250,7 @@ class DynamicPanel {
 			clickToEdit: false,
 			dblclickToEdit: true,
 			columns: [[
-				{ field: 'title', title: '<span class="custom-equations" locate="TITLE">Title</span>', width: '40%', sortable: true,  sorter: inst.alphaSorter.bind(inst) },
+				{ field: 'title', title: '<span class="custom-equations" locate="TITLE">Title</span>', width: '40%', editor: 'text', sortable: true,  sorter: inst.alphaSorter.bind(inst) },
 				{ field:'formula', title: '<span class="custom-equations" locate="FORMULA">Formula</span>', width:'60%' }
 			]]
 		})
@@ -472,12 +472,33 @@ class MathFormulae {
 	 * Updates Tables in Panels or Dialogs by translating contained Math. Although this is a Math
 	 * method, it also updates some image references. TODO: implement SRP (single responsibility principle)
 	 */
-	updateTables() {
+	async updateTables() {
 		try {
 			var inst = this;
-			var entries = $('.panel-body table tbody tr td a.easyui-tooltip, .easyui-dialog div a.s');
+			var selector = '.panel-body table tbody tr td a.easyui-tooltip, .easyui-dialog div a.s';
+			var entries = $(selector);
 			console.info(`Katex: ${entries.length} td items`);
+			var im1 = 0;
 			entries.each(function(idx, a) {
+				
+				function handleImage(img) {
+					if ($(img).prop("tagName") != "IMG") {
+						console.debug(`Images: no IMG tag`);
+						return;
+					}
+					if ($(img).attr("src") == undefined) {
+						console.debug(`Images: no src attr`);
+						return;
+					}
+					if ($(img).attr("src").startsWith("file")) {
+						console.debug(`Images: file begin`);
+						return;
+					}
+					var src = $(img).attr("src");
+					$(img).attr("src", inst.location + src);
+					im1 ++;
+				}
+				
 				if (a) {
 					try {
 						var html = a.innerHTML;
@@ -495,8 +516,7 @@ class MathFormulae {
 							text2 = text2.substring(1, text2.length - 1);
 	
 							var img = a.children[0];
-							var src = img.attributes['src'];
-							img.setAttribute('src', inst.location + src.value);
+							handleImage(img);
 							
 							inst.insertMath(text2, a);
 							var ch = a.children[0];
@@ -508,11 +528,7 @@ class MathFormulae {
 						} else {															// direct image case
 							var img = a.firstChild;
 							if (img && img.nodeType != Node.TEXT_NODE && img.hasAttribute('src')) {
-								var src = img.attributes['src'].value;
-								if (!src.startsWith('file')) {
-									src = inst.location + src;
-								}
-								img.setAttribute('src', src);
+								handleImage(img);
 							}
 						}
 					} catch(e) {
@@ -520,6 +536,13 @@ class MathFormulae {
 					}
 				}
 			})
+			if (im1 > 0) {
+				console.debug(`Images detected: ${im1}`)
+			}				
+
+			// TODO: TEST: changes must be updated so that easyui knows them
+			await this.parser.parseAsync(selector);
+
 		} catch(e) {
 			console.error(`Katex: updateTables : ${e}`);
 		}

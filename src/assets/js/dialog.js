@@ -24,11 +24,14 @@ class KatexInputHelper {
 	allowedCtrlKeys = [86, 88, 89, 90]
 	notAllowedCtrlKeys = []; 
 	notAllowedAltKeys = []; 
+	
+	// TODO: there is no code that switches to the Color Picker, where is it?
 	runNotColorPicker = false;
 
 	runNotMathJax = true;
 	runNotCodeMirror = false;
 
+	rtlStyle = 'ltr';
 	location = "";
 	localizer = null;
 	themes = null;
@@ -154,8 +157,7 @@ class KatexInputHelper {
 
 
 	/**
-	 * initialize. Performs the whole initialization. Part of it is invoked after Local Type initialisation
-	 * by a calback.
+	 * @abstract Initialize. Performs the whole initialization.
 	 */
 	async initialise() { 
 		var vme = this; 
@@ -168,19 +170,21 @@ class KatexInputHelper {
 		$('#form').hide();
 
 		this.parser.initialise();		
-		await this.parameters.queryParameters();				// from Plugin
-		await this.initialiseLocalType();						// setting up the localizer including preparation of selection dialog
-		vme.themes.appendCss(this.style);						// setting up the themes by loading the css files
-		await vme.updateInfo();									// updates a few dialogs
+		
+		await this.parameters.queryParameters();					// from Plugin		
+		await vme.updateInfo();										// updates a few dialogs
 		await vme.initialiseUI(); 
 		vme.initialiseCodeMirror(); 
 		vme.initialiseParameters(); 
-		vme.initialiseStyle(); 
-		await vme.initialiseLanguage();
-		// seems to be redundant
-		// vme.localType = vme.url.param('localType');
 		vme.initialiseCodeType(); 
 		vme.initialiseVirtualKeyboard(); 
+		
+		// IN QUESTION
+		this.localizer.subscribe(this.onLocaleChanged.bind(this));
+		this.localizer.initialiseLanguageChoice(this.localType);
+		this.themes.subscribe(this.onStyleChanged.bind(this));
+		this.themes.initialiseThemeChoice(this.style, this.rtlStyle); // RTL STYLE defined after locale language
+
 		vme.endWait(); 
 		vme.isBuild = true;
 	}
@@ -370,20 +374,11 @@ class KatexInputHelper {
 			$('#wEDITOR_PARAMETERS').dialog('close'); 
 			vme.setFocus(); 
 		}); 
-		$("input[name='localType']").change(async function() { 
-			vme.localType = $("input[name='localType']:checked").val(); 
-			await vme.localize(); 
-			vme.printCodeType(); 
-		}); 
 		$("input[name='codeType']").change(function() { 
 			vme.codeType = $("input[name='codeType']:checked").val(); 
 			vme.printCodeType(); 
 			vme.updateOutput(); 
-		}); 
-		$("input[name='style']").change(function() { 
-			vme.style = $("input[name='style']:checked").val(); 
-			vme.chooseStyle(); 
-		}); 
+		});
 		$("#mathVisualOutput").bind('contextmenu', function(event) { 
 			event.preventDefault(); 
 			$('#mVIEW').menu('show', { left: event.pageX, top: event.pageY }); 
@@ -481,6 +476,9 @@ class KatexInputHelper {
 		return html;
 	}
 	
+	/**
+	 * @abstract Adapt UI to code type. (Latex or Ascii)
+	 */
 	printCodeType() { 
 		$("[name='codeType']").filter("[value=" + this.codeType + "]").attr("checked", "checked"); 
 		$("#title_Edition_Current_Syntax").text(this.codeType); 
@@ -489,37 +487,6 @@ class KatexInputHelper {
 	
 	initialiseCodeType() {
 		this.printCodeType();
-	}
-	
-	/**
-	 * @abstract Initialises the configured style.
-	 * 
-	 * This includes setting up the whole ui with the given style.
-	 */
-	initialiseStyle() {
-		$("[name='style']").filter("[value=" + this.style + "]").attr("checked", "checked"); 
-		this.chooseStyle();
-	}
-	
-	/**
-	 * @abstract Loads the Locales file according to current language code.
-	 * 
-	 * It updates in turn the Languages selection dialog. 
-	 */
-	async initialiseLocalType() {
-		await this.localizer.load(this.localType);
-		var html = await this.localizer.buildLocalTypes();
-		$("#formLANGUAGE_CHOISE").html(html);
-	}
-	
-	/**
-	 * @abstract Initializes the configured language.
-	 * 
-	 * This includes setting up the whole ui with the given language.
-	 */
-	async initialiseLanguage() { 
-		$("[name='localType']").filter("[value=" + this.localType + "]").attr("checked", "checked"); 
-		await this.localizeIt(); 
 	}
 
 	/**
@@ -606,6 +573,9 @@ class KatexInputHelper {
 		}); 
 	}
 	
+	/**
+	 * @abstract Not defined for Katex. Reserved for future use.
+	 */
 	async initialiseLatexMathjaxCodesList() {
 		if (!this.latexMathjaxCodesListLoaded) {
 			function listNames(obj, prefix) {
@@ -665,6 +635,9 @@ class KatexInputHelper {
 		}
 	}
 	
+	/**
+	 * @abstract Initialises the Unicode List.
+	 */
 	async initialiseUniCodesList() {
 		if (!this.uniCodesListLoaded) {
 			var html = "<table><caption>[0x0000,0xFFFF]</caption>"; 
@@ -683,10 +656,17 @@ class KatexInputHelper {
 		}
 	}
 	
+	/**
+	 * @abstract Selects a Unicode Character and inserts it.
+	 */
 	async selectUniCodesValues(i1, i2) { 
-		$('#unicodeChoise').combobox("select", ""); await this.setUniCodesValues(i1, i2, true); 
+		$('#unicodeChoise').combobox("select", ""); 
+		await this.setUniCodesValues(i1, i2, true); 
 	}
 	
+	/**
+	 * @abstract Inserts an Unicode Character for display in the table.
+	 */
 	async setUniCodesValues(i1, i2, breakFFFF) {
 		var html = ("<table border='1' cellspacing='0' style='border-spacing:0px;border-collapse:collapse;'>"); 
 		html += ("\n<tr><th><span locate='UNICODES_INPUT'>" + this.getLocalText("UNICODES_INPUT") + "</span></th><th>HEXA</th><th><span locate='OUTPUT'>" + this.getLocalText("OUTPUT") + "</span></th></tr>"); 
@@ -799,15 +779,18 @@ class KatexInputHelper {
 		} catch (e) { return ""; } 
 	}
 	
-	async localize() {
-		console.log(`Entry into localize, localType is: ${this.localType}`);
-		var inst = this;
-		await this.localizer.load(this.localType);
-		await inst.initialiseLanguage();
-	}
-	
-	async localizeIt() {
-		console.log(`Entry into localizeIt, localType is: ${this.localType}`);
+	/**
+	 * @abstract This is the observer for Language changes, it switches the language of the UI.
+	 * 
+	 * It does this by:
+	 * - setting document language
+	 * - setting the RTL style
+	 * - localize all entries of the UI (using *span[locate]*)
+	 * - additional statements could not be assigned to this task => TODO: separate?
+	 */
+	async onLocaleChanged() {
+		this.localType = this.localizer.currentLocale;
+		console.log(`Entry into onLocaleChanged, localType is: ${this.localType}`);
 		var vme = this; 
 		
 		$("html").attr("xml:lang", vme.getLocalText("_i18n_HTML_Lang")); 
@@ -821,10 +804,14 @@ class KatexInputHelper {
 					if (typeof (localText) != "undefined") $(this).html(localText); 
 				} 
 			}); 
+			
+		// TODO: ??
 		$("#btTITLE_EDITION_SYNTAX").click(function(event) { 
 			event.preventDefault(); 
 			vme.setFocus(); 
 		}); 
+		
+		//  TODO: HTML mode deactivated, remove completely?
 		vme.switchHtmlMode(vme.encloseAllFormula);
 		$("#btENCLOSE_TYPE").click(function(event) {
 			event.preventDefault(); 
@@ -835,6 +822,9 @@ class KatexInputHelper {
 			*/ 
 			vme.setFocus(); 
 		}); 
+		
+		// TODO: it seems this code has nothing to do with language, but perhaps the visual appearance 
+		// depends on ltr - style. There seems to be no switch. 
 		$("#btHTML_STRONG").click(function(event) { event.preventDefault(); vme.tag("<strong>", "</strong>"); }); 
 		$("#btHTML_EM").click(function(event) { event.preventDefault(); vme.tag("<em>", "</em>"); }); 
 		$("#btHTML_U").click(function(event) { event.preventDefault(); vme.tag("<u>", "</u>"); }); 
@@ -856,12 +846,48 @@ class KatexInputHelper {
 		$("#btHTML_LEFT").click(function(event) { event.preventDefault(); vme.tag("<p style=\"text-align:left\">", "</p>"); }); 
 		$("#btHTML_RIGHT").click(function(event) { event.preventDefault(); vme.tag("<p style=\"text-align:right\">", "</p>"); }); 
 		$("#btHTML_JUSTIFY").click(function(event) { event.preventDefault(); vme.tag("<p style=\"text-align:justify\">", "</p>"); }); 
-		$("#btHTML_INDENT").click(function(event) { event.preventDefault(); vme.tag("<p style=\"margin-left:40px;text-align:justify\">", "</p>"); }); if (!vme.runNotColorPicker) { $('#btHTML_TEXTCOLOR').ColorPicker({ color: '#0000ff', flat: false, onShow: function(colpkr) { $(colpkr).fadeIn(500); return false; }, onHide: function(colpkr) { $(colpkr).fadeOut(500); return false; }, onChange: function(hsb, hex, rgb) { $('#btHTML_TEXTCOLOR').css('backgroundColor', '#' + hex); }, onSubmit: function(hsb, hex, rgb, el) { $(el).css('backgroundColor', '#' + hex); $(el).ColorPickerHide(); vme.tag("<span style=\"color:#" + hex + "\">", "</span>"); } }); $('#btHTML_FORECOLOR').ColorPicker({ color: '#0000ff', flat: false, onShow: function(colpkr) { $(colpkr).fadeIn(500); return false; }, onHide: function(colpkr) { $(colpkr).fadeOut(500); return false; }, onChange: function(hsb, hex, rgb) { $('#btHTML_FORECOLOR').css('backgroundColor', '#' + hex); }, onSubmit: function(hsb, hex, rgb, el) { $(el).css('backgroundColor', '#' + hex); $(el).ColorPickerHide(); vme.tag("<span style=\"background-color:#" + hex + "\">", "</span>"); } }); }
-		$("#btCOPYRIGHT").click(async function(event) { event.preventDefault(); await vme.openInformationTab(0); vme.setFocus(); }); $("#VMEversionInf").html(vme.version);
+		$("#btHTML_INDENT").click(function(event) { event.preventDefault(); vme.tag("<p style=\"margin-left:40px;text-align:justify\">", "</p>"); }); 
+		if (!vme.runNotColorPicker) { 
+			$('#btHTML_TEXTCOLOR').ColorPicker({ 
+				color: '#0000ff', 
+				flat: false, 
+				onShow: function(colpkr) { $(colpkr).fadeIn(500); return false; }, 
+				onHide: function(colpkr) { $(colpkr).fadeOut(500); return false; }, 
+				onChange: function(hsb, hex, rgb) { $('#btHTML_TEXTCOLOR').css('backgroundColor', '#' + hex); }, 
+				onSubmit: function(hsb, hex, rgb, el) { 
+					$(el).css('backgroundColor', '#' + hex); 
+					$(el).ColorPickerHide(); 
+					vme.tag("<span style=\"color:#" + hex + "\">", "</span>"); 
+				} 
+			}); 
+			$('#btHTML_FORECOLOR').ColorPicker({ 
+				color: '#0000ff', 
+				flat: false, 
+				onShow: function(colpkr) { $(colpkr).fadeIn(500); return false; }, 
+				onHide: function(colpkr) { $(colpkr).fadeOut(500); return false; }, 
+				onChange: function(hsb, hex, rgb) { $('#btHTML_FORECOLOR').css('backgroundColor', '#' + hex); }, 
+				onSubmit: function(hsb, hex, rgb, el) { 
+					$(el).css('backgroundColor', '#' + hex); 
+					$(el).ColorPickerHide(); 
+					vme.tag("<span style=\"background-color:#" + hex + "\">", "</span>"); 
+				} 
+			}); 
+		}
+		$("#btCOPYRIGHT").click(async function(event) { 
+			event.preventDefault(); 
+			await vme.openInformationTab(0); 
+			vme.setFocus(); 
+		}); 
+		// TODO: no idea where this id is! In the tVERSION.html exists a VMEversion
+		$("#VMEversion").html(vme.version);
+
+		this.printCodeType();
 	}
 	
 	/**
-	 * Switches the Html mode into a given state.
+	 * @abstract Switches the Html mode into a given state.
+	 * 
+	 * @param toEnclose - target state
 	 */
 	switchHtmlMode(toEnclose) {
 		// $("#btENCLOSE_TYPE").linkbutton('disable');
@@ -1100,46 +1126,10 @@ class KatexInputHelper {
 	/**
 	 * @abstract The style chosen is set up for the UI.
 	 */
-	chooseStyle() {
+	onStyleChanged(style, rtlStyle, colorType) {
+		this.style = style;																// necessary to persist and delegate
 		try {
-			var tags = ['link', 'style']; 
-			var t, s, title; 
-			var colorImg = "black", codemirrorCSS = "default", colorpickerCSS = "gray", colorType = null; 
-			/*
-			*/
-			for (t = 0; t < (tags.length); t++) { 
-				var styles = document.getElementsByTagName(tags[t]);
-				console.info(`chooseStyle: have entries for tag ${tags[t]} : ${styles.length > 0}`);
-				for (s = 0; s < (styles.length); s++) { 
-					title = styles[s].getAttribute("title"); 
-					if (title) { 
-						if (title != this.style) { 
-							styles[s].disabled = true; 
-						} else { 
-							styles[s].disabled = false; 
-							colorType = styles[s].getAttribute("colorType"); 
-						} 
-					} 
-				} 
-			}
-			
-			/* TRIAL with jquery solution - NOT WORKING ==> try function version
-			var vme = this;
-			for (var tag of tags) {
-				var entries = false;
-				$(`${tag}[title]`).each(() => {
-					entries = true;
-					var title = $(this).attr("title");
-					if (title != vme.style) {
-						$(this).attr("disabled", true);
-					} else {
-						$(this).attr("disabled", false);
-						colorType = $(this).attr("colorType");
-					}					
-				});
-				console.info(`chooseStyle: have entries for tag ${tag} : ${entries}`);
-			}
-			*/
+			var colorImg = "black", codemirrorCSS = "default", colorpickerCSS = "gray"; 
 			
 			if (colorType == "black") {
 				colorImg = "white"
@@ -1155,7 +1145,8 @@ class KatexInputHelper {
 				$("#colorpickerCSSblack").disabled = !(colorpickerCSS == "black");
 				$("#colorpickerCSSgray").disabled = !(colorpickerCSS == "gray");
 			}
-			var posColor, posExt; $(".symbol_btn").each(function(index) { 
+			var posColor, posExt; 
+			$(".symbol_btn").each(function(index) { 
 				if (this.className.indexOf("icon-matrix") > -1) { 
 					posColor = this.className.lastIndexOf("_"); 
 					if (posColor) this.className = this.className.substr(0, posColor + 1) + colorImg; 
@@ -1164,7 +1155,7 @@ class KatexInputHelper {
 			this.setRTLstyle();
 		}
 		catch(e) {
-			console.error(`chooseStyle error: ${e}`);		
+			console.error(`onStyleChanged error: ${e}`);		
 		}
 	}
 	
@@ -1172,6 +1163,7 @@ class KatexInputHelper {
 		/* TODO: needs extra css style element
 		 */
 		var dir = this.getLocalText("_i18n_HTML_Dir");
+		this.rtlStyle = dir;
 		this.themes.setRTLstyle(dir);
 	}
 	
@@ -1223,7 +1215,7 @@ class KatexInputHelper {
 										await vme.initialiseUImoreDialogs(fPanelID); 
 									}
 								); 
-								vme.chooseStyle(); 
+								vme.themes.activateStyle(vme.style)
 							}
 						); 
 					} 
@@ -1270,7 +1262,7 @@ class KatexInputHelper {
 		.attr("title", function(index, attr) { return "Loading more formulae"; });
 
 		await vme.parser.parseAsync("#" + fPanelID); 
-		this.math.updateTables();
+		await this.math.updateTables();
 	}
 	
 	/**
@@ -1287,7 +1279,7 @@ class KatexInputHelper {
 		.each(function( idx ) {
 			var href = $(this).attr('href');
 			var id = $(this).attr('id');
-			if (href.length == 0) {													// info html !
+			if (href.length <= 1) {													// info html !
 				console.info(`Info dialog with : id : ${id}, href : ${href}`);
 				var newHref = `${vme.location}../information/${id}.html`;			// lazily load html info
 				$(this).attr('href', newHref);

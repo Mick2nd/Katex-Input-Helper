@@ -23,8 +23,8 @@ class Localizer extends Observable {
 	/**
 	 * @abstract Override of the Observable.
 	 */
-	subscribe(func) {
-		super.subscribe(func, this);
+	subscribe(func, ...args) {
+		super.subscribe(func, ...args);
 	}
 
 	/**
@@ -79,6 +79,27 @@ class Localizer extends Observable {
 		}
 		
 		return code;
+	}
+	
+	/**
+	 * @abstract Initialises the **Language Choice** dialog.
+	 * 
+	 * This is a one time initialisation task
+	 * 
+	 * @param localType - the language code as de_DE or en_US
+	 */
+	async initialiseLanguageChoice(localType) {
+		var inst = this;
+		var html = await this.buildLocalTypes();
+		$("#formLANGUAGE_CHOISE").html(html);
+		$("[name='localType']").filter(`[value=${localType}]`).attr("checked", "checked"); 
+		
+		$("input[name='localType']").change(async function() { 
+			var localType = $("input[name='localType']:checked").val(); 
+			await inst.load(localType); 
+		}); 
+
+		await this.load(localType);
 	}
 	
 	/**
