@@ -50,7 +50,23 @@ The custom equations dialog
 
 <img src="img/Custom-Equations.png" width="500" />
 
+## Known Problems
+
+- Sometimes a start of the dialog crashes. Mainly I could observe this for first time starts of the
+  production version. Perhaps this has to do with caching of the plugin. Restart helps.
+- A minor problem is a missing update of the language of the data grid paging bar in the *Custom 
+  Equations* dialog. This only appears during language change during an actual activation of the
+  dialog.
+
 ## Release Notes
+
+### 1.0.2
+
+In the last release a few bugs have sneaked in. Those have been fixed now:
+
+- Info dialog did not show the content of 3 tabs
+- The resources dialog did not show completely
+- The Title field in the *Custom Equations* dialog was no longer editable
 
 ### 1.0.1
 

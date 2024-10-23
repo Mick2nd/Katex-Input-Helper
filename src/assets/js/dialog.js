@@ -46,8 +46,8 @@ class KatexInputHelper {
 	constructor() {
 		window.vme = this;
 	
-		// independant of plugin variant
-		this.location = getScriptLocation();
+		// independent of plugin variant
+		this.setBaseLocation();
 		
 		// Probably not needed
 		console.info(`Url: ${window.location}`);
@@ -161,29 +161,32 @@ class KatexInputHelper {
 	 */
 	async initialise() { 
 		var vme = this; 
-		$.messager.progress({ 
+		this.parser.initialise();		
+		await this.parameters.queryParameters();							// from Plugin		
+
+		// IN QUESTION
+		vme.initialiseCodeMirror(); 
+		this.localizer.subscribe(this.onLocaleChanged.bind(this));
+		await this.localizer.initialiseLanguageChoice(this.localType);		// Progress dialog uses localized text
+
+		$.messager.progress({
 			title: "VisualMathEditor", 
 			text: vme.getLocalText("WAIT_FOR_EDITOR_DOWNLOAD"), 
 			msg: "<center>&copy; <a href='mailto:contact@equatheque.com?subject=VisualMathEditor' target='_blank' class='bt' >David Grima</a> - <a href='http://www.equatheque.net' target='_blank' class='bt' >EquaThEque</a><br/><br/></center>", 
 			interval: 300 
 		}); 
 		$('#form').hide();
-
-		this.parser.initialise();		
 		
-		await this.parameters.queryParameters();					// from Plugin		
-		await vme.updateInfo();										// updates a few dialogs
+		await vme.updateInfo();												// updates a few dialogs
 		await vme.initialiseUI(); 
-		vme.initialiseCodeMirror(); 
 		vme.initialiseParameters(); 
 		vme.initialiseCodeType(); 
 		vme.initialiseVirtualKeyboard(); 
-		
+
 		// IN QUESTION
-		this.localizer.subscribe(this.onLocaleChanged.bind(this));
-		this.localizer.initialiseLanguageChoice(this.localType);
+		await this.onLocaleChanged(this.localizer);							// repeat because too soon after initialiseLanguageChoice
 		this.themes.subscribe(this.onStyleChanged.bind(this));
-		this.themes.initialiseThemeChoice(this.style, this.rtlStyle); // RTL STYLE defined after locale language
+		this.themes.initialiseThemeChoice(this.style, this.rtlStyle); 		// RTL STYLE defined after locale language
 
 		vme.endWait(); 
 		vme.isBuild = true;
@@ -218,7 +221,7 @@ class KatexInputHelper {
 	}
 	
 	initialiseVirtualKeyboard() { 
-		if (!this.runNotVirtualKeyboard) this.loadScript(`${this.location}keyboard/keyboard.js`, function() { return true; }); 
+		if (!this.runNotVirtualKeyboard) this.loadScript(`js/keyboard/keyboard.js`, function() { return true; }); 
 	}
 	
 	/**
@@ -293,10 +296,10 @@ class KatexInputHelper {
 					case "mUNICODES_LIST": await vme.openWindow('wUNICODES_LIST'); await vme.initialiseUniCodesList(); break; 
 					case "mLATEX_CODES_LIST": await vme.openWindow('wLATEX_CODES_LIST'); await vme.initialiseLatexMathjaxCodesList(); break; 
 					case "mLANG_RESSOURCE_LIST": await vme.openWindow('wLANGUAGE_LIST'); vme.initialiseLangRessourcesList(); break; 
-					case "mLATEX_DOCUMENTATION": var file = (vme.runLocal ? `${this.location}../doc/` : "http://www.tex.ac.uk/tex-archive/info/symbols/comprehensive/") + "symbols-a4.pdf"; vme.showWindow(file, 780, 580, 100, 100, 'wLATEX_DOCUMENTATION', 'yes', 'yes', 'no', 'no'); break; 
-					case "mMHCHEM_DOCUMENTATION": var file = (vme.runLocal ? `${this.location}../doc/` : "http://www.ctan.org/tex-archive/macros/latex/contrib/mhchem/") + "mhchem.pdf"; vme.showWindow(file, 780, 580, 100, 100, 'wMHCHEM_DOCUMENTATION', 'yes', 'yes', 'no', 'no'); break; 
-					case "mAMSCD_DOCUMENTATION": var file = (vme.runLocal ? `${this.location}../doc/` : "http://www.jmilne.org/not/") + "Mamscd.pdf"; vme.showWindow(file, 780, 580, 100, 100, 'wAMSCD_DOCUMENTATION', 'yes', 'yes', 'no', 'no'); break; 
-					case "mMATH_ML_SPECIFICATIONS": var file = (vme.runLocal ? `${this.location}../doc/` : "http://www.w3.org/TR/MathML/") + "mathml.pdf"; vme.showWindow(file, 780, 580, 100, 100, 'wMATH_ML_SPECIFICATIONS', 'yes', 'yes', 'no', 'no'); break; 
+					case "mLATEX_DOCUMENTATION": var file = (vme.runLocal ? `js/doc/` : "http://www.tex.ac.uk/tex-archive/info/symbols/comprehensive/") + "symbols-a4.pdf"; vme.showWindow(file, 780, 580, 100, 100, 'wLATEX_DOCUMENTATION', 'yes', 'yes', 'no', 'no'); break; 
+					case "mMHCHEM_DOCUMENTATION": var file = (vme.runLocal ? `js/doc/` : "http://www.ctan.org/tex-archive/macros/latex/contrib/mhchem/") + "mhchem.pdf"; vme.showWindow(file, 780, 580, 100, 100, 'wMHCHEM_DOCUMENTATION', 'yes', 'yes', 'no', 'no'); break; 
+					case "mAMSCD_DOCUMENTATION": var file = (vme.runLocal ? `js/doc/` : "http://www.jmilne.org/not/") + "Mamscd.pdf"; vme.showWindow(file, 780, 580, 100, 100, 'wAMSCD_DOCUMENTATION', 'yes', 'yes', 'no', 'no'); break; 
+					case "mMATH_ML_SPECIFICATIONS": var file = (vme.runLocal ? `js/doc/` : "http://www.w3.org/TR/MathML/") + "mathml.pdf"; vme.showWindow(file, 780, 580, 100, 100, 'wMATH_ML_SPECIFICATIONS', 'yes', 'yes', 'no', 'no'); break; 
 					case "mCOPYRIGHT": await vme.openInformationTab(0); break; 
 					case "mVERSION": await vme.openInformationTab(1); break; 
 					case "mBUGS": await vme.openInformationTab(2); break; 
@@ -419,7 +422,7 @@ class KatexInputHelper {
 			}); 
 			await vme.registerEvents(fPanelMoreID);
 			$(fPanelMore).dialog('open'); 
-			$(fPanelMore).dialog('refresh', `${vme.location}../formulas/` + fPanelID + "_MORE.html");
+			$(fPanelMore).dialog('refresh', `formulas/` + fPanelID + "_MORE.html");
 		} else { 
 			$(fPanelMore).dialog('open'); 
 		}
@@ -652,7 +655,7 @@ class KatexInputHelper {
 			html = html + "\n</table>"; 
 			$("#cUNICODES_LIST").html(html); 
 			this.uniCodesListLoaded = true; 
-			$('#unicodeChoise').combobox("reload", `${vme.location}../formulas/unicodeChoiseData.json`);
+			$('#unicodeChoise').combobox("reload", `formulas/unicodeChoiseData.json`);
 		}
 	}
 	
@@ -788,7 +791,7 @@ class KatexInputHelper {
 	 * - localize all entries of the UI (using *span[locate]*)
 	 * - additional statements could not be assigned to this task => TODO: separate?
 	 */
-	async onLocaleChanged() {
+	async onLocaleChanged(localizer) {
 		this.localType = this.localizer.currentLocale;
 		console.log(`Entry into onLocaleChanged, localType is: ${this.localType}`);
 		var vme = this; 
@@ -1204,9 +1207,9 @@ class KatexInputHelper {
 					var fPanelID = $(fPanel).attr("id"); 
 					if (vme.symbolPanelsLoaded.indexOf(fPanelID) == -1) { 
 						vme.symbolPanelsLoaded[vme.symbolPanelsLoaded.length] = fPanelID; 
-						$(fPanel).html(`<img src='${vme.location}jquery-easyui/themes/default/images/loading.gif' />`); 
+						$(fPanel).html(`<img src='js/jquery-easyui/themes/default/images/loading.gif' />`); 
 						$(fPanel).load(
-							`${vme.location}../formulas/` + fPanelID + ".html", 
+							`formulas/` + fPanelID + ".html", 
 							async function() { 
 								await vme.initialiseSymbolContent(fPanelID); 
 								$("#" + fPanelID + " a.more").click(
@@ -1281,7 +1284,7 @@ class KatexInputHelper {
 			var id = $(this).attr('id');
 			if (href.length <= 1) {													// info html !
 				console.info(`Info dialog with : id : ${id}, href : ${href}`);
-				var newHref = `${vme.location}../information/${id}.html`;			// lazily load html info
+				var newHref = `information/${id}.html`;			// lazily load html info
 				$(this).attr('href', newHref);
 				$(this).load(newHref);
 			}
@@ -1293,21 +1296,21 @@ class KatexInputHelper {
 		// TODO: necessary and additional ones required?
 		vme.math.inplaceUpdate('#tEQUATION div a.s[latex], #mSPECIAL_CHARACTER div a.s[latex]');	// where and when to do that
 	}
-}
-
 	
-function getScriptLocation() {
+	setBaseLocation() {
 		var location = $("script[src]")
 			.last()
 			.attr("src")
 			.split('/')
-			.slice(0, -1)
+			.slice(0, -2)
 			.join('/')
 			.replace(/ /g, '%20')
 			.replace('file:///', 'file://')
 			.replace('file://', 'file:///') + '/';
-		console.info(`Script location is : ${location}`);
+		console.info(`Base location is : ${location}`);
+		$('base').attr('href', location);
 		return location;
+	}
 }
 
 

@@ -10,14 +10,12 @@ class Localizer extends Observable {
 	fallback = null;
 	locales = ['ar', 'de_DE', 'en_US', 'es_ES', 'fr_FR', 'ru', 'vi_VN'];
 	currentLocale = 'en_US';
-	location = "";
 	
 	/**
 	 * @abstract Constructor. The script location is queried as needed to locate the language files.
 	 */
 	constructor() {
 		super();
-		this.location = getScriptLocation();
 	}
 	
 	/**
@@ -31,8 +29,8 @@ class Localizer extends Observable {
 	 * @abstract The basic load method. Reads a language file given by its language code.
 	 */
 	async basicLoad(langCode) {
-		var pathname = this.location;
-		var langFile = `${pathname}/localization/${langCode}/lang.json`;
+		var baseLocation = $('base').attr('href');
+		var langFile = `${baseLocation}js/localization/${langCode}/lang.json`;
 		var response = await fetch(langFile);
 		return await response.json();
 	}
@@ -55,8 +53,7 @@ class Localizer extends Observable {
 		
 		// TODO: Added, test!
 		var shortCode = inst.current._i18n_HTML_Lang;
-		var pathname = this.location;
-		var langFile = `${pathname}/jquery-easyui/locale/easyui-lang-${shortCode}.js`;
+		var langFile = `js/jquery-easyui/locale/easyui-lang-${shortCode}.js`;
 		var response = await fetch(langFile);
 		var responseTxt = await response.text();
 		eval(responseTxt);

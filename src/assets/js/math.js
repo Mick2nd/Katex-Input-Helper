@@ -222,7 +222,6 @@ class DynamicPanel {
 		console.debug(`SORT comparing ${a} < ${b}`);
 		return a < b;
 	}
-
 	
 	/**
 	 * Initialises a Data Grid given by the selector
@@ -401,7 +400,6 @@ class MathFormulae {
 	runNotKatex = false;
 	encloseAllFormula = false; 
 	menuupdateType = true;
-	location = "";
 	localizer = null;
 	codeMirror = null;
 	parameters = null;
@@ -414,7 +412,6 @@ class MathFormulae {
 	 * Constructor.
 	 */
 	constructor(runNotKatex, localizer, codeMirror, parameters, parser) {
-		this.location = getScriptLocation();
 		this.mathTextInput = document.getElementById('mathTextInput'); 
 		this.mathVisualOutput = document.getElementById('mathVisualOutput');
 		this.codeMirror = codeMirror;
@@ -494,9 +491,7 @@ class MathFormulae {
 						console.debug(`Images: file begin`);
 						return;
 					}
-					var src = $(img).attr("src");
-					$(img).attr("src", inst.location + src);
-					im1 ++;
+					return;
 				}
 				
 				if (a) {

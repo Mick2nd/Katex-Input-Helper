@@ -3,7 +3,6 @@
  * @abstract Themes or Styles support.
  */
 class Themes extends Observable {
-	location = "";
 	dir = "";
 	cssActive = false;
 	activeTheme = "";
@@ -13,7 +12,6 @@ class Themes extends Observable {
 	 */
 	constructor() {
 		super();
-		this.location = getScriptLocation();
 	}
 	
 	/**
@@ -84,13 +82,12 @@ class Themes extends Observable {
 	appendCss(activeTheme, dir = 'ltr') {
 		console.info(`Active theme is ${activeTheme}`);
 		var vme = this;
-		var location = vme.location;
 		
 		function singleEntry(href, title, id = "") {
 			var entry = {
 					element: '<link rel="stylesheet" type="text/css" disabled="true" />',
 					attributes: { 
-						href: `${location}${href}`,
+						href: `js/${href}`,
 						title: title,
 						disabled: `${activeTheme == title}`
 					}
@@ -103,7 +100,7 @@ class Themes extends Observable {
 			return {
 					element: '<link rel="stylesheet" type="text/css" />',
 					attributes: { 
-						href: `${location}${href}`
+						href: `js/${href}`
 					}
 			};
 		}
@@ -112,7 +109,7 @@ class Themes extends Observable {
 			return {
 					element: '<link rel="stylesheet" type="text/css" disabled="true" />',
 					attributes: { 
-						href: `${location}${href}`,
+						href: `js/${href}`,
 						id: id
 					}
 			};

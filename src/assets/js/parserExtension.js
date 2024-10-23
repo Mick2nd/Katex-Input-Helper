@@ -11,16 +11,20 @@ class ParserExtension {
 	
 	initialise() {
 		var inst = this;
-		if (!inst.async) {
-			$.parser.onComplete = function(ctx) {
-				inst.onComplete(ctx);
-				inst.next(ctx);
+		try {
+			if (!inst.async) {
+				$.parser.onComplete = function(ctx) {
+					inst.onComplete(ctx);
+					inst.next(ctx);
+				}
+			} else {
+				$.parser.onComplete = function(ctx) {
+					inst.onCompleteAsync(ctx);
+					inst.nextAsync(ctx);
+				}
 			}
-		} else {
-			$.parser.onComplete = function(ctx) {
-				inst.onCompleteAsync(ctx);
-				inst.nextAsync(ctx);
-			}
+		} catch(e) {
+			console.error(`Fatal Error: jquery not loaded ${e}`);
 		}
 	}
 	
