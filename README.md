@@ -52,13 +52,18 @@ The custom equations dialog
 
 ## Known Problems
 
-- Sometimes a start of the dialog crashes. Mainly I could observe this for first time starts of the
-  production version. Perhaps this has to do with caching of the plugin. Restart helps.
-- A minor problem is a missing update of the language of the data grid paging bar in the *Custom 
-  Equations* dialog. This only appears during language change during an actual activation of the
-  dialog.
+- Sometimes a start of the dialog crashes. Mainly I could observe this for first time starts of the production version. Perhaps this has to do with caching of the plugin. Restart helps.
+- A minor problem is a missing update of the language of the data grid paging bar in the *Custom Equations* dialog. This only appears during language change during an actual activation of the dialog.
+- Only 2 languages are fully localized: English and German. In the original software 7 languages are supported: French, Spanish, Russian, Vietnamese and Arabian in addition to the 2 above. The missing phrases fall back to the English version.
 
 ## Release Notes
+
+### 1.0.3
+
+Fixed the following problems:
+
+- Certain insertions did select the insertion afterwards. This is fixed now and enables easy successive insertions.
+- The sort functionality of the *Custom Equations* dialog did not work properly. One can click on the *Title* head to sort formulae.
 
 ### 1.0.2
 

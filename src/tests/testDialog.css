@@ -1,0 +1,24 @@
+
+body {
+	height: 100%;
+}
+
+.easyui-layout {
+	height: 100vh;
+}
+
+#northRegion {
+	height: 150px;
+}
+
+#southRegion {
+	height: 40px;
+}
+
+#westRegion {
+	width: 160px;
+}
+
+#eastRegion {
+	width: 160px;
+}

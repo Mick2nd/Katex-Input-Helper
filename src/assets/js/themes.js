@@ -1,6 +1,8 @@
 
 /**
- * @abstract Themes or Styles support.
+ * @abstract Themes or Styles support. This is an Observable.
+ * 
+ * @extends Observable
  */
 class Themes extends Observable {
 	dir = "";
@@ -29,6 +31,11 @@ class Themes extends Observable {
 	
 	/**
 	 * @abstract Initializes the theme choice.
+	 * 
+	 * This method must be invoked during initialization time.
+	 * 
+	 * @param activeTheme - the theme as it comes from the stored parameters
+	 * @param dir - the language direction parameter (comes from the selected language)
 	 */
 	initialiseThemeChoice(activeTheme, dir = 'ltr') {
 		var inst = this;
@@ -45,6 +52,11 @@ class Themes extends Observable {
 	
 	/**
 	 * @abstract Activate the style setting.
+	 * 
+	 * This activates one and disables the others of several styles. On ready this method notifies
+	 * possible Observers registered on this Observable.
+	 * 
+	 * @param activeTheme - the theme / style to be activated.
 	 */
 	activateStyle(activeTheme) {
 		if (activeTheme == this.activeTheme) {												// no change
@@ -52,7 +64,7 @@ class Themes extends Observable {
 		}
 		this.activeTheme = activeTheme;
 		var styles = document.getElementsByTagName('link');									// all link entries are potential css files
-		console.info(`chooseStyle: have entries for tag 'link' : ${styles.length > 0}`);
+		console.debug(`chooseStyle: have entries for tag 'link' : ${styles.length > 0}`);
 		var colorType = null;
 		
 		for (const style of styles) { 														// enable / disable css files
@@ -73,7 +85,7 @@ class Themes extends Observable {
 	/**
 	 * @abstract Appends a series of required CSS files to head of html.
 	 * 
-	 * The HTML itself cannot do this, because the active theme dynamically changes. This is a
+	 * The HTML itself cannot do this, because the active theme dynamically changes. This is an
 	 * initialisation time task.
 	 * 
 	 * @param activeTheme - the active theme
@@ -145,6 +157,10 @@ class Themes extends Observable {
 	
 	/**
 	 * @abstract Sets the RTL style.
+	 * 
+	 * This enables / disables the RTL style file.
+	 * 
+	 * @param dir - the direction ('ltr' or 'rtl')
 	 */
 	setRTLstyle(dir = 'ltr') {
 		if (dir == this.dir) {

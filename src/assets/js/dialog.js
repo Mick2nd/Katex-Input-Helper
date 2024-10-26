@@ -1317,13 +1317,20 @@ class KatexInputHelper {
 console.info(`Katex: About to Init Accordion`);
 
 
-$(document).ready(async function() {
+$(document).ready(async function initSequence() {
 	console.info('Document ready.');
-	
-	vme = new KatexInputHelper();
-	await vme.initialise();
-	$('#myContainer').layout({fit: true});
-	$('#divEquationInputOutput').layout({});
+	var vme = null;
+	try {
+		vme = new KatexInputHelper();
+		await vme.initialise();
+		$('#myContainer').layout({fit: true});
+		$('#divEquationInputOutput').layout({});
+	} catch(e) {
+		console.error(`Katex Input Helper first time invocation error: ${e}`);
+		alert('The Katex Input Helper could not be opened properly, \n' + 
+			'jquery not loaded. Please close it and open it again!'
+		);
+	}
 });
 
 /**

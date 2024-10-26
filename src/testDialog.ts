@@ -12,10 +12,9 @@ var handle: any = null;
 /**
 	@abstract Encapsulates dialog functionality
  */	
-export class Dialog
+export class TestDialog
 {
-	id = 'Katex Input Helper Dialog';
-	settings: Settings;
+	id = 'Katex Test Dialog';
 	archive: string;
 	
 	/**
@@ -24,7 +23,6 @@ export class Dialog
 	public constructor(archive: string)
 	{
 		this.archive = archive;
-		this.settings = new Settings();
 	}
 	
 	/**
@@ -36,12 +34,10 @@ export class Dialog
 			handle = await joplin.views.dialogs.create(this.id);
 
 		var inst = this;
-		await this.settings.register();
 		await joplin.views.panels.onMessage(handle, async function(msg: any) {
 			console.info(`Message from Webview: ${JSON.stringify(msg)}`);
 			var text = await joplin.commands.execute('selectedText') as string;					// the text of the selection
-			if (msg.id == 'Katex Input Helper' && msg.cmd == 'getparams') {
-				await inst.settings.readSettings(msg, text);
+			if (msg.id == 'Katex Test Dialog' && msg.cmd == 'getparams') {
 				msg.equation = text;
 				return msg;
 			}
@@ -54,23 +50,12 @@ export class Dialog
 		await joplin.views.dialogs.setFitToContent(handle, false);
 		await this.loadCss(handle);
 		await this.loadJs(handle);
-		await joplin.views.dialogs.setHtml(handle, await this.load('./assets/dialog.html'));
+		await joplin.views.dialogs.setHtml(handle, await this.load('./tests/testDialog.html'));
 	}
 	
 	public open = async function() : Promise<DialogResult>
 	{
 		let res = await joplin.views.dialogs.open(handle);
-		let parameters = JSON.parse(res.formData.KATEX.hidden);
-		if (res.id == 'okay') {
-			await joplin.commands.execute(										// okay button -> save equation
-				'editor.execCommand', 
-				{
-					name: 'replaceSelection',
-					args: [ parameters.equation ]
-				});
-		}
-		await this.settings.writeSettings(parameters, res.id != 'okay');		// save settings according to policy
-		
 		return res;
 	}
 	
@@ -88,17 +73,21 @@ export class Dialog
 				- alles nachladen funktioniert nicht so gut
 				- mit diesem Stand erst mal weiter arbeiten
 			*/
+			/*
 			"./assets/js/jquery-easyui/themes/default/easyui.css",
 			"./assets/js/jquery-easyui/themes/icon.css",
 			"./assets/js/jquery-easyui-MathEditorExtend/themes/aguas/easyui.css",
 			"./assets/js/jquery-easyui-MathEditorExtend/themes/icon.css",
-			// active activates right to left
-			// "./assets/js/jquery-easyui-MathEditorExtend/themes/rtl.css",
 			"./assets/js/jquery-colorpicker/css/colorpicker.css",
 			"./assets/js/codemirror/lib/codemirror.css",
 			"./assets/js/keyboard/Keyboard.css",
 			"./assets/js/katex/katex.min.css",
 			"./assets/js/dialog.css"
+			"./tests/testDialog.css"
+			*/
+			
+			// NOT loading from HTML file
+			"./tests/testDialog.css"
 		];
 		
 		for (const path of css) {
@@ -108,6 +97,12 @@ export class Dialog
 	
 	public loadJs = async function(handle) : Promise<void> {
 		var js = [
+			"./assets/js/jquery-easyui/jquery.min.js",
+			"./assets/js/jquery-easyui/jquery.easyui.min.js",
+			"./tests/testDialog.js",
+			"./tests/starter.js"
+			/*
+			"./tests/starter.js"
 			"./assets/js/jquery-easyui/jquery.min.js",
 			"./assets/js/jquery-easyui/jquery.easyui.min.js",
 			"./assets/js/jquery-easyui/datagrid-cellediting.js",
@@ -124,7 +119,9 @@ export class Dialog
 			"./assets/js/parameters.js",
 			"./assets/js/fileHandling.js",
 			"./assets/js/helpers.js",
-			"./assets/js/dialog.js"			
+			"./assets/js/dialog.js"
+			"./tests/testDialog.js",
+			*/			
 		];
 		
 		for (const path of js) {

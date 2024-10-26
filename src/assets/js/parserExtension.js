@@ -1,14 +1,27 @@
 
+/**
+ * @abstract A the jquery parser using parser wrapper.
+ * 
+ * To be preferred : the asynchronous version with xxxAsync.
+ */
 class ParserExtension {
 	queue = [];
 	item = null;
 	async = false;
 	completeCount = 0;
 	
+	/**
+	 * @abstract Constructor
+	 * 
+	 * @param async - to be true if async mode is used (preferred)
+	 */
 	constructor(async = false) {
 		this.async = async;
 	}
 	
+	/**
+	 * @abstract The inititialization method
+	 */
 	initialise() {
 		var inst = this;
 		try {
@@ -25,9 +38,21 @@ class ParserExtension {
 			}
 		} catch(e) {
 			console.error(`Fatal Error: jquery not loaded ${e}`);
+			throw(e);
 		}
 	}
 	
+	/**
+	 * @abstract Parses object(s) for given selector.
+	 * 
+	 * This method returns a Promise, e.g. is able to wait for the result of the call to become
+	 * ready.
+	 * 
+	 * @param selector - the selector
+	 * @param ctx - a context parameter
+	 * @param delay - an optional delay (to be applied after the parser becomes ready)
+	 * @returns the Promise
+	 */
 	async parseAsync(selector, ctx, delay = 0) {
 		try {
 			var item = {
@@ -47,6 +72,9 @@ class ParserExtension {
 		}
 	}
 	
+	/**
+	 * @abstract Retrieves the next selector in the queue.
+	 */
 	nextAsync(ctx) {
 		try {
 			var item = this.queue.shift();
@@ -57,11 +85,17 @@ class ParserExtension {
 		}
 	}
 	
+	/**
+	 * @abstract Executes the prepared selector.
+	 */
 	startParseAsync(cb) {
 		this.item.onComplete = cb;
 		$.parser.parse(this.item.selector);			
 	}
 
+	/**
+	 * @abstract The central completion routine.
+	 */
 	onCompleteAsync(ctx) {
 		this.completeCount ++;
 		if (typeof ctx != "string") {
@@ -86,6 +120,7 @@ class ParserExtension {
 			console.warn(`onCompleteAsync for ${ctx} without active item: ${this}`);
 		}
 	}
+	
 	
 	parse(selector, ctx, onComplete, delay = 0) {
 		this.queue.push({
@@ -160,6 +195,10 @@ class ParserExtension {
 /**
  * @abstract Converts a method with given signature and callback to a Promise returning method
  * 
+ * @param ob - an object to be bound to the function parameter
+ * @param fnc - a function object to be invoked
+ * @param args - args of the function. The function has one additional callback parameter
+ * @returns the Promise, will be fulfilled if the callback is invoked
  */
 async function promisify(ob, fnc, ...args)
 {

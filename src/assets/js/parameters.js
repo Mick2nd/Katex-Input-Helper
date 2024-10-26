@@ -32,7 +32,7 @@ class Parameters {
 					if (changed) {
 						target[prop] = value;
 						if (!target.blockWrite) {
-							console.log(`property set: ${prop} = ${value}`);
+							console.debug(`property set: ${prop} = ${value}`);
 							target.writeParameters();
 						}
 					}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>Katex Input Helper</title>
+		<link rel="shortcut icon" href="../assets/favicon.ico" type="image/x-icon" />
+		<link rel="icon" href="../assets/favicon.ico" type="image/x-icon" />
+		<meta name="Author" content="Jürgen Habelt" />
+		<meta name="email" content="juergen@habelt-jena.de" />
+		<meta name="copyright" content="Jürgen Habelt" />
+		<base />
+		
+		<!-- After a replace we will arrive here and can load -->
+				
+	</head>
+	<body id="bodyPage">
+		<div id="exchange" ></div>
+		<div id="myContainer" class="easyui-layout">
+			<div data-options="region:'north',title:'HELLO',split:true" id="northRegion">
+				<div id="introduction">
+					<h3>Katex Input Helper</h3>
+					<hr/>
+					<p>This dialog supports the interactive input of math formulae.</p>
+				</div>
+				<div id="form">
+					<form name="KATEX" method="post">
+						<input id="hidden" name="hidden" type="hidden" value="DEF" />
+					</form>
+				</div>
+			</div>
+			
+			<div data-options="region:'west',title:'WEST',split:false" id="westRegion">
+				<div>WEST</div>
+			</div>
+			
+			<div data-options="region:'center',title:'CENTER'" style="overflow: auto;" id="centerRegion">
+				<div>CENTER</div>
+			</div>
+			
+			<div data-options="region:'east',title:'EAST',split:false" id="eastRegion">
+				<div>EAST</div>
+			</div>
+			
+			<div data-options="region:'south',title:'SOUTH',split:true" id="southRegion">
+				<div style="padding-top: 2px; text-align: center;">
+					<p><span locate="AUTHOR">SOUTH</span></p>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

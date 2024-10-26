@@ -11,7 +11,8 @@ class DynamicPanel {
 	gridSelector = "";
 	gridSelectorOfCopy = "";
 	initialised = false;
-	renderComplete = false
+	renderComplete = false;
+	sortOrderAsc = 'desc';
 	
 	/**
 	 * Constructor.
@@ -57,24 +58,24 @@ class DynamicPanel {
 		
 		if (!this.initialised) { 
 			this.initialised = true; 
-			console.info(`Here in DynamicPanel.initialise 1`);
+			console.debug(`Here in DynamicPanel.initialise 1`);
 			
 			$(fPanelMore).dialog({ 
 				onMove: 
 					function(left, top) { 
-						console.info(`Panel with id ${fPanelMoreID} moved : ${left},${top}`);
+						console.debug(`Panel with id ${fPanelMoreID} moved : ${left},${top}`);
 						inst.parent.parameters.onPanelMove(fPanelMoreID, left, top);
 					}, 
 				onResize:
 					function(width, height) {
-						console.info(`Panel with id ${fPanelMoreID} resized : ${width},${height}`);
+						console.debug(`Panel with id ${fPanelMoreID} resized : ${width},${height}`);
 						inst.parent.parameters.onPanelResize(fPanelMoreID, width, height);
 					}
 				// title: this.utilities.localizeOption(this.panelId, 'title')			// first time initialisation for title only
 			})
 			.dialog('open');
 
-			console.info(`Here in DynamicPanel.initialise 2`);
+			console.debug(`Here in DynamicPanel.initialise 2`);
 			await inst.initialiseDatagrid(`${inst.gridSelector}`);
 			await inst.customEquationsFromParameters();
 			
@@ -217,41 +218,55 @@ class DynamicPanel {
 		return `<a style="text-align:left;" href="#" class="s easyui-tooltip" title="${title}" latex="${formula}">$${formula}$</a>`;
 	}
 
-
+	/**
+	 * @abstract Compares 2 items of the datagrid for sorting.
+	 * 
+	 * WORKS. Must observe the contract with the sorting API.
+	 * 
+	 * @param a - item 1
+	 * @param b - item 2
+	 * @returns -1 for a < b and +1 for a >= b;
+	 */
 	alphaSorter(a, b) {
-		console.debug(`SORT comparing ${a} < ${b}`);
-		return a < b;
+		console.debug(`SORT comparing ${a} < ${b}, order: ${this.sortOrderAsc}`);
+		return a < b ? -1 : +1;
 	}
 	
 	/**
-	 * Initialises a Data Grid given by the selector
+	 * @abstract Initialises a Data Grid given by the selector
 	 */
 	async initialiseDatagrid(selector) {
 		var inst = this;
 		await this.parent.parser.parseAsync(selector, 1);
-		console.info(`initialiseDatagrid for ${selector}`);
+		console.debug(`initialiseDatagrid for ${selector}`);
 		$(selector)
 		.datagrid({
 			remoteSort: false,
+			remoteFilter: false,
 			pagination: true,
 			rownumbers: true,
 			fit: true,
 			onAfterEdit: function(idx, row, changes) {
-				console.info(`onAfterEdit for ${selector}`);
+				console.debug(`onAfterEdit for ${selector}`);
 				inst.parent.inplaceUpdate(`${inst.gridSelectorOfCopy} a`, true);
 				return true;
 			},
 			onCancelEdit: function(idx, row) {
-				console.info(`onCancelEdit for ${selector}`);
+				console.debug(`onCancelEdit for ${selector}`);
 				inst.parent.inplaceUpdate(`${inst.gridSelectorOfCopy} a`, true);
 				return true;
 			},
 			clickToEdit: false,
 			dblclickToEdit: true,
 			columns: [[
-				{ field: 'title', title: '<span class="custom-equations" locate="TITLE">Title</span>', width: '40%', editor: 'text', sortable: true,  sorter: inst.alphaSorter.bind(inst) },
+				{ field: 'title', title: '<span class="custom-equations" locate="TITLE">Title</span>', width: '40%', editor: 'text', sortable: true, sorter: inst.alphaSorter.bind(inst) },
 				{ field:'formula', title: '<span class="custom-equations" locate="FORMULA">Formula</span>', width:'60%' }
-			]]
+			]],
+			onBeforeSortColumn: function(sort, order) {
+				console.debug(`Sort order is: ${order}`);
+				inst.sortOrderAsc = order;
+				return true;
+			}
 		})
 		.datagrid('enableCellEditing')
 		.datagrid('gotoCell', {
@@ -371,7 +386,7 @@ class DynamicPanel {
 				event.preventDefault(); 
 				var a = $(event.target);
 				var latex = a.attr("latex");
-				console.info(`Click on equation: ${latex}`);
+				console.debug(`Click on equation: ${latex}`);
 				if (latex != undefined) { 
 					inst.parent.insert(latex); 
 				} else { 
@@ -474,25 +489,9 @@ class MathFormulae {
 			var inst = this;
 			var selector = '.panel-body table tbody tr td a.easyui-tooltip, .easyui-dialog div a.s';
 			var entries = $(selector);
-			console.info(`Katex: ${entries.length} td items`);
+			console.debug(`Katex: ${entries.length} td or div items`);
 			var im1 = 0;
 			entries.each(function(idx, a) {
-				
-				function handleImage(img) {
-					if ($(img).prop("tagName") != "IMG") {
-						console.debug(`Images: no IMG tag`);
-						return;
-					}
-					if ($(img).attr("src") == undefined) {
-						console.debug(`Images: no src attr`);
-						return;
-					}
-					if ($(img).attr("src").startsWith("file")) {
-						console.debug(`Images: file begin`);
-						return;
-					}
-					return;
-				}
 				
 				if (a) {
 					try {
@@ -511,7 +510,6 @@ class MathFormulae {
 							text2 = text2.substring(1, text2.length - 1);
 	
 							var img = a.children[0];
-							handleImage(img);
 							
 							inst.insertMath(text2, a);
 							var ch = a.children[0];
@@ -523,7 +521,6 @@ class MathFormulae {
 						} else {															// direct image case
 							var img = a.firstChild;
 							if (img && img.nodeType != Node.TEXT_NODE && img.hasAttribute('src')) {
-								handleImage(img);
 							}
 						}
 					} catch(e) {
@@ -549,7 +546,7 @@ class MathFormulae {
 	updateHeaders() {
 		try {
 			var entries = $('.panel-title span');
-			console.info(`Katex: ${entries.length} header items`);
+			console.debug(`Katex: ${entries.length} header items`);
 			entries.each((idx, a) => {
 				if (a) {
 					var text = a.innerText;
@@ -585,7 +582,7 @@ class MathFormulae {
 		try {
 			var inst = this;
 			var entries = $(selector);
-			console.info(`Katex: ${entries.length} in-place items for selector ${selector}`);
+			console.debug(`Katex: ${entries.length} in-place items for selector ${selector}`);
 			entries.each(function(idx, a) {
 				if (a && !inst.runNotKatex) {
 					inst.updateAnchor(a);
@@ -618,7 +615,7 @@ class MathFormulae {
 			return;
 		}
 		
-		console.info(`equipWithInteractivity ${a.attr('latex')}`);
+		console.debug(`equipWithInteractivity ${a.attr('latex')}`);
 		a.addClass("easyui-tooltip s");
 		
 		// TODO: TEST: TRIAL WITH JAVASCRIPT
@@ -645,7 +642,7 @@ class MathFormulae {
 		.click(function(event) { 
 			event.preventDefault(); 
 			var latex = a.attr("latex");
-			console.info(`Click on equation: ${latex}`);
+			console.debug(`Click on equation: ${latex}`);
 			if (latex != undefined) { 
 				vme.insert(latex); 
 			} else { 
@@ -665,15 +662,15 @@ class MathFormulae {
 		var mathText = text.includes('$');
 		var dm = (text.includes('$$') || text.includes('{equation}'));
 		text = text.replace(/^\s{0,5}\"?\${1,2}(.*?)\${1,2}\"?\s{0,5}$/s, '$1');
-		console.info(`Processed text: ${text.substring(0, 20)}`);
+		console.debug(`Processed text: ${text.substring(0, 20)}`);
 		if (mathText) this.insertMath(text, a, false, dm);
 	}
 	
 	/**
-	 * Inserts given text into Code Mirro Editor and updates the formula in the output.
+	 * @abstract Inserts given text into Code Mirror Editor and updates the formula in the output.
 	 */
 	insert(b) {
-		this.codeMirror.replaceSelection(b);
+		this.codeMirror.replaceSelection(b, "stop");
 		this.updateOutput();												// TODO: additional handling
 	}
 
