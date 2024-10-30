@@ -12,6 +12,34 @@ This plugin can be used to support the input of Mathematical formulae. It does t
 6. By pressing Okay the changed content is returned to the note and replaces the original selection.
 7. By pressing Cancel nothing is changed.
 
+## Step - by - Step Instructions
+
+1. Enter the *Katex Input Helper* with a certain selection of a formula. With no selection in the current note the editor will be opened empty.
+1. Insertion of formulae from the palette window(s)
+   1. Open the palette with the desired template, f.i. an integral
+   2. Click the template to insert it into the editor window
+   3. Fill in the missing pieces of the formula
+   4. This filling can be recursive, e.g. require another click on a different template
+   5. The same can be done with the usage of other auxiliary windows, f.i. horizontal or vertical spacing, matrices or sample equations
+   6. Many of them don't use placeholders as the "templates" often do
+5. Returning a processed formula
+   1. Simply leave the dialog with *Okay* and the content of the editor area will be returned back to the Joplin note and replaces the original selection.
+   2. Pressing *Cancel* leaves the original note as it was before invocation of the dialog
+3. Loading and saving the editor area
+   This can be done by invoking the menu commands *File - Open* or *File - Save* respectively
+4. Working with the *Custom Equations* dialog.
+   One can invoke this dialog by clicking *Insert - Custom Equations*.
+   It is possible to perform the following tasks:
+   1. Save the set of formulae into a json file
+   2. Load a set of formulae from a json file
+   3. Add a formula from the editor area
+   4. Remove a formula from the datagrid
+   5. Click a formula to insert it into the editor area
+   6. Edit the *Title* field of a formula by double - clicking it
+   7. Filter the set of formulae by a filter expression. Actually this checks if the filter expression is contained in the title field
+   8. Sort the formulae after the title field
+   9. Select pages of a huge formula set
+
 ## Origin of the Software
 
 The plugin is based on the *Visual Math Editor* by David Grima, a freeware which can be changed and distributed freely. I made the following changes to this software:
