@@ -66,6 +66,8 @@ class KatexStarter {
 $(document).ready(async function() {
 	
 	console.info('Document ready : starter');
+	/*
+	*/
 	var katexStarter = new KatexStarter();
 	katexStarter.setBaseLocation();
 	katexStarter.mergeHtml();

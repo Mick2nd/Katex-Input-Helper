@@ -7,7 +7,7 @@ if (window.console) console = window.console; else console = { log: function(msg
  */
 class KatexInputHelper {
 
-	version = "1.0.0"; 
+	version = "1.0.3"; 
 	codeType = 'Latex'; 
 	saveOptionInCookies = false; 
 	isBuild = false; 
@@ -39,11 +39,13 @@ class KatexInputHelper {
 	parameters = null;
 	utilities = null;
 	messager = null;
+	panels = null;
 	
 	/**
 	 * Constructor
 	 */
 	constructor() {
+		var vme = this;
 		window.vme = this;
 	
 		// independent of plugin variant
@@ -74,6 +76,7 @@ class KatexInputHelper {
 		this.themes = new Themes();
 		this.parser = new ParserExtension(true);
 		this.math = new MathFormulae(false, this.localizer, null, this.parameters, this.parser);	// code mirror per method injection
+		this.panels = new KIHPanels(this.parameters, this.localizer);
 
 		this.mathTextInput = document.getElementById('mathTextInput'); 
 		this.mathVisualOutput = document.getElementById('mathVisualOutput'); 
@@ -310,9 +313,7 @@ class KatexInputHelper {
 					case "f_FR_CHAR": 
 					case "f_BBB_CHAR": await vme.initialiseUImoreDialogs(item.target.id); break; 
 					case "mEQUATION": await vme.initialiseUImoreDialogs("f_EQUATION"); break; 
-					case "mCUSTOM_EQUATIONS": 
-						await vme.math.initialiseDynamicPanel("f_CUSTOM_EQUATIONS"); 
-						break;
+					case "mCUSTOM_EQUATIONS": await vme.panels.showDynamicPanel(vme.math); break;
 					case "mHORIZONTAL_SPACING": await vme.initialiseUImoreDialogs("f_HORIZONTAL_SPACING"); break; 
 					case "mVERTICAL_SPACING": await vme.initialiseUImoreDialogs("f_VERTICAL_SPACING"); break; 
 					case "mSPECIAL_CHARACTER": await vme.initialiseUImoreDialogs("f_SPECIAL_CHARACTER"); break; 
@@ -412,20 +413,7 @@ class KatexInputHelper {
 	async initialiseUImoreDialogs(fPanelID) {
 		var vme = this;
 		var fPanelMoreID = 'w' + fPanelID + '_MORE';
-		var fPanelMore = $('#' + fPanelMoreID); 
-		if (vme.symbolPanelsLoaded.indexOf(fPanelMoreID) == -1) { 
-			vme.symbolPanelsLoaded[vme.symbolPanelsLoaded.length] = fPanelMoreID; 
-			$(fPanelMore).dialog({ 
-				onLoad: 
-					async function() { await vme.initialiseSymbolContent(fPanelMoreID); }, 
-				title: $("#" + fPanelMoreID + "_TITLE").html() 
-			}); 
-			await vme.registerEvents(fPanelMoreID);
-			$(fPanelMore).dialog('open'); 
-			$(fPanelMore).dialog('refresh', `formulas/` + fPanelID + "_MORE.html");
-		} else { 
-			$(fPanelMore).dialog('open'); 
-		}
+		await vme.panels.showMoreDialog(fPanelMoreID, vme.initialiseSymbolContent.bind(vme));
 	}
 	
 	/**
@@ -434,49 +422,7 @@ class KatexInputHelper {
 	 * This whole effort is done to get the window position and size persisted.
 	 */
 	async openWindow(id) {
-		var inst = this;
-		await this.registerEvents(id, false);
-		$(`#${id}`).window('open');
-	}
-	
-	/**
-	 * This method registers 2 events for the MORE dialogs and intentionally also for 2 additional
-	 * dialogs. 
-	 */
-	async registerEvents(id, isPanel = true) {
-		var inst = this;
-		var handlers = {
-			onMove: 
-				function(left, top) { 
-					console.info(`Panel with id ${id} moved : ${left},${top}`);
-					inst.parameters.onPanelMove(id, left, top);
-				}, 
-			onResize:
-				function(width, height) {
-					console.info(`Panel with id ${id} resized : ${width},${height}`);
-					inst.parameters.onPanelResize(id, width, height);
-				}
-		};
-		if (isPanel) {
-			$(`#${id}`).dialog(handlers);
-		} else {
-			var title = this.localizeOption(id, 'title');								// do something to preserve the TITLE
-			console.info(`Assigning window event handler for id : ${id}, title: ${title}`);
-			handlers.title = title;
-			$(`#${id}`).window(handlers);
-		}
-	}
-
-	/**
-	 * Used to localize an option.
-	 */	
-	localizeOption(id, option) {
-		var text = $(`#${id}`).window('options')[option];								// do something to preserve the TITLE: this is a option
-		var html = $.parseHTML(text);													// parse it into html object
-		var key = $(html).attr('locate');												// extract the locate attribute
-		var located = this.getLocalText(key);											// use it to get localized text
-		html = $(html).html(located)[0].outerHTML;										// insert it into orginal html
-		return html;
+		await this.panels.showWindow(id);
 	}
 	
 	/**
@@ -1284,7 +1230,7 @@ class KatexInputHelper {
 			var id = $(this).attr('id');
 			if (href.length <= 1) {													// info html !
 				console.info(`Info dialog with : id : ${id}, href : ${href}`);
-				var newHref = `information/${id}.html`;			// lazily load html info
+				var newHref = `information/${id}.html`;								// lazily load html info
 				$(this).attr('href', newHref);
 				$(this).load(newHref);
 			}
@@ -1297,6 +1243,11 @@ class KatexInputHelper {
 		vme.math.inplaceUpdate('#tEQUATION div a.s[latex], #mSPECIAL_CHARACTER div a.s[latex]');	// where and when to do that
 	}
 	
+	/**
+	 * @abstract Sets the base location.
+	 * 
+	 * This will be needed for relative paths of some content like css or html files.
+	 */
 	setBaseLocation() {
 		var location = $("script[src]")
 			.last()
@@ -1313,35 +1264,37 @@ class KatexInputHelper {
 	}
 }
 
-
-console.info(`Katex: About to Init Accordion`);
-
-
-$(document).ready(async function initSequence() {
-	console.info('Document ready.');
-	var vme = null;
-	try {
-		vme = new KatexInputHelper();
-		await vme.initialise();
-		$('#myContainer').layout({fit: true});
-		$('#divEquationInputOutput').layout({});
-	} catch(e) {
-		console.error(`Katex Input Helper first time invocation error: ${e}`);
-		alert('The Katex Input Helper could not be opened properly, \n' + 
-			'jquery not loaded. Please close it and open it again!'
-		);
-	}
-});
-
 /**
- * This event does throw !
+ * @abstract Main invocation logic.
+ * 
+ * Instantiate the Katex Input Helper, initialize it and layout the dialog window.
  */
-$(window).on(
-	'unload', 
-	function() {
-		console.info('Dialog closed: 1.');
-		var equation = vme.codeMirrorEditor.getValue();
-		vme.parameters.writeParameters(equation);
-	}
-);
+if (typeof $ == 'function') {
+	$(document).ready(async function initSequence() {
+		console.info('Document ready.');
+		var vme = null;
+		var fatalError = null;
+		try {
+			vme = new KatexInputHelper();
+			window.vme = vme;											// prevents garbage collection?
+			await vme.initialise();
+			$('#myContainer').layout({fit: true});
+			$('#divEquationInputOutput').layout({});
+		} catch(e) {
+			fatalError = e;
+		}
+		if (vme.parser.fatalError != null) {
+			fatalError = vme.parser.fatalError;
+		}
+		if (fatalError != null) {
+			console.error(`Katex Input Helper first time invocation error: ${fatalError}`);
+			alert('The Katex Input Helper could not be opened properly, \n' + 
+				'jquery not loaded. Please close it and open it again!');
+		}
+	});
+} else {
+	console.error(`jquery not defined`);
+	alert('The Katex Input Helper could not be opened properly, \n' + 
+		'jquery not loaded. Please close it and open it again!');
+} 
 

@@ -60,6 +60,9 @@ export class Dialog
 	public open = async function() : Promise<DialogResult>
 	{
 		let res = await joplin.views.dialogs.open(handle);
+		if (res.formData == undefined) {
+			console.warn(`No formData returned on ${res.id}`)
+		}
 		let parameters = JSON.parse(res.formData.KATEX.hidden);
 		if (res.id == 'okay') {
 			await joplin.commands.execute(										// okay button -> save equation
@@ -108,7 +111,7 @@ export class Dialog
 	
 	public loadJs = async function(handle) : Promise<void> {
 		var js = [
-			"./assets/js/jquery-easyui/jquery.min.js",
+			"./assets/js/jquery-easyui/jquery-packaged.min.js",
 			"./assets/js/jquery-easyui/jquery.easyui.min.js",
 			"./assets/js/jquery-easyui/datagrid-cellediting.js",
 			"./assets/js/jquery-easyui/datagrid-filter.js",
@@ -116,14 +119,16 @@ export class Dialog
 			"./assets/js/codemirror/lib/codemirror.js",
 			"./assets/js/katex/katex.min.js",
 			"./assets/js/katex/mhchem.min.js",
+
 			"./assets/js/patterns/observable.js",
 			"./assets/js/localization.js",
 			"./assets/js/themes.js",
-			"./assets/js/math.js",
 			"./assets/js/parserExtension.js",
 			"./assets/js/parameters.js",
 			"./assets/js/fileHandling.js",
 			"./assets/js/helpers.js",
+			"./assets/js/math.js",
+			"./assets/js/panels.js",
 			"./assets/js/dialog.js"			
 		];
 		

@@ -17,7 +17,7 @@
 	"AUTO_UPDATE": "Automatisches Aktualisieren der Gleichung auf Tastendruck",
 	"UPDATE_INTERVAL": "Aktualisierungs-Intervall (in ms)",
 	"CLOSE": "Schließen",
-	"SET_IN_EDITOR": "Gesetzt in Editor",
+	"SET_IN_EDITOR": "Setzen in Editor",
 	"NO_ASCII": "AsciiMath Symbole die für diese Formel definiert sind.",
 	"NO_LATEX": "Latex Symbol ist nicht für diese Formel.",
 	"ERROR_QUIT_EDITOR": "Kann den Editor schließen, wenn er im Hauptfenster des Browsers geöffnet wird.", 

@@ -9,6 +9,7 @@ class ParserExtension {
 	item = null;
 	async = false;
 	completeCount = 0;
+	fatalError = null;
 	
 	/**
 	 * @abstract Constructor
@@ -38,7 +39,8 @@ class ParserExtension {
 			}
 		} catch(e) {
 			console.error(`Fatal Error: jquery not loaded ${e}`);
-			throw(e);
+			this.fatalError = e;
+			// throw(e);
 		}
 	}
 	

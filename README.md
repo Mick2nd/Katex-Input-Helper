@@ -27,7 +27,7 @@ The plugin is based on the *Visual Math Editor* by David Grima, a freeware which
    5. Some MathJax expressions are not supported in Katex and removed for this reason
 5. But most components are left as is and the external appearance is preserved
 
-As You can see, this software is feature rich and alleviates the creation of formluae. My hope is one will get further support by the integration into *Joplin* as a plugin.
+As You can see, this software is feature rich and alleviates the creation of formulae. My hope is one will get further support by the integration into *Joplin* as a plugin.
 
 This software is available on the net [here](https://visualmatheditor.equatheque.net/VisualMathEditor.html?runLocal&codeType=Latex&encloseAllFormula=false&style=aguas&localType=en_US) and You can view at it to get an impression.
 
@@ -62,8 +62,11 @@ The custom equations dialog
 
 Fixed the following problems:
 
+- *Custom Equations* dialog inserted formula twice on click.
 - Certain insertions did select the insertion afterwards. This is fixed now and enables easy successive insertions.
 - The sort functionality of the *Custom Equations* dialog did not work properly. One can click on the *Title* head to sort formulae.
+- Some dialog windows were modal ones instead of non-modal. This prevented the selection of text in the editor during display of the dialog.
+- The restore of window size and position was not reliable.
 
 ### 1.0.2
 
