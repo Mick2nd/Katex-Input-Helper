@@ -185,7 +185,7 @@ class MathFormulae {
 	/**
 	 * @abstract Equips some anchors with interactivity which they do not already have.
 	 * 
-	 * If the anchor does not have a latext attribute, it will not be equipped
+	 * If the anchor does not have a latex attribute, it will not be equipped
 	 * 
 	 * @param a - the anchor to be equipped
 	 */

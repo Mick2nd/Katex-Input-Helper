@@ -39,6 +39,9 @@ This plugin can be used to support the input of Mathematical formulae. It does t
    7. Filter the set of formulae by a filter expression. Actually this checks if the filter expression is contained in the title field
    8. Sort the formulae after the title field
    9. Select pages of a huge formula set
+1. Retaining window positions and sizes.
+   By default the window positions and sizes are retained leaving them intact through invocations of the window itself or the whole Katex Input Helper.
+   This feature can be deactivated by deselecting the appropriate checkbox in the Settings dialog (Menu command *Options - Editor Parameters...*).
 
 ## Origin of the Software
 

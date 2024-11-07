@@ -107,6 +107,7 @@
 	"PERSISTENCE": "Persistenz",
 	"PERSIST_WINDOW_POSITIONS": "Wählen, um Fensterpostionen zu speichern",
 	"PERSIST_EQUATIONS": "Wählen, um die persönlichen Gleichungen auch beim Canceln zu speichern",
+	"FILTER_PROMPT": "Filter Text hier eingeben...",
 	"VKI_00": "Keypad",
 	"VKI_01": "Anzeige virtuelle Tastatur",
 	"VKI_02": "Wählen Tastaturbelegung",

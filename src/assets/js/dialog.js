@@ -1283,9 +1283,9 @@ if (typeof $ == 'function') {
 		} catch(e) {
 			fatalError = e;
 		}
-		if (vme.parser.fatalError != null) {
-			fatalError = vme.parser.fatalError;
-		}
+		// if (vme.parser.fatalError != null) {
+		//	fatalError = vme.parser.fatalError;
+		// }
 		if (fatalError != null) {
 			console.error(`Katex Input Helper first time invocation error: ${fatalError}`);
 			alert('The Katex Input Helper could not be opened properly, \n' + 

@@ -40,7 +40,7 @@ class ParserExtension {
 		} catch(e) {
 			console.error(`Fatal Error: jquery not loaded ${e}`);
 			this.fatalError = e;
-			// throw(e);
+			throw(e);
 		}
 	}
 	

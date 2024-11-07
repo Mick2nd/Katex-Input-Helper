@@ -3,6 +3,7 @@
  * @abstract A simple implementation of the observable pattern.
  */
 class Observable {
+	observers = null;
   
   /**
    * @abstract Initialises the instance

@@ -15,16 +15,29 @@ class KIHPanel {
 		this.parent = parent;
 	}
 	
+	/**
+	 * @abstract The handler of move events, invoked when the panel is moved.
+	 * 
+	 * This delegates to the *Parameters* instance.
+	 */
 	onMove(left, top) { 
 		console.info(`Panel with id ${this.id} moved : ${left}, ${top}`);
 		this.parent.parameters.onPanelMove(this.id, left, top);
 	}
-	 
+	
+	/**
+	 * @abstract The handler of resize events, invoked when the panel is resized.
+	 * 
+	 * This delegates to the *Parameters* instance.
+	 */
 	onResize(width, height) {
 		console.info(`Panel with id ${this.id} resized : ${width}, ${height}`);
 		this.parent.parameters.onPanelResize(this.id, width, height);
 	}
 	
+	/**
+	 * @abstract Builds an object from the events to be provided when the panel is created.
+	 */
 	get handlers() {
 		return {
 			onMove: this.onMove.bind(this),
@@ -32,10 +45,16 @@ class KIHPanel {
 		};
 	}
 	
+	/**
+	 * @abstract Initialise method, creates the *Panel* with the handlers provided.
+	 */
 	async initialise() {
 		$(`#${this.id}`).dialog(this.handlers)
 	}
 	
+	/**
+	 * @abstract Shows the *Panel* and resizes (Position, Size) it to stored values.
+	 */
 	async show() {
 		this.resize();
 		this.open();
@@ -52,11 +71,22 @@ class KIHPanel {
 		}
 	}
 	
+	/**
+	 * @abstract Opens (shows) the Panel.
+	 */
 	open() {
 		$(`#${this.id}`).dialog('open');
 	}
 }
 
+/**
+ * @abstract The More Dialog class.
+ * 
+ * This represents dialogs with Math content which is loaded on demand when the dialog is opened.
+ * This content is in Katex format and will be translated to Math.
+ * 
+ * @extends KIHPanel
+ */
 class KIHMoreDialog extends KIHPanel {
 	
 	/**
@@ -67,6 +97,14 @@ class KIHMoreDialog extends KIHPanel {
 				
 	}
 
+	/**
+	 * @abstract Initialises (creates) the dialog.
+	 * 
+	 * This additionally to the *super* class method provides a translation method and a title for
+	 * Katex to Math in-place translation.
+	 * 
+	 * @param initialiseSymbolContent - method of the client to be invoked during loading
+	 */
 	async initialise(initialiseSymbolContent) {
 		// id is the MORE id as in dialog.html file with 'w' and '_MORE'
 		var vme = this;
@@ -84,6 +122,12 @@ class KIHMoreDialog extends KIHPanel {
 	}
 }
 
+/**
+ * @abstract The KIHWindow class.
+ * 
+ * This represents windows like the Configuration Parameters window, the Language Configuration
+ * window or the Theme (Style) selection window.
+ */
 class KIHWindow extends KIHPanel {
 
 	/**
@@ -94,17 +138,33 @@ class KIHWindow extends KIHPanel {
 				
 	}
 	
+	/**
+	 * @abstract Initialises (creates) a window.
+	 * 
+	 * This is an adaptation of the KIHPanel version. It is able to provide a localized title
+	 * that would otherwise disappear.
+	 * 
+	 * TODO: harmonize with More Dialog class.
+	 */
 	async initialise() {
 		var handlers = this.handlers;
 		handlers.title = this.localizeOption('title');
 		$(`#${this.id}`).window(handlers)
 	}
 	
+	/**
+	 * @abstract Shows the *Window* and resizes (Position, Size) it to stored values.
+	 * 
+	 * This is an adaptation of the KIHPanel version for KIHWindow.
+	 */
 	async show() {
 		this.resize();
 		this.open();		
 	}
 
+	/**
+	 * @abstract Opens (shows) this window.
+	 */
 	open() {
 		$(`#${this.id}`).window('open');
 	}
@@ -124,7 +184,7 @@ class KIHWindow extends KIHPanel {
 
 
 /**
- * @abstract This embedded class is solely responsible for the Dynamic Panel for Custom Equations.
+ * @abstract This class is solely responsible for the Dynamic Panel for Custom Equations.
  */
 class DynamicPanel extends KIHPanel {
 	parent = null;
@@ -159,7 +219,6 @@ class DynamicPanel extends KIHPanel {
 	 * This changes all localized text in the dialog.
 	 */
 	async onLocaleChanged(localizer) {
-		var inst = this;
 		console.debug(`onLocaleChanged : ${localizer.currentLocale} `);
 
 		$('span[locate].custom-equations')
@@ -179,7 +238,6 @@ class DynamicPanel extends KIHPanel {
 	async initialise() {
 		var inst = this;
 		var fPanelMoreID = this.panelId;
-		var fPanelMore = $('#' + fPanelMoreID); 
 		
 		console.debug(`Here in DynamicPanel.initialise 1`);
 		
@@ -192,6 +250,58 @@ class DynamicPanel extends KIHPanel {
 		// TODO: pagination bar adaptation		
 		// Building the dialog more than once was not the intention, but this comes at a low
 		// price and enables language update of the pagination bar over invocations.
+
+		$('#btCUSTOM_EQUATIONS_ADD')
+		.click(async function(event) { 
+			event.preventDefault();
+			
+			var selectedText = inst.parent.codeMirror.getSelection();
+			if (selectedText != "") {
+				inst.addEquation('Placeholder', selectedText);
+				inst.editCell();
+				await inst.onAfterRender();
+			} else {
+				
+				inst.messager.show('FORMULA_EDITOR', 'NO_SELECTION_TEXT');
+				return;
+			}
+		});
+	
+		$('#btCUSTOM_EQUATIONS_REMOVE')
+		.click(async function(event) { 
+			event.preventDefault();
+			var dg = $(inst.gridSelector);
+			var cell = dg.datagrid('cell');
+			if (cell) {
+				console.dir(cell);
+				dg.datagrid('deleteRow', cell.index)
+				.datagrid('acceptChanges', {});
+				this.customEquationsToParameters();
+			} else {
+				inst.messager.show('FORMULA_EDITOR', 'NO_SELECTION_CELL');
+				return;
+			}
+		});
+	
+		$('#btCUSTOM_EQUATIONS_SAVE')
+		.click(async function(event) {
+			event.preventDefault();
+			console.info('Click on btCUSTOM_EQUATIONS_SAVE');
+			var data = JSON.stringify(inst.toJson());					// must be a JSON string
+			var type = 'application/json';
+			
+			var fileHandler = new FileHandler();
+			fileHandler.saveFile(data, type, "fSAVE_CUSTOM_EQUATIONS");
+		});
+	
+		$('#btCUSTOM_EQUATIONS_LOAD')
+		.click(async function(event) {
+			event.preventDefault();
+			var fileHandler = new FileHandler();
+			var json = await fileHandler.loadFile("fOPEN_CUSTOM_EQUATIONS");
+			await inst.fromJson(json);
+			await inst.onAfterRender();
+		});
 	}
 	
 	async show() {
@@ -205,8 +315,7 @@ class DynamicPanel extends KIHPanel {
 	async customEquationsFromParameters() {
 		try {
 			await this.fromJson(JSON.stringify(this.parent.parameters.equationCollection));
-			$(this.gridSelector)
-			.datagrid('doFilter');
+			$(this.gridSelector).datagrid('doFilter');
 		} catch(e) {
 			
 		}
@@ -234,7 +343,7 @@ class DynamicPanel extends KIHPanel {
 			var equations = JSON.parse(json);
 			for (const equation of equations) {
 				if (typeof(equation[1]) == "string" && equation[1] != "[object Object]") {
-					await this.addEquation(equation[0], equation[1]);
+					this.addEquation(equation[0], equation[1]);
 				}
 			}
 		} catch(e) {
@@ -267,7 +376,7 @@ class DynamicPanel extends KIHPanel {
 	 * @param title - the title of the equation
 	 * @param formula - the formula itself
 	 */
-	async addEquation(title, formula) {
+	addEquation(title, formula) {
 		$(this.gridSelector)
 		.datagrid(
 			'appendRow', {
@@ -281,13 +390,14 @@ class DynamicPanel extends KIHPanel {
 	 * @abstract Equips the datagrid (after render update).
 	 * 
 	 * a.) inplace update of the content
-	 * b.) interactivity, e.g. certain event handlers are registered
+	 * b.) row height fixing
+	 * c.) saving of equations
 	 */
-	async equipDatagrid() {
-		await this.parent.parser.parseAsync(this.gridSelector, 1);		
+	async onAfterRender() {
 		var anchor = $(`${this.gridSelectorOfCopy} a`);
 		this.parent.inplaceUpdate(anchor, true);
-		//this.equipDatagridWithInteractivity();
+		$(this.gridSelector).datagrid('fixRowHeight');
+		this.customEquationsToParameters();
 	}
 	
 	/**
@@ -342,7 +452,7 @@ class DynamicPanel extends KIHPanel {
 	 */
 	async initialiseDatagrid(selector) {
 		var inst = this;
-		await this.parent.parser.parseAsync(selector, 1);
+		var filterPrompt = inst.parent.localizer.getLocalText('FILTER_PROMPT');
 		console.debug(`initialiseDatagrid for ${selector}`);
 		$(selector)
 		.datagrid({
@@ -351,14 +461,14 @@ class DynamicPanel extends KIHPanel {
 			pagination: true,
 			rownumbers: true,
 			fit: true,
-			onAfterEdit: function(idx, row, changes) {
+			onAfterEdit: async function(idx, row, changes) {
 				console.debug(`onAfterEdit for ${selector}`);
-				inst.parent.inplaceUpdate(`${inst.gridSelectorOfCopy} a`, true);
+				await inst.onAfterRender();
 				return true;
 			},
-			onCancelEdit: function(idx, row) {
+			onCancelEdit: async function(idx, row) {
 				console.debug(`onCancelEdit for ${selector}`);
-				inst.parent.inplaceUpdate(`${inst.gridSelectorOfCopy} a`, true);
+				await inst.onAfterRender();
 				return true;
 			},
 			clickToEdit: false,
@@ -372,7 +482,9 @@ class DynamicPanel extends KIHPanel {
 				inst.sortOrderAsc = order;
 				return true;
 			}
-		})
+		});
+		inst.equipDatagridWithInteractivity();								// TODO: is this a better place?
+		$(selector)
 		.datagrid('enableCellEditing')
 		.datagrid('gotoCell', {
             index: 0,
@@ -384,7 +496,7 @@ class DynamicPanel extends KIHPanel {
 				field: 'title',
 				type: 'textbox',
 				options: {
-					prompt: 'enter filter text here...'
+					prompt: filterPrompt
 				}
 			}
 		])
@@ -393,56 +505,7 @@ class DynamicPanel extends KIHPanel {
 			op: 'contains',
 			value: ''
 		});
-		inst.equipDatagridWithInteractivity();
-		
-		$('#btCUSTOM_EQUATIONS_ADD')
-		.click(async function(event) { 
-			event.preventDefault();
-			
-			var selectedText = inst.parent.codeMirror.getSelection();
-			if (selectedText != "") {
-				await inst.addEquation('Placeholder', selectedText);
-				inst.editCell();
-			} else {
-				
-				inst.messager.show('FORMULA_EDITOR', 'NO_SELECTION_TEXT');
-				return;
-			}
-		});
-
-		$('#btCUSTOM_EQUATIONS_REMOVE')
-		.click(async function(event) { 
-			event.preventDefault();
-			var dg = $(inst.gridSelector);
-			var cell = dg.datagrid('cell');
-			if (cell) {
-				console.dir(cell);
-				dg.datagrid('deleteRow', cell.index);
-				dg.datagrid('acceptChanges');
-			} else {
-				inst.messager.show('FORMULA_EDITOR', 'NO_SELECTION_CELL');
-				return;
-			}
-		});
-		
-		$('#btCUSTOM_EQUATIONS_SAVE')
-		.click(async function(event) {
-			event.preventDefault();
-			console.info('Click on btCUSTOM_EQUATIONS_SAVE');
-			var data = JSON.stringify(inst.toJson());					// must be a JSON string
-			var type = 'application/json';
-			
-			var fileHandler = new FileHandler();
-			fileHandler.saveFile(data, type, "fSAVE_CUSTOM_EQUATIONS");
-		});
-		
-		$('#btCUSTOM_EQUATIONS_LOAD')
-		.click(async function(event) {
-			event.preventDefault();
-			var fileHandler = new FileHandler();
-			var json = await fileHandler.loadFile("fOPEN_CUSTOM_EQUATIONS");
-			await inst.fromJson(json);
-		});
+		// inst.equipDatagridWithInteractivity();
 	}
 	
 	/**
@@ -451,20 +514,18 @@ class DynamicPanel extends KIHPanel {
 	async viewRender() {
 		var inst = this;
 		return {
-			view: $.extend(true, {}, $.fn['datagrid'].defaults.view, {
+			view: $.extend(true, {}, $.fn.datagrid.defaults.view, {
 				render: async function(target, container, frozen){
-					$.fn['datagrid'].defaults.view.render.call(this, target, container, frozen);
+					$.fn.datagrid.defaults.view.render.call(this, target, container, frozen);
 					console.log('Render');
 				},
 				onBeforeRender: async function(target){
-					$.fn['datagrid'].defaults.view.onBeforeRender.call(this, target);
+					$.fn.datagrid.defaults.view.onBeforeRender.call(this, target);
 					console.log('Before render');
 				},
 				onAfterRender: async function(target){
-					$.fn['datagrid'].defaults.view.onAfterRender.call(this, target);
-					await inst.equipDatagrid();
-					inst.customEquationsToParameters();
-					$(inst.gridSelector).datagrid('fixRowHeight');
+					$.fn.datagrid.defaults.view.onAfterRender.call(this, target);
+					await inst.onAfterRender();
 					console.log('After render');
 				}
 			})
@@ -517,7 +578,13 @@ class DynamicPanel extends KIHPanel {
 	}
 }
 
-
+/**
+ * @abstract The KIHPanels container for all Panels.
+ * 
+ * This hosts all Panel derived instances and is able to *show* them with a specialized method.
+ * This method performs an initialisation lazily and one time and can show the Panel repeatedly.
+ * Client is the central *Katex Input Helper* instance.
+ */
 class KIHPanels {
 	parameters = null;
 	localizer = null;
