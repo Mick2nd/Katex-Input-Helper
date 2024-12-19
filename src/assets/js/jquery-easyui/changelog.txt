@@ -1,5 +1,31 @@
-Version 1.9.x
--------------
+Version 1.11.x
+----------------
+* New Plugins
+ * swiper: Allow the user to create slideshows with smooth animations.
+ * timeline: Allow the user to create a simple time line for projects.
+
+Version 1.10.x
+--------------
+* Bug
+ * slider: The step size is ignored for negative values. fixed.
+ * mobile: The animation does not work on some browsers. fixed.
+ * form: The 'dirty' property does not work with check and radio components. fixed.
+ * drawer: The 'onBeforeCollapse' event doesn't fire while collapsing it. fixed.
+* Improvement
+ * compatible with strict mode.
+ * textbox: Add 'show' and 'hide' methods.
+ * textbox: Add 'setEditable' method.
+ * textbox: Add 'autoSize' property.
+ * form: Add 'focusOnValidate' property.
+ * menu: Add 'navItems' and 'findItems' methods.
+ * menu: Add 'appendItems' method.
+ * searchbox: Add 'showEvent' and 'hideEvent' properties.
+* New Plugins
+ * radiogroup: A set of radio buttons, where no more than one of the buttons can be checked at a time.
+ * checkgroup: A set of checkbox components, where one or more options can be checked at a time.
+ 
+Version 1.10.0
+--------------
 * Bug
  * layout: The icon on the collapsed panel is overlaped by title. fixed.
  * propertygrid: The css style of the row expander will affact that in the detailview. fixed.
@@ -14,6 +40,9 @@ Version 1.9.x
  * window: Add 'fixed' property.
  * timepicker: Add 'hour24' property.
  * layout: Add 'stopCollapsing' method.
+ * messager: Add 'tip' method.
+* New Plugins
+ * drawer: Allow the user to anchor to the left or right edge of the screen.
 
 Version 1.9.0
 -------------

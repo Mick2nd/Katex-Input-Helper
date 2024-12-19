@@ -639,7 +639,7 @@
   border-bottom: transparent;
 }
 .drawer.window-shadow {
-  box-shadow: 0 4px 12px #ccc;
+  box-shadow: 0 4px 12px #fafafa;
   border-radius: 0;
   position: fixed;
 }
@@ -648,6 +648,10 @@
 }
 .drawer-mask.window-mask {
   position: fixed;
+}
+.drawer.layout-panel-east,
+.drawer.layout-panel-west {
+  bottom: 0;
 }
 .l-btn {
   text-decoration: none;
@@ -3012,6 +3016,36 @@
 .window-thinborder .messager-button {
   padding-bottom: 8px;
 }
+.messager-tip {
+  box-shadow: 0 1px 6px #fafafa;
+  height: auto;
+}
+.messager-tip .messager-body {
+  margin: 0;
+  padding: 0 10px;
+  height: 40px;
+  line-height: 40px;
+}
+.messager-tip .messager-body>.f-row {
+  align-items: center;
+}
+.messager-tip .messager-icon {
+  width: 16px;
+  height: 16px;
+  margin: 0 10px 0 0;
+}
+.messager-tip .messager-info {
+  background: url('images/messager_icons16.png') no-repeat scroll 0 0;
+}
+.messager-tip .messager-question {
+  background: url('images/messager_icons16.png') no-repeat scroll -16px 0;
+}
+.messager-tip .messager-error {
+  background: url('images/messager_icons16.png') no-repeat scroll -32px 0;
+}
+.messager-tip .messager-warning {
+  background: url('images/messager_icons16.png') no-repeat scroll -48px 0;
+}
 .tree {
   margin: 0;
   padding: 0;
@@ -3603,6 +3637,80 @@
 .timepicker-panel .panel-header .title-selected:hover {
   cursor: default;
   opacity: 1.0;
+}
+.swiper {
+  overflow: hidden;
+  position: relative;
+}
+.swiper-inner {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+  transform: translate(0%,0px) translateZ(0px);
+  transition: transform 0.5s linear 0s;
+  transition-duration: 0.5s;
+}
+.swiper-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translate(-50%);
+}
+.swiper-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background-color: #d9d9d9;
+}
+.swiper-dot-active {
+  background-color: #404040;
+}
+.swiper-dot:last-child {
+  margin-right: 0;
+}
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.timeline-item {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0 0 12px 0;
+}
+.timeline-item-dot {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  background-color: #ffffff;
+}
+.timeline-item-dot-custom {
+  width: auto;
+  height: auto;
+  text-align: center;
+  border: 0;
+}
+.timeline-item-line {
+  position: absolute;
+  height: 100%;
+  top: 0;
+  left: 6px;
+  border-left: 1px solid #ddd;
+}
+.timeline .timeline-item:last-child .timeline-item-line {
+  display: none;
+}
+.timeline-item-content {
+  padding: 1px 1px 10px 24px;
+  position: relative;
+  font-size: 14px;
+  top: -3px;
 }
 .l-btn {
   box-shadow: 0 1px 2px rgba(0,0,0,0.2), 0 1px 1px rgba(0,0,0,0.05);

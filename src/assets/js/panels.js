@@ -276,7 +276,7 @@ class DynamicPanel extends KIHPanel {
 				console.dir(cell);
 				dg.datagrid('deleteRow', cell.index)
 				.datagrid('acceptChanges', {});
-				this.customEquationsToParameters();
+				inst.customEquationsToParameters();
 			} else {
 				inst.messager.show('FORMULA_EDITOR', 'NO_SELECTION_CELL');
 				return;
