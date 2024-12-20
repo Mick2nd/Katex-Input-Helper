@@ -477,6 +477,7 @@ class DynamicPanel extends KIHPanel {
 				{ field: 'title', title: '<span class="custom-equations" locate="TITLE">Title</span>', width: '40%', editor: 'text', sortable: true, sorter: inst.alphaSorter.bind(inst) },
 				{ field:'formula', title: '<span class="custom-equations" locate="FORMULA">Formula</span>', width:'60%' }
 			]],
+			idField: 'title',
 			onBeforeSortColumn: function(sort, order) {
 				console.debug(`Sort order is: ${order}`);
 				inst.sortOrderAsc = order;

@@ -86,9 +86,12 @@ The custom equations dialog
 - Sometimes a start of the dialog crashes. Mainly I could observe this for first time starts of the production version. Perhaps this has to do with caching of the plugin. Restart helps.
 - A minor problem is a missing update of the language of the data grid paging bar in the *Custom Equations* dialog. This only appears during language change during an actual activation of the dialog.
 - Only 2 languages are fully localized: English and German. In the original software 7 languages are supported: French, Spanish, Russian, Vietnamese and Arabian in addition to the 2 above. The missing phrases fall back to the English version.
-- The *Custom Equations* dialog removal problem remains: A sort or filter operation after removing an equation re-inserts this equation. A workaround can be to close the *Katex Input Helper* immediately after removing equations.
 
 ## Release Notes
+
+### 1.0.5
+
+- Bug fix: *Custom Equations* dialog removal problem.
 
 ### 1.0.4
 
