@@ -139,6 +139,12 @@ h3 {
 	width: 100%;
 }
 
+#gridCaption {
+  padding: 10px;
+}
+
+
+
 .panel-body table tbody tr td a.easyui-tooltip {
 	float: left;
 }
@@ -146,3 +152,9 @@ h3 {
 .katex {
 	pointer-events: none;
 }
+
+/*
+.tree-folder {
+	background: transparent url("../img/warning.png") no-repeat scroll center center;
+}
+*/

@@ -193,9 +193,11 @@ class DynamicPanel extends KIHPanel {
 	panelId = "";
 	gridSelector = "";
 	gridSelectorOfCopy = "";
+	treeSelector = "";
 	initialised = false;
 	renderComplete = false;
 	sortOrderAsc = 'desc';
+	categoriesTree = null;
 	
 	/**
 	 * @abstract Constructor.
@@ -207,10 +209,14 @@ class DynamicPanel extends KIHPanel {
 		this.parent = parent;
 		this.messager = new Messager(this.parent.localizer);
 		this.utilities = new Utilities(this.parent.localizer);
+		this.categoriesTree = new CategoriesTree();
 		this.gridSelector = `#${panelId} .easyui-datagrid`;
 		this.gridSelectorOfCopy = `#${panelId} table:not(.easyui-datagrid)`;
+		this.treeSelector = `#categories`;
 		
 		this.parent.localizer.subscribe(this.onLocaleChanged.bind(this));
+		this.categoriesTree.nodeSelected.subscribe(this.onNodeSelected.bind(this));
+		this.categoriesTree.treeChanged.subscribe(this.onTreeChanged.bind(this));
 	}
 	
 	/**
@@ -245,7 +251,7 @@ class DynamicPanel extends KIHPanel {
 
 		console.debug(`Here in DynamicPanel.initialise 2`);
 		await inst.initialiseDatagrid(`${inst.gridSelector}`);
-		await inst.customEquationsFromParameters();
+		inst.customEquationsFromParameters();
 
 		// TODO: pagination bar adaptation		
 		// Building the dialog more than once was not the intention, but this comes at a low
@@ -287,7 +293,8 @@ class DynamicPanel extends KIHPanel {
 		.click(async function(event) {
 			event.preventDefault();
 			console.info('Click on btCUSTOM_EQUATIONS_SAVE');
-			var data = JSON.stringify(inst.toJson());					// must be a JSON string
+			inst.categoriesTree.currentEquations = inst.toJson();
+			var data = JSON.stringify(inst.categoriesTree.customEquationsProxy);			// must be a JSON string
 			var type = 'application/json';
 			
 			var fileHandler = new FileHandler();
@@ -299,9 +306,12 @@ class DynamicPanel extends KIHPanel {
 			event.preventDefault();
 			var fileHandler = new FileHandler();
 			var json = await fileHandler.loadFile("fOPEN_CUSTOM_EQUATIONS");
-			await inst.fromJson(json);
+			inst.categoriesTree.customEquations = JSON.parse(json);
+			inst.fromJson(inst.categoriesTree.currentEquations);
 			await inst.onAfterRender();
 		});
+		
+		$('#CUSTOM_EQUATIONS_LAYOUT').layout({fit: true});
 	}
 	
 	async show() {
@@ -309,12 +319,26 @@ class DynamicPanel extends KIHPanel {
 		await super.show();
 	}
 	
+	onTreeChanged() {
+		this.customEquationsToParameters();
+	}
+	
+	onNodeSelected(previous, current) {
+		try {
+			this.fromJson(this.categoriesTree.currentEquations);
+			$(this.gridSelector).datagrid('doFilter');
+		} catch(e) {
+			
+		}
+	}
+	
 	/**
 	 * Reads the Custom Equations from the parameters.
 	 */
-	async customEquationsFromParameters() {
+	customEquationsFromParameters() {
 		try {
-			await this.fromJson(JSON.stringify(this.parent.parameters.equationCollection));
+			this.categoriesTree.customEquations = this.parent.parameters.equationCollection;
+			this.fromJson(this.categoriesTree.currentEquations);
 			$(this.gridSelector).datagrid('doFilter');
 		} catch(e) {
 			
@@ -325,22 +349,22 @@ class DynamicPanel extends KIHPanel {
 	 * @abstract Called after each change of the content writes the Custom Equations back to the parameters.
 	 */	
 	customEquationsToParameters() {
-		var customEquations = this.toJson();
-		this.parent.parameters.equationCollection = customEquations;		
+		this.categoriesTree.currentEquations = this.toJson();
+		this.parent.parameters.equationCollection = this.categoriesTree.customEquationsProxy;		
 		this.parent.parameters.writeParameters();
 	}
 	
 	/**
 	 * Uses the given JSON compatible data to fill the data grid.
 	 * 
-	 * @param json - a json string used to fill the data grid
+	 * @param json - a json object used to fill the data grid
 	 */
-	async fromJson(json) {
+	fromJson(json) {
 		$(this.gridSelector)
 		.datagrid('loadData', []);
 		
 		try {
-			var equations = JSON.parse(json);
+			var equations = json; // JSON.parse(json);
 			for (const equation of equations) {
 				if (typeof(equation[1]) == "string" && equation[1] != "[object Object]") {
 					this.addEquation(equation[0], equation[1]);
@@ -456,11 +480,13 @@ class DynamicPanel extends KIHPanel {
 		console.debug(`initialiseDatagrid for ${selector}`);
 		$(selector)
 		.datagrid({
+			singleSelect: true,
 			remoteSort: false,
 			remoteFilter: false,
 			pagination: true,
 			rownumbers: true,
 			fit: true,
+			noheader: false,
 			onAfterEdit: async function(idx, row, changes) {
 				console.debug(`onAfterEdit for ${selector}`);
 				await inst.onAfterRender();
@@ -482,6 +508,67 @@ class DynamicPanel extends KIHPanel {
 				console.debug(`Sort order is: ${order}`);
 				inst.sortOrderAsc = order;
 				return true;
+			},
+			onLoadSuccess: function() {
+				// $(this).datagrid('enableDnd');
+				var opts = $(this).datagrid('options');
+				var trs = opts.finder.getTr(this, 0, 'allbody');
+				trs.draggable({
+					revert: true,
+					deltaX: 70,
+					deltaY: 70,
+					proxy: function(source) {
+						console.dir(source);
+						var p = $('<div id="categories_easyui_tree_12" class="datagrid-div proxy droppable" style="border:2px solid red;"></div>').appendTo(`#${inst.panelId}`);
+						var row = $('<div style="width: 400px; display: flex; flex-direction: row; justify-content: center;"></div>');
+						$(source).find('td')
+						.each(function() {
+							var td = $('<div style="margin: auto; width: 80px;"></div>');
+							$(td).html($(this).html());
+							$(td).appendTo($(row));
+						});
+							
+						var withIcon = $(row).prepend('<div class="tree-dnd-icon tree-dnd-no" style="width: 20px;">&nbsp;</div');
+						p.append($(withIcon));
+						// THIS TRIAL TO MIMICK THE TREE NODE DOES NOT WORK
+						// p.append('<span class="tree-indent"></span><span class="tree-file" style="width: 20px;">&nbsp;</span><span class="title">TEXT SAMPLE</span>');
+						var proxy = p[0];
+						console.dir(proxy);
+						return p;
+					}
+				});
+				/*
+				$(this)
+				.find('tr')
+				.each(function(){
+					console.debug(`Found datagrid row`);
+					$(this).draggable({
+						revert: true,
+						deltaX: 50,
+						deltaY: 50,
+						proxy: function(source) {
+							console.dir(source);
+							var p = $('<div class="datagrid-div" style="border:2px solid red;"></div>').appendTo(`#${inst.panelId}`);
+							var row = $('<div style="width: 400px; display: flex !important; flex-direction: row !important; justify-content: center !important;"></div>');
+							$(source).find('td')
+							.each(function() {
+								var td = $('<div style="margin: auto; width: 80px;"></div>');
+								$(td).html($(this).html());
+								$(td).appendTo($(row));
+							});
+								
+							var withIcon = $(row).prepend('<div class="tree-dnd-icon tree-dnd-no" style="width: 20px;">&nbsp;</div');
+							p.append($(withIcon));
+							var proxy = p[0];
+							console.dir(proxy);
+							return p;
+						}
+					});
+				});
+				*/
+			},
+			onDragOver: function(target, source) {
+				console.dir(source);
 			}
 		});
 		inst.equipDatagridWithInteractivity();								// TODO: is this a better place?
@@ -506,6 +593,9 @@ class DynamicPanel extends KIHPanel {
 			op: 'contains',
 			value: ''
 		});
+		// does not work
+		$('#gridCaption').innerText = 'Default';
+		
 		// inst.equipDatagridWithInteractivity();
 	}
 	

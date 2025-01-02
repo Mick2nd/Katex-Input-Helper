@@ -485,18 +485,35 @@
 			data-options="closed:true,modal:false,shadow:false,resizable:true,collapsible:true,buttons:'#btCUSTOM_EQUATIONS_BUTTONS'"
 			title="<span id='wf_CUSTOM_EQUATIONS_MORE_TITLE' class='custom-equations' locate='CUSTOM_EQUATIONS' class='rtl-title-withicon'></span>"
 			style="width: 500px; height: 320px;">
-			<table id="customDatagrid" class="easyui-datagrid" >
-			    <thead>
-			        <tr>
-			        <!-- Without these entries datagrid wouldn't work -->
-			            <th class="custom-equations" data-options="field:'title',editor:'text',width:'40%',sortable:true">Titel</th>
-			            <th class="custom-equations" data-options="field:'formula',width:'55%'">Formel</th>
-			        </tr>
-			    </thead>
-			    <tbody>
-				</tbody>
-			</table>
-			<div id="btCUSTOM_EQUATIONS_BUTTONS">
+			<div id="CUSTOM_EQUATIONS_LAYOUT" class="easyui-layout">
+				<div data-options="region:'west',split:true" style="width: 150px;">
+					<ul id="categories" class="easyui-tree" data-options="dropAccept:'.datagrid-div'">
+					</ul>
+					<div id="treeMenu" class="easyui-menu" style="width:120px;">
+						<div id="mAppendFolder" data-options="iconCls:'icon-add'">Append Folder</div>
+						<div id="mAppendCategory" data-options="iconCls:'icon-add'">Append Category</div>
+						<div id="mRemove" data-options="iconCls:'icon-remove'">Remove</div>
+					</div>
+					<div id="treeMenuLeaf" class="easyui-menu" style="width:120px;">
+						<div id="mRemoveLeaf" data-options="iconCls:'icon-remove'">Remove</div>
+					</div>
+				</div>
+				<div data-options="region:'center'" >
+					<!-- <div id="gridCaption">Default</div> -->
+					<table id="customDatagrid" class="easyui-datagrid">
+					    <thead>
+					        <tr>
+					        <!-- Without these entries datagrid wouldn't work -->
+					            <th class="custom-equations" data-options="field:'title',editor:'text',width:'40%',sortable:true">Titel</th>
+					            <th class="custom-equations" data-options="field:'formula',width:'55%'">Formel</th>
+					        </tr>
+					    </thead>
+					    <tbody>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div id="btCUSTOM_EQUATIONS_BUTTONS" >
 				<a href="#" id="btCUSTOM_EQUATIONS_ADD" class="easyui-linkbutton custom-equations" iconcls="icon-add">
 					<span class="custom-equations" locate="ADD">ADD</span>
 				</a>
