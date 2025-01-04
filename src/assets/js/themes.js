@@ -141,6 +141,7 @@ class Themes extends Observable {
 
 			singleEntryId("jquery-easyui-MathEditorExtend/themes/rtl.css", "RTLstyle"),
 			
+			/*
 			singleEntryBasic("jquery-easyui/themes/icon.css"),
 			singleEntryBasic("jquery-easyui-MathEditorExtend/themes/icon.css"),
 			singleEntryBasic("jquery-colorpicker/css/colorpicker.css"),
@@ -148,6 +149,7 @@ class Themes extends Observable {
 			singleEntryBasic("keyboard/Keyboard.css"),
 			singleEntryBasic("katex/katex.min.css"),
 			singleEntryBasic("dialog.css")
+			*/
 		];
 		
 		this.universalLoad('head', cssDescription);

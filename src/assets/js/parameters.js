@@ -108,8 +108,16 @@ class Parameters {
 	 * @param id - the panel id as in HTML
 	 */
 	resizePanel(id) {
-		if (id in this) {
-			$(`#${id}`).panel('resize', this[id]);
+		if (id in this && this[id] != undefined) {
+			try {
+				var o = this[id];
+				console.debug(`Check point 1 : ${o.left} `);
+				$(`#${id}`).panel('resize', this[id]);
+			} catch(e) {
+				console.error(`Exception resizing panel ${id} : ${e}`);
+				this[id] = { left: 100, top: 100, width: 200, height: 200 };
+				this.writeParameters();
+			}
 		}
 	}
 }

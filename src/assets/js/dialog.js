@@ -179,6 +179,7 @@ class KatexInputHelper {
 			interval: 300 
 		}); 
 		$('#form').hide();
+		$('#WaitMsg').hide();
 		
 		await vme.updateInfo();												// updates a few dialogs
 		await vme.initialiseUI(); 
@@ -188,8 +189,8 @@ class KatexInputHelper {
 
 		// IN QUESTION
 		await this.onLocaleChanged(this.localizer);							// repeat because too soon after initialiseLanguageChoice
-		this.themes.subscribe(this.onStyleChanged.bind(this));
-		this.themes.initialiseThemeChoice(this.style, this.rtlStyle); 		// RTL STYLE defined after locale language
+		// this.themes.subscribe(this.onStyleChanged.bind(this));
+		// this.themes.initialiseThemeChoice(this.style, this.rtlStyle); 		// RTL STYLE defined after locale language
 
 		vme.endWait(); 
 		vme.isBuild = true;
@@ -1259,39 +1260,54 @@ class KatexInputHelper {
 			.replace('file:///', 'file://')
 			.replace('file://', 'file:///') + '/';
 		console.info(`Base location is : ${location}`);
-		$('base').attr('href', location);
+		
+		$('html > head').append($('<base />'));
+		$('html > head > base').attr('href', location);
+		
 		return location;
 	}
 }
 
-/**
- * @abstract Main invocation logic.
- * 
- * Instantiate the Katex Input Helper, initialize it and layout the dialog window.
- */
-if (typeof $ == 'function') {
-	$(document).ready(async function initSequence() {
-		console.info('Document ready.');
-		var vme = null;
-		var fatalError = null;
-		try {
-			vme = new KatexInputHelper();
-			window.vme = vme;											// prevents garbage collection?
-			await vme.initialise();
-			$('#myContainer').layout({fit: true});
-			$('#divEquationInputOutput').layout({});
-		} catch(e) {
-			fatalError = e;
-		}
-		if (fatalError != null) {
-			console.error(`Katex Input Helper first time invocation error: ${fatalError}`);
-			alert('The Katex Input Helper could not be opened properly, \n' + 
-				'jquery not loaded. Please close it and open it again!');
-		}
-	});
-} else {
-	console.error(`jquery not defined`);
+
+function fatal() {
 	alert('The Katex Input Helper could not be opened properly, \n' + 
 		'jquery not loaded. Please close it and open it again!');
-} 
+}
 
+async function initSequenceAsync() {
+	console.info('Document ready.');
+	var vme = null;
+	var fatalError = null;
+
+	vme = new KatexInputHelper();
+	window.vme = vme;											// prevents garbage collection?
+	await vme.initialise();
+	$('#myContainer').layout({fit: true});
+	$('#divEquationInputOutput').layout({});
+}
+
+var ready = false;
+function initSequence() {
+	initSequenceAsync()
+	.then(() => { 
+		console.info('Katex Input Helper initSequence ready.');
+		ready = true; 
+	})
+	.catch((fatalError) => {
+		console.error(`Katex Input Helper invocation error: ${fatalError}`);
+		fatal();
+		window.vme = null;
+	
+		setTimeout( initSequence, 10000 );
+	});
+}
+/*
+if ( typeof $ === 'function' ) {
+	$(document).ready(initSequence);
+} else {
+	console.warn('Katex Input Helper : jQuery not ready.');
+	setTimeout( function () {
+		$(document).ready(initSequence);
+	}, 5000 );
+}
+*/

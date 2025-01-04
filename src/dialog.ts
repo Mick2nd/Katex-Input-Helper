@@ -51,7 +51,7 @@ export class Dialog
 		const ok = { id: 'okay', title: 'Okay' };
 		const cancel = { id: 'cancel', title: 'Cancel' };
 		await joplin.views.dialogs.setButtons(handle, [ok, cancel]);
-		await joplin.views.dialogs.setFitToContent(handle, false);
+		await joplin.views.dialogs.setFitToContent(handle, false);								// was false!
 		await this.loadCss(handle);
 		await this.loadJs(handle);
 		await joplin.views.dialogs.setHtml(handle, await this.load('./assets/dialog.html'));
@@ -81,7 +81,7 @@ export class Dialog
 	{
 		let location = await joplin.plugins.installationDir();
 		let html = await fs.readFile(path.join(location, fileName), 'utf-8');
-		return html.replace("${INSTALLDIR}", location);
+		return html; // html.replace("${INSTALLDIR}", location);
 	}
 	
 	public loadCss = async function(handle) : Promise<void> {
@@ -90,7 +90,6 @@ export class Dialog
 				Ergebnis der Versuche soweit:
 				- alles nachladen funktioniert nicht so gut
 				- mit diesem Stand erst mal weiter arbeiten
-			*/
 			"./assets/js/jquery-easyui/themes/default/easyui.css",
 			"./assets/js/jquery-easyui/themes/icon.css",
 			"./assets/js/jquery-easyui-MathEditorExtend/themes/aguas/easyui.css",
@@ -102,6 +101,7 @@ export class Dialog
 			"./assets/js/keyboard/Keyboard.css",
 			"./assets/js/katex/katex.min.css",
 			"./assets/js/dialog.css"
+			*/
 		];
 		
 		for (const path of css) {
@@ -111,6 +111,7 @@ export class Dialog
 	
 	public loadJs = async function(handle) : Promise<void> {
 		var js = [
+			/*
 			"./assets/js/jquery-easyui/jquery.min.js",
 			"./assets/js/jquery-easyui/jquery.easyui.min.js",
 			"./assets/js/jquery-easyui/datagrid-cellediting.js",
@@ -132,7 +133,10 @@ export class Dialog
 			"./assets/js/math.js",
 			"./assets/js/categoriesTree.js",
 			"./assets/js/panels.js",
-			"./assets/js/dialog.js"			
+			"./assets/js/dialog.js"
+			*/			
+			"./assets/js/jquery-easyui/easyloader.js",
+			"./assets/js/bootLoader.js"
 		];
 		
 		for (const path of js) {
