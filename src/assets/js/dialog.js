@@ -163,6 +163,226 @@ class KatexInputHelper {
 	 * @abstract Initialize. Performs the whole initialization.
 	 */
 	async initialise() { 
+		/* TEST: Dynamically create data-options */
+		var options = {
+			/* DOES NOT WORK AS EXPECTED : NO ACCORDION PLACEMENT -> PANEL
+			'#westRegion': {
+				region:'west',
+				title:'<span locate=FORMULA class=rtl-title-withicon></span>&nbsp;',
+				split:false
+			},
+			*/
+			'#WaitMsg': {
+				modal: true,
+				maximizable: false,
+				minimizable: false,
+				collapsible: false,
+				closable: false,
+				maximized: true
+			},
+			'#wEDITOR_PARAMETERS': {
+				closed:true,
+				modal:true,
+				buttons:'#btEDITOR_PARAMETERS',
+				resizable:true
+			},
+			'#wLANGUAGE_CHOISE': {
+				closed:true,
+				modal:true,
+				buttons:'#btLANGUAGE_CHOISE'
+			},
+			'#wSTYLE_CHOISE': {
+				closed:true,
+				modal:true,
+				buttons:'#btSTYLE_CHOISE'
+			},
+			'#wMATRIX': {
+				closed:true,
+				modal:true,
+				buttons:'#btMATRIX',
+				resizable:true
+			},
+			'#wf_COMMUTATIVE_DIAGRAM_MORE': {
+				closed:true,
+				modal:false,
+				shadow:false,
+				resizable:true,
+				collapsible:true
+			},
+			'#wf_CHEMICAL_FORMULAE_MORE': {
+				closed:true,
+				modal:false,
+				shadow:false,
+				resizable:true,
+				collapsible:true
+			},
+			'#wf_BRACKET_SYMBOLS_MORE': {
+				closed:true,
+				modal:false,
+				shadow:false,
+				resizable:true,
+				collapsible:true
+			},
+			'#wf_RELATION_SYMBOLS_MORE': {
+				closed:true,
+				modal:false,
+				shadow:false,
+				resizable:true,
+				collapsible:true
+			},
+			'#wf_ARROW_SYMBOLS_MORE': {
+				closed:true,
+				modal:false,
+				shadow:false,
+				resizable:true,
+				collapsible:true
+			},
+			'#wf_FR_CHAR_MORE': {
+				closed:true,
+				modal:false,
+				shadow:false,
+				resizable:true,
+				collapsible:true
+			},
+			'#wf_BBB_CHAR_MORE': {
+				closed:true,
+				modal:false,
+				shadow:false,
+				resizable:true,
+				collapsible:true
+			},
+			'#wf_L_U_GREEK_CHAR_MORE': {
+				closed:true,
+				modal:false,
+				shadow:false,
+				resizable:true,
+				collapsible:true
+			},
+			'#wf_ALL_CHAR_MORE': {
+				closed:true,
+				modal:false,
+				shadow:false,
+				resizable:true,
+				collapsible:true
+			},
+			'#wf_EQUATION_MORE': {
+				closed:true,
+				modal:false,
+				shadow:false,
+				resizable:true,
+				collapsible:true
+			},
+			'#wf_CUSTOM_EQUATIONS_MORE': {
+				closed:true,
+				modal:false,
+				shadow:false,
+				resizable:true,
+				collapsible:true,
+				buttons:'#btCUSTOM_EQUATIONS_BUTTONS'
+			},
+			'#wf_HORIZONTAL_SPACING_MORE': {
+				closed:true,
+				modal:false,
+				shadow:false,
+				resizable:true,
+				collapsible:true
+			},
+			'#wf_VERTICAL_SPACING_MORE': {
+				closed:true,
+				modal:false,
+				shadow:false,
+				resizable:true,
+				collapsible:true
+			},
+			'#wf_SPECIAL_CHARACTER_MORE': {
+				closed:true,
+				modal:false,
+				shadow:false,
+				resizable:true,
+				collapsible:true
+			},
+			'#wLATEX_CODES_LIST': {
+				closed:true,
+				modal:false,
+				collapsible:false,
+				minimizable:false,
+				maximizable:false,
+				closable:true
+			},
+			'#wASCIIMATH_CODES_LIST': {
+				closed:true,
+				modal:false,
+				collapsible:false,
+				minimizable:false,
+				maximizable:false,
+				closable:true
+			},
+			'#wUNICODES_LIST': {
+				resizable:false,
+				closed:true,
+				modal:false,
+				collapsible:false,
+				minimizable:false,
+				maximizable:false,
+				closable:true
+			},
+			'#wLANGUAGE_LIST': {
+				closed:true,
+				modal:false,
+				collapsible:false,
+				minimizable:false,
+				maximizable:false,
+				closable:true
+			},
+			'#wINFORMATIONS': {
+				resizable:true,
+				closed:true,
+				modal:false,
+				collapsible:false,
+				minimizable:false,
+				maximizable:false,
+				closable:true
+			}
+		}
+		var menuOptions = [
+			{ iconCls: 'icon-file', menu: '#mFILE' },
+			{ iconCls: 'icon-insert', menu: '#mINSERT' },
+			{ iconCls: 'icon-plugin', menu: '#mTOOLS' },
+			{ iconCls: 'icon-watch', menu: '#mVIEW' },
+			{ iconCls: 'icon-option', menu: '#mOPTIONS' },
+			{ iconCls: 'icon-info', menu: '#mINFORMATIONS' },
+		];
+		
+		$(Object.keys(options).join(','))
+		.each(function() {
+			var id = $(this).attr('id');
+			$(this).dialog(options[id]);
+		});
+		$('#menu a')
+		.each(function(idx) {
+			$(this).menubutton(menuOptions[idx]);
+		})
+
+		/*		
+		$('#WaitMsg')
+		.window({
+			modal: true,
+			maximizable: false,
+			minimizable: false,
+			collapsible: false,
+			closable: false,
+			maximized: true
+		});
+		$('#wEDITOR_PARAMETERS')
+		.dialog({
+			closed:true,
+			modal:true,
+			buttons:'#btEDITOR_PARAMETERS',
+			resizable:true
+		});
+		*/
+		/* TEST END */
+
 		var vme = this; 
 		this.parser.initialise();		
 		await this.parameters.queryParameters();							// from Plugin		
@@ -171,7 +391,7 @@ class KatexInputHelper {
 		vme.initialiseCodeMirror(); 
 		this.localizer.subscribe(this.onLocaleChanged.bind(this));
 		await this.localizer.initialiseLanguageChoice(this.localType);		// Progress dialog uses localized text
-
+		
 		$.messager.progress({
 			title: "VisualMathEditor", 
 			text: vme.getLocalText("WAIT_FOR_EDITOR_DOWNLOAD"), 
@@ -179,7 +399,6 @@ class KatexInputHelper {
 			interval: 300 
 		}); 
 		$('#form').hide();
-		$('#WaitMsg').hide();
 		
 		await vme.updateInfo();												// updates a few dialogs
 		await vme.initialiseUI(); 
@@ -189,8 +408,8 @@ class KatexInputHelper {
 
 		// IN QUESTION
 		await this.onLocaleChanged(this.localizer);							// repeat because too soon after initialiseLanguageChoice
-		// this.themes.subscribe(this.onStyleChanged.bind(this));
-		// this.themes.initialiseThemeChoice(this.style, this.rtlStyle); 		// RTL STYLE defined after locale language
+		this.themes.subscribe(this.onStyleChanged.bind(this));
+		this.themes.initialiseThemeChoice(this.style, this.rtlStyle); 		// RTL STYLE defined after locale language
 
 		vme.endWait(); 
 		vme.isBuild = true;
@@ -199,7 +418,7 @@ class KatexInputHelper {
 	endWait() { 
 		this.initialiseEquation(); 
 		$.messager.progress('close'); 
-		$("#WaitMsg").hide(); 
+		$("#WaitMsg").panel('close');
 		this.setFocus(); 
 	}
 	
@@ -1248,6 +1467,7 @@ class KatexInputHelper {
 	 * @abstract Sets the base location.
 	 * 
 	 * This will be needed for relative paths of some content like css or html files.
+	 * This method is only called once in constructor.
 	 */
 	setBaseLocation() {
 		var location = $("script[src]")
@@ -1268,46 +1488,3 @@ class KatexInputHelper {
 	}
 }
 
-
-function fatal() {
-	alert('The Katex Input Helper could not be opened properly, \n' + 
-		'jquery not loaded. Please close it and open it again!');
-}
-
-async function initSequenceAsync() {
-	console.info('Document ready.');
-	var vme = null;
-	var fatalError = null;
-
-	vme = new KatexInputHelper();
-	window.vme = vme;											// prevents garbage collection?
-	await vme.initialise();
-	$('#myContainer').layout({fit: true});
-	$('#divEquationInputOutput').layout({});
-}
-
-var ready = false;
-function initSequence() {
-	initSequenceAsync()
-	.then(() => { 
-		console.info('Katex Input Helper initSequence ready.');
-		ready = true; 
-	})
-	.catch((fatalError) => {
-		console.error(`Katex Input Helper invocation error: ${fatalError}`);
-		fatal();
-		window.vme = null;
-	
-		setTimeout( initSequence, 10000 );
-	});
-}
-/*
-if ( typeof $ === 'function' ) {
-	$(document).ready(initSequence);
-} else {
-	console.warn('Katex Input Helper : jQuery not ready.');
-	setTimeout( function () {
-		$(document).ready(initSequence);
-	}, 5000 );
-}
-*/

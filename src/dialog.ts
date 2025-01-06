@@ -17,6 +17,7 @@ export class Dialog
 	id = 'Katex Input Helper Dialog';
 	settings: Settings;
 	archive: string;
+	useEasyLoader = true;
 	
 	/**
 		@abstract Constructor
@@ -85,11 +86,12 @@ export class Dialog
 	}
 	
 	public loadCss = async function(handle) : Promise<void> {
-		var css = [
+		var css = this.useEasyLoader ? [] : [
 			/*
 				Ergebnis der Versuche soweit:
 				- alles nachladen funktioniert nicht so gut
 				- mit diesem Stand erst mal weiter arbeiten
+			*/
 			"./assets/js/jquery-easyui/themes/default/easyui.css",
 			"./assets/js/jquery-easyui/themes/icon.css",
 			"./assets/js/jquery-easyui-MathEditorExtend/themes/aguas/easyui.css",
@@ -101,7 +103,6 @@ export class Dialog
 			"./assets/js/keyboard/Keyboard.css",
 			"./assets/js/katex/katex.min.css",
 			"./assets/js/dialog.css"
-			*/
 		];
 		
 		for (const path of css) {
@@ -110,8 +111,12 @@ export class Dialog
 	}
 	
 	public loadJs = async function(handle) : Promise<void> {
-		var js = [
+		var js = this.useEasyLoader ? [
+			"./assets/js/jquery-easyui/easyloader.js",
+			"./assets/js/bootLoader.js"
+		] : [
 			/*
+			*/			
 			"./assets/js/jquery-easyui/jquery.min.js",
 			"./assets/js/jquery-easyui/jquery.easyui.min.js",
 			"./assets/js/jquery-easyui/datagrid-cellediting.js",
@@ -133,9 +138,7 @@ export class Dialog
 			"./assets/js/math.js",
 			"./assets/js/categoriesTree.js",
 			"./assets/js/panels.js",
-			"./assets/js/dialog.js"
-			*/			
-			"./assets/js/jquery-easyui/easyloader.js",
+			"./assets/js/dialog.js",
 			"./assets/js/bootLoader.js"
 		];
 		

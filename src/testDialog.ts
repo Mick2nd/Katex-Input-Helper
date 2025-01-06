@@ -97,7 +97,7 @@ export class TestDialog
 	
 	public loadJs = async function(handle) : Promise<void> {
 		var js = [
-			"./assets/js/jquery-easyui/jquery-packaged.min.js",
+			"./assets/js/jquery-easyui/jquery.min.js",
 			"./assets/js/jquery-easyui/jquery.easyui.min.js",
 			"./tests/testDialog.js",
 			"./tests/starter.js"

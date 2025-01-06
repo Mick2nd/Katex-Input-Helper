@@ -4,6 +4,8 @@ import { Dialog } from './dialog';
 import { TestDialog } from './testDialog';
 
 
+const withTest = true;
+
 /**
  *	@abstract Function or lambda to execute menu command
  */
@@ -71,20 +73,20 @@ joplin.plugins.register({
 			MenuItemLocation.Tools,
 			{ accelerator: "CmdOrCtrl+Shift+K"}); 
 
-		/*
-		const scriptIdTest = 'pluginCommandKatexTestDialog';
-		await joplin.commands.register(
-			{
-				name: scriptIdTest,
-				label: 'Katex Test Dialog',
-				execute: test_command, 
-			});
+		if (withTest) {
+			const scriptIdTest = 'pluginCommandKatexTestDialog';
+			await joplin.commands.register(
+				{
+					name: scriptIdTest,
+					label: 'Katex Test Dialog',
+					execute: test_command, 
+				});
 
-		await joplin.views.menuItems.create(
-			'mnuKatexTest', 
-			scriptIdTest,
-			MenuItemLocation.Tools,
-			{ accelerator: "CmdOrCtrl+Shift+L"}); 
-		*/
+			await joplin.views.menuItems.create(
+				'mnuKatexTest', 
+				scriptIdTest,
+				MenuItemLocation.Tools,
+				{ accelerator: "CmdOrCtrl+Shift+L"}); 
+			}
 		}
 });

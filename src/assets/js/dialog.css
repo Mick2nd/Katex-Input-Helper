@@ -16,13 +16,13 @@ h3 {
 }
 
 #WaitMsg {
-	margin: 10px; 
-	padding: 10px; 
+	margin: 0px !important; 
+	padding: 50px !important; 
 	height: 3000px; 
-	background-color: #E7F0FF; 
-	border: 1px dotted #95B8E7; 
-	border-top: 1px solid #95B8E7; 
-	color: #0E2D5F;
+	background-color: #E7F0FF !important; 
+	border: 1px dotted #95B8E7 !important; 
+	border-top: 1px solid #95B8E7 !important; 
+	color: #0E2D5F !important;
 }
 
 #northRegion {
