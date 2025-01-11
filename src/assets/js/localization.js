@@ -30,7 +30,7 @@ class Localizer extends Observable {
 	 */
 	async basicLoad(langCode) {
 		var baseLocation = $('base').attr('href');
-		var langFile = `${baseLocation}js/localization/${langCode}/lang.json`;
+		var langFile = `js/localization/${langCode}/lang.json`;
 		var response = await fetch(langFile);
 		return await response.json();
 	}
@@ -52,11 +52,16 @@ class Localizer extends Observable {
 		inst.currentLocale = langCode;
 		
 		// TODO: Added, test!
-		var shortCode = inst.current._i18n_HTML_Lang;
-		var langFile = `js/jquery-easyui/locale/easyui-lang-${shortCode}.js`;
-		var response = await fetch(langFile);
-		var responseTxt = await response.text();
-		eval(responseTxt);
+		// ATTENTION! NOT EVERY LOCALE has a corresponding EASYUI LOCALE
+		try {
+			var shortCode = inst.current._i18n_HTML_Lang;
+			var langFile = `js/jquery-easyui/locale/easyui-lang-${shortCode}.js`;
+			var response = await fetch(langFile);
+			var responseTxt = await response.text();
+			eval(responseTxt);
+		} catch(e) {
+			console.warn(`${shortCode} : no corresponding easyui locale`);
+		}
 		
 		await inst.notifyAsync(inst);
 		console.info(`Read language file for ${langCode}`);

@@ -17,7 +17,7 @@ export class Dialog
 	id = 'Katex Input Helper Dialog';
 	settings: Settings;
 	archive: string;
-	useEasyLoader = true;
+	useEasyLoader = false;
 	
 	/**
 		@abstract Constructor
@@ -122,7 +122,7 @@ export class Dialog
 			"./assets/js/jquery-easyui/datagrid-cellediting.js",
 			"./assets/js/jquery-easyui/datagrid-filter.js",
 			// NOT REQUIRED FOR DRAGGING DATAGRID ROW TO TREE
-			// "./assets/js/jquery-easyui/datagrid-dnd.js",
+			"./assets/js/jquery-easyui/datagrid-dnd.js",
 			"./assets/js/jquery-colorpicker/js/colorpicker.js",
 			"./assets/js/codemirror/lib/codemirror.js",
 			"./assets/js/katex/katex.min.js",

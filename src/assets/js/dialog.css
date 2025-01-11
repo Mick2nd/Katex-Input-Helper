@@ -7,6 +7,10 @@ table, th, td {
   border: 1px solid;
 }
 
+.inline-table td {
+	padding: 5px;
+}
+
 .easyui-layout {
 	height: 100vh;
 }

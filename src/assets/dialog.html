@@ -268,7 +268,7 @@
 					
 					<!-- THIS MAY CAUSE FILE NOT FOUND : replacement see below
 					<div title="<span information='MATRIX_SYMBOLS' class='rtl-title-withicon'><img class='symbol_btn icon-matrix_13_black' src='jquery-easyui/themes/default/images/blank.gif' width='15' height='20' />  &nbsp;&nbsp; 
-						<img class='symbol_btn icon-matrix_33_black' src='jquery-easyui/themes/default/images/blank.gif' width='15' height='20' /></span>"
+						<img class='symbol_btn icon-matrix_33_black' src='js/jquery-easyui/themes/default/images/blank.gif' width='15' height='20' /></span>"
 						style="overflow: auto;" id="f_MATRIX_SYMBOLS">
 					</div>
 					 -->
@@ -336,7 +336,7 @@
 						locate="CLOSE"></span></a>
 			</div>
 		</div>
-		<div class="easyui-dialog" iconcls="icon-language" data-options="closed:true,modal:true,buttons:'#btLANGUAGE_CHOISE'"
+		<div class="easyui-dialog" iconcls="icon-language" data-options="closed:true,modal:true,buttons:'#btLANGUAGE_CHOISE',resizable:true"
 			id="wLANGUAGE_CHOISE" title="<span locate='LANGUAGE_CHOISE' class='rtl-title-withicon'></span>"
 			>
 			<form id="formLANGUAGE_CHOISE" action="#" method="post"></form>
@@ -346,7 +346,7 @@
 				</a>
 			</div>
 		</div>
-		<div class="easyui-dialog" iconcls="icon-style" data-options="closed:true,modal:true,buttons:'#btSTYLE_CHOISE'"
+		<div class="easyui-dialog" iconcls="icon-style" data-options="closed:true,modal:true,buttons:'#btSTYLE_CHOISE',resizable:true"
 			id="wSTYLE_CHOISE" title="<span locate='STYLE_CHOISE' class='rtl-title-withicon'></span>"
 			style="width: 250px; height: 200px;">
 			<form id="formSTYLE_CHOISE" action="#" method="post">
@@ -497,8 +497,10 @@
 						<div id="mAppendCategory" data-options="iconCls:'icon-add'">Append Category</div>
 						<div id="mRemove" data-options="iconCls:'icon-remove'">Remove</div>
 					</div>
-					<div id="treeMenuLeaf" class="easyui-menu" style="width:120px;">
+					<div id="treeMenuLeaf" class="easyui-menu" data-options="minWidth:160">
 						<div id="mRemoveLeaf" data-options="iconCls:'icon-remove'">Remove</div>
+						<div data-options="separator:true"></div>
+						<div id="mCutPaste" data-options="iconCls:'icon-cut'">Cut & Paste Equation</div>
 					</div>
 				</div>
 				<div data-options="region:'center'" >
@@ -507,8 +509,9 @@
 					    <thead>
 					        <tr>
 					        <!-- Without these entries datagrid wouldn't work -->
-					            <th class="custom-equations" data-options="field:'title',editor:'text',width:'40%',sortable:true">Titel</th>
-					            <th class="custom-equations" data-options="field:'formula',width:'55%'">Formel</th>
+					            <th class="custom-equations" data-options="field:'id',hidden:true">Id</th>
+					            <th class="custom-equations" data-options="field:'title',editor:'text',width:'35%',sortable:true">Titel</th>
+					            <th class="custom-equations" data-options="field:'formula',width:'60%'">Formel</th>
 					        </tr>
 					    </thead>
 					    <tbody>
@@ -517,7 +520,9 @@
 				</div>
 			</div>
 			<div id="btCUSTOM_EQUATIONS_BUTTONS" >
-				<a href="#" id="btCUSTOM_EQUATIONS_ADD" class="easyui-linkbutton custom-equations" iconcls="icon-add">
+				<a href="#" id="btCUSTOM_EQUATIONS_ADD" class="easyui-linkbutton easyui-tooltip custom-equations" iconcls="icon-add"
+					title="<span locate='TTADD' class='custom-equations'>ADD</span>"
+				>
 					<span class="custom-equations" locate="ADD">ADD</span>
 				</a>
 				<a href="#" id="btCUSTOM_EQUATIONS_REMOVE" class="easyui-linkbutton custom-equations" iconcls="icon-remove">
@@ -568,14 +573,14 @@
 		</div>
 		
 		<div id="wUNICODES_LIST" class="easyui-window" iconcls="icon-codes"
-			data-options="resizable:false,closed:true,modal:false,collapsible:false,minimizable:false,maximizable:false,closable:true"
+			data-options="resizable:true,closed:true,modal:false,collapsible:false,minimizable:false,maximizable:false,closable:true"
 			title="<span locate='UNICODES_LIST' class='rtl-title-withicon'></span>" style="height: 560px; width: 580px">
 			<div style="margin-top: 10px; margin-bottom: 10px; margin-left: 4px;">
 				<form action="#" method="post">
 					<input class="easyui-combobox" id="unicodeChoise" name="unicodeChoise" value="-" style="width: 345px;">
 				</form>
 			</div>
-			<div id="cUNICODES_LIST" style="float: left; width: 350px; height: 480px; overflow: auto;"></div>
+			<div id="cUNICODES_LIST" style="float: left; width: calc(95% - 170px); height: 480px; overflow: auto;"></div>
 			<div id="cUNICODES_VALUES" style="float: right; width: 170px; height: 480px; overflow: auto;"></div>
 		</div>
 		

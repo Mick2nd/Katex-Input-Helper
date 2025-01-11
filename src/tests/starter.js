@@ -1,74 +1,286 @@
 
-class KatexStarter {
+/**
+ * @abstract The boot loader of the Katex Input Helper.
+ * 
+ * This is capable of supporting 2 different scenarios, one using *easyloader*, one not. 
+ */
+class BootLoader {
 	
-	starts = 0;
+	baseLocation = null;
+	vme = null;
 	
+	/**
+	 * @abstract Constructor.
+	 */
 	constructor() {
+
 	}
 
 	/**
-	 * Sets the base href to the url of the last script.
+	 * @abstract Converts a method with given signature and callback to a Promise returning method.
+	 * 
+	 * A special case is the use of setTimeout, where the order of arguments is swapped.
+	 * 
+	 * @async implements the Promise contract
+	 * @param fnc - a function object to be invoked
+	 * @param args - args of the function. The function has one additional callback parameter
+	 * @returns the Promise, will be fulfilled if the callback is invoked
 	 */
-	setBaseLocation() {
-		var location = $("script[src]")
-			.last()
-			.attr("src")
-			.split('/')
-			.slice(0, -1)
-			.join('/')
-			.replace(/ /g, '%20')
-			.replace('file:///', 'file://')
-			.replace('file://', 'file:///') + '/';
-		
-		console.debug(`Base Definition : ${++ this.starts} : ${location}`);
-		$('head').append(`<base href="${location}"></base>`)
-
-		return location;
-	}
-	
-	/**
-	 * Reserved.
-	 * Comments on ACTION:
-	 * - we can inspect contents of #exchange, it is present
-	 * - each is not called, no log message
-	 * - work with callback, then each LINK or SCRIPT
-	 * - LINK works, css can be transferred from Plugin -> Html
-	 * - the same is not true for JS
-	 */
-	mergeHtml() {
-		console.debug(`mergeHtml`);
-		$('#exchange').load('./head.html', function() {
-			console.debug('mergeHtml : load performed')
-			$('#exchange script,#exchange link').each(function(idx) {
-				console.debug(`mergeHtml : ${$(this).prop('tagName')}`);
-				$('head').append($(this));
-			});
-			
-			// here change is ready
-			$('#myContainer').layout({fit: true});			
+	async promisify(fnc, ...args) {
+		return new Promise(function(resolve, reject) {
+			try {
+				function resolveFunc() {
+					var msg = `Promise check: ${args} `;
+					console.debug(msg);
+					resolve('Success');
+				}
+				
+				if (fnc === setTimeout) {
+					setTimeout(function() {
+						resolveFunc();
+					}, ...args);
+				} else {
+					fnc(...args, function() {
+						resolveFunc();
+					});
+				}
+			} catch(err) {
+				console.error(`Error occurred: ${err} `);		
+				reject(err);
+			}		
 		});
 	}
 	
 	/**
-	 * Reserved.
+	 * @abstract A using function encapsulated by a Promise.
+	 * 
+	 * @async implements the Promise contract
+	 * @param script - the url of the script to be loaded
+	 * @returns - the Promise indicating the state of the transaction
 	 */
-	restart() {
-		console.debug(`Base Definition : url was ${location.href}`);
-		location.replace('./testDialog.html');
-		
-		var timer = setInterval(function() {
-			this.setBaseLocation(false);
-			clearInterval(timer);			
-		}, 500);
+	async usingAsync(script) {
+		return this.promisify(easyloader.load.bind(easyloader), script);
 	}
-}
-
-$(document).ready(async function() {
 	
-	console.info('Document ready : starter');
-	/*
-	*/
-	var katexStarter = new KatexStarter();
-	katexStarter.setBaseLocation();
-	katexStarter.mergeHtml();
+	/**
+	 * @abstract The promise is fulfilled if the document becomes ready.
+	 * 
+	 * @async implements the Promise contract
+	 */
+	async readyAsync() {
+		var doc = $(document);
+		return this.promisify(doc.ready.bind(doc));
+	}
+	
+	/**
+	 * @abstract The promise is fulfilled after a timeout is elapsed.
+	 * 
+	 * @async implements the Promise contract
+	 */
+	async setTimeoutAsync(delay) {
+		return this.promisify(setTimeout, delay);
+	}	
+	
+	/**
+	 * @abstract Initializes the scripts (css and js) using the easyloader.
+	 * 
+	 * All but this boot loader and the easy loader is loaded here.
+	 * 
+	 * @async implements the Promise contract
+	 */
+	async initScripts() {
+		this.baseLocation = this.getBaseLocation();
+		// First trial: like demo
+		easyloader.base = this.baseLocation;    				// set the easyui base directory
+		easyloader.css = true; // false;
+		console.dir(easyloader.modules);
+	
+		var modules = [ 'layout' ]
+		
+		var scripts = [
+			"./jquery-easyui/jquery.easyui.min.js",
+		];
+		
+		var csss = [
+			"./jquery-easyui/themes/default/easyui.css",
+			"./jquery-easyui/themes/icon.css",
+		];
+
+		/*
+		 */
+		await this.usingAsync('./jquery.min.js');
+
+		for (var module of modules) {
+			await this.usingAsync(module);
+		}
+		
+		/*
+		for (var css of csss) {
+			await this.usingAsync(css);
+		}
+		
+		for (var script of scripts) {
+			await this.usingAsync(script);
+		}
+		*/
+	}
+	
+	/**
+	 * @abstract Initializes the app.
+	 * 
+	 * This is the true application logic.
+	 * 
+	 * @async implements the Promise contract
+	 */
+	async initApp() {
+		try {
+		} finally {
+			$('#myContainer').layout({fit: true});
+		}
+	}
+	
+	/**
+	 * @abstract Initialization scenario 1 : without easy loader.
+	 * 
+	 * @async implements the Promise contract
+	 */
+	async init1() {
+		var counter = 50;
+		while (!this.presenceCheck(counter) && --counter >= 0) {
+			await this.setTimeoutAsync(100);
+		}
+		console.info(`jquery loaded : ${typeof $} `);
+		
+		await this.readyAsync();
+		console.debug('Promise check : document ready.');
+		
+		await this.initApp();
+		console.debug('Promise check : app started.');
+		this.check();
+	}
+
+	/**
+	 * @abstract Initialization scenario 2 : with easy loader.
+	 * 
+	 * @async implements the Promise contract
+	 */
+	async init2() {
+		var counter = 0;
+		while ((typeof easyloader !== 'object' || !document.currentScript) && ++counter <= 50) {
+			await this.setTimeoutAsync(100);
+		}
+		if (counter > 50) {
+			throw Error("easyloader not loaded");
+		}
+		console.info(`easyloader loaded : ${typeof easyloader} `);
+
+		await this.initScripts();
+		console.debug('Promise check : scripts loaded.');
+		
+		await this.readyAsync();
+		console.debug('Promise check : document ready.');
+		
+		// trial to shift misplaced menus
+		// $('#mFile, #mInsert, #mTools, #mView, #mOptions, #mInformations').append($('#menu'));
+		
+		await this.initApp();
+		console.debug('Promise check : app started.');
+		this.check();
+	}
+
+	/**
+	 * @abstract Sets the base location.
+	 * 
+	 * This will be needed for relative paths of some content like css or js files.
+	 * Is here used only for *easyloader*.
+	 * 
+	 * @returns the location of this script, ending with a slash
+	 */
+	getBaseLocation() {
+		var location = document.currentScript.src
+			.split('/')
+			.slice(0, -2)
+			.join('/')
+			.replace(/ /g, '%20')
+			.replace('file:///', 'file://')
+			.replace('file://', 'file:///') + '/assets/js/jquery-easyui/';
+			
+		return location;
+	}
+	
+	/**
+	 * @abstract Checks the presence of the required scripts.
+	 */
+	presenceCheck(cycle) {
+		var lastChecked = 'Test';
+		function checkTypeByName(type, name, readableName = name) {
+			lastChecked = readableName;
+			if (type === undefined || type === null || typeof type === 'undefined') {
+				console.warn(`Undefined type : ${readableName}`);
+				return false;
+			}
+			var detectedName = type.prototype["constructor"]["name"];
+			var equal = (detectedName === name);
+			if (!equal) {
+				console.warn(`Type check failed : ${detectedName} : ${readableName}`);
+			}
+			return equal;
+		}
+		function checkOther(type, name, readableName) {
+			lastChecked = readableName;
+			var equal = type === name;
+			if (!equal) {
+				console.warn(`Type check failed : ${type} : ${readableName}`);
+			}
+			return equal;
+		}
+		
+		var allLoaded = (
+			checkOther(typeof $, 'function', 'jquery')
+		);
+			
+		if (! allLoaded && cycle <= 0) {
+			throw Error(`${lastChecked} not loaded`);
+		}
+			
+		return allLoaded;
+	}
+
+	/**
+	 * @abstract Performs a check about the presence of certain Html objects and provides
+	 * 			 console report.
+	 */
+	check() {
+		var ids = [
+			'html',
+			'head',
+			'body',
+			'#myContainer',
+			'.easyui-layout', 
+		];
+		for (var id of ids) {
+			$(id)
+			.each(function() {
+				console.debug(`Element check : ${$(this).prop('tagName')} : ${$(this).attr('id')} `);
+			});
+		}
+	}
+
+	/**
+	 * @abstract Displays an alert message in case of a crash.
+	 */
+	fatal(err) {
+		alert('The Katex Input Helper could not be opened properly, \n' + 
+			`(${err}). \nPlease close it and open it again!`);
+	}
+}	
+
+var bootLoader = new BootLoader();
+bootLoader.init2()
+.then(() => {
+	bootLoader.check();
+})
+.catch(err => {
+	console.error(`Error ${err} `, err);
+	bootLoader.fatal(err);
 });

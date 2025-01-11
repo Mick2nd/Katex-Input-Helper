@@ -7,7 +7,7 @@ if (window.console) console = window.console; else console = { log: function(msg
  */
 class KatexInputHelper {
 
-	version = "1.0.3"; 
+	version = "1.0.6"; 
 	codeType = 'Latex'; 
 	saveOptionInCookies = false; 
 	isBuild = false; 
@@ -27,7 +27,7 @@ class KatexInputHelper {
 	
 	// TODO: there is no code that switches to the Color Picker, where is it?
 	runNotColorPicker = false;
-
+	runNotVirtualKeyboard = false;
 	runNotMathJax = true;
 	runNotCodeMirror = false;
 
@@ -40,13 +40,15 @@ class KatexInputHelper {
 	utilities = null;
 	messager = null;
 	panels = null;
+	useEasyLoader = true;
 	
 	/**
 	 * Constructor
 	 */
-	constructor() {
+	constructor(useEasyLaoder = true) {
 		var vme = this;
 		window.vme = this;
+		this.useEasyLoader = useEasyLaoder;
 	
 		// independent of plugin variant
 		this.setBaseLocation();
@@ -76,7 +78,7 @@ class KatexInputHelper {
 		this.themes = new Themes();
 		this.parser = new ParserExtension(true);
 		this.math = new MathFormulae(false, this.localizer, null, this.parameters, this.parser);	// code mirror per method injection
-		this.panels = new KIHPanels(this.parameters, this.localizer);
+		this.panels = new KIHPanels(this.parameters, this.localizer, this.parser);
 
 		this.mathTextInput = document.getElementById('mathTextInput'); 
 		this.mathVisualOutput = document.getElementById('mathVisualOutput'); 
@@ -164,223 +166,201 @@ class KatexInputHelper {
 	 */
 	async initialise() { 
 		/* TEST: Dynamically create data-options */
-		var options = {
-			/* DOES NOT WORK AS EXPECTED : NO ACCORDION PLACEMENT -> PANEL
-			'#westRegion': {
-				region:'west',
-				title:'<span locate=FORMULA class=rtl-title-withicon></span>&nbsp;',
-				split:false
+		if (this.useEasyLoader) {
+			var options = {
+				'#WaitMsg': {
+					modal: true,
+					maximizable: false,
+					minimizable: false,
+					collapsible: false,
+					closable: false,
+					maximized: true
+				},
+				'#wEDITOR_PARAMETERS': {
+					closed:true,
+					modal:true,
+					buttons:'#btEDITOR_PARAMETERS',
+					resizable:true
+				},
+				'#wLANGUAGE_CHOISE': {
+					closed:true,
+					modal:true,
+					buttons:'#btLANGUAGE_CHOISE',
+					resizable:true
+				},
+				'#wSTYLE_CHOISE': {
+					closed:true,
+					modal:true,
+					buttons:'#btSTYLE_CHOISE',
+					resizable:true
 			},
-			*/
-			'#WaitMsg': {
-				modal: true,
-				maximizable: false,
-				minimizable: false,
-				collapsible: false,
-				closable: false,
-				maximized: true
-			},
-			'#wEDITOR_PARAMETERS': {
-				closed:true,
-				modal:true,
-				buttons:'#btEDITOR_PARAMETERS',
-				resizable:true
-			},
-			'#wLANGUAGE_CHOISE': {
-				closed:true,
-				modal:true,
-				buttons:'#btLANGUAGE_CHOISE'
-			},
-			'#wSTYLE_CHOISE': {
-				closed:true,
-				modal:true,
-				buttons:'#btSTYLE_CHOISE'
-			},
-			'#wMATRIX': {
-				closed:true,
-				modal:true,
-				buttons:'#btMATRIX',
-				resizable:true
-			},
-			'#wf_COMMUTATIVE_DIAGRAM_MORE': {
-				closed:true,
-				modal:false,
-				shadow:false,
-				resizable:true,
-				collapsible:true
-			},
-			'#wf_CHEMICAL_FORMULAE_MORE': {
-				closed:true,
-				modal:false,
-				shadow:false,
-				resizable:true,
-				collapsible:true
-			},
-			'#wf_BRACKET_SYMBOLS_MORE': {
-				closed:true,
-				modal:false,
-				shadow:false,
-				resizable:true,
-				collapsible:true
-			},
-			'#wf_RELATION_SYMBOLS_MORE': {
-				closed:true,
-				modal:false,
-				shadow:false,
-				resizable:true,
-				collapsible:true
-			},
-			'#wf_ARROW_SYMBOLS_MORE': {
-				closed:true,
-				modal:false,
-				shadow:false,
-				resizable:true,
-				collapsible:true
-			},
-			'#wf_FR_CHAR_MORE': {
-				closed:true,
-				modal:false,
-				shadow:false,
-				resizable:true,
-				collapsible:true
-			},
-			'#wf_BBB_CHAR_MORE': {
-				closed:true,
-				modal:false,
-				shadow:false,
-				resizable:true,
-				collapsible:true
-			},
-			'#wf_L_U_GREEK_CHAR_MORE': {
-				closed:true,
-				modal:false,
-				shadow:false,
-				resizable:true,
-				collapsible:true
-			},
-			'#wf_ALL_CHAR_MORE': {
-				closed:true,
-				modal:false,
-				shadow:false,
-				resizable:true,
-				collapsible:true
-			},
-			'#wf_EQUATION_MORE': {
-				closed:true,
-				modal:false,
-				shadow:false,
-				resizable:true,
-				collapsible:true
-			},
-			'#wf_CUSTOM_EQUATIONS_MORE': {
-				closed:true,
-				modal:false,
-				shadow:false,
-				resizable:true,
-				collapsible:true,
-				buttons:'#btCUSTOM_EQUATIONS_BUTTONS'
-			},
-			'#wf_HORIZONTAL_SPACING_MORE': {
-				closed:true,
-				modal:false,
-				shadow:false,
-				resizable:true,
-				collapsible:true
-			},
-			'#wf_VERTICAL_SPACING_MORE': {
-				closed:true,
-				modal:false,
-				shadow:false,
-				resizable:true,
-				collapsible:true
-			},
-			'#wf_SPECIAL_CHARACTER_MORE': {
-				closed:true,
-				modal:false,
-				shadow:false,
-				resizable:true,
-				collapsible:true
-			},
-			'#wLATEX_CODES_LIST': {
-				closed:true,
-				modal:false,
-				collapsible:false,
-				minimizable:false,
-				maximizable:false,
-				closable:true
-			},
-			'#wASCIIMATH_CODES_LIST': {
-				closed:true,
-				modal:false,
-				collapsible:false,
-				minimizable:false,
-				maximizable:false,
-				closable:true
-			},
-			'#wUNICODES_LIST': {
-				resizable:false,
-				closed:true,
-				modal:false,
-				collapsible:false,
-				minimizable:false,
-				maximizable:false,
-				closable:true
-			},
-			'#wLANGUAGE_LIST': {
-				closed:true,
-				modal:false,
-				collapsible:false,
-				minimizable:false,
-				maximizable:false,
-				closable:true
-			},
-			'#wINFORMATIONS': {
-				resizable:true,
-				closed:true,
-				modal:false,
-				collapsible:false,
-				minimizable:false,
-				maximizable:false,
-				closable:true
+				'#wMATRIX': {
+					closed:true,
+					modal:true,
+					buttons:'#btMATRIX',
+					resizable:true
+				},
+				'#wf_COMMUTATIVE_DIAGRAM_MORE': {
+					closed:true,
+					modal:false,
+					shadow:false,
+					resizable:true,
+					collapsible:true
+				},
+				'#wf_CHEMICAL_FORMULAE_MORE': {
+					closed:true,
+					modal:false,
+					shadow:false,
+					resizable:true,
+					collapsible:true
+				},
+				'#wf_BRACKET_SYMBOLS_MORE': {
+					closed:true,
+					modal:false,
+					shadow:false,
+					resizable:true,
+					collapsible:true
+				},
+				'#wf_RELATION_SYMBOLS_MORE': {
+					closed:true,
+					modal:false,
+					shadow:false,
+					resizable:true,
+					collapsible:true
+				},
+				'#wf_ARROW_SYMBOLS_MORE': {
+					closed:true,
+					modal:false,
+					shadow:false,
+					resizable:true,
+					collapsible:true
+				},
+				'#wf_FR_CHAR_MORE': {
+					closed:true,
+					modal:false,
+					shadow:false,
+					resizable:true,
+					collapsible:true
+				},
+				'#wf_BBB_CHAR_MORE': {
+					closed:true,
+					modal:false,
+					shadow:false,
+					resizable:true,
+					collapsible:true
+				},
+				'#wf_L_U_GREEK_CHAR_MORE': {
+					closed:true,
+					modal:false,
+					shadow:false,
+					resizable:true,
+					collapsible:true
+				},
+				'#wf_ALL_CHAR_MORE': {
+					closed:true,
+					modal:false,
+					shadow:false,
+					resizable:true,
+					collapsible:true
+				},
+				'#wf_EQUATION_MORE': {
+					closed:true,
+					modal:false,
+					shadow:false,
+					resizable:true,
+					collapsible:true
+				},
+				'#wf_CUSTOM_EQUATIONS_MORE': {
+					closed:true,
+					modal:false,
+					shadow:false,
+					resizable:true,
+					collapsible:true,
+					buttons:'#btCUSTOM_EQUATIONS_BUTTONS'
+				},
+				'#wf_HORIZONTAL_SPACING_MORE': {
+					closed:true,
+					modal:false,
+					shadow:false,
+					resizable:true,
+					collapsible:true
+				},
+				'#wf_VERTICAL_SPACING_MORE': {
+					closed:true,
+					modal:false,
+					shadow:false,
+					resizable:true,
+					collapsible:true
+				},
+				'#wf_SPECIAL_CHARACTER_MORE': {
+					closed:true,
+					modal:false,
+					shadow:false,
+					resizable:true,
+					collapsible:true
+				},
+				'#wLATEX_CODES_LIST': {
+					closed:true,
+					modal:false,
+					collapsible:false,
+					minimizable:false,
+					maximizable:false,
+					closable:true
+				},
+				'#wASCIIMATH_CODES_LIST': {
+					closed:true,
+					modal:false,
+					collapsible:false,
+					minimizable:false,
+					maximizable:false,
+					closable:true
+				},
+				'#wUNICODES_LIST': {
+					resizable:true,
+					closed:true,
+					modal:false,
+					collapsible:false,
+					minimizable:false,
+					maximizable:false,
+					closable:true
+				},
+				'#wLANGUAGE_LIST': {
+					closed:true,
+					modal:false,
+					collapsible:false,
+					minimizable:false,
+					maximizable:false,
+					closable:true
+				},
+				'#wINFORMATIONS': {
+					resizable:true,
+					closed:true,
+					modal:false,
+					collapsible:false,
+					minimizable:false,
+					maximizable:false,
+					closable:true
+				}
 			}
-		}
-		var menuOptions = [
-			{ iconCls: 'icon-file', menu: '#mFILE' },
-			{ iconCls: 'icon-insert', menu: '#mINSERT' },
-			{ iconCls: 'icon-plugin', menu: '#mTOOLS' },
-			{ iconCls: 'icon-watch', menu: '#mVIEW' },
-			{ iconCls: 'icon-option', menu: '#mOPTIONS' },
-			{ iconCls: 'icon-info', menu: '#mINFORMATIONS' },
-		];
-		
-		$(Object.keys(options).join(','))
-		.each(function() {
-			var id = $(this).attr('id');
-			$(this).dialog(options[id]);
-		});
-		$('#menu a')
-		.each(function(idx) {
-			$(this).menubutton(menuOptions[idx]);
-		})
+			var menuOptions = [
+				{ iconCls: 'icon-file', menu: '#mFILE' },
+				{ iconCls: 'icon-insert', menu: '#mINSERT' },
+				{ iconCls: 'icon-plugin', menu: '#mTOOLS' },
+				{ iconCls: 'icon-watch', menu: '#mVIEW' },
+				{ iconCls: 'icon-option', menu: '#mOPTIONS' },
+				{ iconCls: 'icon-info', menu: '#mINFORMATIONS' },
+			];
 
-		/*		
-		$('#WaitMsg')
-		.window({
-			modal: true,
-			maximizable: false,
-			minimizable: false,
-			collapsible: false,
-			closable: false,
-			maximized: true
-		});
-		$('#wEDITOR_PARAMETERS')
-		.dialog({
-			closed:true,
-			modal:true,
-			buttons:'#btEDITOR_PARAMETERS',
-			resizable:true
-		});
-		*/
+			$(Object.keys(options).join(','))
+			.each(function() {
+				var id = $(this).attr('id');
+				$(this).dialog(options[id]);
+			});
+			$('#menu a')
+			.each(function(idx) {
+				$(this).menubutton(menuOptions[idx]);
+			});
+		}
 		/* TEST END */
 
 		var vme = this; 
@@ -400,8 +380,8 @@ class KatexInputHelper {
 		}); 
 		$('#form').hide();
 		
-		await vme.updateInfo();												// updates a few dialogs
 		await vme.initialiseUI(); 
+		await vme.updateInfo();												// updates a few dialogs
 		vme.initialiseParameters(); 
 		vme.initialiseCodeType(); 
 		vme.initialiseVirtualKeyboard(); 
@@ -553,22 +533,7 @@ class KatexInputHelper {
 		
 		this.initialiseUIaccordion("#f_SYMBOLS"); 
 		this.initialiseUIaccordion("#f_SYMBOLS2"); 
-		
-		$('#tINFORMATIONS').tabs({
-			onLoad: async function(panel) {
-				switch (panel.attr("id")) { 
-					case "tCOPYRIGHT": 
-						$("#VMEdate").html((new Date()).getFullYear()); 
-						break; 
-					case "tVERSION": 
-						$("#VMEversion").html("<table>" + "<tr><td><b>" + vme.version + "</b></td><td><b>Visual Math Editor</b>, (This software)</td></tr>" + (vme.runNotMathJax ? "" : ("<tr><td>" + MathJax.version + " </td><td>Math Jax</td></tr>")) + (("<tr><td>" + CodeMirror.version + " </td><td>Code Mirror</td></tr>")) + (vme.runNotVirtualKeyboard ? "" : ("<tr><td>" + VKI_version + " </td><td>Virtual Keyboard</td></tr>")) + "<tr><td>" + $.fn.jquery + " </td><td>Jquery</td></tr>" + "<tr><td>" + "1.3.3" + " </td><td>Jquery Easyui</td></tr>" + (vme.runNotColorPicker ? "" : ("<tr><td>" + "23/05/2009" + " </td><td>Jquery Color Picker</td></tr>")) + "<table>"); 
-						break; 
-					case "tEQUATION": 
-						await vme.initialiseSymbolContent(panel.attr("id")); 
-						break; 
-				}
-			}
-		}); 
+
 		$('#btMATRIX_CLOSE').click(function(event) { 
 			event.preventDefault(); 
 			$('#wMATRIX').dialog('close'); 
@@ -623,13 +588,20 @@ class KatexInputHelper {
 	}
 	
 	/**
-	 * Activates information tabs on the information dialog.
+	 * @abstract Activates information tabs on the information dialog.
+	 * 
+	 * @param numTab - number (index) of the tab (0..3)
 	 */
 	async openInformationTab(numTab) { 
 		await this.openWindow('wINFORMATIONS');
 		$('#tINFORMATIONS').tabs('select', numTab); 
 	}
 	
+	/**
+	 * @abstract Initializes one of the "MORE" dialogs.
+	 * 
+	 * @param fPanelID - the panel id (this is the panel from which the more dialog is originating)
+	 */
 	async initialiseUImoreDialogs(fPanelID) {
 		var vme = this;
 		var fPanelMoreID = 'w' + fPanelID + '_MORE';
@@ -640,13 +612,17 @@ class KatexInputHelper {
 	 * @abstract Registers events for a window and opens it.
 	 * 
 	 * This whole effort is done to get the window position and size persisted.
+	 * 
+	 * @param id - the HTML id of the window
 	 */
 	async openWindow(id) {
 		await this.panels.showWindow(id);
 	}
 	
 	/**
-	 * @abstract Adapt UI to code type. (Latex or Ascii)
+	 * @abstract Adapt UI to code type. (Latex or Ascii).
+	 * 
+	 * This is obsolete and can be removed in the future.
 	 */
 	printCodeType() { 
 		$("[name='codeType']").filter("[value=" + this.codeType + "]").attr("checked", "checked"); 
@@ -654,6 +630,9 @@ class KatexInputHelper {
 		$("#title_Edition_Other_Syntax").text((this.codeType == "AsciiMath") ? "Latex" : "AsciiMath"); 
 	}
 	
+	/**
+	 * @abstract Same as *printCodeType*.
+	 */
 	initialiseCodeType() {
 		this.printCodeType();
 	}
@@ -679,8 +658,7 @@ class KatexInputHelper {
 	
 	/**
 	 * @abstract Initialises all **configuration** parameters including start time initialisation and change
-	 * handlers.
-	 * 
+	 * 			 handlers.
 	 */
 	initialiseParameters() {
 		var vme = this;
@@ -841,7 +819,7 @@ class KatexInputHelper {
 		html += ("\n<tr><th><span locate='UNICODES_INPUT'>" + this.getLocalText("UNICODES_INPUT") + "</span></th><th>HEXA</th><th><span locate='OUTPUT'>" + this.getLocalText("OUTPUT") + "</span></th></tr>"); 
 		for (var i = i1; i <= i2; i++) { 
 			if (breakFFFF & i > 65535) break; 
-			html += ("\n<tr><td>" + i + "<td style='text-align:center;'>" + this.d2h(i) + "</td><td style='font-size:150%;text-align:center;'><a href='#' class='s' latex='\\unicode{" + i + "} '>&#" + i + ";</a></td></tr>"); 
+			html += ("\n<tr><td>" + i + "<td style='text-align:center;'>" + this.d2h(i) + "</td><td style='font-size:150%;text-align:center;'><a href='#' class='s' latex='\\char\"" + this.d2h(i) + " '>&#" + i + ";</a></td></tr>"); 
 		}
 		html = html + "\n</table>"; 
 		$("#cUNICODES_VALUES").html(html); 
@@ -965,14 +943,14 @@ class KatexInputHelper {
 		$("html").attr("xml:lang", vme.getLocalText("_i18n_HTML_Lang")); 
 		$("html").attr("lang", vme.getLocalText("_i18n_HTML_Lang")); 
 		$("html").attr("dir", vme.getLocalText("_i18n_HTML_Dir")); 
-		vme.setRTLstyle(); 
+		vme.setRTLstyle();
 		$("span[locate]").each(
 			function() { 
 				if (typeof ($(this).attr("locate")) != "undefined") { 
 					var localText = vme.getLocalText($(this).attr("locate")); 
 					if (typeof (localText) != "undefined") $(this).html(localText); 
 				} 
-			}); 
+			});
 			
 		// TODO: ??
 		$("#btTITLE_EDITION_SYNTAX").click(function(event) { 
@@ -1047,9 +1025,7 @@ class KatexInputHelper {
 			await vme.openInformationTab(0); 
 			vme.setFocus(); 
 		}); 
-		// TODO: no idea where this id is! In the tVERSION.html exists a VMEversion
-		$("#VMEversion").html(vme.version);
-
+		
 		this.printCodeType();
 	}
 	
@@ -1458,6 +1434,21 @@ class KatexInputHelper {
 
 		await vme.parser.parseAsync('div[href]', 0, 100);
 		console.info(`Parse completed for : div[href]`);
+
+		var VKI_version = 1;
+		var easyuiVersion = '1.11';
+		$("#VMEversion").html(`
+				<table class="inline-table">
+					<tr><td><b> ${vme.version} </b></td><td><b>Katex Input Helper / Visual Math Editor</b>, (This software)</td></tr>
+					<tr><td> 0.16 </td><td>Katex</td></tr>
+					<tr><td> ${CodeMirror.version} </td><td>Code Mirror</td></tr>
+					<tr><td> ${VKI_version} </td><td>Virtual Keyboard</td></tr>
+					<tr><td> ${$.fn.jquery} </td><td>Jquery</td></tr>
+					<tr><td> ${easyuiVersion} </td><td>Jquery Easyui</td></tr>
+					<tr><td> 23/05/2009 </td><td>Jquery Color Picker</td></tr>
+				<table>`); 
+		$("#VMEdate").html((new Date()).getFullYear());
+		
 		// updates exactly 2 dialogs (see selectors)
 		// TODO: necessary and additional ones required?
 		vme.math.inplaceUpdate('#tEQUATION div a.s[latex], #mSPECIAL_CHARACTER div a.s[latex]');	// where and when to do that
@@ -1474,7 +1465,7 @@ class KatexInputHelper {
 			.last()
 			.attr("src")
 			.split('/')
-			.slice(0, -2)
+			.slice(0, this.useEasyLoader ? -4 : -2)
 			.join('/')
 			.replace(/ /g, '%20')
 			.replace('file:///', 'file://')

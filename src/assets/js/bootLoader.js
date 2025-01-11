@@ -94,51 +94,50 @@ class BootLoader {
 		easyloader.css = false;
 		console.dir(easyloader.modules);
 	
-		var modules = [ 'parser', 'layout' ]
+		var modules = [ 
+			'parser', 'layout','window', 'dialog', 'panel', 'datagrid', 'tree', 
+			'menubutton', 'menu', 'accordion', 'linkbutton', 'tooltip', 'tabs', 
+			'messager', 'combobox' ];
 		
 		var scripts = [
-			"./js/jquery-easyui/jquery.easyui.min.js",
-			"./js/jquery-easyui/datagrid-cellediting.js",
-			"./js/jquery-easyui/datagrid-filter.js",
-			"./js/jquery-colorpicker/js/colorpicker.js",
-			"./js/codemirror/lib/codemirror.js",
-			"./js/katex/katex.min.js",
-			"./js/katex/mhchem.min.js",
+			//"./jquery.easyui.min.js",
+			"./datagrid-cellediting.js",
+			"./datagrid-filter.js",
+			"../jquery-colorpicker/js/colorpicker.js",
+			"../codemirror/lib/codemirror.js",
+			"../katex/katex.min.js",
+			"../katex/mhchem.min.js",
 			
-			"./js/patterns/observable.js",
-			"./js/localization.js",
-			"./js/themes.js",
-			"./js/parserExtension.js",
-			"./js/parameters.js",
-			"./js/fileHandling.js",
-			"./js/helpers.js",
-			"./js/math.js",
-			"./js/categoriesTree.js",
-			"./js/panels.js",
-			"./js/dialog.js"
-			/*
-			*/
+			"../patterns/observable.js",
+			"../localization.js",
+			"../themes.js",
+			"../parserExtension.js",
+			"../parameters.js",
+			"../fileHandling.js",
+			"../helpers.js",
+			"../math.js",
+			"../categoriesTree.js",
+			"../panels.js",
+			"../dialog.js"
 		];
 		
 		var csss = [
-			"./js/jquery-easyui/themes/default/easyui.css",
-			"./js/jquery-easyui/themes/icon.css",
-			"./js/jquery-easyui-MathEditorExtend/themes/aguas/easyui.css",
-			"./js/jquery-easyui-MathEditorExtend/themes/icon.css",
-			"./js/jquery-colorpicker/css/colorpicker.css",
-			"./js/codemirror/lib/codemirror.css",
-			"./js/keyboard/Keyboard.css",
-			"./js/katex/katex.min.css",
-			"./js/dialog.css"
+			"./themes/default/easyui.css",
+			"./themes/icon.css",
+			"../jquery-easyui-MathEditorExtend/themes/aguas/easyui.css",
+			"../jquery-easyui-MathEditorExtend/themes/icon.css",
+			"../jquery-colorpicker/css/colorpicker.css",
+			"../codemirror/lib/codemirror.css",
+			"../keyboard/Keyboard.css",
+			"../katex/katex.min.css",
+			"../dialog.css"
 		];
 
-		/*
+		await this.usingAsync('./jquery.min.js');
+
 		for (var module of modules) {
 			await this.usingAsync(module);
 		}
-		*/
-		
-		await this.usingAsync('./js/jquery-easyui/jquery.min.js');
 	
 		for (var css of csss) {
 			await this.usingAsync(css);
@@ -160,9 +159,9 @@ class BootLoader {
 	 * 
 	 * @async implements the Promise contract
 	 */
-	async initApp() {
+	async initApp(useEasyLoader) {
 		try {
-			this.vme = new KatexInputHelper();
+			this.vme = new KatexInputHelper(useEasyLoader);
 			window.vme = vme;											// prevents garbage collection?
 			await vme.initialise();
 		} finally {
@@ -186,7 +185,7 @@ class BootLoader {
 		await this.readyAsync();
 		console.debug('Promise check : document ready.');
 		
-		await this.initApp();
+		await this.initApp(false);
 		console.debug('Promise check : app started.');
 		this.check();
 	}
@@ -215,7 +214,7 @@ class BootLoader {
 		// trial to shift misplaced menus
 		// $('#mFile, #mInsert, #mTools, #mView, #mOptions, #mInformations').append($('#menu'));
 		
-		await this.initApp();
+		await this.initApp(true);
 		console.debug('Promise check : app started.');
 		this.check();
 	}
@@ -231,11 +230,11 @@ class BootLoader {
 	getBaseLocation() {
 		var location = document.currentScript.src
 			.split('/')
-			.slice(0, -2)
+			.slice(0, -1)										// up to js folder
 			.join('/')
 			.replace(/ /g, '%20')
 			.replace('file:///', 'file://')
-			.replace('file://', 'file:///') + '/';
+			.replace('file://', 'file:///') + '/jquery-easyui/';
 			
 		return location;
 	}
@@ -324,7 +323,7 @@ class BootLoader {
 }	
 
 var bootLoader = new BootLoader();
-bootLoader.init2()
+bootLoader.init1()
 .then(() => {
 	bootLoader.check();
 })

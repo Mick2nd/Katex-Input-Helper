@@ -73,20 +73,6 @@ export class TestDialog
 				- alles nachladen funktioniert nicht so gut
 				- mit diesem Stand erst mal weiter arbeiten
 			*/
-			/*
-			"./assets/js/jquery-easyui/themes/default/easyui.css",
-			"./assets/js/jquery-easyui/themes/icon.css",
-			"./assets/js/jquery-easyui-MathEditorExtend/themes/aguas/easyui.css",
-			"./assets/js/jquery-easyui-MathEditorExtend/themes/icon.css",
-			"./assets/js/jquery-colorpicker/css/colorpicker.css",
-			"./assets/js/codemirror/lib/codemirror.css",
-			"./assets/js/keyboard/Keyboard.css",
-			"./assets/js/katex/katex.min.css",
-			"./assets/js/dialog.css"
-			"./tests/testDialog.css"
-			*/
-			
-			// NOT loading from HTML file
 			"./tests/testDialog.css"
 		];
 		
@@ -97,31 +83,8 @@ export class TestDialog
 	
 	public loadJs = async function(handle) : Promise<void> {
 		var js = [
-			"./assets/js/jquery-easyui/jquery.min.js",
-			"./assets/js/jquery-easyui/jquery.easyui.min.js",
-			"./tests/testDialog.js",
+			"./assets/js/jquery-easyui/easyloader.js",
 			"./tests/starter.js"
-			/*
-			"./tests/starter.js"
-			"./assets/js/jquery-easyui/jquery.min.js",
-			"./assets/js/jquery-easyui/jquery.easyui.min.js",
-			"./assets/js/jquery-easyui/datagrid-cellediting.js",
-			"./assets/js/jquery-easyui/datagrid-filter.js",
-			"./assets/js/jquery-colorpicker/js/colorpicker.js",
-			"./assets/js/codemirror/lib/codemirror.js",
-			"./assets/js/katex/katex.min.js",
-			"./assets/js/katex/mhchem.min.js",
-			"./assets/js/patterns/observable.js",
-			"./assets/js/localization.js",
-			"./assets/js/themes.js",
-			"./assets/js/math.js",
-			"./assets/js/parserExtension.js",
-			"./assets/js/parameters.js",
-			"./assets/js/fileHandling.js",
-			"./assets/js/helpers.js",
-			"./assets/js/dialog.js"
-			"./tests/testDialog.js",
-			*/			
 		];
 		
 		for (const path of js) {

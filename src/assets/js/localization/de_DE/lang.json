@@ -1,7 +1,7 @@
 {
 	"_i18n_Langage": "German (Germany)",
 	"_i18n_Version": "1.0",
-	"_i18n_Author": "<a href='http://translate.google.fr' target='_blank' class='bt' >Google translate</a>",
+	"_i18n_Author": "<a href='mailto:juergen@habelt-jena.de?subject=KatexInputHelper' target='_blank' class='bt' >Jürgen Habelt</a>",
 	"_i18n_HTML_Lang": "de",
 	"_i18n_HTML_Dir": "ltr",
 	"ERROR": "Fehler",
@@ -59,7 +59,7 @@
 	"EDITION": "<span id='PARAM_EDITION_SYNTAX'>Bearbeiten in <span id='title_Edition_Current_Syntax'>&nbsp;</span> <a href='#' id='btTITLE_EDITION_SYNTAX' class='bt'>wechseln zu <span id='title_Edition_Other_Syntax'>&nbsp;</span></a></span><span id='PARAM_EDITION_ENCLOSE'><a id='btENCLOSE_TYPE' disabled href='#'>HTML</a></span>",
 	"SYNTAX": "Syntax",
 	"UPDATE": "Gleichungs Update",
-	"AUTHOR": "<a id='btCOPYRIGHT' href='../information/tCOPYRIGHT.html' target='_blank' class='bt'>Copyright</a> &copy; <a href='https://github.com/Mick2nd/Katex-Input-Helper/' target='_blank' class='bt'>Katex Input Helper (Visual Math Editor)</a> <span id='VMEversionInf'></span> erstellt von <a href='mailto:juergen@habelt-jena.de?subject=Katex Input Helper' target='_blank' class='bt' >Jürgen Habelt</a> - basierend auf der Arbeit von David Grima.",
+	"AUTHOR": "<a id='btCOPYRIGHT' href='../information/tCOPYRIGHT.html' target='_blank' class='bt'>Copyright</a> &copy; <a href='https://github.com/Mick2nd/Katex-Input-Helper/' target='_blank' class='bt'>Katex Input Helper (Visual Math Editor)</a> <span id='VMEversionInf'></span> erstellt von <a href='mailto:juergen@habelt-jena.de?subject=Katex%20Input%20Helper' target='_blank' class='bt' >Jürgen Habelt</a> - basierend auf der Arbeit von David Grima.",
 	"WAIT_FOR_EDITOR_DOWNLOAD": "Editor ist beim Herunterladen ...",
 	"CHAR": "Zeichen",
 	"L_GREEK_CHAR": "Kleine griechische Zeichen",

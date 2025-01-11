@@ -77,6 +77,22 @@ class KIHPanel {
 	open() {
 		$(`#${this.id}`).dialog('open');
 	}
+
+	/**
+	 * @abstract Used to localize an option.
+	 * 
+	 * Place this service into this base class to get access everywhere.
+	 */	
+	localizeOption(option, id = null, func = $.fn.panel) {
+		id = id ? id : this.id;
+		var text = func.bind($(`#${id}`))('options')[option];							// do something to preserve the TITLE: this is an option
+		var html = $.parseHTML(text);													// parse it into html object
+		var key = $(html).attr('locate');												// extract the locate attribute
+		console.debug(`localizeOption ${option} for ${id}, ${key} `);
+		var located = this.parent.localizer.getLocalText(key);							// use it to get localized text
+		html = $(html).html(located)[0].outerHTML;										// insert it into orginal html
+		return html;
+	}
 }
 
 /**
@@ -168,18 +184,6 @@ class KIHWindow extends KIHPanel {
 	open() {
 		$(`#${this.id}`).window('open');
 	}
-
-	/**
-	 * @abstract Used to localize an option.
-	 */	
-	localizeOption(option) {
-		var text = $(`#${this.id}`).window('options')[option];							// do something to preserve the TITLE: this is an option
-		var html = $.parseHTML(text);													// parse it into html object
-		var key = $(html).attr('locate');												// extract the locate attribute
-		var located = this.parent.localizer.getLocalText(key);							// use it to get localized text
-		html = $(html).html(located)[0].outerHTML;										// insert it into orginal html
-		return html;
-	}
 }
 
 
@@ -217,6 +221,7 @@ class DynamicPanel extends KIHPanel {
 		this.parent.localizer.subscribe(this.onLocaleChanged.bind(this));
 		this.categoriesTree.nodeSelected.subscribe(this.onNodeSelected.bind(this));
 		this.categoriesTree.treeChanged.subscribe(this.onTreeChanged.bind(this));
+		this.categoriesTree.equationMoved.subscribe(this.onEquationMoved.bind(this));
 	}
 	
 	/**
@@ -225,17 +230,31 @@ class DynamicPanel extends KIHPanel {
 	 * This changes all localized text in the dialog.
 	 */
 	async onLocaleChanged(localizer) {
+		var inst = this;
 		console.debug(`onLocaleChanged : ${localizer.currentLocale} `);
 
 		$('span[locate].custom-equations')
-		.each(
-			function() { 
-				console.debug(`Custom-Equations: ${$(this).attr("locate")}`);
-				if (typeof ($(this).attr("locate")) != "undefined") { 
-					var localText = localizer.getLocalText($(this).attr("locate")); 
-					if (typeof (localText) != "undefined") $(this).html(localText); 
-				} 
-			}); 
+		.each(function() { 
+			console.debug(`Custom-Equations 1: ${$(this).attr("locate")}`);
+			if (typeof ($(this).attr("locate")) != "undefined") { 
+				var localText = localizer.getLocalText($(this).attr("locate")); 
+				if (typeof (localText) != "undefined") $(this).html(localText); 
+			} 
+		});
+		
+		$('.custom-equations:not(span)')
+		.each(function() {
+			if ($(this).hasClass('easyui-tooltip')) {
+				try {
+					var id = $(this).attr('id');
+					var title = inst.localizeOption('content', id, $.fn.tooltip);
+					$(this).tooltip({ content: title }); 
+					console.debug(`Custom-Equations 2: ${id}, ${title}`);
+				} catch(e) {
+					console.warn(`easyui-tooltip warning : ${e}`);
+				}
+			}
+		});
 	}	
 
 	/**
@@ -276,13 +295,11 @@ class DynamicPanel extends KIHPanel {
 		$('#btCUSTOM_EQUATIONS_REMOVE')
 		.click(async function(event) { 
 			event.preventDefault();
-			var dg = $(inst.gridSelector);
-			var cell = dg.datagrid('cell');
-			if (cell) {
-				console.dir(cell);
-				dg.datagrid('deleteRow', cell.index)
-				.datagrid('acceptChanges', {});
-				inst.customEquationsToParameters();
+			var checkedEquations = inst.categoriesTree.getCheckedEquations();			// indices of checked equations
+			var from = inst.categoriesTree.currentLeaf;									// the currrent set
+			if (from !== null && checkedEquations.length > 0) {							// remove configured?
+				inst.categoriesTree.deleteEquations(from.attributes, checkedEquations); // -> then delete the checked equations
+				inst.clearCheckedAndUpdate();
 			} else {
 				inst.messager.show('FORMULA_EDITOR', 'NO_SELECTION_CELL');
 				return;
@@ -315,12 +332,17 @@ class DynamicPanel extends KIHPanel {
 	}
 	
 	async show() {
-		await this.onLocaleChanged(this.parent.localizer);			// TODO: does not help for pagination
+		// TODO: order changed to initialize span[locate]? -> changes nothing in appearance
 		await super.show();
+		await this.onLocaleChanged(this.parent.localizer);			// TODO: does not help for pagination
 	}
 	
 	onTreeChanged() {
 		this.customEquationsToParameters();
+	}
+
+	onEquationMoved() {
+		this.clearCheckedAndUpdate();
 	}
 	
 	onNodeSelected(previous, current) {
@@ -330,10 +352,25 @@ class DynamicPanel extends KIHPanel {
 		} catch(e) {
 			
 		}
+		this.customEquationsToParameters();
 	}
 	
 	/**
-	 * Reads the Custom Equations from the parameters.
+	 * @abstract Clears the checked checkboxes in datagrid and updates the latter.
+	 */
+	clearCheckedAndUpdate() {
+		try {
+			$(this.gridSelector).datagrid('clearChecked');			// does this clear all checks (not the rows itselfs)?
+			this.fromJson(this.categoriesTree.currentEquations);
+			$(this.gridSelector).datagrid('doFilter');
+		} catch(e) {
+			
+		}
+		this.customEquationsToParameters();
+	}
+	
+	/**
+	 * @abstract Reads the Custom Equations from the parameters.
 	 */
 	customEquationsFromParameters() {
 		try {
@@ -362,12 +399,13 @@ class DynamicPanel extends KIHPanel {
 	fromJson(json) {
 		$(this.gridSelector)
 		.datagrid('loadData', []);
+		var id = 0;
 		
 		try {
 			var equations = json; // JSON.parse(json);
 			for (const equation of equations) {
 				if (typeof(equation[1]) == "string" && equation[1] != "[object Object]") {
-					this.addEquation(equation[0], equation[1]);
+					this.addEquation(equation[0], equation[1], ++id);
 				}
 			}
 		} catch(e) {
@@ -381,6 +419,11 @@ class DynamicPanel extends KIHPanel {
 	 * @returns An array of the equations, JSON compatible
 	 */
 	toJson() {
+		// TODO: mechanism not working
+		var options = $(this.gridSelector)
+		.datagrid('options');
+		var pageSize = options.pageSize;
+		options.pageSize = 50;
 		var data = $(this.gridSelector)
 		.datagrid('getData');
 		
@@ -389,9 +432,18 @@ class DynamicPanel extends KIHPanel {
 			var fragment = $.parseHTML(row.formula)[0];
 			var formula = fragment.attributes['latex'].value;
 			return [ title, formula ];
-		})
+		});
+		// options.pageSize = pageSize;
 		
 		return customEquations;
+	}
+	
+	freeId() {
+		var data = $(this.gridSelector)
+		.datagrid('getData');
+
+		var ids = data.rows.map(row => row.id);
+		return Math.max(ids) + 1;
 	}
 	
 	/**
@@ -400,10 +452,11 @@ class DynamicPanel extends KIHPanel {
 	 * @param title - the title of the equation
 	 * @param formula - the formula itself
 	 */
-	addEquation(title, formula) {
+	addEquation(title, formula, id = -1) {
 		$(this.gridSelector)
 		.datagrid(
 			'appendRow', {
+			id: id == -1 ? this.freeId() : id,
 			title: title,
 			formula: this.buildAnchor(formula)	 
 		})
@@ -480,10 +533,12 @@ class DynamicPanel extends KIHPanel {
 		console.debug(`initialiseDatagrid for ${selector}`);
 		$(selector)
 		.datagrid({
-			singleSelect: true,
+			//singleSelect: true,
+			selectOnCheck: true,
 			remoteSort: false,
 			remoteFilter: false,
 			pagination: true,
+			pageSize: 20,
 			rownumbers: true,
 			fit: true,
 			noheader: false,
@@ -500,17 +555,19 @@ class DynamicPanel extends KIHPanel {
 			clickToEdit: false,
 			dblclickToEdit: true,
 			columns: [[
-				{ field: 'title', title: '<span class="custom-equations" locate="TITLE">Title</span>', width: '40%', editor: 'text', sortable: true, sorter: inst.alphaSorter.bind(inst) },
+				{ field: 'id', title: 'Id', hidden: true },
+				{ field: 'check', checkbox: true },
+				{ field: 'title', title: '<span class="custom-equations" locate="TITLE">Title</span>', width: '35%', editor: 'text', sortable: true, sorter: inst.alphaSorter.bind(inst) },
 				{ field:'formula', title: '<span class="custom-equations" locate="FORMULA">Formula</span>', width:'60%' }
 			]],
-			idField: 'title',
+			idField: 'id',
 			onBeforeSortColumn: function(sort, order) {
 				console.debug(`Sort order is: ${order}`);
 				inst.sortOrderAsc = order;
 				return true;
 			},
 			onLoadSuccess: function() {
-				// $(this).datagrid('enableDnd');
+				$(this).datagrid('enableDnd');
 				var opts = $(this).datagrid('options');
 				var trs = opts.finder.getTr(this, 0, 'allbody');
 				trs.draggable({
@@ -519,9 +576,10 @@ class DynamicPanel extends KIHPanel {
 					deltaY: 70,
 					proxy: function(source) {
 						console.dir(source);
-						var p = $('<div id="categories_easyui_tree_12" class="datagrid-div proxy droppable" style="border:2px solid red;"></div>').appendTo(`#${inst.panelId}`);
+						var p = $('<div class="datagrid-div tree-node-proxy droppable" style="border: 2px solid red; z-index: 100;"></div>').appendTo(`#${inst.panelId}`);
 						var row = $('<div style="width: 400px; display: flex; flex-direction: row; justify-content: center;"></div>');
 						$(source).find('td')
+						.first()
 						.each(function() {
 							var td = $('<div style="margin: auto; width: 80px;"></div>');
 							$(td).html($(this).html());
@@ -679,15 +737,17 @@ class DynamicPanel extends KIHPanel {
 class KIHPanels {
 	parameters = null;
 	localizer = null;
+	parser = null;
 	messager = null;
 	panels = { };
 	
 	/**
 	 * @abstract Constructor
 	 */
-	constructor(parameters, localizer) {
+	constructor(parameters, localizer, parser) {
 		this.parameters = parameters;
 		this.localizer = localizer;
+		this.parser = parser;
 		this.messager = new Messager(localizer);
 	}
 	

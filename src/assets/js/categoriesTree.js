@@ -1,6 +1,9 @@
 
 /**
  * @abstract Manages the Categories Tree.
+ * 
+ * The Leafs of the tree refer to a set of equations and constitute the categories.
+ * The Folders constitute super categories.
  */
 class CategoriesTree {
 	
@@ -15,6 +18,7 @@ class CategoriesTree {
 	currentLeaf = null;
 	nodeSelected = null;
 	treeChanged = null;
+	equationMoved = null;
 	
 	/**
 	 * @abstract Constructor.
@@ -24,6 +28,7 @@ class CategoriesTree {
 		this._tree = $(this.treeSelector);
 		this.nodeSelected = new Observable();		
 		this.treeChanged = new Observable();
+		this.equationMoved = new Observable();
 		this.treeInitialise();
 	}
 	
@@ -196,8 +201,6 @@ class CategoriesTree {
 				var isLeaf = $(this).tree('isLeaf', target);
 				updateDndIcon(!isLeaf);
 			},
-			/*
-			*/
 			onDragOver: function(target, source) {
 				console.debug(`onDragOver `);
 				var isLeaf = $(this).tree('isLeaf', target);
@@ -272,11 +275,14 @@ class CategoriesTree {
 			this.tree.tree('select', node.target)			
 		}
 		
+		// this.testMove();
 		console.dir(this.data);
 	}
 	
 	/**
 	 * @abstract The context menu of the tree nodes.
+	 * 
+	 * We distinguish 2 context menues: one for the Leafs and one for the Folders.
 	 */
 	onContextMenu(e, node) {
 		var inst = this;
@@ -333,6 +339,9 @@ class CategoriesTree {
 						case "mRemoveLeaf":
 							remove();
 							break;
+						case "mCutPaste":
+							inst.moveEquations(inst.currentLeaf, node);
+							break;
 					}
 				}
 			})
@@ -343,6 +352,12 @@ class CategoriesTree {
 		}
 	}
 	
+	/**
+	 * @abstract The *onLoadSuccess* event handler.
+	 * 
+	 * Its main purpose is to support the drag an drop operations from the datagrid
+	 * to the tree.
+	 */
 	onLoadSuccess() {
 		console.debug(`onLoadSuccess`);
 		var inst = this;
@@ -350,14 +365,15 @@ class CategoriesTree {
 		.find('.tree-node')
 		.each(function() {
 			var opts = $(this)
-			.droppable({ accept: 'div.tree-node, div.datagrid-div' })
+			/* TEST WITHOUT THIS
+			.droppable({ 
+				accept: 'div.tree-node, div.datagrid-div' 
+			})
+			*/
 			.droppable('options');			
 			console.debug(`Found tree node with accept: ${opts.accept} `);
 
-			$(this)
-			.droppable('disable')
-			.droppable('enable');
-			
+			opts.accept = 'div.tree-node, div.datagrid-div';
 			var onDragEnter = opts.onDragEnter;
 			var onDragOver = opts.onDragOver;
 			var onDragLeave = opts.onDragLeave;
@@ -405,6 +421,75 @@ class CategoriesTree {
 				}
 			};
 		});
+	}
+	
+	/**
+	 * @abstract Performs a test move. OBSOLETE.
+	 */
+	testMove() {
+		var from = this.findNode('Test');
+		var to = this.findNode('Quantum');
+		this.moveEquation(from, to, 5);
+	}
+	
+	/**
+	 * @abstract *moveEquations* moves the checked equations from a source to a target category (Leaf node).
+	 * 
+	 * This method notifies Observers about the change, f.i. the datagrid panel.
+	 * 
+	 * @param from - source leaf node 
+	 * @param to - target leaf node
+	 */
+	moveEquations(from, to) {
+		try {
+			if (to !== from) {
+				var checkedEquations = this.getCheckedEquations();
+				for (var idx of checkedEquations) {								// first append the checked equations to the target
+					var equation = from.attributes.equations[idx];
+					to.attributes.equations.push(equation);
+				}
+
+				this.deleteEquations(from.attributes, checkedEquations);		// then delete them from the source (from)
+				this.equationMoved.notify();
+			}
+		} catch(e) {
+			console.warn(`moveEquations failed : ${e} `);
+		}
+	}
+	
+	/**
+	 * @abstract Deletes a set of equations from the given set.
+	 * 
+	 * @param from - the set of equations to be modified
+	 * @param checked - the indices of equations to be deleted
+	 */
+	deleteEquations(from, checked) {
+		from.equations = from.equations.filter(									// then delete them from the source (from)
+			(elem, index) => !checked.includes(index));
+	}
+	
+	/**
+	 * @abstract Returns the indices of the checked equations in the datagrid.
+	 * 
+	 * @returns array of indices
+	 */
+	getCheckedEquations() {
+		var checkedRows = $('#customDatagrid')
+			.datagrid('getChecked');
+		var indexes = checkedRows.map(row => $('#customDatagrid')
+			.datagrid('getRowIndex', row));
+			
+		return indexes;
+	}
+	
+	/**
+	 * @abstract Finds a node in the tree given its text
+	 * 
+	 * @param text - text of the node
+	 */
+	findNode(text) {
+		return this.tree
+			.tree('find', { text: text });
 	}
 	
 	/**
