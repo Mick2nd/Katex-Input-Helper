@@ -88,7 +88,6 @@ class KIHPanel {
 		var text = func.bind($(`#${id}`))('options')[option];							// do something to preserve the TITLE: this is an option
 		var html = $.parseHTML(text);													// parse it into html object
 		var key = $(html).attr('locate');												// extract the locate attribute
-		console.debug(`localizeOption ${option} for ${id}, ${key} `);
 		var located = this.parent.localizer.getLocalText(key);							// use it to get localized text
 		html = $(html).html(located)[0].outerHTML;										// insert it into orginal html
 		return html;
@@ -231,25 +230,33 @@ class DynamicPanel extends KIHPanel {
 	 */
 	async onLocaleChanged(localizer) {
 		var inst = this;
-		console.debug(`onLocaleChanged : ${localizer.currentLocale} `);
+		console.debug(`DynamicPanel.onLocaleChanged : ${localizer.currentLocale} `);
 
-		$('span[locate].custom-equations')
+		$('span[locate].custom-equations')											// span elements in html
 		.each(function() { 
-			console.debug(`Custom-Equations 1: ${$(this).attr("locate")}`);
 			if (typeof ($(this).attr("locate")) != "undefined") { 
 				var localText = localizer.getLocalText($(this).attr("locate")); 
 				if (typeof (localText) != "undefined") $(this).html(localText); 
 			} 
 		});
 		
-		$('.custom-equations:not(span)')
+		$('.custom-equations:not(span)')											// the spans are embedded in titles (tooltips)
 		.each(function() {
 			if ($(this).hasClass('easyui-tooltip')) {
 				try {
 					var id = $(this).attr('id');
 					var title = inst.localizeOption('content', id, $.fn.tooltip);
-					$(this).tooltip({ content: title }); 
-					console.debug(`Custom-Equations 2: ${id}, ${title}`);
+					var zindex = $(this).css('z-index');							// auto -> cannot be used
+					$(this).tooltip({
+						position: 'right',
+						content: title,
+						onShow: function() {
+							$(this).tooltip('tip').css({ 
+								'z-index': 500000,
+								width: 300 
+							}); 		// always above all ui elements!
+						} 
+					});
 				} catch(e) {
 					console.warn(`easyui-tooltip warning : ${e}`);
 				}
@@ -264,11 +271,7 @@ class DynamicPanel extends KIHPanel {
 		var inst = this;
 		var fPanelMoreID = this.panelId;
 		
-		console.debug(`Here in DynamicPanel.initialise 1`);
-		
 		await super.initialise();
-
-		console.debug(`Here in DynamicPanel.initialise 2`);
 		await inst.initialiseDatagrid(`${inst.gridSelector}`);
 		inst.customEquationsFromParameters();
 
@@ -331,20 +334,32 @@ class DynamicPanel extends KIHPanel {
 		$('#CUSTOM_EQUATIONS_LAYOUT').layout({fit: true});
 	}
 	
+	/**
+	 * @abstract Show override of the base class for localization.
+	 */
 	async show() {
 		// TODO: order changed to initialize span[locate]? -> changes nothing in appearance
 		await super.show();
 		await this.onLocaleChanged(this.parent.localizer);			// TODO: does not help for pagination
 	}
 	
+	/**
+	 * @abstract Observer of *Category Tree* observable.
+	 */
 	onTreeChanged() {
 		this.customEquationsToParameters();
 	}
 
+	/**
+	 * @abstract Observer of *Category Tree* observable.
+	 */
 	onEquationMoved() {
 		this.clearCheckedAndUpdate();
 	}
 	
+	/**
+	 * @abstract Observer of *Category Tree* observable.
+	 */
 	onNodeSelected(previous, current) {
 		try {
 			this.fromJson(this.categoriesTree.currentEquations);
@@ -388,7 +403,8 @@ class DynamicPanel extends KIHPanel {
 	customEquationsToParameters() {
 		this.categoriesTree.currentEquations = this.toJson();
 		this.parent.parameters.equationCollection = this.categoriesTree.customEquationsProxy;		
-		this.parent.parameters.writeParameters();
+		// Writing to parameters DOES initiate writeParameters !!
+		// this.parent.parameters.writeParameters();
 	}
 	
 	/**
@@ -416,33 +432,69 @@ class DynamicPanel extends KIHPanel {
 	/**
 	 * @abstract Reads the Equations from data grid and returns them.
 	 * 
+	 * These are all equations now but filtered, if a filter is active.
+	 * 
 	 * @returns An array of the equations, JSON compatible
 	 */
 	toJson() {
-		// TODO: mechanism not working
-		var options = $(this.gridSelector)
-		.datagrid('options');
-		var pageSize = options.pageSize;
-		options.pageSize = 50;
 		var data = $(this.gridSelector)
 		.datagrid('getData');
 		
-		var customEquations = data.rows.map(function(row) {
+		var customEquations = data.filterRows.map(function(row) {
 			var title = row.title;
 			var fragment = $.parseHTML(row.formula)[0];
 			var formula = fragment.attributes['latex'].value;
 			return [ title, formula ];
 		});
-		// options.pageSize = pageSize;
 		
 		return customEquations;
 	}
 	
+	/**
+	 * @abstract A test to get all data rows.
+	 * 
+	 * No longer needed, only for illustration purposes.
+	 */
+	test() {
+		
+		var pager = $(this.gridSelector).datagrid('getPager');
+		var options = pager.pagination('options');
+		var total = options.total;
+		var pageSize = options.pageSize;
+		
+		var rows = [];
+		for (var page = 1, remaining = total; remaining > 0; page++, remaining -= pageSize) {
+			$(this.gridSelector).datagrid('gotoPage', page);
+			pager.pagination('refresh');
+			var pageRows = $(this.gridSelector).datagrid('getData').rows;
+			rows = rows.concat(pageRows);
+		}
+		
+		console.debug(`test-read : read ${rows.length} of ${options.total} `);
+	}
+	
+	/**
+	 * @abstract Checks if a filter is active in the datagrid.
+	 * 
+	 * @returns true, if so
+	 */
+	filterActive() {
+		var pager = $(this.gridSelector).datagrid('getPager');
+		var options = pager.pagination('options');
+		var total = options.total;
+		var rows = $(this.gridSelector).datagrid('getData').filterRows;
+		
+		return rows.length < total;
+	}
+	
+	/**
+	 * @abstract Determines the first free id for the id field making it unique.
+	 */
 	freeId() {
 		var data = $(this.gridSelector)
 		.datagrid('getData');
 
-		var ids = data.rows.map(row => row.id);
+		var ids = data.filterRows.map(row => row.id);
 		return Math.max(ids) + 1;
 	}
 	
@@ -450,7 +502,7 @@ class DynamicPanel extends KIHPanel {
 	 * @abstract Adds an Equation to the grid.
 	 * 
 	 * @param title - the title of the equation
-	 * @param formula - the formula itself
+	 * @param formula - the formula itself in katex format
 	 */
 	addEquation(title, formula, id = -1) {
 		$(this.gridSelector)
@@ -466,9 +518,9 @@ class DynamicPanel extends KIHPanel {
 	/**
 	 * @abstract Equips the datagrid (after render update).
 	 * 
-	 * a.) inplace update of the content
-	 * b.) row height fixing
-	 * c.) saving of equations
+	 * - inplace update of the content
+	 * - row height fixing
+	 * - saving of equations
 	 */
 	async onAfterRender() {
 		var anchor = $(`${this.gridSelectorOfCopy} a`);
@@ -503,7 +555,7 @@ class DynamicPanel extends KIHPanel {
 	 * @abstract Builds a single Anchor from formula.
 	 * 
 	 * @param formula - the formula is capable of providing an interactive anchor
-	 * @returns - the calculated anchor
+	 * @returns the calculated anchor
 	 */
 	buildAnchor(formula) {
 		var title = `<span style='background:yellow; color: brown;'>${formula}</span>`;
@@ -530,7 +582,6 @@ class DynamicPanel extends KIHPanel {
 	async initialiseDatagrid(selector) {
 		var inst = this;
 		var filterPrompt = inst.parent.localizer.getLocalText('FILTER_PROMPT');
-		console.debug(`initialiseDatagrid for ${selector}`);
 		$(selector)
 		.datagrid({
 			//singleSelect: true,
@@ -595,35 +646,6 @@ class DynamicPanel extends KIHPanel {
 						return p;
 					}
 				});
-				/*
-				$(this)
-				.find('tr')
-				.each(function(){
-					console.debug(`Found datagrid row`);
-					$(this).draggable({
-						revert: true,
-						deltaX: 50,
-						deltaY: 50,
-						proxy: function(source) {
-							console.dir(source);
-							var p = $('<div class="datagrid-div" style="border:2px solid red;"></div>').appendTo(`#${inst.panelId}`);
-							var row = $('<div style="width: 400px; display: flex !important; flex-direction: row !important; justify-content: center !important;"></div>');
-							$(source).find('td')
-							.each(function() {
-								var td = $('<div style="margin: auto; width: 80px;"></div>');
-								$(td).html($(this).html());
-								$(td).appendTo($(row));
-							});
-								
-							var withIcon = $(row).prepend('<div class="tree-dnd-icon tree-dnd-no" style="width: 20px;">&nbsp;</div');
-							p.append($(withIcon));
-							var proxy = p[0];
-							console.dir(proxy);
-							return p;
-						}
-					});
-				});
-				*/
 			},
 			onDragOver: function(target, source) {
 				console.dir(source);
@@ -651,10 +673,6 @@ class DynamicPanel extends KIHPanel {
 			op: 'contains',
 			value: ''
 		});
-		// does not work
-		$('#gridCaption').innerText = 'Default';
-		
-		// inst.equipDatagridWithInteractivity();
 	}
 	
 	/**
@@ -666,16 +684,16 @@ class DynamicPanel extends KIHPanel {
 			view: $.extend(true, {}, $.fn.datagrid.defaults.view, {
 				render: async function(target, container, frozen){
 					$.fn.datagrid.defaults.view.render.call(this, target, container, frozen);
-					console.log('Render');
+					//console.log('Render');
 				},
 				onBeforeRender: async function(target){
 					$.fn.datagrid.defaults.view.onBeforeRender.call(this, target);
-					console.log('Before render');
+					//console.log('Before render');
 				},
 				onAfterRender: async function(target){
 					$.fn.datagrid.defaults.view.onAfterRender.call(this, target);
 					await inst.onAfterRender();
-					console.log('After render');
+					//console.log('After render');
 				}
 			})
 		};
@@ -710,7 +728,6 @@ class DynamicPanel extends KIHPanel {
 				event.preventDefault(); 
 				var a = $(event.target);
 				var latex = a.attr("latex");
-				console.debug(`Click on equation: ${latex}`);
 				if (latex != undefined) { 
 					inst.parent.insert(latex); 
 				} else { 
@@ -719,7 +736,6 @@ class DynamicPanel extends KIHPanel {
 						msg: inst.parent.localizer.getLocalText("NO_LATEX") 
 					}); 
 				}
-				// return true;
 			});
 		} catch(e) {
 			console.error(`Katex: equipDatagridWithInteractivity : ${e}`);

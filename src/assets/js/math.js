@@ -88,7 +88,7 @@ class MathFormulae {
 			var im1 = 0;
 			entries.each(function(idx, a) {
 				
-				if (a) {
+				if (a && $(this).find('.katex').length == 0) {								// check : no katex embedded
 					try {
 						var html = a.innerHTML;
 						var count = html.split('$').length - 1;
@@ -164,7 +164,7 @@ class MathFormulae {
 	}
 	
 	/**
-	 * For some dialogs which are initialized lazily updates the Math.
+	 * For some dialogs, which are initialized lazily, updates the Math.
 	 */
 	inplaceUpdate(selector, javascript = false) {
 		try {
@@ -211,7 +211,6 @@ class MathFormulae {
 		if (javascript) {
 			a.attr("href", "javascript:void(0)")
 			.tooltip({
-				// position: 'center', // => not working, causes flickering
 				content: `<span style="color:black">${getSymbol(a)}</span>`,
 				onShow: function(){
 					$(this).tooltip('tip').css({
@@ -281,7 +280,7 @@ class MathFormulae {
 
 		vme.insertMath(content, null, false, dm); 
 		vme.setFocus();
-		this.parameters.writeParameters(this.codeMirror.getValue());
+		this.parameters.equation = this.codeMirror.getValue();
 	}
 	
 	/**

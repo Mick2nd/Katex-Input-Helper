@@ -109,6 +109,22 @@
 	"PERSIST_WINDOW_POSITIONS": "Activer pour stocker les positions des fenêtres",
 	"PERSIST_EQUATIONS": "Activez pour stocker les équations personnalisées sur Annuler pour",
 	"FILTER_PROMPT": "entrez le texte du filtre ici...",
+	"APPENDFOLDER": "Ajouter un dossier",
+	"APPENDCATEGORY": "Ajouter une catégorie",
+	"CUTPASTE": "Équations Couper-Coller",
+	
+	"TTADD": "Pour ajouter une équation, sélectionnez le texte de l'équation dans l'éditeur et appuyez sur <b>Ajouter</b>.",
+	"TTREMOVE": "Pour supprimer une ou plusieurs équations, vérifiez-les dans la grille de données et appuyez sur <b>Supprimer</b>.",
+	"TTLOAD": "Appuyez sur ce bouton pour charger un ensemble complet d'équations comprenant des catégories. L'ancien ensemble sera perdu.",
+	"TTSAVE": "Press this button, to save the current set of equations together with all categories.",
+	"TTAPPENDFOLDER": "Utilisez cette commande de menu pour <b>Ajouter un dossier</b> ou une super catégorie à l'arborescence.",
+	"TTAPPENDCATEGORY": "Utilisez cette commande de menu pour <b>Ajouter une feuille</b> ou une catégorie à l'arborescence. Ces nœuds contiendront les équations.",
+	"TTREMOVECATEGORY": "Utilisez cette commande de menu pour <b>Supprimer</b> le nœud feuille (catégorie) et toutes les équations qui lui appartiennent.",
+	"TTREMOVEFOLDER": "Utilisez cette commande de menu pour <b>Supprimer</b> le nœud de dossier (super catégorie) et toutes les équations et sous-dossiers lui appartenant.",
+	"TTCUTPASTE": "Utilisez cette commande de menu pour <b>Couper et coller</b> des équations d'une catégorie à une autre. Pour ce faire, vérifiez les équations souhaitées dans la grille de données et appelez cette commande.",
+
+	"RESET": "Réinitialiser",
+	"RESET_WINDOW_POSITIONS": "Positions des fenêtres",
 	
 	"VKI_00": "Pavé numérique",
 	"VKI_01": "Ouvrir le clavier virtuel",

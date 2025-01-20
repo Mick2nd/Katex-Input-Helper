@@ -109,6 +109,22 @@
 	"PERSIST_WINDOW_POSITIONS": "Activar para almacenar posiciones de ventanas",
 	"PERSIST_EQUATIONS": "Activar para almacenar ecuaciones personalizadas en Cancelar también",
 	"FILTER_PROMPT": "ingrese el texto del filtro aquí...",
+	"APPENDFOLDER": "Agregar carpeta",
+	"APPENDCATEGORY": "Agregar categoría",
+	"CUTPASTE": "Cortar y pegar ecuaciones",
+	
+	"TTADD": "Para agregar una ecuación, seleccione el texto de la ecuación en el Editor y presione <b>Agregar</b>",
+	"TTREMOVE": "Para eliminar una o más ecuaciones, verifíquelas en el datagrid y presione <b>Eliminar</b>",
+	"TTLOAD": "Presione este botón para cargar un conjunto completo de ecuaciones que incluyen categorías. El conjunto antiguo se perderá.",
+	"TTSAVE": "Presione este botón para guardar el conjunto actual de ecuaciones junto con todas las categorías.",
+	"TTAPPENDFOLDER": "Utilice este comando de menú para <b>Agregar una carpeta</b> o supercategoría al árbol.",
+	"TTAPPENDCATEGORY": "Utilice este comando de menú para <b>Agregar una hoja</b> o categoría al árbol. Dichos nodos contendrán las ecuaciones.",
+	"TTREMOVECATEGORY": "Utilice este comando de menú para <b>Eliminar</b> el nodo hoja (categoría) y todas las ecuaciones que le pertenecen.",
+	"TTREMOVEFOLDER": "Utilice este comando de menú para <b>Eliminar</b> el nodo de carpeta (supercategoría) y todas las ecuaciones y subcarpetas que le pertenecen.",
+	"TTCUTPASTE": "Utilice este comando de menú para <b>cortar y pegar</b> ecuaciones de una categoría a otra. Para hacer esto, verifique las ecuaciones deseadas en la cuadrícula de datos e invoque este comando.",
+
+	"RESET": "Reiniciar",
+	"RESET_WINDOW_POSITIONS": "Posiciones de ventana",
 	
 	"VKI_00": "Teclado",
 	"VKI_01": "Mostrar la interfaz teclado virtual",

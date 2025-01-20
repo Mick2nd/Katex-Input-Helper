@@ -33,8 +33,13 @@ export class Dialog
 	 */
 	public create = async function() : Promise<any>
 	{
-		if (handle == null)
+		if (handle == null) {
 			handle = await joplin.views.dialogs.create(this.id);
+			
+			// THIS IS A TEST : USE SCRIPTS AS LONG AS POSSIBLE
+			await this.loadCss(handle);
+			await this.loadJs(handle);
+		}
 
 		var inst = this;
 		await this.settings.register();
@@ -53,8 +58,6 @@ export class Dialog
 		const cancel = { id: 'cancel', title: 'Cancel' };
 		await joplin.views.dialogs.setButtons(handle, [ok, cancel]);
 		await joplin.views.dialogs.setFitToContent(handle, false);								// was false!
-		await this.loadCss(handle);
-		await this.loadJs(handle);
 		await joplin.views.dialogs.setHtml(handle, await this.load('./assets/dialog.html'));
 	}
 	
@@ -62,7 +65,10 @@ export class Dialog
 	{
 		let res = await joplin.views.dialogs.open(handle);
 		if (res.formData == undefined) {
-			console.warn(`No formData returned on ${res.id}`)
+			console.warn(`No formData returned on ${res.id}`);
+			// TODO: joplin does not like re-creation of handles
+			//handle = null;
+			return res;
 		}
 		let parameters = JSON.parse(res.formData.KATEX.hidden);
 		if (res.id == 'okay') {
@@ -98,7 +104,7 @@ export class Dialog
 			"./assets/js/jquery-easyui-MathEditorExtend/themes/icon.css",
 			// active activates right to left
 			// "./assets/js/jquery-easyui-MathEditorExtend/themes/rtl.css",
-			"./assets/js/jquery-colorpicker/css/colorpicker.css",
+			// "./assets/js/jquery-colorpicker/css/colorpicker.css",
 			"./assets/js/codemirror/lib/codemirror.css",
 			"./assets/js/keyboard/Keyboard.css",
 			"./assets/js/katex/katex.min.css",
@@ -123,7 +129,7 @@ export class Dialog
 			"./assets/js/jquery-easyui/datagrid-filter.js",
 			// NOT REQUIRED FOR DRAGGING DATAGRID ROW TO TREE
 			"./assets/js/jquery-easyui/datagrid-dnd.js",
-			"./assets/js/jquery-colorpicker/js/colorpicker.js",
+			// "./assets/js/jquery-colorpicker/js/colorpicker.js",
 			"./assets/js/codemirror/lib/codemirror.js",
 			"./assets/js/katex/katex.min.js",
 			"./assets/js/katex/mhchem.min.js",

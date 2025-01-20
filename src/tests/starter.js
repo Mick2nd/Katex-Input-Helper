@@ -7,7 +7,8 @@
 class BootLoader {
 	
 	baseLocation = null;
-	vme = null;
+	withModules = true;
+	app = null;
 	
 	/**
 	 * @abstract Constructor.
@@ -89,40 +90,62 @@ class BootLoader {
 	 * @async implements the Promise contract
 	 */
 	async initScripts() {
-		this.baseLocation = this.getBaseLocation();
-		// First trial: like demo
-		easyloader.base = this.baseLocation;    				// set the easyui base directory
-		easyloader.css = true; // false;
-		console.dir(easyloader.modules);
-	
-		var modules = [ 'layout' ]
-		
-		var scripts = [
-			"./jquery-easyui/jquery.easyui.min.js",
-		];
-		
-		var csss = [
-			"./jquery-easyui/themes/default/easyui.css",
-			"./jquery-easyui/themes/icon.css",
-		];
-
-		/*
-		 */
-		await this.usingAsync('./jquery.min.js');
-
-		for (var module of modules) {
-			await this.usingAsync(module);
+		var inst = this;
+		function makePath(path) {
+			return path;
 		}
 		
-		/*
+		var baseLocation = this.getBaseLocation();
+		this.baseLocation = baseLocation;						// this is the assets folder as required by app
+		baseLocation += 'js/jquery-easyui/'
+		easyloader.base = baseLocation; 						// set the easyui base directory
+		easyloader.css = true; 									//this.withModules;
+	
+		var modules = [ 'layout', 'panel', 'window', 'dialog', 'linkbutton', 'menubutton' ];
+		
+		var scripts = [ 
+			makePath("../patterns/observable.js"),
+			makePath("../localization.js"),
+			makePath("../parserExtension.js"),
+			makePath("../../../tests/testDialog.js"),
+		];
+		
+		/**
+		 * It seems that working with my own styles does not work
+		 * Use easyloader css = true and do not use (load) theme files below
+		 */
+		var csss = this.withModules ? [
+			makePath("../jquery-easyui-MathEditorExtend/themes/aguas/easyui.css"),
+			makePath("../jquery-easyui-MathEditorExtend/themes/icon.css"),
+			makePath("../../../tests/testDialog.css"),
+		] : [
+			makePath("../jquery-easyui/themes/default/easyui.css"),
+			makePath("../jquery-easyui/themes/icon.css"),
+			makePath("../jquery-easyui-MathEditorExtend/themes/aguas/easyui.css"),
+			makePath("../jquery-easyui-MathEditorExtend/themes/icon.css"),
+			makePath("../jquery-easyui/themes/aguas/easyui.css"),
+			makePath("../../../tests/testDialog.css"),
+		];
+
 		for (var css of csss) {
 			await this.usingAsync(css);
+		}
+
+		await this.usingAsync(makePath('../jquery-easyui/jquery.min.js'));
+
+		if (this.withModules) {
+			// TEST: load modules together with different theme activation
+			easyloader.theme = "default";
+			for (var module of modules) {
+				await this.usingAsync(module);
+			}			
+		} else {
+			await this.usingAsync(makePath("../jquery-easyui/jquery.easyui.min.js"));
 		}
 		
 		for (var script of scripts) {
 			await this.usingAsync(script);
 		}
-		*/
 	}
 	
 	/**
@@ -134,8 +157,10 @@ class BootLoader {
 	 */
 	async initApp() {
 		try {
+			this.app = new TestDialog(this.baseLocation);
+			window.app = this.app;
+			await this.app.initialize();
 		} finally {
-			$('#myContainer').layout({fit: true});
 		}
 	}
 	
@@ -203,7 +228,7 @@ class BootLoader {
 			.join('/')
 			.replace(/ /g, '%20')
 			.replace('file:///', 'file://')
-			.replace('file://', 'file:///') + '/assets/js/jquery-easyui/';
+			.replace('file://', 'file:///') + '/assets/';
 			
 		return location;
 	}
@@ -275,12 +300,12 @@ class BootLoader {
 	}
 }	
 
-var bootLoader = new BootLoader();
-bootLoader.init2()
+var kihBootLoader = new BootLoader();
+kihBootLoader.init2()
 .then(() => {
-	bootLoader.check();
+	kihBootLoader.check();
 })
 .catch(err => {
 	console.error(`Error ${err} `, err);
-	bootLoader.fatal(err);
+	kihBootLoader.fatal(err);
 });

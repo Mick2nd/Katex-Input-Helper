@@ -26,7 +26,7 @@ class BootLoader {
 	 * @param args - args of the function. The function has one additional callback parameter
 	 * @returns the Promise, will be fulfilled if the callback is invoked
 	 */
-	async promisify2(fnc, ...args) {
+	async promisify(fnc, ...args) {
 		return new Promise(function(resolve, reject) {
 			try {
 				function resolveFunc() {
@@ -59,7 +59,7 @@ class BootLoader {
 	 * @returns - the Promise indicating the state of the transaction
 	 */
 	async usingAsync(script) {
-		return this.promisify2(/*using*/easyloader.load.bind(easyloader), script);
+		return this.promisify(/*using*/easyloader.load.bind(easyloader), script);
 	}
 	
 	/**
@@ -69,7 +69,7 @@ class BootLoader {
 	 */
 	async readyAsync() {
 		var doc = $(document);
-		return this.promisify2(doc.ready.bind(doc));
+		return this.promisify(doc.ready.bind(doc));
 	}
 	
 	/**
@@ -78,7 +78,7 @@ class BootLoader {
 	 * @async implements the Promise contract
 	 */
 	async setTimeoutAsync(delay) {
-		return this.promisify2(setTimeout, delay);
+		return this.promisify(setTimeout, delay);
 	}	
 	
 	/**
@@ -162,11 +162,11 @@ class BootLoader {
 	async initApp(useEasyLoader) {
 		try {
 			this.vme = new KatexInputHelper(useEasyLoader);
-			window.vme = vme;											// prevents garbage collection?
-			await vme.initialise();
-		} finally {
+			window.vme = this.vme;											// prevents garbage collection?
+			await this.vme.initialise();
 			$('#myContainer').layout({fit: true});
 			$('#divEquationInputOutput').layout({});
+		} finally {
 		}
 	}
 	
@@ -265,19 +265,30 @@ class BootLoader {
 			}
 			return equal;
 		}
+		function mhchemCheck() {
+			try {
+				lastChecked = "Mhchem";
+				katex.renderToString("\\ce{SO4^2- + Ba^2+ -> BaSO4 v} ", { throwOnError: true });
+				return true;
+			} catch(e) {
+				console.warn(`Presence check failed : Mhchem`);
+				return false;
+			}
+		}
 		
 		var allLoaded = (
 			// false &&
 			checkOther(typeof $, 'function', 'jquery') &&
 			checkOther(typeof katex, 'object', 'Katex') &&
-			checkOther(typeof ($().ColorPicker), 'function', 'ColorPicker') &&
+			mhchemCheck() &&
+			//checkOther(typeof ($.fn.ColorPicker), 'function', 'ColorPicker') &&
 			checkTypeByName(CodeMirror, 'Object', 'CodeMirror') &&
 			
 			checkTypeByName(Observable, 'Observable') &&
 			checkTypeByName(Localizer, 'Localizer') &&
 			checkTypeByName(Themes, 'Themes') &&
 			checkTypeByName(ParserExtension, 'ParserExtension') &&
-			checkTypeByName(Parameters, 'Parameters') &&
+			checkTypeByName(KIHParameters, 'KIHParameters') &&
 			checkTypeByName(FileHandler, 'FileHandler') &&
 			checkTypeByName(MathFormulae, 'MathFormulae') &&
 			checkTypeByName(CategoriesTree, 'CategoriesTree') &&
@@ -322,12 +333,12 @@ class BootLoader {
 	}
 }	
 
-var bootLoader = new BootLoader();
-bootLoader.init1()
+var kihBootLoader = new BootLoader();
+kihBootLoader.init1()
 .then(() => {
-	bootLoader.check();
+	kihBootLoader.check();
 })
 .catch(err => {
 	console.error(`Error ${err} `, err);
-	bootLoader.fatal(err);
+	kihBootLoader.fatal(err);
 });

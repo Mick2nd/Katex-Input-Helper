@@ -12,7 +12,8 @@
 	"categories": ["productivity", "editor"],
 	"screenshots": [
 		{ "src": "img/Katex-Input-Helper.png", "label": "Katex Input Helper Main Dialog"},
-		{ "src": "img/Custom-Equations.png", "label": "Custom Equations Dialog"}
+		{ "src": "img/Custom-Equations.png", "label": "Custom Equations Dialog"},
+		{ "src": "img/Custom-Equations-with-Categories.png", "label": "Custom Equations Dialog with Categories Tree"}
 	],
 	"icons": {}
 }

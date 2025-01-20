@@ -33,15 +33,20 @@ This plugin can be used to support the input of Mathematical formulae. It does t
    1. Save the set of formulae into a json file
    2. Load a set of formulae from a json file
    3. Add a formula from the editor area
-   4. Remove a formula from the datagrid
+   4. Remove checked formulae from the datagrid
    5. Click a formula to insert it into the editor area
    6. Edit the *Title* field of a formula by double - clicking it
    7. Filter the set of formulae by a filter expression. Actually this checks if the filter expression is contained in the title field
-   8. Sort the formulae after the title field
+   8. Sort the formulae by title
    9. Select pages of a huge formula set
+   10. Edit the new *Categories* tree on the left side. Categories are divided into folders and leafs. Only the leafs can contain formulae.
+   11. By selecting a Leaf one can select the formulae contained in it.
+   12. One can sort existing formulae into different Leafs.
+   13. The old style formula collection is not lost. Such formulae are sorted into a *Default* leaf node.
 1. Retaining window positions and sizes.
    By default the window positions and sizes are retained leaving them intact through invocations of the window itself or the whole Katex Input Helper.
    This feature can be deactivated by deselecting the appropriate checkbox in the Settings dialog (Menu command *Options - Editor Parameters...*).
+   These *Hidden settings* can be reset on behalf of the *Settings* dialog.
 
 ## Origin of the Software
 
@@ -81,13 +86,27 @@ The custom equations dialog
 
 <img src="img/Custom-Equations.png" width="500" />
 
+The custom equations dialog with categories tree
+
+<img src="img/Custom-Equations-with-Categories.png" width="700" />
+
 ## Known Problems
 
 - Sometimes a start of the dialog crashes. Mainly I could observe this for first time starts of the production version. Perhaps this has to do with caching of the plugin. Restart helps.
 - A minor problem is a missing update of the language of the data grid paging bar in the *Custom Equations* dialog. This only appears during language change during an actual activation of the dialog.
-- Only 2 languages are fully localized: English and German. In the original software 7 languages are supported: French, Spanish, Russian, Vietnamese and Arabian in addition to the 2 above. The missing phrases fall back to the English version.
+- The persistence of custom equations can be damaged when an filter is active. 
 
 ## Release Notes
+
+### 1.0.6
+
+- The *Custom Equations* dialog is now equipped with a categories tree and with tooltips to get usage hints.
+- All dialog windows are now resizable, the *Parameters* dialog is now equipped with a *Reset Window Positions* button.
+- The *Unicode* dialog was improved. The codes now correctly are displayed in the *Katex* editor and the app will no longer crash, if a code section is selected on the left side.
+- The documentation commands did no longer work. This is fixed now and documentation from external sources is displayed in a Browser window.
+- The localization was completed including the Copyright line.
+- The *Informations* dialog was completed with some new version information.
+- The equations of the *Custom Equations* dialog were not fully persisted but shrinked to the current page instead. This is fixed now.
 
 ### 1.0.5
 

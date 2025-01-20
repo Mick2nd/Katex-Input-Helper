@@ -109,6 +109,22 @@
 	"PERSIST_WINDOW_POSITIONS": "Kích hoạt để lưu trữ vị trí cửa sổ",
 	"PERSIST_EQUATIONS": "Kích hoạt để lưu trữ các phương trình tùy chỉnh khi hủy",
 	"FILTER_PROMPT": "nhập văn bản bộ lọc vào đây...",
+	"APPENDFOLDER": "Nối thêm thư mục",
+	"APPENDCATEGORY": "Nối thêm danh mục",
+	"CUTPASTE": "Cắt & Dán phương trình",
+	
+	"TTADD": "Để thêm phương trình, hãy chọn văn bản phương trình trong Trình chỉnh sửa và nhấn <b>Thêm</b>",
+	"TTREMOVE": "Để xóa một hoặc nhiều phương trình, hãy kiểm tra chúng trong lưới dữ liệu và nhấn <b>Xóa</b>",
+	"TTLOAD": "Nhấn nút này để tải một bộ phương trình hoàn chỉnh bao gồm các danh mục. Bộ cũ sẽ bị mất.",
+	"TTSAVE": "Nhấn nút này để lưu bộ phương trình hiện tại cùng với tất cả các loại.",
+	"TTAPPENDFOLDER": "Sử dụng lệnh trình đơn này để <b>Nối Thư mục</b> hoặc siêu danh mục vào cây.",
+	"TTAPPENDCATEGORY": "Sử dụng lệnh trình đơn này để <b>Thêm Lá</b> hoặc danh mục vào cây. Các nút như vậy sẽ chứa các phương trình.",
+	"TTREMOVECATEGORY": "Sử dụng lệnh menu này để <b>Xóa</b> nút lá (danh mục) và tất cả các phương trình thuộc về nó.",
+	"TTREMOVEFOLDER": "Sử dụng lệnh menu này để <b>Xóa</b> nút thư mục (siêu danh mục) và tất cả các phương trình cũng như thư mục con thuộc về nó.",
+	"TTCUTPASTE": "Sử dụng lệnh trình đơn này để <b>Cắt & Dán</b> các phương trình từ danh mục này sang danh mục khác. Để thực hiện việc này, hãy kiểm tra các phương trình mong muốn trong lưới dữ liệu và gọi lệnh này.",
+
+	"RESET": "Cài lại",
+	"RESET_WINDOW_POSITIONS": "Vị trí cửa sổ",
 	
 	"VKI_00": "bàn phím",
 	"VKI_01": "Mở bàn phím ảo",

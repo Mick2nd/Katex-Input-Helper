@@ -3,14 +3,21 @@ body {
 	height: 100%;
 }
 
+/* where applied => all tables 
+ * TODO: check and improve 
+ */
 table, th, td {
   border: 1px solid;
 }
 
-.inline-table td {
-	padding: 5px;
+/* in-line = informations table */
+.inline-table {
+	td {
+		padding: 5px;
+	}
 }
 
+/* all layouts occupy the whole parent height */
 .easyui-layout {
 	height: 100vh;
 }
@@ -29,12 +36,21 @@ h3 {
 	color: #0E2D5F !important;
 }
 
+#formula {
+	display: none;
+}
+
 #northRegion {
 	height: 110px;
 }
 
 #menu {
 	padding: 5px;
+}
+
+#mLaTeX_TEXT span {
+	padding-top: 5px; 
+	font-size: 120%"
 }
 
 .easyui-menubutton {
@@ -48,6 +64,10 @@ h3 {
 
 #westRegion {
 	width: 210px;
+	
+	.easyui-accordion > div {
+		overflow: auto !important;
+	}
 }
 
 /* center "centerRegion"
@@ -103,50 +123,227 @@ h3 {
 
 #eastRegion {
 	width: 210px;
+	
+	.easyui-accordion > div {
+		overflow: auto !important;
+	}
 }
 
 #southRegion {
 	height: 50px;
+	
+	:last-child {						/* the copyright line */
+		padding-top: 2px; 
+		text-align: center;
+	}
 }
 
-#divInformation {
+#divInformation {						/* info line like latex code feedback */
 	padding-top: 2px; 
 	text-align: center; 
-	height: 18px; 
+	height: 20px; 
 	overflow: auto;
 }
 
+#wEDITOR_PARAMETERS {
+	width: 420px; 
+	height: 470px; 
+
+	#formEDITOR_PARAMETERS {
+		fieldset, input, a {
+			margin-top: 10px !important;
+			margin-left: 15px !important;
+		}
+		legend {
+			margin-top: 10px !important;
+			margin-left: 0px !important;
+		}
+		#autoUpdateTime {
+			margin-left: 4px; 
+			font-size: 90% 
+		}
+		a {
+			background-color: lightgray;
+		}
+	}
+}
+
+#wSTYLE_CHOISE {
+	width: 170px; 
+	height: 200px;
+	fieldset {
+		margin-top: 10px;
+		margin-left: 15px;
+	}
+}
+
 #wLANGUAGE_CHOISE {
+	width: 340px; 
+	height: 240px;
+	fieldset {
+		margin-top: 10px;
+		margin-left: 15px;
+	}
+}
+
+#wMATRIX {
+	width: 310px; 
+	height: 200px;
+	
+	#tableMATRIX {
+		border-spacing: 0px; 
+		border-collapse: collapse; 
+		td {
+			text-align: center;
+		}
+	}
+}
+
+#wf_COMMUTATIVE_DIAGRAM_MORE {
+	width: 280px; 
+	height: 650px;
+}
+
+#wf_CHEMICAL_FORMULAE_MORE {
 	width: 300px; 
-	height: 180px;
+	height: 200px;
 }
 
-#formEDITOR_PARAMETERS {
-	input {
-		margin-top: 10px !important;
-		margin-left: 15px !important;
+#wf_BRACKET_SYMBOLS_MORE {
+	width: 250px; 
+	height: 440px;
+}
+
+#wf_RELATION_SYMBOLS_MORE {
+	width: 240px; 
+	height: 320px;
+}
+
+#wf_ARROW_SYMBOLS_MORE {
+	width: 250px; 
+	height: 390px;
+}
+
+#wf_FR_CHAR_MORE {
+	width: 260px; 
+	height: 415px;
+}
+
+#wf_BBB_CHAR_MORE {
+	width: 250px; 
+	height: 405px;
+}
+
+#wf_L_U_GREEK_CHAR_MORE {
+	width: 250px; 
+	height: 500px;
+}
+
+#wf_ALL_CHAR_MORE {
+	width: 600px; 
+	height: 420px;
+}
+
+#wf_EQUATION_MORE {
+	width: 700px; 
+	height: 470px;
+}
+
+#wf_CUSTOM_EQUATIONS_MORE {
+	width: 700px; 
+	height: 500px;
+
+	#customDatagrid {
+		border-spacing: 0px;
+		border-collapse: collapse;
+		width: 100%;
 	}
-	legend {
-		margin-top: 10px !important;
-		margin-left: 10px !important;
+	
+	#gridCaption {
+	  padding: 10px;
 	}
 }
 
-#tableMATRIX td {
-	text-align: center;
+#wf_HORIZONTAL_SPACING_MORE {
+	width: 110px; 
+	height: 335px;
 }
 
-#customDatagrid {
-	border-spacing: 0px;
-	border-collapse: collapse;
+#wf_VERTICAL_SPACING_MORE {
+	width: 110px; 
+	height: 150px;
+}
+
+#wf_SPECIAL_CHARACTER_MORE {
+	width: 70px; 
+	height: 310px;
+}
+
+#wLATEX_CODES_LIST {
+	height: 450px; 
+	width: 240px;
+}
+
+#wASCIIMATH_CODES_LIST {
+	height: 450px; 
+	width: 330px;
+}
+
+#wUNICODES_LIST {
+	height: 560px; 
+	width: 630px;
+	
+	#cUNICODES_GROUP {
+		margin-top: 10px; 
+		margin-bottom: 10px; 
+		margin-left: 4px;
+		form input {
+			width: 345px;
+		}
+	}
+	#cUNICODES_LIST {
+		float: left; 
+		width: calc(95% - 170px); 
+		height: 480px; 
+		overflow: auto;
+	}
+	#cUNICODES_VALUES {
+		float: right; 
+		width: 170px; 
+		height: 480px; 
+		overflow: auto;
+		td, th {
+			padding: 3px;
+		}
+	}
+}
+
+#wLANGUAGE_LIST {
+	height: 450px; 
+	width: 650px;
+}
+
+#wINFORMATIONS {
+	height: 450px; 
+	width: 600px;
+	
+	>div >div {
+		padding: 10px;
+	}
+}
+
+#tableBUGS {
 	width: 100%;
+	border-collapse: collapse;
+	background-color: #FFFFCC;
+	border: 1px solid #FFCC00;
+	
+	th, td {
+		border: 1px solid #FFCC00;
+		padding: 2px;
+		border-spacing: 2px;
+	}
 }
-
-#gridCaption {
-  padding: 10px;
-}
-
-
 
 .panel-body table tbody tr td a.easyui-tooltip {
 	float: left;
@@ -155,9 +352,3 @@ h3 {
 .katex {
 	pointer-events: none;
 }
-
-/*
-.tree-folder {
-	background: transparent url("../img/warning.png") no-repeat scroll center center;
-}
-*/

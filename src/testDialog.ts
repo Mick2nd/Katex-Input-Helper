@@ -73,7 +73,7 @@ export class TestDialog
 				- alles nachladen funktioniert nicht so gut
 				- mit diesem Stand erst mal weiter arbeiten
 			*/
-			"./tests/testDialog.css"
+			//"./tests/testDialog.css"
 		];
 		
 		for (const path of css) {

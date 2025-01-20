@@ -108,6 +108,23 @@
 	"PERSIST_WINDOW_POSITIONS": "Wählen, um Fensterpostionen zu speichern",
 	"PERSIST_EQUATIONS": "Wählen, um die persönlichen Gleichungen auch beim Canceln zu speichern",
 	"FILTER_PROMPT": "Filter Text hier eingeben...",
+	"APPENDFOLDER": "Ordner anhängen",
+	"APPENDCATEGORY": "Kategorie anhängen",
+	"CUTPASTE": "Gleichungen ausschneiden &amp; einfügen",
+	
+	"TTADD": "Um eine Gleichung hinzuzufügen, selektieren sie Gleichungstext im Editor und drücken <b>Hinzufügen</b>",
+	"TTREMOVE": "Um eine oder mehrere Gleichungen zu entfernen, wählen sie sie in der Tabelle und drücken <b>Entfernen</b>",
+	"TTLOAD": "Drücken Sie diesen Knopf, um einen vollständigen Satz von Gleichungen zu laden einschließlich Kategorien und Überkategorien. Der alte Satz geht dabei verloren.",
+	"TTSAVE": "Drücken Sie diesen Knopf, um den aktuellen Satz von GLeichungen zu sichern zusammen mit allen Kategorien.",
+	"TTAPPENDFOLDER": "Nutzen Sie dieses Menükommando, um einen <b>Ordner</b> oder Überkategorie an den Baum anzuhängen.",
+	"TTAPPENDCATEGORY": "Nutzen Sie dieses Menükommando, um einen <b>Blattknoten</b> oder Kategorie an den Baum anzuhängen. Solche Knoten werden dann die Gleichungen enthalten.",
+	"TTREMOVECATEGORY": "Nutzen Sie dieses Menükommando, um den Blattknoten (Kategorie) zu <b>Entfernen</b> und alle Gleichungen, die zu ihm gehören.",
+	"TTREMOVEFOLDER": "Nutzen Sie dieses Menükommando, um den Ordnerknoten (Überkategorie) zu <b>Entfernen</b> und alle Unterknoten und Gleichungen, die zu ihm gehören.",
+	"TTCUTPASTE": "Nutzen Sie dieses Menükommando, um Gleichungen von einer Kategorie zur Anderen <b>Auszuschneiden & Hinzuzufügen</b>. Um dies zu tun, wählen Sie die vorgesehenen Gleichungen in der Tabelle und führen diesen Befehl aus.",
+
+	"RESET": "Zurücksetzen",
+	"RESET_WINDOW_POSITIONS": "Fensterpositionen",
+	
 	"VKI_00": "Keypad",
 	"VKI_01": "Anzeige virtuelle Tastatur",
 	"VKI_02": "Wählen Tastaturbelegung",
