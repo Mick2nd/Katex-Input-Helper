@@ -51,7 +51,7 @@ export class Settings
 	async register() : Promise<void>
 	{
 		if (!this.fullyRegistered) {
-			this.settings = this.descriptions();
+			this.settings = await this.descriptions();
 			await joplin.settings.registerSection(this.sectionName(), this.sectionLabel());
 			await joplin.settings.registerSettings(this.settings);
 		
@@ -87,9 +87,17 @@ export class Settings
 	 * @param firstPass - true for the first pass invocation
 	 * @returns			- the descriptions for the settings
 	 */
-	descriptions() : any
+	async descriptions() : Promise<any>
 	{
 		var settings = {
+			'data_dir':												// available for Content Scripts
+			{
+				section: 'KatexInputHelper.settings',
+				public: false,
+				value: await joplin.plugins.dataDir(),
+				type: SettingItemType.String,
+				description: 'The data dir for the plugin.'
+			},
 			'style':
 			{
 				section: 'KatexInputHelper.settings',

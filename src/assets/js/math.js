@@ -278,6 +278,7 @@ class MathFormulae {
 		} else { 
 		}
 
+		dm = dm || vme.parameters.displayMode;						// displayMode from invocation context enforces dm
 		vme.insertMath(content, null, false, dm); 
 		vme.setFocus();
 		this.parameters.equation = this.codeMirror.getValue();

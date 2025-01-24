@@ -287,7 +287,7 @@ class DynamicPanel extends KIHPanel {
 			if (selectedText != "") {
 				inst.addEquation('Placeholder', selectedText);
 				inst.editCell();
-				await inst.onAfterRender();
+				inst.onAfterRender();
 			} else {
 				
 				inst.messager.show('FORMULA_EDITOR', 'NO_SELECTION_TEXT');
@@ -328,7 +328,7 @@ class DynamicPanel extends KIHPanel {
 			var json = await fileHandler.loadFile("fOPEN_CUSTOM_EQUATIONS");
 			inst.categoriesTree.customEquations = JSON.parse(json);
 			inst.fromJson(inst.categoriesTree.currentEquations);
-			await inst.onAfterRender();
+			inst.onAfterRender();
 		});
 		
 		$('#CUSTOM_EQUATIONS_LAYOUT').layout({fit: true});
@@ -346,7 +346,7 @@ class DynamicPanel extends KIHPanel {
 	/**
 	 * @abstract Observer of *Category Tree* observable.
 	 */
-	onTreeChanged() {
+	onTreeChanged(node) {
 		this.customEquationsToParameters();
 	}
 
@@ -360,9 +360,9 @@ class DynamicPanel extends KIHPanel {
 	/**
 	 * @abstract Observer of *Category Tree* observable.
 	 */
-	onNodeSelected(previous, current) {
+	onNodeSelected(equations) {
 		try {
-			this.fromJson(this.categoriesTree.currentEquations);
+			this.fromJson(equations);
 			$(this.gridSelector).datagrid('doFilter');
 		} catch(e) {
 			
@@ -438,6 +438,7 @@ class DynamicPanel extends KIHPanel {
 	 */
 	toJson() {
 		var data = $(this.gridSelector)
+		.datagrid('doFilter')
 		.datagrid('getData');
 		
 		var customEquations = data.filterRows.map(function(row) {
@@ -522,11 +523,11 @@ class DynamicPanel extends KIHPanel {
 	 * - row height fixing
 	 * - saving of equations
 	 */
-	async onAfterRender() {
+	onAfterRender(withParametersUpdate = true) {
 		var anchor = $(`${this.gridSelectorOfCopy} a`);
 		this.parent.inplaceUpdate(anchor, true);
 		$(this.gridSelector).datagrid('fixRowHeight');
-		this.customEquationsToParameters();
+		if (withParametersUpdate) this.customEquationsToParameters();
 	}
 	
 	/**
@@ -595,12 +596,12 @@ class DynamicPanel extends KIHPanel {
 			noheader: false,
 			onAfterEdit: async function(idx, row, changes) {
 				console.debug(`onAfterEdit for ${selector}`);
-				await inst.onAfterRender();
+				inst.onAfterRender();
 				return true;
 			},
 			onCancelEdit: async function(idx, row) {
 				console.debug(`onCancelEdit for ${selector}`);
-				await inst.onAfterRender();
+				inst.onAfterRender();
 				return true;
 			},
 			clickToEdit: false,
@@ -690,9 +691,9 @@ class DynamicPanel extends KIHPanel {
 					$.fn.datagrid.defaults.view.onBeforeRender.call(this, target);
 					//console.log('Before render');
 				},
-				onAfterRender: async function(target){
+				onAfterRender: function(target){
 					$.fn.datagrid.defaults.view.onAfterRender.call(this, target);
-					await inst.onAfterRender();
+					inst.onAfterRender(false);
 					//console.log('After render');
 				}
 			})

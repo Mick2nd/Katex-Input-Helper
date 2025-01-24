@@ -98,6 +98,11 @@ The custom equations dialog with categories tree
 
 ## Release Notes
 
+### 1.0.7
+
+- Bug fix: *Custom Equations* dialog did not work properly.
+- The invocation context (e.g. if invoked from display mode or not) is now used in the Katex Input Helper.
+
 ### 1.0.6
 
 - The *Custom Equations* dialog is now equipped with a categories tree and with tooltips to get usage hints.

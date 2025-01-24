@@ -42,6 +42,7 @@ class KIHParameters {
 	blockWrite = false;
 	
 	transaction = null;
+	displayMode = true;
 	
 	/**
 	 * @abstract Constructor.
@@ -64,6 +65,9 @@ class KIHParameters {
 		if (response) {
 			inst.transaction.begin();
 			for (const [key, val] of Object.entries(response)) {
+				if (key == 'displayMode') {
+					console.debug(`Parameters : queryParameters : displayMode ${val} `);
+				}
 				inst[key] = val;
 				if (key.startsWith('w')) {
 					inst.resizePanel(key);
@@ -105,7 +109,7 @@ class KIHParameters {
 	
 	get filteredParameters() {
 		var o = { };
-		var doNotUse = [ "transaction" ];
+		var doNotUse = [ "transaction", "displayMode" ];
 		for (const [key, val] of Object.entries(this)) {
 			if (!(key in doNotUse)) {
 				o[key] = val;

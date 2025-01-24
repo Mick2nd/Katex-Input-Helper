@@ -16,23 +16,23 @@ export class Dialog
 {
 	id = 'Katex Input Helper Dialog';
 	settings: Settings;
-	archive: string;
+	displayMode: boolean;
 	useEasyLoader = false;
 	
 	/**
 		@abstract Constructor
 	 */
-	public constructor(archive: string)
+	public constructor(displayMode: boolean)
 	{
-		this.archive = archive;
+		this.displayMode = displayMode;
 		this.settings = new Settings();
 	}
 	
 	/**
 		@abstract Creates the dialog
 	 */
-	public create = async function() : Promise<any>
-	{
+	public create = async function() : Promise<any> {
+		
 		if (handle == null) {
 			handle = await joplin.views.dialogs.create(this.id);
 			
@@ -44,11 +44,13 @@ export class Dialog
 		var inst = this;
 		await this.settings.register();
 		await joplin.views.panels.onMessage(handle, async function(msg: any) {
-			console.info(`Message from Webview: ${JSON.stringify(msg)}`);
+			
+			console.info(`Message from Webview: ${JSON.stringify(msg)}, setting dm to ${inst.displayMode} `);
 			var text = await joplin.commands.execute('selectedText') as string;					// the text of the selection
 			if (msg.id == 'Katex Input Helper' && msg.cmd == 'getparams') {
 				await inst.settings.readSettings(msg, text);
 				msg.equation = text;
+				msg.displayMode = inst.displayMode;
 				return msg;
 			}
 			return false;
@@ -70,7 +72,9 @@ export class Dialog
 			//handle = null;
 			return res;
 		}
-		let parameters = JSON.parse(res.formData.KATEX.hidden);
+		const json = res.formData.KATEX.hidden;
+		console.debug(`Returned Json : ${json} `);
+		let parameters = JSON.parse(json);
 		if (res.id == 'okay') {
 			await joplin.commands.execute(										// okay button -> save equation
 				'editor.execCommand', 

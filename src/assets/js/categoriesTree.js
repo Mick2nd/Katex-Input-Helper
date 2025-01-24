@@ -79,11 +79,6 @@ class CategoriesTree {
 					to[key] = from[key];
 				}
 			}
-			if (inst.tree.tree('isLeaf', from.target)) {
-				to.iconCls = 'tree-file';
-			} else {
-				to.iconCls = 'tree-folder';
-			}
 			to.children = [ ];
 			
 			return to;
@@ -119,8 +114,12 @@ class CategoriesTree {
 				if (this.currentLeaf.attributes === undefined) {
 					this.currentLeaf.attributes = { };
 				}
+				if (this.currentLeaf.text == 'Default' && value.length === 0) {
+					console.trace(`CategoriesTree : currentEquations setter`);
+				}
 				this.currentLeaf.attributes.equations = value;
 			} catch(e) {
+				console.warn(`Exception in currentEquations setter : ${e} `);
 			}
 		}
 	}
@@ -129,7 +128,7 @@ class CategoriesTree {
 	 * @abstract The Current Equations getter as for the current selected category.
 	 */
 	get currentEquations() {
-		if (this.currentLeaf == null) {
+		if (!this.currentLeaf) {
 			this.currentLeaf = 
 				this.tree
 				.tree('find', { text: 'Default'});
@@ -137,6 +136,7 @@ class CategoriesTree {
 		try {
 			return this.currentLeaf.attributes.equations;
 		} catch(e) {
+			console.warn(`Exception in currentEquations getter : ${e} `);
 			return [];
 		}
 	}
@@ -152,8 +152,7 @@ class CategoriesTree {
 			 */
 			sort: function(jq, order) {
 				return jq.each(function() {
-					// inst.sort.bind(inst)(this, order);
-					inst.sort2.bind(inst)(order);
+					inst.sort.bind(inst)(order);
 				});
 			},
 			
@@ -249,8 +248,8 @@ class CategoriesTree {
 				if (isLeaf) {
 					inst.previousLeaf = inst.currentLeaf;
 					inst.currentLeaf = node;
-					inst.customEquations.selected = node.text;
-					inst.nodeSelected.notify(inst.previousLeaf, node);
+					inst.customEquations.selected = inst.pathFromNode(node);
+					inst.nodeSelected.notify(node.attributes.equations);
 				} else {
 					
 				}
@@ -258,25 +257,28 @@ class CategoriesTree {
 			onDblClick: function(node) {
 				$(this).tree('beginEdit', node.target);				
 			},
+			onAfterEdit: function(node) {
+				inst.treeChanged.notify(node);				
+			},
 			onContextMenu: inst.onContextMenu.bind(inst),
 			onLoadSuccess: inst.onLoadSuccess.bind(inst)
 		})
 		.tree('loadData', [ this.customEquations ])
 		.tree('sort', 'asc');
 		this.expandAlt();
+		this.renumberIds();
 
-		var nodeText = 'Default';
+		var nodePath = '/Categories/Default';
 		if (this.customEquations.selected !== undefined) {
-			nodeText = this.customEquations.selected;
+			nodePath = this.customEquations.selected;
 		}
-		var node = this.tree
-		.tree('find', { text: nodeText });
+		var node = this.nodeFromPath(nodePath); 				// this.tree.tree('find', { text: nodeText });
 		if (node != null) {
-			this.tree.tree('select', node.target)			
+			this.findNode(node);
+			this.tree.tree('select', node.target);			
 		}
 		
-		// this.testMove();
-		console.dir(this.data);
+		console.debug(`CategoriesTree : %O`, this.data);
 	}
 	
 	/**
@@ -294,8 +296,7 @@ class CategoriesTree {
 			if (!nodeParent.children || nodeParent.children.length == 0) {
 				inst.openFolder(nodeParent, false);
 				inst.correctIcon(nodeParent);
-			}				
-			
+			}			
 		}
 		
 		e.preventDefault();
@@ -309,21 +310,20 @@ class CategoriesTree {
 						case "mAppendFolder": 
 							inst.tree
 							.tree('collapseAll', node.target)
-							.tree('append', { parent: node.target, data: [{ text: 'Folder-1', state: 'closed', children: [] }] });
+							.tree('append', { parent: node.target, data: [{ text: 'Folder-1', id: inst.freeId, state: 'closed', children: [] }] });
 							inst.expandAlt();
-							// .tree('expandAll', node.target); 
 							break;
 						case "mAppendCategory":
 							inst.tree
 							.tree('collapseAll', node.target)
-							.tree('append', { parent: node.target, data: [{ text: 'Category-1', attributes: {} }] });
+							.tree('append', { parent: node.target, data: [{ text: 'Category-1', id: inst.freeId, attributes: { equations: []} }] });
 							inst.expandAlt();
-							// .tree('expandAll', node.target); 
 							break;
 						case "mRemove":
 							remove();
 							break;
 					}
+					inst.treeChanged.notify(node);				
 				}
 			})
 			.menu('show', {						// display context menu
@@ -343,6 +343,7 @@ class CategoriesTree {
 							inst.moveEquations(inst.currentLeaf, node);
 							break;
 					}
+					inst.treeChanged.notify(node);				
 				}
 			})
 			.menu('show', {						// display context menu
@@ -424,15 +425,6 @@ class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Performs a test move. OBSOLETE.
-	 */
-	testMove() {
-		var from = this.findNode('Test');
-		var to = this.findNode('Quantum');
-		this.moveEquation(from, to, 5);
-	}
-	
-	/**
 	 * @abstract *moveEquations* moves the checked equations from a source to a target category (Leaf node).
 	 * 
 	 * This method notifies Observers about the change, f.i. the datagrid panel.
@@ -443,7 +435,7 @@ class CategoriesTree {
 	moveEquations(from, to) {
 		try {
 			if (to !== from) {
-				var checkedEquations = this.getCheckedEquations();
+				var checkedEquations = this.getCheckedEquations();				// indices
 				for (var idx of checkedEquations) {								// first append the checked equations to the target
 					var equation = from.attributes.equations[idx];
 					to.attributes.equations.push(equation);
@@ -483,21 +475,11 @@ class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Finds a node in the tree given its text
-	 * 
-	 * @param text - text of the node
-	 */
-	findNode(text) {
-		return this.tree
-			.tree('find', { text: text });
-	}
-	
-	/**
 	 * @abstract Converts the Custom Equations from old to new format.
 	 * 
 	 * The old format has only a single equations set and no category information.
 	 * 
-	 * @param from - custom equations inn old or new format
+	 * @param from - custom equations in old or new format
 	 * @returns - custom equations in new format, enriched with a category tree
 	 */
 	convert(from) {
@@ -522,46 +504,6 @@ class CategoriesTree {
 			}]
 		};		
 	}
-	
-	/**
-	 * @abstract Sort routine. Sorts the whole category tree.
-	 * 
-	 * Folders first, then leafs. Alphabetically in ascending order.
-	 * 
-	 * @param target - the jquery tree object
-	 * @param order - the order. 'asc' for ascending 
-	 */
-	sort(target, order) {
-		var inst = this;
-		order = order || 'asc';
-		var rows = $(target).tree('getRoots');
-		_sort(rows);
-		$(target).tree('loadData', rows);
-		
-		function _sort(rows){
-			rows.sort(function(r1, r2) {
-				
-				var sortFunc = function(a, b) {
-					return a == b ? 0 : (a > b ? 1 : -1);
-				};
-
-				var isLeaf1 = inst.isLeaf(r1);
-				var isLeaf2 = inst.isLeaf(r2);
-				console.debug(`Leaf Test: ${r1.text}:${isLeaf1}, ${r2.text}:${isLeaf2}`)
-				if (isLeaf1 != isLeaf2) {
-					return (isLeaf1 ? 1 : -1) * (order == 'asc' ? 1 : -1);
-				}
-				return sortFunc(r1.text, r2.text) * (order == 'asc' ? 1 : -1);
-			});
-			
-			for (var i = 0; i < rows.length; i++) {
-				var children = rows[i].children;
-				if (children && children.length) {
-					_sort(children);
-				}
-			}
-		}
-	}
 
 	/**
 	 * @abstract Sort routine. Sorts the whole category tree.
@@ -572,7 +514,7 @@ class CategoriesTree {
 	 * @param target - the jquery tree object
 	 * @param order - the order. 'asc' for ascending 
 	 */
-	sort2(order) {
+	sort(order) {
 		var inst = this;
 		var tree = inst.tree;		
 		order = order || 'asc';
@@ -633,7 +575,7 @@ class CategoriesTree {
 	 * @abstract Correct the Folder icon of a single node.
 	 */
 	correctIcon(node) {
-		var node2 = this.tree.tree('find', { text: node.text });		// seems to be essential to get target
+		this.findNode(node);									// seems to be essential to get target
 		var icon = $(node.target).find('.tree-icon');
 		if (icon.hasClass('tree-file')) {
 			icon
@@ -661,20 +603,84 @@ class CategoriesTree {
 	 */
 	traverse(func, ...args) {
 		var inst = this;
-		var rows = inst.tree.tree('getRoots');
-		_traverse(rows, ...args);
+		var nodes = inst.tree.tree('getRoots');
+		_traverse(nodes, ...args);
 
-		function _traverse(rows, ...args) {
-			for (var row of rows) {
-				inst.tree.tree('find', { text: row.text });
-				console.debug(`Traversing : row : ${row.text}, state : ${row.state}, isLeaf : ${inst.tree.tree('isLeaf', row.target)} `);
-				func(row, ...args);
-				var children = row.children;
+		function _traverse(nodes, ...args) {
+			for (var node of nodes) {
+				inst.findNode(node);
+				// console.debug(`Traversing : row : ${node.text}, state : ${node.state}, isLeaf : ${inst.tree.tree('isLeaf', node.target)} `);
+				func(node, ...args);
+				var children = node.children;
 				if (children && children.length) {
 					_traverse(children, ...args);
 				}
 			}
 		}
+	}
+	
+	pathFromNode(node) {
+		let current = node;
+		let path = '';
+		while(current !== null) {
+			path = `/${current.text}${path}`;
+			current = this.getParent(current);
+		}
+		
+		console.debug(`CategoriesTree : pathFromNode : ${path} `);
+		return path;
+	}
+	
+	nodeFromPath(path) {
+		
+		let pathComponents = path.split('/').slice(1);
+		var rest = pathComponents;
+		var first = null;
+		
+		var node = null;
+		var nodes = this.tree.tree('getRoots');
+		return _traverse(nodes);
+
+		function _traverse(nodes) {
+			
+			first = rest[0];
+			rest = rest.slice(1);
+
+			for (var node of nodes) {
+				if (node.text === first) {
+					if (rest.length === 0)
+						return node;
+					
+					var children = node.children;
+					if (children && children.length) {
+						return _traverse(children);
+					}
+				}
+			}
+			
+			return null;
+		}
+	}
+	
+	/**
+	 * @abstract Renumbers the ids of the nodes on tree to unique ones.
+	 */
+	renumberIds() {
+		let id = 1;
+		this.traverse(function(node) {
+			node.id = id++;
+		});
+	}
+	
+	/**
+	 * @abstract Returns the first free id of the node ids.
+	 */
+	get freeId() {
+		let id = 0;
+		this.traverse(function(node) {
+			if (node.id > id) id = node.id;
+		});
+		return id + 1;
 	}
 	
 	/**
@@ -684,7 +690,7 @@ class CategoriesTree {
 	 * @param open - the target state, true for open
 	 */
 	openFolder(node, open) {
-		var node2 = this.tree.tree('find', { text: node.text });		// seems to be essential to get target
+		this.findNode(node);										// seems to be essential to get target
 		var isLeaf = this.tree.tree('isLeaf', node.target);
 		if (isLeaf) {
 			return;
@@ -704,9 +710,8 @@ class CategoriesTree {
 	 * @abstract Determines the parent of the given node.
 	 */
 	getParent(node) {
-		var tree = this.tree;
-		var node2 = tree.tree('find', { text: node.text });				// seems to be essential to get target
-		var parent = tree.tree('getParent', node.target);
+		this.findNode(node);										// seems to be essential to get target
+		var parent = this.tree.tree('getParent', node.target);
 		return parent;
 	}
 
@@ -714,9 +719,20 @@ class CategoriesTree {
 	 * @abstract Checks the given node if it is a leaf node.
 	 */	
 	isLeaf(node) {
-		var tree = this.tree;
-		var node2 = tree.tree('find', { text: node.text });				// seems to be essential to get target
-		var isLeaf = tree.tree('isLeaf', node.target);
+		this.findNode(node);										// seems to be essential to get target
+		var isLeaf = this.tree.tree('isLeaf', node.target);
 		return isLeaf;
+	}
+
+	/**
+	 * @abstract Finds a node in the tree given an origin node object.
+	 * 
+	 * @param node - origin node
+	 */
+	findNode(node) {
+		if ('id' in node)
+			return this.tree.tree('find', { text: node.text, id: node.id });
+		else
+			return this.tree.tree('find', { text: node.text });
 	}
 }

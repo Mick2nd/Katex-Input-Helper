@@ -1,7 +1,8 @@
 import joplin from 'api';
-import { MenuItemLocation, ImportContext, FileSystemItem } from 'api/types';
+import { MenuItemLocation, ImportContext, FileSystemItem, ContentScriptType } from 'api/types';
 import { Dialog } from './dialog';
 import { TestDialog } from './testDialog';
+import { MathContext } from './mathContext';
 
 
 const withTest = true;
@@ -13,8 +14,9 @@ const dialog_command = async () =>
 { 
 	try
 	{
-		const archive = "TEST";
-		var dlg = new Dialog(archive);
+		const mathContext = new MathContext();
+		const dm = await mathContext.displayMode();
+		var dlg = new Dialog(dm ? true : false);
 		await dlg.create();
 		let res = await dlg.open();
 		console.dir(res);
@@ -59,6 +61,8 @@ joplin.plugins.register({
 		console.info('Hello world. Test plugin started!');
 		
 		const scriptId = 'pluginCommandKatexDialog';
+		const scriptIdCm = 'pluginCmKatexDialog';
+		const scriptIdMd = 'pluginMdKatexDialog';
 	
 		await joplin.commands.register(
 			{
@@ -73,6 +77,25 @@ joplin.plugins.register({
 			MenuItemLocation.Tools,
 			{ accelerator: "CmdOrCtrl+Shift+K"}); 
 
+		await joplin.contentScripts.register(
+			ContentScriptType.CodeMirrorPlugin,
+			`${scriptIdCm}`,
+			'./plugins/codeMirror.js'
+		);
+
+		await joplin.contentScripts.register(
+			ContentScriptType.MarkdownItPlugin,
+			`${scriptIdMd}`,
+			'./plugins/markdownIt.js'
+		);
+
+		await joplin.contentScripts.onMessage(scriptIdMd, async function(message: any) {
+			if (message  !== 'queryCursorLocation')
+				return;
+			
+			return 'test';
+		});
+			
 		if (withTest) {
 			const scriptIdTest = 'pluginCommandKatexTestDialog';
 			await joplin.commands.register(
