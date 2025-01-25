@@ -248,7 +248,7 @@ class DynamicPanel extends KIHPanel {
 					var title = inst.localizeOption('content', id, $.fn.tooltip);
 					var zindex = $(this).css('z-index');							// auto -> cannot be used
 					$(this).tooltip({
-						position: 'right',
+						position: 'bottom',
 						content: title,
 						onShow: function() {
 							$(this).tooltip('tip').css({ 
@@ -286,8 +286,8 @@ class DynamicPanel extends KIHPanel {
 			var selectedText = inst.parent.codeMirror.getSelection();
 			if (selectedText != "") {
 				inst.addEquation('Placeholder', selectedText);
-				inst.editCell();
 				inst.onAfterRender();
+				inst.editCell();														// TODO: attention! order reversed
 			} else {
 				
 				inst.messager.show('FORMULA_EDITOR', 'NO_SELECTION_TEXT');

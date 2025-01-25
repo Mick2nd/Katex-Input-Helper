@@ -1,6 +1,6 @@
 
 /**
- * @abstract Factory method generating Proxy for KIHParameters.
+ * @abstract Factory method generating a Proxy for KIHParameters.
  */
 function ParametersProxy() {
 	var parameters = new KIHParameters();
@@ -23,6 +23,8 @@ function ParametersProxy() {
 
 /**
  * @abstract Manages control parameters, especially those which can be stored over sessions.
+ * 
+ * It is based on the communication of messages to gain the settings of the plugin.
  */
 class KIHParameters {
 	
@@ -83,7 +85,7 @@ class KIHParameters {
 	 * The defaults are taken from css file *dialog.css* (application css file).
 	 */	
 	resetWindowPositions() {
-		this.blockWrite = true;
+		this.transaction.begin();
 		var css = new Css();
 
 		for (const [key, val] of Object.entries(this)) {
@@ -94,7 +96,7 @@ class KIHParameters {
 			}
 		}
 
-		this.blockWrite = false;
+		this.transaction.end();
 	}
 	
 	/**
@@ -107,6 +109,13 @@ class KIHParameters {
 		this.debugPrint();
 	}
 	
+	/**
+	 * @abstract Filters some parameters out from the attributes of this instance.
+	 * 
+	 * Those are not needed as settings nor are they JSON stringifyable.
+	 * 
+	 * @returns the filtered settings keys
+	 */
 	get filteredParameters() {
 		var o = { };
 		var doNotUse = [ "transaction", "displayMode" ];
@@ -127,6 +136,7 @@ class KIHParameters {
 			this[id].left = left;
 			this[id].top = top;
 			
+			// TODO: check
 			//var dimensions = this.getPanelDimensions(id);
 			//this[id].width = dimensions.width;
 			//this[id].height = dimensions.height;
@@ -192,6 +202,9 @@ class KIHParameters {
 		return dimensions;
 	}
 	
+	/**
+	 * @abstract Selected console output of the attributes.
+	 */
 	debugPrint() {
 		this.printEquation();
 		this.printEquationCollection();
@@ -199,26 +212,41 @@ class KIHParameters {
 		this.printWindowConfiguration();
 	}
 
+	/**
+	 * @abstract Console output of the equation.
+	 */
 	printEquation() {
 		console.debug(`Return-Parameter : ${JSON.stringify(this.equation)} `);
 	}
 	
+	/**
+	 * @abstract Console output of the Custom Equations.
+	 */
 	printEquationCollection() {
 		console.debug(`Equations-Parameter : ${JSON.stringify(this.equationCollection)} `);
 	}
 	
+	/**
+	 * @abstract Console output of the settings.
+	 */
 	printSettingsConfiguration() {
 		for (const key of this.configurationKeys) {
 			console.debug(`Settings-Parameters : ${key} : ${this[key]} `);
 		}
 	}
 
+	/**
+	 * @abstract Console output of the Window Size and Position.
+	 */
 	printWindowConfiguration() {
 		for (const key of this.windowKeys) {
 			console.debug(`Window-Parameters : ${key} : ${JSON.stringify(this[key])} `);
 		}
 	}
 	
+	/**
+	 * @abstract Returns the settings configuration keys.
+	 */
 	get configurationKeys() {
 		return [
 			"id",
@@ -233,6 +261,9 @@ class KIHParameters {
 		];
 	}
 	
+	/**
+	 * @abstract Returns the window configuration keys.
+	 */
 	get windowKeys() {
 		return Object.keys(this).filter(s => s.startsWith('w'));
 	}
@@ -241,9 +272,9 @@ class KIHParameters {
 /**
  * @abstract Supports transactions.
  * 
- * - normal mode: each desired action of the client initiates execution of a completion routine
+ * - normal mode: each desired action of the client initiates execution of a completion routine.
  * - transaction mode: after a series of desired actions the execution of a completion 
- *   routine is initiated
+ *   routine is initiated.
  */
 class Transaction {
 	
@@ -252,10 +283,16 @@ class Transaction {
 	onCompleteBackup = null;
 	onEmpty = null;
 	
+	/**
+	 * @abstract Constructor
+	 */
 	constructor() {
 		
 	}
 	
+	/**
+	 * @abstract Configures the instance by providing *Completion* and *End* routines.
+	 */
 	configure(onComplete, onEnd = onComplete) {
 		this.onComplete = onComplete;
 		this.onCompleteBackup = onComplete;
@@ -263,19 +300,35 @@ class Transaction {
 		this.onEmpty = (...args) => { };
 	}
 	
+	/**
+	 * @abstract Completes a single *Action* but not during a *Transaction*.
+	 * 
+	 * Executes the Completion routine, but not during a Transaction.
+	 */
 	complete(...args) {
 		this.onComplete(...args);
 	}
 	
+	/**
+	 * @abstract Begins a *Transaction*. The completion routine is deactivated.
+	 */
 	begin() {
 		this.onComplete = this.onEmpty;
 	}
 	
+	/**
+	 * @abstract Ends a *Transaction*.
+	 * 
+	 * The *End* routine is executed, then the Completion routine is re-activated.
+	 */
 	end(...args) {
 		this.onEnd(...args);
 		this.onComplete = this.onCompleteBackup;
 	}
 	
+	/**
+	 * @abstract Checks and returns, if there is an ongoing Transaction.
+	 */
 	get isOngoingTransaction() {
 		return this.onComplete === this.onEmpty;
 	}

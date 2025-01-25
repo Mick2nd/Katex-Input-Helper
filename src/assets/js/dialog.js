@@ -7,8 +7,8 @@ if (window.console) console = window.console; else console = { log: function(msg
  */
 class Documentations {
 
-	windowIsOpenning = false;
-	runLocal = true;
+	windowIsOpening = false;
+	runLocal = false;
 	baseLocation = "";
 	baseInfo = null;
 	params = [];
@@ -84,16 +84,16 @@ class Documentations {
 	}
 
 	showWindow(key) {
-		if (!this.windowIsOpenning) {
+		if (!this.windowIsOpening) {
 			var url = this.getUrl(key);
 			var name = this.baseInfo[key].name; 
 
-			this.windowIsOpenning = true; 
+			this.windowIsOpening = true; 
 			var params = this.params.join(',');
 			var win = window.open(url, name, params); 
 			// TODO: always returns null
 			// win.focus(); 
-			this.windowIsOpenning = false; 
+			this.windowIsOpening = false; 
 			return win; 
 		} else { 
 			return null; 
@@ -114,7 +114,6 @@ class KatexInputHelper {
 	windowIsOpenning = false; 
 	textareaIgnore = false; 
 	textareaID = null; 
-	textAreaForSaveASCII = null; 
 	codeMirrorEditor = null; 
 	symbolPanelsLoaded = []; 
 	latexMathjaxCodesListLoaded = false; 
@@ -125,7 +124,7 @@ class KatexInputHelper {
 	notAllowedCtrlKeys = []; 
 	notAllowedAltKeys = []; 
 	
-	// TODO: there is no code that switches to the Color Picker, where is it?
+	// The Color Picker is a fixed instance and can be used to work with colors
 	runNotColorPicker = true;
 	runNotVirtualKeyboard = false;
 	runNotMathJax = true;
@@ -188,15 +187,6 @@ class KatexInputHelper {
 		
 		for (var i = 65; i <= 90; i++) if ($.inArray(i, this.allowedCtrlKeys) == -1) this.notAllowedCtrlKeys.push(i); 
 		for (var i = 65; i < 90; i++) this.notAllowedAltKeys.push(i);
-		
-		// TODO: TEST
-		$('body').on('error', function(event) {
-			console.debug(`Error occurred`);
-		});
-		$('body').click(function(event) {
-			// event.preventDefault();
-			console.debug(`Body clicked event.`);
-		});
 	}
 
 	get localType() {
@@ -277,7 +267,9 @@ class KatexInputHelper {
 	 * @abstract Initialize. Performs the whole initialization.
 	 */
 	async initialise() { 
-		/* TEST: Dynamically create data-options */
+		/* TEST: Dynamically create data-options
+		   For a better handling look at TEST dialog. 
+		*/
 		if (this.useEasyLoader) {
 			var options = {
 				'#WaitMsg': {
@@ -507,6 +499,10 @@ class KatexInputHelper {
 		vme.isBuild = true;
 	}
 	
+	/**
+	 * @abstract At the end of initialization close Progress dialog and WaitMsg
+	 * 			 panel.
+	 */
 	endWait() { 
 		this.initialiseEquation(); 
 		$.messager.progress('close'); 
@@ -514,11 +510,17 @@ class KatexInputHelper {
 		this.setFocus(); 
 	}
 	
+	/**
+	 * @abstract Set Focus on Editor.
+	 */
 	setFocus() { 
 		if (this.codeMirrorEditor) this.codeMirrorEditor.focus(); 
 		$("#mathTextInput").focus(); 
 	}
 	
+	/**
+	 * @abstract Sets Cursor at editor end.
+	 */
 	setCodeMirrorCursorAtEnd() { 
 		var pos = { 
 			line: this.codeMirrorEditor.lastLine(), 
@@ -526,15 +528,10 @@ class KatexInputHelper {
 		}; 
 		this.codeMirrorEditor.setCursor(pos); 
 	}
-	
-	initialiseMathJax() {
-		var vme = this; 
-		MathJax.Hub.Queue(function() {
-			vme.endWait()
-			setTimeout(function() { MathJax.Hub.Queue(["Typeset", MathJax.Hub]); }, 1000);
-		});
-	}
-	
+
+	/**
+	 * @abstract Initializes the virtual keyboard by loading a script.
+	 */	
 	initialiseVirtualKeyboard() { 
 		if (!this.runNotVirtualKeyboard) this.loadScript(`js/keyboard/keyboard.js`, function() { return true; }); 
 	}
@@ -587,10 +584,13 @@ class KatexInputHelper {
 	 * - additional handlers ...
 	 */
 	async initialiseUI() {
+		
 		var vme = this;
 		this.math.updateLatexMenu();
 		$("a.easyui-linkbutton").linkbutton({ plain: true }); 
 		$(document).bind('contextmenu', function(event) { event.preventDefault(); return false; }); 
+		
+		// The whole menu commands. 
 		$("#mFILE, #mINSERT, #mTOOLS, #mVIEW, #mOPTIONS, #mINFORMATIONS").menu({
 			onClick: async function(item) {
 				switch (item.target.id) {
@@ -602,8 +602,6 @@ class KatexInputHelper {
 					case "mCHEMICAL_FORMULAE": await vme.initialiseUImoreDialogs("f_CHEMICAL_FORMULAE"); break; 
 					case "mSAVE_EQUATION": vme.saveEquationFile(); break; 
 					case "mOPEN_EQUATION": vme.testOpenFile(); break; 
-					case "mUPDATE_EQUATION": vme.getEquationFromCaller(); break; 
-					case "mSET_EQUATION": vme.setEquationInCaller(); break; 
 					case "mLaTeX_TEXT": vme.insert("\\LaTeX"); break; 
 					case "mMATH_ML": vme.viewMathML(vme.mathVisualOutput.id); break; 
 					case "mUNICODES_LIST": await vme.openWindow('wUNICODES_LIST'); await vme.initialiseUniCodesList(); break; 
@@ -632,7 +630,8 @@ class KatexInputHelper {
 					default: $.messager.show({ title: "<span class='rtl-title-withicon'>" + vme.getLocalText("INFORMATION") + "</span>", msg: item.text }); break;
 				}
 			}
-		}); 
+		});
+		
 		if (!window.opener) { 
 			$("#mQUIT_EDITOR").addClass("menu-item-disabled").click(function(event) { }); 
 		}
@@ -641,9 +640,11 @@ class KatexInputHelper {
 		}
 		$("#fOPEN_EQUATION").change(function(event) { vme.openFile(event); }); 
 		
+		// The Symbol palettes
 		this.initialiseUIaccordion("#f_SYMBOLS"); 
 		this.initialiseUIaccordion("#f_SYMBOLS2"); 
 
+		// Configures Clicks on close buttons and Key handlers, Context menus and others
 		$('#btMATRIX_CLOSE').click(function(event) { 
 			event.preventDefault(); 
 			$('#wMATRIX').dialog('close'); 
@@ -696,9 +697,42 @@ class KatexInputHelper {
 		$('#unicodeChoise').combobox({ 
 			valueField: 'value', 
 			textField: 'text', 
-			onSelect: async function(record) { var range = record.value.split(","); await vme.setUniCodesValues(vme.h2d(range[0]), vme.h2d(range[1])); }, 
-			onLoadSuccess: async function() { $(this).combobox("select", "0x25A0,0x25FF"); await vme.setUniCodesValues(0x25A0, 0x25FF); } 
+			onSelect: async function(record) { 
+				var range = record.value.split(","); 
+				await vme.setUniCodesValues(vme.h2d(range[0]), 
+				vme.h2d(range[1])); 
+			}, 
+			onLoadSuccess: async function() { 
+				$(this).combobox("select", "0x25A0,0x25FF"); 
+				await vme.setUniCodesValues(0x25A0, 0x25FF); 
+			} 
 		});
+		
+		// TEST: MAIL
+		$('body')
+		.on('mouseover', 'a.bt', function(event) {
+			var href = $(this).attr('href');
+			if (!$(this).hasClass('easyui-tooltip')) {
+				$(this)
+				.addClass('easyui-tooltip')
+				.tooltip({
+					position: 'bottom',
+					content: `<span>${href}</span>`
+				});
+			}
+		});
+		/* NOT WORKING
+		.on('click', 'a.bt', function(event) {
+			var href = $(this).attr('href');
+			if (href.startsWith('mailto')) {
+				console.info(`Mail request to : ${href}`);
+				event.preventDefault();
+				window.open(href, '_blank', 'popup=true');			
+			}
+		});
+		*/
+	
+		this.htmlToolbarButtons(); 
 	}
 	
 	/**
@@ -736,7 +770,7 @@ class KatexInputHelper {
 	/**
 	 * @abstract Adapt UI to code type. (Latex or Ascii).
 	 * 
-	 * This is obsolete and can be removed in the future.
+	 * TODO: This is obsolete and can be removed in the future.
 	 */
 	printCodeType() { 
 		$("[name='codeType']").filter("[value=" + this.codeType + "]").attr("checked", "checked"); 
@@ -763,12 +797,7 @@ class KatexInputHelper {
 			this.codeMirrorEditor.setValue(param); 
 			this.setCodeMirrorCursorAtEnd(); 
 			this.updateOutput();
-		} else { 
-			this.getEquationFromCaller(); 
-		}
-		if (!this.textAreaForSaveASCII) { 
-			$("#mUPDATE_EQUATION").addClass("menu-item-disabled").click(function(event) { vme.getEquationFromCaller(); }); 
-			$("#mSET_EQUATION").addClass("menu-item-disabled").click(function(event) { vme.setEquationInCaller(); }); }
+		} 
 	}
 	
 	/**
@@ -776,6 +805,7 @@ class KatexInputHelper {
 	 * 			 handlers.
 	 */
 	initialiseParameters() {
+		
 		var vme = this;
 		function onChange(target, value) {
 			console.debug(`Checkbox content of ${$(target).attr('id')} changed to : ${value} `);
@@ -966,11 +996,23 @@ class KatexInputHelper {
 		await this.initialiseSymbolContent("cUNICODES_VALUES");
 	}
 	
+	/**
+	 * @abstract Opens the Matrix window with given rows and columns values.
+	 * 
+	 * @param {int} rows - the number of matrix rows 
+	 * @param {int} cols - the number of matrix columns
+	 */
 	showMatrixWindow(rows, cols) { 
 		this.openWindow('wMATRIX'); 
 		this.updateMatrixWindow(rows, cols); 
 	}
 	
+	/**
+	 * @abstract Updates the Matrix window with given rows and columns values.
+	 * 
+	 * @param {int} rows - the number of matrix rows 
+	 * @param {int} cols - the number of matrix columns
+	 */
 	async updateMatrixWindow(rows, cols) {
 		if (typeof (rows != "undefined") && rows != null) document.formMATRIX.rowsMATRIX.value = rows; 
 		if (typeof (cols != "undefined") && cols != null) document.formMATRIX.colsMATRIX.value = cols; 
@@ -997,6 +1039,9 @@ class KatexInputHelper {
 		$('#wMATRIX').dialog('open');
 	}
 	
+	/**
+	 * @abstract Transfers the Matrix displayed in the Matrix window to the Editor.
+	 */
 	setLatexMatrixInEditor() {
 		var vme = this; 
 		var cols = document.formMATRIX.colsMATRIX.value; 
@@ -1030,35 +1075,10 @@ class KatexInputHelper {
 		matrix += " "; 
 		vme.insert(matrix);
 	}
-	
-	setAsciiMatrixInEditor() {
-		var vme = this; 
-		var cols = document.formMATRIX.colsMATRIX.value; 
-		var rows = document.formMATRIX.rowsMATRIX.value; 
-		var formula = ""; 
-		var r, c; for (r = 1; r <= rows; r++) {
-			if (rows > 1) formula += "("; 
-			for (c = 1; c <= cols; c++) { 
-				eval("formula = formula + document.formMATRIX.a_" + r + c + ".value"); 
-				if (rows == 1 && c < cols) formula += " "; 
-				if (rows > 1 && c < cols) formula += ","; 
-			}
-			if (rows > 1) formula += ")"; if (rows > 1 && r < rows) formula += ",";
-		}
-		var left = document.formMATRIX.leftbracketMATRIX.value; 
-		var right = document.formMATRIX.rightbracketMATRIX.value; 
-		var matrix = ""; 
-		if (left == "}" || left == "]" || left == ")" || left == ":)") matrix += "{: ";
-		matrix += left; 
-		if (left == "{" || left == "}" || left == "]" || left == ")" || left == ":)") matrix += "{:";
-		matrix += formula; 
-		if (right == "}" || right == "{" || right == "[" || right == "(" || right == "(:") matrix += ":}";
-		matrix += right; 
-		if (right == "{" || right == "[" || right == "(" || right == "(:") matrix += " :}";
-		matrix += " "; 
-		vme.insert(matrix);
-	}
-	
+
+	/**
+	 * @abstract Wrapper of the Localizer routine.
+	 */	
 	getLocalText(TEXT_CODE) { 
 		try { 
 			return this.localizer.getLocalText(TEXT_CODE);
@@ -1083,6 +1103,7 @@ class KatexInputHelper {
 		$("html").attr("lang", vme.getLocalText("_i18n_HTML_Lang")); 
 		$("html").attr("dir", vme.getLocalText("_i18n_HTML_Dir")); 
 		vme.setRTLstyle();
+		
 		$("span[locate]").each(
 			function() { 
 				if (typeof ($(this).attr("locate")) != "undefined") { 
@@ -1090,24 +1111,36 @@ class KatexInputHelper {
 					if (typeof (localText) != "undefined") $(this).html(localText); 
 				} 
 			});
+
+		// PLACEMENT in Language resources, may be replaced!!
+		$("#btCOPYRIGHT").click(async function(event) { 
+			event.preventDefault(); 
+			await vme.openInformationTab(0); 
+			vme.setFocus(); 
+		}); 
 			
-		// TODO: ??
+		// TODO: Remove?
 		$("#btTITLE_EDITION_SYNTAX").click(function(event) { 
 			event.preventDefault(); 
 			vme.setFocus(); 
 		}); 
-		
+
 		//  TODO: HTML mode deactivated, remove completely?
 		vme.switchHtmlMode(vme.encloseAllFormula);
 		$("#btENCLOSE_TYPE").click(function(event) {
 			event.preventDefault(); 
-			/*
-			vme.encloseAllFormula = !vme.encloseAllFormula; 
-			vme.switchHtmlMode(vme.encloseAllFormula);
-			vme.updateOutput();
-			*/ 
 			vme.setFocus(); 
-		}); 
+		});
+		
+		this.printCodeType();
+	}
+	
+	/**
+	 * @abstract Handlers for the HTML toolbar buttons.
+	 * 
+	 * This is the only place, where the ColorPicker is used.
+	 */
+	htmlToolbarButtons() {
 		
 		// TODO: it seems this code has nothing to do with language, but perhaps the visual appearance 
 		// depends on ltr - style. There seems to be no switch. 
@@ -1159,13 +1192,6 @@ class KatexInputHelper {
 				} 
 			}); 
 		}
-		$("#btCOPYRIGHT").click(async function(event) { 
-			event.preventDefault(); 
-			await vme.openInformationTab(0); 
-			vme.setFocus(); 
-		}); 
-		
-		this.printCodeType();
 	}
 	
 	/**
@@ -1191,10 +1217,16 @@ class KatexInputHelper {
 		$('#innerLayout').layout();
 	}
 	
+	/**
+	 * @abstract Wrapper around Localizer routine. Builds resources dialog.
+	 */
 	async initialiseLangRessourcesList() {
 		await this.localizer.buildLocalResources(() => {});
 	}
 	
+	/**
+	 * @abstract Establishs an *autoUpdateType* mode, if active.
+	 */
 	autoUpdateOutput() {
 		var vme = this; 
 		if (typeof (vme.autoUpdateOutputTimeout) != "undefined" && vme.autoUpdateOutputTimeout != null) { 
@@ -1204,23 +1236,34 @@ class KatexInputHelper {
 		if (vme.autoupdateType) vme.autoUpdateOutputTimeout = setTimeout("vme.updateOutput();", vme.autoUpdateTime);
 	}
 	
+	/**
+	 * @abstract Wrapper of the appropriate Math routine. Updates the math in the 
+	 * 			 output window.
+	 */
 	updateOutput() {
 		this.math.updateOutput(); 
 	}
-	
+
+	/**
+	 * @abstract Wrapper of the appropriate Math routine. Inserts a piece of 
+	 * 			 math code into the editor and updates the output.
+	 */	
 	insert(b) {
-		// this.codeMirrorEditor.replaceSelection(b); 
-		// this.codeMirrorEditor.setCursor(this.codeMirrorEditor.getCursor()); 
 		this.math.insert(b);
-		if (this.menuupdateType) this.updateOutput(); 
 		this.setFocus();
 	}
 	
+	/**
+	 * @abstract OBSOLETE. NOT USED.
+	 */
 	insertBeforeEachLine(b) { 
 		this.encloseSelection("", "", function(a) { a = a.replace(/\r/g, ""); 
 			return b + a.replace(/\n/g, "\n" + b) }) 
 		}
 	
+	/**
+	 * @abstract Plays a role in Html mode (obsolete).
+	 */
 	tag(b, a) {
 		b = b || null; a = a || b; if (!b || !a) { return }
 		this.codeMirrorEditor.replaceSelection(b + this.codeMirrorEditor.getSelection() + a); 
@@ -1230,6 +1273,9 @@ class KatexInputHelper {
 		this.setFocus();
 	}
 	
+	/**
+	 * @abstract OBSOLETE. NOT USED.
+	 */
 	encloseSelection(f, j, h) {
 		this.mathTextInput.focus(); 
 		f = f || ""; 
@@ -1276,14 +1322,25 @@ class KatexInputHelper {
 		if (this.menuupdateType) this.updateOutput();
 	}
 	
+	/**
+	 * @abstract Menu command to open a file with formula.
+	 * 
+	 * Checks, if *FileReader* is present and if so, initiates a file open action.
+	 */
 	testOpenFile() { 
 		if (typeof (FileReader) == "undefined") { 
-			$.messager.alert("<span class='rtl-title-withicon'>" + this.getLocalText("ERROR") + "</span>", "VisualMathEditor JAVASCRIPT ERROR : \n\nFileReader isn't supported!", 'error'); 
+			$.messager.alert(
+				"<span class='rtl-title-withicon'>" + this.getLocalText("ERROR") + "</span>", 
+				"VisualMathEditor JAVASCRIPT ERROR : \n\nFileReader isn't supported!", 
+				'error'); 
 		} else { 
 			document.getElementById("fOPEN_EQUATION").click(); 
 		} 
 	}
 	
+	/**
+	 * @abstract The initiated file open action, implemented by clicking onan anchor element.
+	 */
 	openFile(event) {
 		var vme = this;
 		var file = event.target.files ? event.target.files[0] : event.target.value; 
@@ -1296,6 +1353,9 @@ class KatexInputHelper {
 		reader.readAsText(file, "UTF-8");
 	}
 	
+	/**
+	 * @abstract Saves the formula in Editor to a file.
+	 */
 	saveEquationFile() {
 		var vme = this;
 		var content = ""; 
@@ -1303,76 +1363,6 @@ class KatexInputHelper {
 		
 		var fileHandler = new FileHandler();
 		fileHandler.saveFile(content, "application/x-download", "fSAVE_EQUATION"); 
-	}
-	
-	setEquationInCaller() {
-		if (!this.textareaIgnore && window.opener && this.textAreaForSaveASCII) {
-			if (!window.opener.closed) {
-				window.opener.focus(); 
-				this.textAreaForSaveASCII.value = this.codeMirrorEditor.getValue(); 
-				this.textAreaForSaveASCII.focus();
-			}
-			self.close();
-		} else if (!this.textareaIgnore && localStorage && this.textAreaForSaveASCII) {
-			this.textAreaForSaveASCII.value = this.codeMirrorEditor.getValue(); 
-			localStorage.setItem(this.textAreaForSaveASCII.id, this.textAreaForSaveASCII.value); 
-			localStorage.setItem('update_' + this.textAreaForSaveASCII.id, "1"); 
-			self.close();
-		} else { 
-			$.messager.alert("<span class='rtl-title-withicon'>" + this.getLocalText("ERROR") + "</span>", this.getLocalText("ERROR_SET_EQUATION"), 'error'); 
-		}
-	}
-	
-	getEquationFromCaller() {
-		var textareaID = this.textareaID || this.url.param('textarea'); 
-		if (!this.textareaIgnore && textareaID) {
-			var value = null; 
-			this.textareaID = textareaID; 
-			if (window.opener && (this.textAreaForSaveASCII = window.opener.document.getElementById(textareaID))) { 
-				value = this.textAreaForSaveASCII.value; 
-			} else if (localStorage && (value = localStorage.getItem(textareaID))) { 
-				this.textAreaForSaveASCII = { id: textareaID, value: value }; 
-			}
-			if (value) {
-				this.codeMirrorEditor.setValue(value); 
-				this.setCodeMirrorCursorAtEnd(); 
-				this.updateOutput();
-			} else { 
-				$.messager.alert("<span class='rtl-title-withicon'>" + this.getLocalText("ERROR") + "</span>", this.getLocalText("ERROR_SET_EQUATION"), 'error'); 
-			}
-		}
-	}
-	
-	viewMathML(element) { 
-		var vme = this; 
-		if (!vme.runNotMathJax) { 
-			MathJax.Hub.Queue(function() { 
-				var jax = MathJax.Hub.getAllJax(element); 
-				for (var i = 0; i < jax.length; i++) { 
-					vme.toMathML(jax[i], function(mml) { 
-						mml = mml.replace(/&/gi, "&amp;"); 
-						mml = mml.replace(/</gi, "&lt;"); 
-						mml = mml.replace(/>/gi, "&gt;"); 
-						mml = mml.replace(/\n/gi, "<br/>"); 
-						mml = mml.replace(/ /gi, "&nbsp;"); 
-						$.messager.show({ title: "<span class='rtl-title-withicon'>MathMML</span>", msg: "<div style='height:255px;width:277px;overflow:scroll;' dir='ltr'>" + mml + "</div>", timeout: 0, width: 300, height: 300 }); 
-					}); 
-				} 
-			}); 
-		} 
-	}
-	
-	toMathML(jax, callback) {
-		if (!this.runNotMathJax) {
-			var mml; 
-			try { 
-				mml = jax.root.toMathML(""); 
-			} catch (err) {
-				if (!err.restart) { throw err }
-				return MathJax.Callback.After([toMathML, jax, callback], err.restart);
-			}
-			MathJax.Callback(callback)(mml);
-		}
 	}
 	
 	/**
@@ -1390,12 +1380,8 @@ class KatexInputHelper {
 			}
 			this.codeMirrorEditor.setOption("theme", codemirrorCSS); 
 			if (!this.runNotColorPicker) { 
-				// TODO: handle color picker
-				// document.getElementById("colorpickerCSSblack").disabled = !(colorpickerCSS == "black"); 
-				// document.getElementById("colorpickerCSSgray").disabled = !(colorpickerCSS == "gray");
-				// TODO: valid code ?
-				$("#colorpickerCSSblack").disabled = !(colorpickerCSS == "black");
-				$("#colorpickerCSSgray").disabled = !(colorpickerCSS == "gray");
+				$("#colorpickerCSSblack").prop('disabled', !(colorpickerCSS == "black"));
+				$("#colorpickerCSSgray").prop('disabled', !(colorpickerCSS == "gray"));
 			}
 			var posColor, posExt; 
 			$(".symbol_btn").each(function(index) { 
@@ -1410,31 +1396,50 @@ class KatexInputHelper {
 			console.error(`onStyleChanged error: ${e}`);		
 		}
 	}
-	
+
+	/**
+	 * @abstract Updates the RTL flag after the language resource is updated.
+	 * 
+	 * Evt transfer this functionality to Themes.
+	 */	
 	setRTLstyle() {
-		/* TODO: needs extra css style element
-		 */
 		var dir = this.getLocalText("_i18n_HTML_Dir");
 		this.rtlStyle = dir;
 		this.themes.setRTLstyle(dir);
 	}
 	
+	/**
+	 * @abstract Convert text to boolean. Only "true" is truthy.
+	 */
 	getBoolean(text) { return (text == "true"); }
 	
+	/**
+	 * @abstract Decimal to hex conversion.
+	 */
 	d2h(d) { return d.toString(16).toUpperCase(); }
 	
+	/**
+	 * @abstract Hex to decimal conversion.
+	 */
 	h2d(h) { return parseInt(h, 16); }
 	
+	/**
+	 * @abstract Html-encodes string for attributes (quotes only).
+	 */
 	encodeStringForHTMLAttr(s) { 
 		if (typeof s == "string") return s.replace("\"", "&quot;"); else return ""; 
 	}
 	
+	/**
+	 * @abstract Loads a script. Actually only used by virtual keyboard.
+	 */
 	loadScript(url, callback) {
 		var script = document.createElement("script"); 
 		script.type = "text/javascript"; 
 		script.src = url; 
 		if (script.readyState) { 
-			script.onreadystatechange = function() { 
+			script.onreadystatechange = function() {
+				 
 				if (script.readyState == "loaded" || script.readyState == "complete") { 
 					script.onreadystatechange = null; 
 					callback(); 
@@ -1446,16 +1451,19 @@ class KatexInputHelper {
 		document.body.appendChild(script);
 	}
 
-	
+	/**
+	 * @abstract Initializes an accordion (several palettes with symbols).
+	 */
 	initialiseUIaccordion(accordionID) {
 		var vme = this; 
 		$(accordionID).accordion({
 			onSelect: function(title) {
+
 				var fPanel = $(accordionID).accordion("getSelected"); 
 				if (fPanel) { 
 					var fPanelID = $(fPanel).attr("id"); 
 					if (vme.symbolPanelsLoaded.indexOf(fPanelID) == -1) { 
-						vme.symbolPanelsLoaded[vme.symbolPanelsLoaded.length] = fPanelID; 
+						vme.symbolPanelsLoaded.push(fPanelID); 
 						$(fPanel).html(`<img src='js/jquery-easyui/themes/default/images/loading.gif' />`); 
 						$(fPanel).load(
 							`formulas/` + fPanelID + ".html", 
@@ -1477,7 +1485,7 @@ class KatexInputHelper {
 		}); 
 		var p = $(accordionID).accordion('getSelected'); 
 		if (p) { p.panel('collapse', false); }
-		this.math.updateHeaders();
+		this.math.updateHeaders();							// TODO: maybe this must be done only once, optimize!
 	}
 	
 	async initialiseSymbolContent(fPanelID) { 

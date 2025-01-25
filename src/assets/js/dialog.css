@@ -346,7 +346,7 @@ h3 {
 }
 
 .panel-body table tbody tr td a.easyui-tooltip {
-	float: left;
+	float: bottom;
 }
 
 .katex {

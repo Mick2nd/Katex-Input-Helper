@@ -619,6 +619,15 @@ class CategoriesTree {
 		}
 	}
 	
+	/**
+	 * @abstract Given a node in the tree, determines and returns the path string.
+	 * 
+	 * This serves the purpose to provide a better way to characterize the current 
+	 * selection.
+	 * 
+	 * @param node - a node of the tree
+	 * @returns the path string belonging to that node 
+	 */
 	pathFromNode(node) {
 		let current = node;
 		let path = '';
@@ -631,6 +640,12 @@ class CategoriesTree {
 		return path;
 	}
 	
+	/**
+	 * @abstract Given the path string, determines and returns the appropriate node.
+	 * 
+	 * @param {string} path - the path of a node in the tree
+	 * @returns the node belonging to that path or null
+	 */
 	nodeFromPath(path) {
 		
 		let pathComponents = path.split('/').slice(1);

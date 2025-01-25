@@ -5,7 +5,7 @@ import { TestDialog } from './testDialog';
 import { MathContext } from './mathContext';
 
 
-const withTest = true;
+const withTest = false;
 
 /**
  *	@abstract Function or lambda to execute menu command

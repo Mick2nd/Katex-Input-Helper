@@ -138,9 +138,9 @@ class MathFormulae {
 	/**
 	 * Updates the headers of some Panels by translating contained Math.
 	 */
-	updateHeaders() {
+	updateHeaders(selector = "") {
 		try {
-			var entries = $('.panel-title span');
+			var entries = $(`${selector} .panel-title span`);
 			console.debug(`Katex: ${entries.length} header items`);
 			entries.each((idx, a) => {
 				if (a) {
@@ -258,7 +258,7 @@ class MathFormulae {
 	 */
 	insert(b) {
 		this.codeMirror.replaceSelection(b, "stop");
-		this.updateOutput();												// TODO: additional handling
+		this.updateOutput();										// TODO: additional handling?
 	}
 
 	/**
