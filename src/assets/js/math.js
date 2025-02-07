@@ -77,7 +77,8 @@ class MathFormulae {
 	
 	/**
 	 * Updates Tables in Panels or Dialogs by translating contained Math. Although this is a Math
-	 * method, it also updates some image references. TODO: implement SRP (single responsibility principle)
+	 * method, it also updates some image references. TODO: implement SRP (single responsibility 
+	 * principle)
 	 */
 	async updateTables() {
 		try {
@@ -207,7 +208,6 @@ class MathFormulae {
 		a.addClass("easyui-tooltip s");
 		
 		// TODO: TEST: TRIAL WITH JAVASCRIPT
-		// .attr("title", function(index, attr) { return getSymbol(a); })
 		if (javascript) {
 			a.attr("href", "javascript:void(0)")
 			.tooltip({

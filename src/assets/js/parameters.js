@@ -44,15 +44,16 @@ class KIHParameters {
 	blockWrite = false;
 	
 	transaction = null;
+	mouseState = null;
 	displayMode = true;
 	
 	/**
 	 * @abstract Constructor.
 	 */
 	constructor() {
-		// TODO: does this work? Evt. move to queryParameters
 		this.transaction = new Transaction();
 		this.transaction.configure(this.writeParameters.bind(this));
+		this.mouseState = new MouseState(this.transaction);
 	}
 	
 	/**
@@ -76,7 +77,22 @@ class KIHParameters {
 				}
 			}
 			inst.transaction.end();
-		} 
+			
+			/**
+			 * Is there a way to use messages to return data to the caller?
+			 * Experience says NO!
+			 */
+			$(window).bind('unload', async function() {
+				var response = await webviewApi.postMessage({
+					id: this.id,
+					cmd: 'sendparams',
+					check: true
+				});
+				return true;
+			});
+		} else {
+			console.warn(`The "Katex Input Helper" plugin did not return a response to get parameters `);
+		}
 	}
 
 	/**
@@ -100,6 +116,20 @@ class KIHParameters {
 	}
 	
 	/**
+	 * @abstract Returns the window ids as array.
+	 */
+	get windowIds() {
+		return Object.keys(this).filter(key => key.startsWith('w'));
+	}
+	
+	/**
+	 * @abstract Returns the windows selectors as one string.
+	 */
+	get windowSelectors() {
+		return this.windowIds.map(key => `#${key}`).join(',');
+	}
+	
+	/**
 	 * @abstract Writes parameters to the HIDDEN field as required to return some values back
 	 * 			 to the caller.
 	 */
@@ -118,7 +148,7 @@ class KIHParameters {
 	 */
 	get filteredParameters() {
 		var o = { };
-		var doNotUse = [ "transaction", "displayMode" ];
+		var doNotUse = [ "transaction", "displayMode", "mouseState" ];
 		for (const [key, val] of Object.entries(this)) {
 			if (!(key in doNotUse)) {
 				o[key] = val;
@@ -135,7 +165,7 @@ class KIHParameters {
 		if (id in this && (this[id].left != left || this[id].top != top)) {
 			this[id].left = left;
 			this[id].top = top;
-			
+			this.mouseState.increment();
 			// TODO: check
 			//var dimensions = this.getPanelDimensions(id);
 			//this[id].width = dimensions.width;
@@ -161,12 +191,24 @@ class KIHParameters {
 		if (id in this && (this[id].width != width || this[id].height != height)) {
 			this[id].width = width;
 			this[id].height = height;
+			this.mouseState.increment();								// counts the number of resize / move events
 			
 			var dimensions = this.getPanelDimensions(id);
+			this.check(this[id], dimensions);							// checks for discrepancy
 			this[id].left = dimensions.left;
 			this[id].top = dimensions.top;
 			
 			this.transaction.complete();
+		}
+	}
+	
+	/**
+	 * @abstract Checks for discrepancy between handler and options dimensions.
+	 */
+	check(windowState, dimensions) {
+		if (Math.abs(windowState.width - dimensions.width) > 5 	||
+			Math.abs(windowState.height - dimensions.height) > 5) {
+			console.warn('KIHParameters : discrepancy deteced during window resize');
 		}
 	}
 	
@@ -326,6 +368,10 @@ class Transaction {
 		this.onComplete = this.onCompleteBackup;
 	}
 	
+	cancel() {
+		this.onComplete = this.onCompleteBackup;
+	}
+	
 	/**
 	 * @abstract Checks and returns, if there is an ongoing Transaction.
 	 */
@@ -379,5 +425,56 @@ class Css {
 			}
 		}
 		return { width: 'auto', height: 'auto'};
+	}
+}
+
+/**
+ * @abstract Used to reduce write back to the hidden field based on the use of
+ * 			 Transactions and observation of the mouse state.
+ * 
+ * The hopes has not fulfilled as there is already a reduction of mouse events during
+ * a size or position change.
+ */
+class MouseState {
+
+	transaction = null;
+	windowEvents = 0;
+	mouseUp = true;
+	active = false;										// currently deactivated
+
+	constructor(transaction) {
+		this.transaction = transaction;
+		var inst = this;
+
+		if (this.active) {
+			$('body').on('mousedown', function (event) {
+				inst.mouseUp = false;
+				inst.reset();
+				inst.transaction.begin();
+			});
+			$('body').on('mouseup', function (event) {
+				inst.mouseUp = true;
+				if (inst.isWindowChanged) {
+					inst.transaction.end();
+					console.debug(`MouseState : ${inst.windowEvents} window events during transaction`);
+				} else {
+					inst.transaction.cancel();
+					console.debug(`MouseState : no window events during transaction`);
+				} 
+			});
+		}
+	}
+	
+	reset() {
+		this.windowEvents = 0;
+	}
+	
+	increment() {
+		this.windowEvents ++;
+		console.debug(`MouseState : incremented to : ${this.windowEvents} `);
+	}
+	
+	get isWindowChanged() {
+		return this.windowEvents > 0;
 	}
 }

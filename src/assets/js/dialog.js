@@ -107,7 +107,7 @@ class Documentations {
  */
 class KatexInputHelper {
 
-	version = "1.0.6"; 
+	version = "1.0.7"; 
 	codeType = 'Latex'; 
 	saveOptionInCookies = false; 
 	isBuild = false; 
@@ -571,6 +571,13 @@ class KatexInputHelper {
 		}); 
 		
 		this.math.setEditorInstance(this.codeMirrorEditor);
+		
+		$('#divMathTextInput').panel({
+			onResize: function(width, height) {
+				vme.codeMirrorEditor.setSize(width, height);
+				vme.codeMirrorEditor.refresh();
+			}
+		});
 	}
 	
 	/**
@@ -706,6 +713,17 @@ class KatexInputHelper {
 				$(this).combobox("select", "0x25A0,0x25FF"); 
 				await vme.setUniCodesValues(0x25A0, 0x25FF); 
 			} 
+		});
+
+		$('body').on('click', '#btCOPYRIGHT', async function(event) { 
+			event.preventDefault(); 
+			await vme.openInformationTab(0); 
+			vme.setFocus(); 
+		});
+
+		$('body').on('click', '#btTITLE_EDITION_SYNTAX,#btENCLOSE_TYPE', async function(event) { 
+			event.preventDefault(); 
+			vme.setFocus(); 
 		});
 		
 		// TEST: MAIL
@@ -1092,7 +1110,6 @@ class KatexInputHelper {
 	 * - setting document language
 	 * - setting the RTL style
 	 * - localize all entries of the UI (using *span[locate]*)
-	 * - additional statements could not be assigned to this task => TODO: separate?
 	 */
 	async onLocaleChanged(localizer) {
 		this.localType = this.localizer.currentLocale;
@@ -1112,25 +1129,7 @@ class KatexInputHelper {
 				} 
 			});
 
-		// PLACEMENT in Language resources, may be replaced!!
-		$("#btCOPYRIGHT").click(async function(event) { 
-			event.preventDefault(); 
-			await vme.openInformationTab(0); 
-			vme.setFocus(); 
-		}); 
-			
-		// TODO: Remove?
-		$("#btTITLE_EDITION_SYNTAX").click(function(event) { 
-			event.preventDefault(); 
-			vme.setFocus(); 
-		}); 
-
-		//  TODO: HTML mode deactivated, remove completely?
 		vme.switchHtmlMode(vme.encloseAllFormula);
-		$("#btENCLOSE_TYPE").click(function(event) {
-			event.preventDefault(); 
-			vme.setFocus(); 
-		});
 		
 		this.printCodeType();
 	}
@@ -1138,12 +1137,12 @@ class KatexInputHelper {
 	/**
 	 * @abstract Handlers for the HTML toolbar buttons.
 	 * 
-	 * This is the only place, where the ColorPicker is used.
+	 * This is the only place, where the ColorPicker is used. The click events
+	 * are assigned to static Html content, no need to re-invoke this in
+	 * *onLocaleChanged*.
 	 */
 	htmlToolbarButtons() {
 		
-		// TODO: it seems this code has nothing to do with language, but perhaps the visual appearance 
-		// depends on ltr - style. There seems to be no switch. 
 		$("#btHTML_STRONG").click(function(event) { event.preventDefault(); vme.tag("<strong>", "</strong>"); }); 
 		$("#btHTML_EM").click(function(event) { event.preventDefault(); vme.tag("<em>", "</em>"); }); 
 		$("#btHTML_U").click(function(event) { event.preventDefault(); vme.tag("<u>", "</u>"); }); 
@@ -1466,18 +1465,18 @@ class KatexInputHelper {
 						vme.symbolPanelsLoaded.push(fPanelID); 
 						$(fPanel).html(`<img src='js/jquery-easyui/themes/default/images/loading.gif' />`); 
 						$(fPanel).load(
-							`formulas/` + fPanelID + ".html", 
+							`formulas/${fPanelID}.html`, 
 							async function() { 
 								await vme.initialiseSymbolContent(fPanelID); 
-								$("#" + fPanelID + " a.more").click(
-									async function(event) { 
-										event.preventDefault(); 
-										await vme.initialiseUImoreDialogs(fPanelID); 
-									}
-								); 
 								vme.themes.activateStyle(vme.style)
 							}
 						); 
+						$(`#${fPanelID}`).on('click', 'a.more', 
+							async function(event) { 
+								event.preventDefault(); 
+								await vme.initialiseUImoreDialogs(fPanelID); 
+							}
+						);
 					} 
 				}
 				vme.setFocus();
@@ -1485,40 +1484,74 @@ class KatexInputHelper {
 		}); 
 		var p = $(accordionID).accordion('getSelected'); 
 		if (p) { p.panel('collapse', false); }
-		this.math.updateHeaders();							// TODO: maybe this must be done only once, optimize!
+		this.math.updateHeaders();
 	}
 	
+	/**
+	 * @abstract The routine equips the entries in the given panel with functionality.
+	 * 
+	 * This is:
+	 * - tool tip
+	 * - info line
+	 * - click event
+	 */
 	async initialiseSymbolContent(fPanelID) { 
 		var vme = this; 
-		function getSymbol(obj) { 
-			if (typeof ($(obj).attr("lbegin")) != "undefined" && typeof ($(obj).attr("lend")) != "undefined") { 
-				return $(obj).attr("lbegin") + $(obj).attr("lend"); 
-			} else if (typeof ($(obj).attr("latex")) != "undefined") { 
-				return $(obj).attr("latex"); 
-			} else { 
-				return vme.getLocalText("NO_LATEX"); 
-			} 
-		}; 
-		$("#" + fPanelID + " a.s")
-			.addClass("easyui-tooltip")
-			.attr("title", function(index, attr) { return getSymbol(this); })
-			.mouseover(function(event) { $("#divInformation").html(getSymbol(this)); })
-			.mouseout(function(event) { $("#divInformation").html("&nbsp;"); })
-			.click(function(event) {
-				console.debug(`click event`);
-				event.preventDefault(); 
-				if (typeof ($(this).attr("lbegin")) != "undefined" && typeof ($(this).attr("lend")) != "undefined") { 
-					vme.tag($(this).attr("lbegin"), $(this).attr("lend")); 
-				} else if (typeof ($(this).attr("latex")) != "undefined") { 
-					vme.insert($(this).attr("latex")); 
-				} else { 
-					$.messager.show({ 
-						title: "<span class='rtl-title-withicon'>" + vme.getLocalText("INFORMATION") + "</span>", 
-						msg: vme.getLocalText("NO_LATEX") }); 
-				} 
+		/**
+		 * @abstract Given an anchor object, determines and returns the included
+		 * 			 LATEX code used as info for tool tip and info line.
+		 */
+		function getSymbol(a) {
+			var info = beginEndInfo(a);
+			if (info !== null) return info[0] + info[1];
+			info = latex(a);
+			if (info !== null) return info;
+			return vme.getLocalText("NO_LATEX"); 
+		};
+		
+		/**
+		 * @abstract Returns the begin to end info of an anchor.
+		 */
+		function beginEndInfo(a) {
+			if (typeof ($(a).attr("lbegin")) != "undefined" && typeof ($(a).attr("lend")) != "undefined") 
+				return [$(a).attr("lbegin"), $(a).attr("lend")];
+			return null; 
+		}
+		
+		/**
+		 * @abstract Returns the latex info of an anchor.
+		 */
+		function latex(a) {
+			if (typeof ($(a).attr("latex")) != "undefined")
+				return $(a).attr("latex");
+		}
+		
+		$(`#${fPanelID} a.s`)
+		.addClass("easyui-tooltip")
+		.attr("title", function(index, attr) { return getSymbol(this); })
+		.mouseover(function(event) { $("#divInformation").html(getSymbol(this)); })
+		.mouseout(function(event) { $("#divInformation").html("&nbsp;"); })
+		.click(function(event) {
+			event.preventDefault(); 
+			var info = beginEndInfo(this);
+			if (info !== null) {
+				vme.tag(...info);
+				return;
+			}
+			info = latex(this);
+			if (info !== null) {
+				vme.insert(info);
+				return;
+			}
+			$.messager.show({ 
+				title: "<span class='rtl-title-withicon'>" + vme.getLocalText("INFORMATION") + "</span>", 
+				msg: vme.getLocalText("NO_LATEX") 
 			}); 
-		// link with more class -> needs image handling
-		$("#" + fPanelID + " a.more")
+		}); 
+		
+		// this is solely for a single ...more button linking to a dialog
+		// containing more formulae.
+		$(`#${fPanelID} a.more`)
 		.addClass("easyui-tooltip")
 		.attr("title", function(index, attr) { return "Loading more formulae"; });
 

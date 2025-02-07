@@ -33,7 +33,7 @@
 					<hr/>
 				</div>
 				<div id="form">
-					<form name="KATEX" method="post">
+					<form id="KATEX" name="KATEX" method="post">
 						<input id="hidden" name="hidden" type="hidden" value="" />
 					</form>
 					<div id="formula"></div>
@@ -234,11 +234,10 @@
 						<a href="#" title="a" class="easyui-linkbutton easyui-tooltip" iconcls="icon-link" id="btHTML_A"></a> 
 						<a href="#" title="img" class="easyui-linkbutton easyui-tooltip" iconcls="icon-picture" id="btHTML_IMG"></a>
 					</div>
-					<div id="divMathTextInput" class="center easyui-panel" data-options="region:'center',split:false,noheader:true,fit:true">
+					<div id="divMathTextInput" class="center easyui-panel" data-options="region:'center',split:false,noheader:true">
 						<form action="#" method="post" id="formMathTextInput">
 							<fieldset>
-								<textarea id="mathTextInput" name="equation" 
-									rows="30" cols="30" dir="ltr"></textarea>
+								<textarea id="mathTextInput" name="equation" rows="30" cols="30" dir="ltr"></textarea>
 							</fieldset>
 						</form>
 					</div>

@@ -98,6 +98,11 @@ The custom equations dialog with categories tree
 
 ## Release Notes
 
+### 1.0.8
+
+- For the last selected node in the tree of the *Custom Equations* dialog the path is stored to reproduce this node over invocations.
+- Some buttons (links) are equipped with tool tips and click handlers to enable for instance the invocation of the *issues* page in the Internet.
+
 ### 1.0.7
 
 - Bug fix: *Custom Equations* dialog did not work properly.

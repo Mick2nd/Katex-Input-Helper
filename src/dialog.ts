@@ -53,6 +53,11 @@ export class Dialog
 				msg.displayMode = inst.displayMode;
 				return msg;
 			}
+
+			if (msg.id == 'Katex Input Helper' && msg.cmd == 'sendparams') {
+				console.debug(`Message from WebView: %O`, msg);
+				return true;
+			}
 			return false;
 		});
 

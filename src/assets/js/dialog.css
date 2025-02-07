@@ -100,18 +100,20 @@ h3 {
 	margin: 0; 
 	padding: 0; 
 	overflow: hidden;
-}
 
-#formMathTextInput {
-	margin: 0; 
-	padding: 0; 
-}
+	#formMathTextInput {
+		margin: 0; 
+		padding: 0;
+		height: 100%; 
 
-#mathTextInput {
-	margin: 0; 
-	padding: 2px; 
-	border: none;
-	overflow: auto;
+		#mathTextInput {
+			margin: 0; 
+			padding: 2px; 
+			border: none;
+			overflow: auto;
+			height: 100%; 
+		}
+	}
 }
 
 #mathVisualOutput {
