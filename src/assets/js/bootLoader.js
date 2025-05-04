@@ -176,7 +176,7 @@ class BootLoader {
 	 * @async implements the Promise contract
 	 */
 	async init1() {
-		var counter = 50;
+		var counter = 20;
 		while (!this.presenceCheck(counter) && --counter >= 0) {
 			await this.setTimeoutAsync(100);
 		}
@@ -246,7 +246,7 @@ class BootLoader {
 		var lastChecked = 'Test';
 		function checkTypeByName(type, name, readableName = name) {
 			lastChecked = readableName;
-			if (type === undefined || type === null || typeof type === 'undefined') {
+			if (type === undefined || type === null || typeof type === 'undefined' || !type.prototype) {
 				console.warn(`Undefined type : ${readableName}`);
 				return false;
 			}
@@ -279,6 +279,11 @@ class BootLoader {
 		var allLoaded = (
 			// false &&
 			checkOther(typeof $, 'function', 'jquery') &&
+			checkOther(typeof $.messager, 'object', 'easyui') &&
+			checkOther(typeof $.fn.datagrid, 'function', 'datagrid') &&
+			checkOther(typeof $.fn.datagrid.defaults, 'object', 'datagrid') &&
+			checkOther(typeof $.fn.datagrid.defaults.defaultFilterOptions, 'object', 'datagrid-filter') &&
+			// can we independantly check dnd and cellediting?
 			checkOther(typeof katex, 'object', 'Katex') &&
 			mhchemCheck() &&
 			//checkOther(typeof ($.fn.ColorPicker), 'function', 'ColorPicker') &&

@@ -93,10 +93,18 @@ The custom equations dialog with categories tree
 ## Known Problems
 
 - Sometimes a start of the dialog crashes. Mainly I could observe this for first time starts of the production version. Perhaps this has to do with caching of the plugin. Restart helps.
+- [Here](./KNOWN-PROBLEMS.md) you can find further explanation.
 - A minor problem is a missing update of the language of the data grid paging bar in the *Custom Equations* dialog. This only appears during language change during an actual activation of the dialog.
 - The persistence of custom equations can be damaged when an filter is active. 
 
 ## Release Notes
+
+### 1.0.9
+
+- Bug fix: A bug caused a circular reference during JSON conversion.
+- Bug fix: A bug caused crash during closure of the dialog.
+- Improvement on start handling.
+- Update Katex to version 0.16.22
 
 ### 1.0.8
 

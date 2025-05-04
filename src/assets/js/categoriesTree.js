@@ -45,8 +45,9 @@ class CategoriesTree {
 	 * The whole data set, JSON compatible, with categories and equations.
 	 */
 	set customEquations(value) {
-		this.data = this.convert(value);
-		this.initialise();							// it is essential to invoke it here before currentEquations 
+		var converted = this.convert(value);
+		this.data = this.getCustomEquationsProxy(converted);
+		this.initialise();										// it is essential to invoke it here before currentEquations 
 	}
 	
 	/**
@@ -57,17 +58,15 @@ class CategoriesTree {
 	get customEquations() {
 		return this.data;
 	}
-	
-	/**
-	 * @abstract A Proxy of the Custom Equations data.
-	 * 
-	 * This is capable of being serialized over JSON.
-	 */
-	get customEquationsProxy() {
+
+	/** @abstract Use this construct to make copies
+	 */	
+	getCustomEquationsProxy(data) {
 		var inst = this;
-		var rows = [ inst.data ];
+		var rows = null;
+		rows = [ data ];
 		return _proxy(rows);
-		
+
 		/**
 		 * @abstract Copy a single node with relevant data.
 		 */
@@ -103,6 +102,16 @@ class CategoriesTree {
 			
 			return targetRows[0];
 		}		
+	}
+
+		
+	/**
+	 * @abstract A Proxy of the Custom Equations data.
+	 * 
+	 * This is capable of being serialized over JSON.
+	 */
+	get customEquationsProxy() {
+		return this.getCustomEquationsProxy(this.data);
 	}
 	
 	/**

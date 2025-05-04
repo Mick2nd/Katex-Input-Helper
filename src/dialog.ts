@@ -6,6 +6,9 @@ const fs = require('fs-extra');
 const os = require('os');
 const path = require('path');
 
+function Sleep(milliseconds: number) {
+	return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
 
 var handle: any = null;
 
@@ -68,6 +71,11 @@ export class Dialog
 		await joplin.views.dialogs.setHtml(handle, await this.load('./assets/dialog.html'));
 	}
 	
+	/**
+	 * @abstract Opens the dialog and waits until user return.
+	 * 
+	 * After returns the data is evaluated and stored.
+	 */
 	public open = async function() : Promise<DialogResult>
 	{
 		let res = await joplin.views.dialogs.open(handle);
@@ -78,6 +86,10 @@ export class Dialog
 			return res;
 		}
 		const json = res.formData.KATEX.hidden;
+		if (!json) {
+			console.warn(`No formData returned on ${res.id}`);
+			return res;
+		}
 		console.debug(`Returned Json : ${json} `);
 		let parameters = JSON.parse(json);
 		if (res.id == 'okay') {
@@ -141,7 +153,7 @@ export class Dialog
 			// "./assets/js/jquery-colorpicker/js/colorpicker.js",
 			"./assets/js/codemirror/lib/codemirror.js",
 			"./assets/js/katex/katex.min.js",
-			"./assets/js/katex/mhchem.min.js",
+			"./assets/js/katex/contrib/mhchem.min.js",
 
 			"./assets/js/patterns/observable.js",
 			"./assets/js/localization.js",
@@ -159,6 +171,7 @@ export class Dialog
 		
 		for (const path of js) {
 			await joplin.views.dialogs.addScript(handle, path);
+			//await Sleep(100);
 		}
 	}
 }

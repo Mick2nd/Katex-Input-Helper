@@ -81,7 +81,9 @@ class KIHParameters {
 			/**
 			 * Is there a way to use messages to return data to the caller?
 			 * Experience says NO!
-			 */
+			 * 
+			 * TODO: CHECK! IS THERE A DANGER ON THIS?
+			 * 
 			$(window).bind('unload', async function() {
 				var response = await webviewApi.postMessage({
 					id: this.id,
@@ -90,6 +92,7 @@ class KIHParameters {
 				});
 				return true;
 			});
+			*/
 		} else {
 			console.warn(`The "Katex Input Helper" plugin did not return a response to get parameters `);
 		}
@@ -150,8 +153,13 @@ class KIHParameters {
 		var o = { };
 		var doNotUse = [ "transaction", "displayMode", "mouseState" ];
 		for (const [key, val] of Object.entries(this)) {
-			if (!(key in doNotUse)) {
+			if (!doNotUse.includes[key]) {
 				o[key] = val;
+				
+				if (key.startsWith("w")) {
+					console.debug(`Possible window : ${key} : ${val}`);
+				}
+				
 			}
 		}
 		
