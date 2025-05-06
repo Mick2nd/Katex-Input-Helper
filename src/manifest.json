@@ -30,5 +30,6 @@
 			"label": "Custom Equations Dialog with Categories Tree"
 		}
 	],
-	"icons": {}
+	"icons": {},
+	"platforms": ["desktop"]
 }

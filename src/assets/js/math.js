@@ -57,6 +57,8 @@ class MathFormulae {
 			
 			if (!this.runNotKatex) {
 				if (text.startsWith('$')) {
+					text = text.replace(/&lt;/g, '<');							// TODO: check!
+					text = text.replace(/&amp;/g, '&');
 					if (! multiple) {
 						text = text.substring(1, text.length - 1);
 					} else {
@@ -186,6 +188,7 @@ class MathFormulae {
 	/**
 	 * @abstract Equips some anchors with interactivity which they do not already have.
 	 * 
+	 * "Equips" means *tooltip* and *click* and *mouseover*.
 	 * If the anchor does not have a latex attribute, it will not be equipped
 	 * 
 	 * @param a - the anchor to be equipped

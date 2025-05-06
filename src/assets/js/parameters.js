@@ -155,11 +155,6 @@ class KIHParameters {
 		for (const [key, val] of Object.entries(this)) {
 			if (!doNotUse.includes[key]) {
 				o[key] = val;
-				
-				if (key.startsWith("w")) {
-					console.debug(`Possible window : ${key} : ${val}`);
-				}
-				
 			}
 		}
 		
