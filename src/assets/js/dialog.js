@@ -107,7 +107,7 @@ class Documentations {
  */
 class KatexInputHelper {
 
-	version = "1.0.7"; 
+	version = "1.0.10"; 
 	codeType = 'Latex'; 
 	saveOptionInCookies = false; 
 	isBuild = false; 
@@ -1525,12 +1525,11 @@ class KatexInputHelper {
 			if (typeof ($(a).attr("latex")) != "undefined")
 				return $(a).attr("latex");
 		}
-		
 		$(`#${fPanelID} a.s`)
-		.addClass("easyui-tooltip")
-		.attr("title", function(index, attr) { return getSymbol(this); })
-		.mouseover(function(event) { $("#divInformation").html(getSymbol(this)); })
-		.mouseout(function(event) { $("#divInformation").html("&nbsp;"); })
+		.each(function() {
+			var tt = getSymbol(this);
+			vme.math.equipWithTooltip($(this), tt, true);
+		})
 		.click(function(event) {
 			event.preventDefault(); 
 			var info = beginEndInfo(this);
@@ -1600,7 +1599,7 @@ class KatexInputHelper {
 		
 		// updates exactly 2 dialogs (see selectors)
 		// TODO: necessary and additional ones required?
-		vme.math.inplaceUpdate('#tEQUATION div a.s[latex], #mSPECIAL_CHARACTER div a.s[latex]');	// where and when to do that
+		vme.math.inplaceUpdate('#tEQUATION div a.s[latex], #mSPECIAL_CHARACTER div a.s[latex]', true);	// where and when to do that
 	}
 	
 	/**

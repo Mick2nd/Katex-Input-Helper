@@ -246,16 +246,15 @@ class DynamicPanel extends KIHPanel {
 				try {
 					var id = $(this).attr('id');
 					var title = inst.localizeOption('content', id, $.fn.tooltip);
-					var zindex = $(this).css('z-index');							// auto -> cannot be used
 					$(this).tooltip({
-						position: 'bottom',
 						content: title,
 						onShow: function() {
+							console.debug(`Tooltip %o`, $(this).tooltip('tip'));
 							$(this).tooltip('tip').css({ 
-								'z-index': 500000,
-								width: 300 
-							}); 		// always above all ui elements!
-						} 
+								'z-index': 500000, 									// always above all ui elements!
+								maxWidth: 300 
+							});
+						}
 					});
 				} catch(e) {
 					console.warn(`easyui-tooltip warning : ${e}`);
@@ -269,11 +268,10 @@ class DynamicPanel extends KIHPanel {
 	 */
 	async initialise() {
 		var inst = this;
-		var fPanelMoreID = this.panelId;
 		
 		await super.initialise();
 		await inst.initialiseDatagrid(`${inst.gridSelector}`);
-		inst.customEquationsFromParameters();
+		await inst.customEquationsFromParameters();
 
 		// TODO: pagination bar adaptation		
 		// Building the dialog more than once was not the intention, but this comes at a low
@@ -326,7 +324,7 @@ class DynamicPanel extends KIHPanel {
 			event.preventDefault();
 			var fileHandler = new FileHandler();
 			var json = await fileHandler.loadFile("fOPEN_CUSTOM_EQUATIONS");
-			inst.categoriesTree.customEquations = JSON.parse(json);
+			await inst.categoriesTree.setCustomEquations(JSON.parse(json));
 			inst.fromJson(inst.categoriesTree.currentEquations);
 			inst.onAfterRender();
 		});
@@ -387,9 +385,9 @@ class DynamicPanel extends KIHPanel {
 	/**
 	 * @abstract Reads the Custom Equations from the parameters.
 	 */
-	customEquationsFromParameters() {
+	async customEquationsFromParameters() {
 		try {
-			this.categoriesTree.customEquations = this.parent.parameters.equationCollection;
+			await this.categoriesTree.setCustomEquations(this.parent.parameters.equationCollection);
 			this.fromJson(this.categoriesTree.currentEquations);
 			$(this.gridSelector).datagrid('doFilter');
 		} catch(e) {

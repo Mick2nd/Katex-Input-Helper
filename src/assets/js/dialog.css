@@ -354,3 +354,12 @@ h3 {
 .katex {
 	pointer-events: none;
 }
+
+/* THERE IS NO ACTION ON THIS
+*/
+.tooltip {
+	background-color: 'lightyellow'!;
+	border-color: 'red';
+	width: 500;
+	z-index: 500000!;	
+}

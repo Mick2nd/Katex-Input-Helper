@@ -99,6 +99,13 @@ The custom equations dialog with categories tree
 
 ## Release Notes
 
+### 1.0.10
+
+- Fixed a lot of warnings in HTML.
+- Bug fix: 2 of the diagrams in CD dialog did not render properly.
+- Bug fix: a tool tip in the CD dialog did not show up properly.
+- Improvement: the tool tip handling was unified, all tool tips use *Themes* now.
+
 ### 1.0.9
 
 - Bug fix: A bug caused a circular reference during JSON conversion.

@@ -43,6 +43,21 @@ class CategoriesTree {
 	 * @abstract The Custom Equations setter.
 	 * 
 	 * The whole data set, JSON compatible, with categories and equations.
+	 * This variant adds also some Sample data.
+	 * 
+	 * @async the async variant with Promise contract
+	 */
+	async setCustomEquations(value) {
+		var converted = this.convert(value);
+		converted = await this.addSamples(converted);
+		this.data = this.getCustomEquationsProxy(converted);
+		this.initialise();										// it is essential to invoke it here before currentEquations 
+	}
+	
+	/**
+	 * @abstract The Custom Equations setter.
+	 * 
+	 * The whole data set, JSON compatible, with categories and equations.
 	 */
 	set customEquations(value) {
 		var converted = this.convert(value);
@@ -62,7 +77,6 @@ class CategoriesTree {
 	/** @abstract Use this construct to make copies
 	 */	
 	getCustomEquationsProxy(data) {
-		var inst = this;
 		var rows = null;
 		rows = [ data ];
 		return _proxy(rows);
@@ -71,7 +85,7 @@ class CategoriesTree {
 		 * @abstract Copy a single node with relevant data.
 		 */
 		function _copy(from) {
-			var keys = ['text', 'state', 'attributes', 'selected'];
+			var keys = ['text', 'state', 'attributes', 'selected', 'haveSamples'];
 			var to = { };
 			for (var key of Object.keys(from)) {
 				if (keys.includes(key)) {
@@ -513,6 +527,59 @@ class CategoriesTree {
 			}]
 		};		
 	}
+	
+	/**
+	 * @abstract Adds a Samples branch to the Categories tree.
+	 * 
+	 * This routine secures against repeated insertions.
+	 * 
+	 * @param from - the Categories (Custom Equations) tree as from JSON
+	 * @result the changed tree with added Samples
+	 */
+	async addSamples(from) {
+		
+		/**
+		 * Searches from a given start node down the hierarchy until node with text is found.
+		 */
+		function getSamplesNode(node, text) {
+			
+			return _traverse(node.children);
+			
+			function _traverse(nodes) {
+				for (var node of nodes) {
+					if (node.text === text) {
+						return node;
+					}
+					var children = node.children;
+					if (children && children.length) {
+						var found = _traverse(children);
+						if (found) {
+							return found;
+						}
+					}
+				}
+				return undefined;
+			}
+		}
+		
+		/**
+		 * @abstract Loads a JSON file and returns the object.
+		 */
+		async function loadSamples() {
+			
+			var response = await fetch('formulas/sampleEquations.json');
+			return await response.json();
+		}
+		
+		if (!from.haveSamples && !getSamplesNode(from, "Samples")) {
+			
+			var samples = await loadSamples();
+			samples = getSamplesNode(samples, "Samples");
+			from.children.push(samples)
+			from.haveSamples = true;
+		}
+		return from;
+	}
 
 	/**
 	 * @abstract Sort routine. Sorts the whole category tree.
@@ -618,7 +685,6 @@ class CategoriesTree {
 		function _traverse(nodes, ...args) {
 			for (var node of nodes) {
 				inst.findNode(node);
-				// console.debug(`Traversing : row : ${node.text}, state : ${node.state}, isLeaf : ${inst.tree.tree('isLeaf', node.target)} `);
 				func(node, ...args);
 				var children = node.children;
 				if (children && children.length) {

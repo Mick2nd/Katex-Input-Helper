@@ -169,7 +169,7 @@ class MathFormulae {
 	/**
 	 * For some dialogs, which are initialized lazily, updates the Math.
 	 */
-	inplaceUpdate(selector, javascript = false) {
+	inplaceUpdate(selector, javascript = true) {
 		try {
 			var inst = this;
 			var entries = $(selector);
@@ -193,7 +193,7 @@ class MathFormulae {
 	 * 
 	 * @param a - the anchor to be equipped
 	 */
-	equipWithInteractivity(a, javascript = false) {
+	equipWithInteractivity(a, javascript = true) {
 		var vme = this;
 		function getSymbol(obj) { 
 			if (typeof ($(obj).attr("latex")) != "undefined") { 
@@ -208,28 +208,10 @@ class MathFormulae {
 		}
 		
 		console.debug(`equipWithInteractivity ${a.attr('latex')}`);
-		a.addClass("easyui-tooltip s");
+		var text = getSymbol(a);
+		this.equipWithTooltip(a, text, javascript);
 		
-		// TODO: TEST: TRIAL WITH JAVASCRIPT
-		if (javascript) {
-			a.attr("href", "javascript:void(0)")
-			.tooltip({
-				content: `<span style="color:black">${getSymbol(a)}</span>`,
-				onShow: function(){
-					$(this).tooltip('tip').css({
-						backgroundColor: 'lightyellow',
-						borderColor: 'red'
-					});
-				}
-			});
-		} else {
-			a.attr("href", "#")
-			.attr("title", function(index, attr) { return getSymbol(a); });
-		}		
-		
-		a.mouseover(function(event) { $("#divInformation").html(getSymbol(a)); })
-		.mouseout(function(event) { $("#divInformation").html("&nbsp;"); })
-		.click(function(event) { 
+		a.click(function(event) { 
 			event.preventDefault(); 
 			var latex = a.attr("latex");
 			console.debug(`Click on equation: ${latex}`);
@@ -242,6 +224,40 @@ class MathFormulae {
 				}); 
 			} 
 		}); 
+	}
+	
+	/**
+	 * @abstract Equips a selector (preferibly an anchor) with a tooltip.
+	 * 
+	 * Additionally prepares the same info for the status line.
+	 * This is the central place for doing that.
+	 * 
+	 * @param selector {*} - ui item to be equipped
+	 * @param {string} text - the tooltip text 
+	 * @param {boolean} javascript 
+	 */
+	equipWithTooltip(selector, text, javascript) {
+
+		selector.addClass("easyui-tooltip s");
+
+		var encoded = text.replace(/</g, '&lt;')									// GUI does not like text looking like tag begin -> encode
+		if (javascript) {
+			selector.attr("href", "javascript:void(0)")
+			.tooltip({ 
+				content: encoded,
+				show: function() {
+					$(this).tooltip('tip').css({ maxWidth: 500 });
+				} 
+			});
+		} else {
+			selector.attr("href", "#")
+			.attr("title", function(index, attr) { return encoded; });
+		}		
+
+		selector.mouseover(function(event) { $("#divInformation").html(encoded); })
+		.mouseout(function(event) { $("#divInformation").html("&nbsp;"); })
+		
+		return selector;
 	}
 
 	/**
@@ -261,7 +277,7 @@ class MathFormulae {
 	 */
 	insert(b) {
 		this.codeMirror.replaceSelection(b, "stop");
-		this.updateOutput();										// TODO: additional handling?
+		this.updateOutput();
 	}
 
 	/**

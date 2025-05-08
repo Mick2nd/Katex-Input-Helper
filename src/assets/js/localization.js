@@ -29,7 +29,6 @@ class Localizer extends Observable {
 	 * @abstract The basic load method. Reads a language file given by its language code.
 	 */
 	async basicLoad(langCode) {
-		var baseLocation = $('base').attr('href');
 		var langFile = `js/localization/${langCode}/lang.json`;
 		var response = await fetch(langFile);
 		return await response.json();
@@ -51,7 +50,6 @@ class Localizer extends Observable {
 		inst.current = await inst.basicLoad(langCode);
 		inst.currentLocale = langCode;
 		
-		// TODO: Added, test!
 		// ATTENTION! NOT EVERY LOCALE has a corresponding EASYUI LOCALE
 		try {
 			var shortCode = inst.current._i18n_HTML_Lang;
