@@ -130,3 +130,8 @@ class FileHandler {
 		return; 
 	}
 }
+
+// This helps to import symbols in test suite
+try {
+	module.exports = FileHandler;
+} catch(e) { }

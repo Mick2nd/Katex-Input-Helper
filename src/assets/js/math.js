@@ -310,3 +310,8 @@ class MathFormulae {
 		this.codeMirror.focus(); 
 	}
 }
+
+// This helps to import symbols in test suite
+try {
+	module.exports = MathFormulae;
+} catch(e) { }

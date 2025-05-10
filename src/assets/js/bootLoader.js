@@ -347,3 +347,8 @@ kihBootLoader.init1()
 	console.error(`Error ${err} `, err);
 	kihBootLoader.fatal(err);
 });
+
+// This helps to import symbols in test suite
+try {
+	module.exports = BootLoader;
+} catch(e) { }

@@ -7,7 +7,7 @@
     "updateVersion": "webpack --env joplin-plugin-config=updateVersion",
     "update": "npm install -g generator-joplin && yo joplin --node-package-manager npm --update --force",
     "build-docs": "typedoc --options typedoc.json && npm exec --package=@atao60/fse-cli fse copy ./img ./docs/img",
-    "test": "vitest --root './tests' --run --reporter verbose --environment jsdom",
+    "test": "vitest --root './tests' --run --reporter verbose",
     "jtest": "jest"
   },
   "license": "MIT",
@@ -27,6 +27,7 @@
     "easyui": "^8.0.0",
     "fs-extra": "^10.1.0",
     "glob": "^8.0.3",
+    "inversify": "^7.5.1",
     "jest": "^29.7.0",
     "path": "^0.12.7",
     "tar": "^6.1.11",

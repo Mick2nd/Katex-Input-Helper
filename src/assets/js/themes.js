@@ -180,3 +180,8 @@ class Themes extends Observable {
 		}
 	}
 }
+
+// This helps to import symbols in test suite
+try {
+	module.exports = Themes;
+} catch(e) { }

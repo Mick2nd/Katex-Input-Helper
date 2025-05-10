@@ -175,8 +175,8 @@ export class Dialog
 			"./assets/js/jquery-easyui/easyloader.js",
 			"./assets/js/bootLoader.js"
 		] : [
-			/*
-			*/			
+			// does not work
+			//"./assets/js/pre-process.js",
 			"./assets/js/jquery-easyui/jquery.min.js",
 			"./assets/js/jquery-easyui/jquery.easyui.min.js",
 			"./assets/js/jquery-easyui/datagrid-cellediting.js",
@@ -187,6 +187,8 @@ export class Dialog
 			"./assets/js/codemirror/lib/codemirror.js",
 			"./assets/js/katex/katex.min.js",
 			"./assets/js/katex/contrib/mhchem.min.js",
+			// does not work
+			//"./assets/js/di/inversifyjs.min.js",
 
 			"./assets/js/patterns/observable.js",
 			"./assets/js/localization.js",

@@ -807,3 +807,10 @@ class KIHPanels {
 		await this.panels[id].show();
 	}
 }
+
+// This helps to import symbols in test suite
+try {
+	module.exports = { 
+		DynamicPanel, KIHMoreDialog, KIHPanel, KIHPanels, KIHWindow
+	};
+} catch(e) { }

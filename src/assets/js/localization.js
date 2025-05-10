@@ -4,25 +4,26 @@
  * 
  * This is an Observable as it recognizes the change of Language and notifies its observers.
  */
-class Localizer extends Observable {
+class Localizer {
 	
 	current = null;
 	fallback = null;
 	locales = ['ar', 'de_DE', 'en_US', 'es_ES', 'fr_FR', 'ru', 'vi_VN'];
 	currentLocale = 'en_US';
+	observable = null;
 	
 	/**
 	 * @abstract Constructor. The script location is queried as needed to locate the language files.
 	 */
-	constructor() {
-		super();
+	constructor(observableCls = Observable) {
+		this.observable = new observableCls();
 	}
 	
 	/**
 	 * @abstract Override of the Observable.
 	 */
 	subscribe(func, ...args) {
-		super.subscribe(func, ...args);
+		this.observable.subscribe(func, ...args);
 	}
 
 	/**
@@ -61,7 +62,7 @@ class Localizer extends Observable {
 			console.warn(`${shortCode} : no corresponding easyui locale`);
 		}
 		
-		await inst.notifyAsync(inst);
+		await inst.observable.notifyAsync(inst);
 		console.info(`Read language file for ${langCode}`);
 	}
 	
@@ -153,3 +154,8 @@ class Localizer extends Observable {
 		$('#tLANGUAGE_LIST').tabs('select', inst.currentLocale);
 	}
 }
+
+// This helps to import symbols in test suite
+try {
+	module.exports = Localizer;
+} catch(e) { }

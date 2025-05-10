@@ -76,27 +76,28 @@ joplin.plugins.register({
 			scriptId,
 			MenuItemLocation.Tools,
 			{ accelerator: "CmdOrCtrl+Shift+K"}); 
-
-		await joplin.contentScripts.register(
-			ContentScriptType.CodeMirrorPlugin,
-			`${scriptIdCm}`,
-			'./plugins/codeMirror.js'
-		);
-
-		await joplin.contentScripts.register(
-			ContentScriptType.MarkdownItPlugin,
-			`${scriptIdMd}`,
-			'./plugins/markdownIt.js'
-		);
-
-		await joplin.contentScripts.onMessage(scriptIdMd, async function(message: any) {
-			if (message  !== 'queryCursorLocation')
-				return;
-			
-			return 'test';
-		});
 			
 		if (withTest) {
+
+			await joplin.contentScripts.register(
+				ContentScriptType.CodeMirrorPlugin,
+				`${scriptIdCm}`,
+				'./plugins/codeMirror.js'
+			);
+
+			await joplin.contentScripts.register(
+				ContentScriptType.MarkdownItPlugin,
+				`${scriptIdMd}`,
+				'./plugins/markdownIt.js'
+			);
+
+			await joplin.contentScripts.onMessage(scriptIdMd, async function(message: any) {
+				if (message  !== 'queryCursorLocation')
+					return;
+				
+				return 'test';
+			});
+
 			const scriptIdTest = 'pluginCommandKatexTestDialog';
 			await joplin.commands.register(
 				{

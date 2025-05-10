@@ -826,3 +826,8 @@ class CategoriesTree {
 			return this.tree.tree('find', { text: node.text });
 	}
 }
+
+// This helps to import symbols in test suite
+try {
+	module.exports = CategoriesTree;
+} catch(e) { }

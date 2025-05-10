@@ -481,3 +481,8 @@ class MouseState {
 		return this.windowEvents > 0;
 	}
 }
+
+// This helps to import symbols in test suite
+try {
+	module.exports = { Css, KIHParameters, ParametersProxy, Transaction };
+} catch(e) { }

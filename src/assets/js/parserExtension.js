@@ -219,3 +219,8 @@ async function promisify(ob, fnc, ...args)
 		}});
 	});
 }
+
+// This helps to import symbols in test suite
+try {
+	module.exports = { ParserExtension, promisify };
+} catch(e) { }

@@ -89,3 +89,8 @@ class Utilities {
 		return html;
 	}		
 }
+
+// This helps to import symbols in test suite
+try {
+	module.exports = { Messager, Utilities };
+} catch(e) { }
