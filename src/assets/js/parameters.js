@@ -2,7 +2,7 @@
 /**
  * @abstract Factory method generating a Proxy for KIHParameters.
  */
-function ParametersProxy() {
+export function ParametersProxy() {
 	var parameters = new KIHParameters();
 	return new Proxy(
 		parameters,
@@ -26,7 +26,7 @@ function ParametersProxy() {
  * 
  * It is based on the communication of messages to gain the settings of the plugin.
  */
-class KIHParameters {
+export class KIHParameters {
 	
 	id = 'Katex Input Helper';
 	style = "aguas";
@@ -60,8 +60,13 @@ class KIHParameters {
 	 * @abstract Queries the parameters from the Plugin.
 	 */
 	async queryParameters() {
+		
+		var api = window.webviewApi; 
+		if (!api) {
+			api = { postMessage: async ( o ) => { } }; 
+		}
 		var inst = this;
-		var response = await webviewApi.postMessage({
+		var response = await api.postMessage({
 			id: this.id,
 			cmd: 'getparams'
 		});

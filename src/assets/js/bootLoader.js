@@ -1,10 +1,30 @@
 
+import jquery from './jquery-plugin/jquery.min';
+import './jquery-easyui/jquery.easyui.min';
+import './jquery-easyui/datagrid-dnd';
+import './jquery-easyui/datagrid-filter';
+import './jquery-easyui/datagrid-cellediting';
+import katex from './katex/katex.min';
+import './katex/mhchem';
+import CodeMirror from './codemirror/lib/codemirror';
+
+import { Observable } from './patterns/observable';
+import { Localizer } from './localization';
+import { Themes } from './themes';
+import { ParserExtension } from './parserExtension';
+import { KIHParameters } from './parameters';
+import { MathFormulae } from './math';
+import { KatexInputHelper } from './dialog';
+import { FileHandler } from './fileHandling';
+import { CategoriesTree } from './categoriesTree';
+import { DynamicPanel } from './panels';
+
 /**
  * @abstract The boot loader of the Katex Input Helper.
  * 
  * This is capable of supporting 2 different scenarios, one using *easyloader*, one not. 
  */
-class BootLoader {
+export class BootLoader {
 	
 	baseLocation = null;
 	vme = null;
@@ -285,9 +305,10 @@ class BootLoader {
 			checkOther(typeof $.fn.datagrid.defaults.defaultFilterOptions, 'object', 'datagrid-filter') &&
 			// can we independantly check dnd and cellediting?
 			checkOther(typeof katex, 'object', 'Katex') &&
+			checkOther(typeof katex.renderToString, 'function', 'Katex') &&
 			mhchemCheck() &&
 			//checkOther(typeof ($.fn.ColorPicker), 'function', 'ColorPicker') &&
-			checkTypeByName(CodeMirror, 'Object', 'CodeMirror') &&
+			checkTypeByName(CodeMirror, 'CodeMirror', 'CodeMirror') &&
 			
 			checkTypeByName(Observable, 'Observable') &&
 			checkTypeByName(Localizer, 'Localizer') &&
@@ -338,17 +359,22 @@ class BootLoader {
 	}
 }	
 
-var kihBootLoader = new BootLoader();
-kihBootLoader.init1()
-.then(() => {
-	kihBootLoader.check();
-})
-.catch(err => {
-	console.error(`Error ${err} `, err);
-	kihBootLoader.fatal(err);
-});
+if (!window.bootLoaderLoaded) {
+	window.bootLoaderLoaded = true;
+	var kihBootLoader = new BootLoader();
+	kihBootLoader.init1()
+	.then(() => {
+		kihBootLoader.check();
+	})
+	.catch(err => {
+		console.error(`Error ${err} `, err);
+		kihBootLoader.fatal(err);
+	});
+}
 
+/*
 // This helps to import symbols in test suite
 try {
 	module.exports = BootLoader;
 } catch(e) { }
+*/

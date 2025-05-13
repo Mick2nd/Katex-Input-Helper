@@ -2,7 +2,7 @@
 /**
  * @abstract A simple implementation of the observable pattern.
  */
-class Observable {
+export class Observable {
 	observers = null;
   
   /**
@@ -66,5 +66,5 @@ class Observable {
 
 // This helps to import symbols in test suite
 try {
-	module.exports = Observable;
+	module.exports = { Observable };
 } catch(e) { }

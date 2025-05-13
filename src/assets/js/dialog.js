@@ -1,3 +1,14 @@
+import './dialog.css' assert { type: 'css' };
+
+import CodeMirror from './codemirror/lib/codemirror';
+import { ParametersProxy } from "./parameters";
+import { Localizer } from './localization';
+import { Themes } from './themes';
+import { Messager, Utilities } from './helpers';
+import { ParserExtension } from './parserExtension';
+import { MathFormulae } from './math';
+import { KIHPanels } from "./panels";
+
 
 var console; 
 if (window.console) console = window.console; else console = { log: function(msg) { }, error: function(msg) { } }; 
@@ -105,7 +116,7 @@ class Documentations {
 /**
  * @abstract The main class Katex Input Helper
  */
-class KatexInputHelper {
+export class KatexInputHelper {
 
 	version = "1.0.10"; 
 	codeType = 'Latex'; 
@@ -132,6 +143,7 @@ class KatexInputHelper {
 
 	rtlStyle = 'ltr';
 	location = "";
+	VKI_show = null;
 	documentations = null;
 	localizer = null;
 	themes = null;
@@ -149,6 +161,7 @@ class KatexInputHelper {
 	constructor(useEasyLaoder = true) {
 		var vme = this;
 		window.vme = this;
+		globalThis.vme = this;
 		this.useEasyLoader = useEasyLaoder;
 	
 		// independent of plugin variant
@@ -468,6 +481,7 @@ class KatexInputHelper {
 		/* TEST END */
 
 		var vme = this; 
+		
 		this.parser.initialise();		
 		await this.parameters.queryParameters();							// from Plugin		
 
@@ -488,7 +502,7 @@ class KatexInputHelper {
 		await vme.updateInfo();												// updates a few dialogs
 		vme.initialiseParameters(); 
 		vme.initialiseCodeType(); 
-		vme.initialiseVirtualKeyboard(); 
+		await vme.initialiseVirtualKeyboard(); 
 
 		// IN QUESTION
 		await this.onLocaleChanged(this.localizer);							// repeat because too soon after initialiseLanguageChoice
@@ -532,8 +546,11 @@ class KatexInputHelper {
 	/**
 	 * @abstract Initializes the virtual keyboard by loading a script.
 	 */	
-	initialiseVirtualKeyboard() { 
-		if (!this.runNotVirtualKeyboard) this.loadScript(`js/keyboard/keyboard.js`, function() { return true; }); 
+	async initialiseVirtualKeyboard() { 
+		if (!this.runNotVirtualKeyboard) {
+			var kb = await import('./keyboard/keyboard');
+			this.VKI_show = kb.VKI_show;
+		}
 	}
 	
 	/**
@@ -593,7 +610,6 @@ class KatexInputHelper {
 	async initialiseUI() {
 		
 		var vme = this;
-		this.math.updateLatexMenu();
 		$("a.easyui-linkbutton").linkbutton({ plain: true }); 
 		$(document).bind('contextmenu', function(event) { event.preventDefault(); return false; }); 
 		
@@ -633,7 +649,7 @@ class KatexInputHelper {
 					case "mVERTICAL_SPACING": await vme.initialiseUImoreDialogs("f_VERTICAL_SPACING"); break; 
 					case "mSPECIAL_CHARACTER": await vme.initialiseUImoreDialogs("f_SPECIAL_CHARACTER"); break; 
 					case "mHTML_MODE": $("#btENCLOSE_TYPE").click(); break; 
-					case "mKEYBOARD": if (!vme.runNotVirtualKeyboard) { VKI_show(document.getElementById("tKEYBOARD")); $("#keyboardInputMaster").draggable({ handle: '#keyboardTitle' }); } break; 
+					case "mKEYBOARD": if (!vme.runNotVirtualKeyboard) { vme.VKI_show(document.getElementById("tKEYBOARD")); $("#keyboardInputMaster").draggable({ handle: '#keyboardTitle' }); } break; 
 					default: $.messager.show({ title: "<span class='rtl-title-withicon'>" + vme.getLocalText("INFORMATION") + "</span>", msg: item.text }); break;
 				}
 			}
@@ -750,6 +766,7 @@ class KatexInputHelper {
 		});
 		*/
 	
+		this.math.updateLatexMenu();
 		this.htmlToolbarButtons(); 
 	}
 	
@@ -1032,6 +1049,7 @@ class KatexInputHelper {
 	 * @param {int} cols - the number of matrix columns
 	 */
 	async updateMatrixWindow(rows, cols) {
+		var vme = this;
 		if (typeof (rows != "undefined") && rows != null) document.formMATRIX.rowsMATRIX.value = rows; 
 		if (typeof (cols != "undefined") && cols != null) document.formMATRIX.colsMATRIX.value = cols; 
 		rows = document.formMATRIX.rowsMATRIX.value; 
@@ -1142,7 +1160,7 @@ class KatexInputHelper {
 	 * *onLocaleChanged*.
 	 */
 	htmlToolbarButtons() {
-		
+		var vme = this;
 		$("#btHTML_STRONG").click(function(event) { event.preventDefault(); vme.tag("<strong>", "</strong>"); }); 
 		$("#btHTML_EM").click(function(event) { event.preventDefault(); vme.tag("<em>", "</em>"); }); 
 		$("#btHTML_U").click(function(event) { event.preventDefault(); vme.tag("<u>", "</u>"); }); 
@@ -1200,6 +1218,7 @@ class KatexInputHelper {
 	 */
 	switchHtmlMode(toEnclose) {
 		// $("#btENCLOSE_TYPE").linkbutton('disable');
+		var vme = this; 
 		if (toEnclose) { 
 			$("#encloseType").attr("checked", "checked"); 
 			$("#btENCLOSE_TYPE").removeClass("unselect"); 
@@ -1462,15 +1481,18 @@ class KatexInputHelper {
 				if (fPanel) { 
 					var fPanelID = $(fPanel).attr("id"); 
 					if (vme.symbolPanelsLoaded.indexOf(fPanelID) == -1) { 
-						vme.symbolPanelsLoaded.push(fPanelID); 
-						$(fPanel).html(`<img src='js/jquery-easyui/themes/default/images/loading.gif' />`); 
-						$(fPanel).load(
-							`formulas/${fPanelID}.html`, 
-							async function() { 
+						vme.symbolPanelsLoaded.push(fPanelID);
+						$(fPanel).html(`<img src='js/jquery-easyui/themes/default/images/loading.gif' />`);
+						$(fPanel)
+						.panel({
+							collapsible: true,
+							href: `formulas/${fPanelID}.html`,
+							onLoad: async function() { 
 								await vme.initialiseSymbolContent(fPanelID); 
+								vme.math.updateHeaders(`#${fPanelID}`);				// with panel id not working
 								vme.themes.activateStyle(vme.style)
 							}
-						); 
+						});
 						$(`#${fPanelID}`).on('click', 'a.more', 
 							async function(event) { 
 								event.preventDefault(); 
@@ -1516,7 +1538,7 @@ class KatexInputHelper {
 			if (typeof ($(a).attr("lbegin")) != "undefined" && typeof ($(a).attr("lend")) != "undefined") 
 				return [$(a).attr("lbegin"), $(a).attr("lend")];
 			return null; 
-		}
+		};
 		
 		/**
 		 * @abstract Returns the latex info of an anchor.
@@ -1524,13 +1546,14 @@ class KatexInputHelper {
 		function latex(a) {
 			if (typeof ($(a).attr("latex")) != "undefined")
 				return $(a).attr("latex");
-		}
+		};
+		
 		$(`#${fPanelID} a.s`)
 		.each(function() {
 			var tt = getSymbol(this);
 			vme.math.equipWithTooltip($(this), tt, true);
-		})
-		.click(function(event) {
+		});
+		$(`#${fPanelID} a.s`).on('click', function(event) {
 			event.preventDefault(); 
 			var info = beginEndInfo(this);
 			if (info !== null) {
@@ -1613,12 +1636,21 @@ class KatexInputHelper {
 			.last()
 			.attr("src")
 			.split('/')
-			.slice(0, this.useEasyLoader ? -4 : -2)
+			.slice(0, this.useEasyLoader ? -4 : -1)				// modified -2 => -1 for Web app with webpack
 			.join('/')
 			.replace(/ /g, '%20')
 			.replace('file:///', 'file://')
 			.replace('file://', 'file:///') + '/';
 		console.info(`Base location is : ${location}`);
+		if (!location.includes('joplin')) {
+			
+			location = $("script[src]")							// seems not to work
+			.last()
+			.attr("src")
+			.replace('bundle.js', '');
+
+			location = "http://localhost:9000/";
+		}
 		
 		$('html > head').append($('<base />'));
 		$('html > head > base').attr('href', location);
@@ -1629,6 +1661,6 @@ class KatexInputHelper {
 
 // This helps to import symbols in test suite
 try {
-	module.exports = KatexInputHelper;
+	module.exports = { KatexInputHelper };
 } catch(e) { }
 

@@ -2,7 +2,7 @@
 /**
  * @abstract Encapsulates the jquery messager with frequently used options.
  */
-class Messager {
+export class Messager {
 	localizer = null;
 	
 	/**
@@ -45,7 +45,7 @@ class Messager {
 /**
  * @abstract A Utilities class.
  */
-class Utilities {
+export class Utilities {
 	localizer = null;
 		
 	/**

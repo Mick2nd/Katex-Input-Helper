@@ -1,3 +1,4 @@
+import { Observable } from "./patterns/observable";
 
 /**
  * @abstract Manages the Categories Tree.
@@ -5,7 +6,7 @@
  * The Leafs of the tree refer to a set of equations and constitute the categories.
  * The Folders constitute super categories.
  */
-class CategoriesTree {
+export class CategoriesTree {
 	
 	data = null;
 	treeSelector = "";
@@ -829,5 +830,5 @@ class CategoriesTree {
 
 // This helps to import symbols in test suite
 try {
-	module.exports = CategoriesTree;
+	module.exports = { CategoriesTree };
 } catch(e) { }

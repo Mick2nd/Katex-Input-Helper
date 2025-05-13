@@ -1,3 +1,5 @@
+import katex from './katex/katex.min';
+import { Messager } from './helpers';
 
 
 /**
@@ -5,7 +7,7 @@
  * The framework supported here is Katex.
  * CodeMirror is the only supported Editor case.
  */
-class MathFormulae {
+export class MathFormulae {
 	
 	mathVisualOutput = null;
 	mathTextInput = null;
@@ -49,9 +51,15 @@ class MathFormulae {
 	 * @param displayMode - in display mode can handle expressions differently (for instance environments) 
 	 */
 	insertMath(text, element = null, multiple = false, displayMode = false) {
+		if (text == '') {
+			console.warn(`Katex: no text`);
+			return;
+		}
 		try {
 			var target = element;
 			if (target == null) {
+				console.debug(`Attention : writing to output area : ${displayMode}`);
+				console.trace(`Trace : `);
 				target = this.mathVisualOutput;
 			}
 			
@@ -139,20 +147,31 @@ class MathFormulae {
 	}
 	
 	/**
-	 * Updates the headers of some Panels by translating contained Math.
+	 * @abstract Updates the headers of some Panels by translating contained Math.
+	 * 
+	 * If a selector is given, it is assumed that it is a single panel from an accordion.
 	 */
 	updateHeaders(selector = "") {
 		try {
-			var entries = $(`${selector} .panel-title span`);
+			var inst = this;
+			var entries = $(`.panel-title span`);
+			if (selector != '') {
+				var options = $(selector).panel('options');
+				var title = options.title;
+				var info = $(title).attr('information');
+				console.debug(`Katex: opening ${info} panel`);
+				entries = $(`.panel-title span[information=${info}]`);				
+			}
+			
 			console.debug(`Katex: ${entries.length} header items`);
 			entries.each((idx, a) => {
 				if (a) {
 					var text = a.innerText;
 					if (text.startsWith('$')) {
-						this.insertMath(text, a, true);
+						inst.insertMath(text, a, true);
 					}
 				}
-			})
+			});
 		} catch(e) {
 			console.error(`Katex: updateHeaders : ${e}`);
 		}
@@ -163,7 +182,7 @@ class MathFormulae {
 	 */
 	updateLatexMenu() {
 		
-		this.inplaceUpdate('#mLaTeX_TEXT span');
+		this.inplaceUpdate('#mLaTeX_TEXT span', false);
 	}
 	
 	/**
@@ -177,7 +196,9 @@ class MathFormulae {
 			entries.each(function(idx, a) {
 				if (a && !inst.runNotKatex) {
 					inst.updateAnchor(a);
-					inst.equipWithInteractivity($(this), javascript);
+					if (!selector.startsWith('#mLaTeX_TEXT')) {
+						inst.equipWithInteractivity($(this), javascript);					// the latex menu command will not get tooltip...
+					}
 				}
 			});
 		} catch(e) {
@@ -240,10 +261,10 @@ class MathFormulae {
 
 		selector.addClass("easyui-tooltip s");
 
-		var encoded = text.replace(/</g, '&lt;')									// GUI does not like text looking like tag begin -> encode
+		var encoded = text.replace(/</g, '&lt;');									// GUI does not like text looking like tag begin -> encode
 		if (javascript) {
-			selector.attr("href", "javascript:void(0)")
-			.tooltip({ 
+			selector.attr("href", "javascript:void(0)");
+			selector.tooltip({ 
 				content: encoded,
 				show: function() {
 					$(this).tooltip('tip').css({ maxWidth: 500 });
@@ -254,17 +275,20 @@ class MathFormulae {
 			.attr("title", function(index, attr) { return encoded; });
 		}		
 
-		selector.mouseover(function(event) { $("#divInformation").html(encoded); })
-		.mouseout(function(event) { $("#divInformation").html("&nbsp;"); })
+		selector.on('mouseover', function(event) { $("#divInformation").html(encoded); });
+		selector.mouseout(function(event) { $("#divInformation").html("&nbsp;"); });
 		
 		return selector;
 	}
 
 	/**
-	 * Updates an anchor with a formula. Takes the text from original anchor content.
+	 * Updates an anchor (or other tag) with a formula. Takes the text from original anchor content.
 	 */	
 	updateAnchor(a) {
 		var text = a.innerText;
+		if (text.includes('Rightarrow')) {
+			console.debug(`Found-arrow-text: ${text}`);
+		}
 		var mathText = text.includes('$');
 		var dm = (text.includes('$$') || text.includes('{equation}'));
 		text = text.replace(/^\s{0,5}\"?\${1,2}(.*?)\${1,2}\"?\s{0,5}$/s, '$1');
@@ -313,5 +337,5 @@ class MathFormulae {
 
 // This helps to import symbols in test suite
 try {
-	module.exports = MathFormulae;
+	module.exports = { MathFormulae };
 } catch(e) { }

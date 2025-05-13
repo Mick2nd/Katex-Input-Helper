@@ -1,3 +1,10 @@
+@import './jquery-easyui/themes/icon.css';
+@import './jquery-easyui/themes/default/easyui.css';
+@import './jquery-easyui-MathEditorExtend/themes/icon.css';
+@import './jquery-easyui-MathEditorExtend/themes/aguas/easyui.css';
+@import './katex/katex.min.css';
+@import './keyboard/keyboard.css';
+@import './codemirror/lib/codemirror.css';
 
 body {
 	height: 100%;
@@ -50,7 +57,7 @@ h3 {
 
 #mLaTeX_TEXT span {
 	padding-top: 5px; 
-	font-size: 120%"
+	font-size: 120%;
 }
 
 .easyui-menubutton {
@@ -70,8 +77,6 @@ h3 {
 	}
 }
 
-/* center "centerRegion"
- */
 #divEquationInputOutput {
 	overflow: hidden !important;
 

@@ -141,23 +141,14 @@ export class Dialog
 	 * @param handle - the dialog handle
 	 */
 	public loadCss = async function(handle) : Promise<void> {
+		
 		var css = this.useEasyLoader ? [] : [
 			/*
 				Ergebnis der Versuche soweit:
 				- alles nachladen funktioniert nicht so gut
 				- mit diesem Stand erst mal weiter arbeiten
 			*/
-			"./assets/js/jquery-easyui/themes/default/easyui.css",
-			"./assets/js/jquery-easyui/themes/icon.css",
-			"./assets/js/jquery-easyui-MathEditorExtend/themes/aguas/easyui.css",
-			"./assets/js/jquery-easyui-MathEditorExtend/themes/icon.css",
-			// active activates right to left
-			// "./assets/js/jquery-easyui-MathEditorExtend/themes/rtl.css",
-			// "./assets/js/jquery-colorpicker/css/colorpicker.css",
-			"./assets/js/codemirror/lib/codemirror.css",
-			"./assets/js/keyboard/Keyboard.css",
-			"./assets/js/katex/katex.min.css",
-			"./assets/js/dialog.css"
+			"./assets/styles.css"
 		];
 		
 		for (const cssPath of css) {
@@ -175,33 +166,7 @@ export class Dialog
 			"./assets/js/jquery-easyui/easyloader.js",
 			"./assets/js/bootLoader.js"
 		] : [
-			// does not work
-			//"./assets/js/pre-process.js",
-			"./assets/js/jquery-easyui/jquery.min.js",
-			"./assets/js/jquery-easyui/jquery.easyui.min.js",
-			"./assets/js/jquery-easyui/datagrid-cellediting.js",
-			"./assets/js/jquery-easyui/datagrid-filter.js",
-			// NOT REQUIRED FOR DRAGGING DATAGRID ROW TO TREE
-			"./assets/js/jquery-easyui/datagrid-dnd.js",
-			// "./assets/js/jquery-colorpicker/js/colorpicker.js",
-			"./assets/js/codemirror/lib/codemirror.js",
-			"./assets/js/katex/katex.min.js",
-			"./assets/js/katex/contrib/mhchem.min.js",
-			// does not work
-			//"./assets/js/di/inversifyjs.min.js",
-
-			"./assets/js/patterns/observable.js",
-			"./assets/js/localization.js",
-			"./assets/js/themes.js",
-			"./assets/js/parserExtension.js",
-			"./assets/js/parameters.js",
-			"./assets/js/fileHandling.js",
-			"./assets/js/helpers.js",
-			"./assets/js/math.js",
-			"./assets/js/categoriesTree.js",
-			"./assets/js/panels.js",
-			"./assets/js/dialog.js",
-			"./assets/js/bootLoader.js"
+			"./assets/bundle.js"
 		];
 		
 		for (const jsPath of js) {

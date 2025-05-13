@@ -4,7 +4,7 @@
  * 
  * To be preferred : the asynchronous version with xxxAsync.
  */
-class ParserExtension {
+export class ParserExtension {
 	queue = [];
 	item = null;
 	async = false;

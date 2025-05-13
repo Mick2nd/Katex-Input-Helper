@@ -1,10 +1,11 @@
+import { Observable } from "./patterns/observable";
 
 /**
  * @abstract Supports the localization of this application.
  * 
  * This is an Observable as it recognizes the change of Language and notifies its observers.
  */
-class Localizer {
+export class Localizer {
 	
 	current = null;
 	fallback = null;
@@ -30,9 +31,15 @@ class Localizer {
 	 * @abstract The basic load method. Reads a language file given by its language code.
 	 */
 	async basicLoad(langCode) {
-		var langFile = `js/localization/${langCode}/lang.json`;
-		var response = await fetch(langFile);
-		return await response.json();
+		try {
+			var langFile = `js/localization/${langCode}/lang.json`;
+			var response = await fetch(langFile);
+			var json = await response.json();
+			return json;
+		} catch(e) {
+			console.error(`Could not load language file - ${e}`);
+			return { };
+		}
 	}
 	
 	/**
@@ -157,5 +164,5 @@ class Localizer {
 
 // This helps to import symbols in test suite
 try {
-	module.exports = Localizer;
+	module.exports = { Localizer };
 } catch(e) { }

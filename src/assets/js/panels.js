@@ -1,8 +1,10 @@
+import { Messager, Utilities } from './helpers';
+import { CategoriesTree } from './categoriesTree';
 
 /**
  * @abstract The base class of all Panels, Dialogs, Windows.
  */
-class KIHPanel {
+export class KIHPanel {
 	id = "";
 	parent = null;
 	initialised = false;
@@ -102,7 +104,7 @@ class KIHPanel {
  * 
  * @extends KIHPanel
  */
-class KIHMoreDialog extends KIHPanel {
+export class KIHMoreDialog extends KIHPanel {
 	
 	/**
 	 * @abstract Constructor
@@ -143,7 +145,7 @@ class KIHMoreDialog extends KIHPanel {
  * This represents windows like the Configuration Parameters window, the Language Configuration
  * window or the Theme (Style) selection window.
  */
-class KIHWindow extends KIHPanel {
+export class KIHWindow extends KIHPanel {
 
 	/**
 	 * @abstract Constructor
@@ -189,7 +191,7 @@ class KIHWindow extends KIHPanel {
 /**
  * @abstract This class is solely responsible for the Dynamic Panel for Custom Equations.
  */
-class DynamicPanel extends KIHPanel {
+export class DynamicPanel extends KIHPanel {
 	parent = null;
 	messager = null;
 	utilities = null;
@@ -749,7 +751,7 @@ class DynamicPanel extends KIHPanel {
  * This method performs an initialisation lazily and one time and can show the Panel repeatedly.
  * Client is the central *Katex Input Helper* instance.
  */
-class KIHPanels {
+export class KIHPanels {
 	parameters = null;
 	localizer = null;
 	parser = null;

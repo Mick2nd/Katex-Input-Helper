@@ -1,10 +1,11 @@
+import { Observable } from "./patterns/observable";
 
 /**
  * @abstract Themes or Styles support. This is an Observable.
  * 
  * @extends Observable
  */
-class Themes extends Observable {
+export class Themes extends Observable {
 	dir = "";
 	cssActive = false;
 	activeTheme = "";
@@ -63,21 +64,21 @@ class Themes extends Observable {
 			return;
 		}
 		this.activeTheme = activeTheme;
-		var styles = document.getElementsByTagName('link');									// all link entries are potential css files
-		console.debug(`chooseStyle: have entries for tag 'link' : ${styles.length > 0}`);
 		var colorType = null;
-		
-		for (const style of styles) { 														// enable / disable css files
-			var title = style.getAttribute("title"); 
+
+		$('link[rel="stylesheet"]')
+		.each(function() {
+			console.debug(`Stylesheet`);
+			var title = $(this).attr("title"); 
 			if (title) { 
 				if (title != activeTheme) { 
-					style.disabled = true; 
+					$(this).attr("disabled", true); 
 				} else { 
-					style.disabled = false; 
-					colorType = style.getAttribute("colorType"); 							// and determine color type
+					$(this).attr("disabled", false); 
+					colorType = $(this).attr("colorType"); 									// and determine color type
 				} 
 			} 
-		}
+		});
 		
 		this.notify(activeTheme, this.dir, colorType);										// finally notify observers
 	}
@@ -97,7 +98,7 @@ class Themes extends Observable {
 		
 		function singleEntry(href, title, id = "") {
 			var entry = {
-					element: '<link rel="stylesheet" type="text/css" disabled="true" />',
+					element: '<link rel="stylesheet" disabled="true" />',
 					attributes: { 
 						href: `js/${href}`,
 						title: title,
@@ -110,7 +111,7 @@ class Themes extends Observable {
 		
 		function singleEntryBasic(href) {
 			return {
-					element: '<link rel="stylesheet" type="text/css" />',
+					element: '<link rel="stylesheet" />',
 					attributes: { 
 						href: `js/${href}`
 					}
@@ -119,7 +120,7 @@ class Themes extends Observable {
 		
 		function singleEntryId(href, id) {
 			return {
-					element: '<link rel="stylesheet" type="text/css" disabled="true" />',
+					element: '<link rel="stylesheet" disabled="true" />',
 					attributes: { 
 						href: `js/${href}`,
 						id: id
@@ -183,5 +184,5 @@ class Themes extends Observable {
 
 // This helps to import symbols in test suite
 try {
-	module.exports = Themes;
+	module.exports = { Themes };
 } catch(e) { }

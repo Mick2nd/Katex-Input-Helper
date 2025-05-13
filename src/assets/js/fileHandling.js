@@ -2,7 +2,7 @@
 /**
  * Supports some (asynchronous) file operations.
  */
-class FileHandler {
+export class FileHandler {
 	
 	constructor() {
 		
