@@ -1,6 +1,8 @@
 import './dialog.css' assert { type: 'css' };
 
+import { VKI_init } from './keyboard/keyboard';
 import CodeMirror from './codemirror/lib/codemirror';
+import './codemirror/mode/stex/stex';								// manual recommendation
 import { ParametersProxy } from "./parameters";
 import { Localizer } from './localization';
 import { Themes } from './themes';
@@ -118,14 +120,15 @@ class Documentations {
  */
 export class KatexInputHelper {
 
-	version = "1.0.10"; 
+	version = "2.0.0"; 
 	codeType = 'Latex'; 
 	saveOptionInCookies = false; 
 	isBuild = false; 
 	windowIsOpenning = false; 
 	textareaIgnore = false; 
 	textareaID = null; 
-	codeMirrorEditor = null; 
+	codeMirrorEditor = null;
+	codeMirrorTheme = '';
 	symbolPanelsLoaded = []; 
 	latexMathjaxCodesListLoaded = false; 
 	uniCodesListLoaded = false; 
@@ -143,7 +146,6 @@ export class KatexInputHelper {
 
 	rtlStyle = 'ltr';
 	location = "";
-	VKI_show = null;
 	documentations = null;
 	localizer = null;
 	themes = null;
@@ -507,7 +509,7 @@ export class KatexInputHelper {
 		// IN QUESTION
 		await this.onLocaleChanged(this.localizer);							// repeat because too soon after initialiseLanguageChoice
 		this.themes.subscribe(this.onStyleChanged.bind(this));
-		this.themes.initialiseThemeChoice(this.style, this.rtlStyle); 		// RTL STYLE defined after locale language
+		await this.themes.initialiseThemeChoice(this.style, this.rtlStyle); // RTL STYLE defined after locale language
 
 		vme.endWait(); 
 		vme.isBuild = true;
@@ -528,8 +530,8 @@ export class KatexInputHelper {
 	 * @abstract Set Focus on Editor.
 	 */
 	setFocus() { 
-		if (this.codeMirrorEditor) this.codeMirrorEditor.focus(); 
 		$("#mathTextInput").focus(); 
+		if (this.codeMirrorEditor) this.codeMirrorEditor.focus(); 
 	}
 	
 	/**
@@ -547,9 +549,9 @@ export class KatexInputHelper {
 	 * @abstract Initializes the virtual keyboard by loading a script.
 	 */	
 	async initialiseVirtualKeyboard() { 
+		
 		if (!this.runNotVirtualKeyboard) {
-			var kb = await import('./keyboard/keyboard');
-			this.VKI_show = kb.VKI_show;
+			VKI_init.bind(this)();
 		}
 	}
 	
@@ -1259,7 +1261,7 @@ export class KatexInputHelper {
 	 * 			 output window.
 	 */
 	updateOutput() {
-		this.math.updateOutput(); 
+		this.math.updateOutput();
 	}
 
 	/**
@@ -1396,6 +1398,7 @@ export class KatexInputHelper {
 				codemirrorCSS = "twilight"; 
 				colorpickerCSS = "black";
 			}
+			this.codeMirrorTheme = codemirrorCSS;
 			this.codeMirrorEditor.setOption("theme", codemirrorCSS); 
 			if (!this.runNotColorPicker) { 
 				$("#colorpickerCSSblack").prop('disabled', !(colorpickerCSS == "black"));
@@ -1483,16 +1486,16 @@ export class KatexInputHelper {
 					if (vme.symbolPanelsLoaded.indexOf(fPanelID) == -1) { 
 						vme.symbolPanelsLoaded.push(fPanelID);
 						$(fPanel).html(`<img src='js/jquery-easyui/themes/default/images/loading.gif' />`);
-						$(fPanel)
-						.panel({
-							collapsible: true,
-							href: `formulas/${fPanelID}.html`,
-							onLoad: async function() { 
-								await vme.initialiseSymbolContent(fPanelID); 
-								vme.math.updateHeaders(`#${fPanelID}`);				// with panel id not working
-								vme.themes.activateStyle(vme.style)
-							}
-						});
+						
+						var options = $(fPanel).panel('options');
+						options.onLoad = async function() { 
+							await vme.initialiseSymbolContent(fPanelID); 
+							vme.math.updateHeaders(`#${fPanelID}`);				// with panel id not working
+							await vme.themes.activateStyle(vme.style);
+						};
+						
+						$(fPanel).panel('refresh', `formulas/${fPanelID}.html`);
+						
 						$(`#${fPanelID}`).on('click', 'a.more', 
 							async function(event) { 
 								event.preventDefault(); 
@@ -1606,7 +1609,7 @@ export class KatexInputHelper {
 		await vme.parser.parseAsync('div[href]', 0, 100);
 		console.info(`Parse completed for : div[href]`);
 
-		var VKI_version = 1;
+		var VKI_version = '1.49';
 		var easyuiVersion = '1.11';
 		$("#VMEversion").html(`
 				<table class="inline-table">
@@ -1649,7 +1652,7 @@ export class KatexInputHelper {
 			.attr("src")
 			.replace('bundle.js', '');
 
-			location = "http://localhost:9000/";
+			location = "http://localhost:9000/";				// -> use fixed server address
 		}
 		
 		$('html > head').append($('<base />'));

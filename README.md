@@ -92,12 +92,17 @@ The custom equations dialog with categories tree
 
 ## Known Problems
 
-- Sometimes a start of the dialog crashes. Mainly I could observe this for first time starts of the production version. Perhaps this has to do with caching of the plugin. Restart helps.
-- [Here](./KNOWN-PROBLEMS.md) you can find further explanation.
 - A minor problem is a missing update of the language of the data grid paging bar in the *Custom Equations* dialog. This only appears during language change during an actual activation of the dialog.
 - The persistence of custom equations can be damaged when an filter is active. 
 
 ## Release Notes
+
+### 2.0.0
+
+- Fixed the start problem, e.g. the known problems [document](./KNOWN-PROBLEMS.md) is no longer valid.
+- The functionality is more or less the same.
+- Fixed all problems detected during the adjustment to usage of Webpack as a bundler.
+- After the adjustment I had no single start failure.
 
 ### 1.0.10
 

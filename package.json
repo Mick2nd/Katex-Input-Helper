@@ -1,8 +1,8 @@
 {
   "name": "joplin-plugin-katex-input-helper",
-  "version": "1.0.10",
+  "version": "2.0.0",
   "scripts": {
-    "dist": "webpack --env joplin-plugin-config=buildMain && webpack --env joplin-plugin-config=buildExtraScripts && npm run build-assets && webpack --env joplin-plugin-config=createArchive",
+    "dist": "webpack --env joplin-plugin-config=buildMain && webpack --env joplin-plugin-config=buildExtraScripts && npm run build-assets && npm run build-docs && webpack --env joplin-plugin-config=createArchive",
     "prepare": "npm run dist",
     "updateVersion": "webpack --env joplin-plugin-config=updateVersion",
     "update": "npm install -g generator-joplin && yo joplin --node-package-manager npm --update --force",
@@ -10,7 +10,8 @@
     "test": "vitest --root './tests' --run --reporter verbose",
     "jtest": "jest",
     "build-assets": "webpack --config webpack.assets.config.js --mode development",
-	"serve": "webpack serve --config webpack.assets.config.js"
+	"serve": "webpack serve --config webpack.assets.config.js",
+	"stop-serve": "npx kill-port 9000"
   },
   "license": "MIT",
   "keywords": [

@@ -5,6 +5,8 @@
 @import './katex/katex.min.css';
 @import './keyboard/keyboard.css';
 @import './codemirror/lib/codemirror.css';
+@import './codemirror/theme/darcula.css';
+@import './codemirror/theme/twilight.css';
 
 body {
 	height: 100%;

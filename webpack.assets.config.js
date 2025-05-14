@@ -5,6 +5,7 @@ import CopyPlugin from 'copy-webpack-plugin';
 
 export default () => { 
 	return {
+		cache: false,
 		context: path.resolve(path.dirname('.'), '.'),
 		resolve: {
 			alias: {
@@ -22,8 +23,11 @@ export default () => {
 					{ from: 'src/assets/doc', to: 'doc' },
 					{ from: 'src/assets/formulas', to: 'formulas' },
 					{ from: 'src/assets/information', to: 'information' },
-					{ from: 'src/assets/js/jquery-easyui', to: 'js/jquery-easyui' },
-					{ from: 'src/assets/js/jquery-easyui-MathEditorExtend', to: 'js/jquery-easyuiMathEditorExtend' },
+					{ from: 'src/assets/js/jquery-easyui/locale', to: 'js/jquery-easyui/locale' },
+					{ from: 'src/assets/js/jquery-easyui/themes/default/images', to: 'js/jquery-easyui/themes/default/images' },
+					{ from: 'src/assets/js/jquery-easyui/themes/aguas/images', to: 'js/jquery-easyui/themes/aguas/images' },
+					{ from: 'src/assets/js/jquery-easyui/themes/icons', to: 'js/jquery-easyui/themes/icons' },
+					{ from: 'src/assets/js/jquery-easyui-MathEditorExtend/themes/rtl.css', to: 'js/jquery-easyui-MathEditorExtend/themes/rtl.css' },
 					{ from: 'src/assets/js/localization', to: 'js/localization' },
 				]
 			})
@@ -35,7 +39,7 @@ export default () => {
 			clean: true,
 			filename: 'bundle.js',
 			path: path.resolve(path.dirname('.'), 'dist/assets'),
-			assetModuleFilename: 'misc/[name][ext]',
+			assetModuleFilename: 'misc/[name]-[hash][ext]',
 		},
 		mode: 'development',
 		target: 'web',

@@ -178,11 +178,15 @@ export class MathFormulae {
 	}
 	
 	/**
-	 * The Latex gets the true Latex symbol.
+	 * The Latex menu command gets the true Latex symbol.
+	 * 
+	 * No longer working. Use workaround.
 	 */
 	updateLatexMenu() {
-		
-		this.inplaceUpdate('#mLaTeX_TEXT span', false);
+		var html = katex.renderToString('\\LaTeX', { thrownOnError: false });
+		console.debug(`LaTeX symbol : ${html}`);
+		$('#mLaTeX_TEXT span').text('LaTeX');
+		// this.inplaceUpdate('#mLaTeX_TEXT span', false);
 	}
 	
 	/**
@@ -196,7 +200,7 @@ export class MathFormulae {
 			entries.each(function(idx, a) {
 				if (a && !inst.runNotKatex) {
 					inst.updateAnchor(a);
-					if (!selector.startsWith('#mLaTeX_TEXT')) {
+					if (typeof selector !== 'string' || !selector.startsWith('#mLaTeX_TEXT')) {
 						inst.equipWithInteractivity($(this), javascript);					// the latex menu command will not get tooltip...
 					}
 				}
@@ -300,7 +304,7 @@ export class MathFormulae {
 	 * @abstract Inserts given text into Code Mirror Editor and updates the formula in the output.
 	 */
 	insert(b) {
-		this.codeMirror.replaceSelection(b, "stop");
+		this.codeMirror.replaceSelection(b);
 		this.updateOutput();
 	}
 

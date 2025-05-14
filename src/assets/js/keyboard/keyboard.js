@@ -23,9 +23,9 @@ if (debug) {
 
 var VKI_attach, VKI_close;
 var VKI_version;
-export var VKI_show;
+var VKI_show;
 
-(function() {
+export function VKI_init() {
     var self = this;
 	globalThis.document2 = $(document).get(0);					// do we get a real document here ?
     this.VKI_version = "1.49";
@@ -7656,4 +7656,4 @@ export var VKI_show;
     VKI_addListener(window, "scroll", this.VKI_position, false);
     this.VKI_kbsize();
     VKI_addListener(window, "load", VKI_buildKeyboardInputs, false)
-})();
+};
