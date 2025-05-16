@@ -1,6 +1,0 @@
-{
-	"extraScripts": [ 
-		"./plugins/codeMirror.ts", 
-		"./plugins/markdownIt.ts"
-	]
-}
