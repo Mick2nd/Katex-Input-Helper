@@ -12,7 +12,7 @@
     "build-assets": "webpack --config webpack.assets.config.js --mode development",
     "serve": "webpack serve --config webpack.assets.config.js",
     "stop-serve": "npx kill-port 9000",
-	"deploy": "gh-pages -d dist/assets"
+	"deploy": "gh-pages -d dist"
   },
   "license": "MIT",
   "keywords": [
