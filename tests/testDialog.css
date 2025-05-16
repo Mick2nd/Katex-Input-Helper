@@ -1,0 +1,69 @@
+/*
+*/
+.myBody {
+	height: 100%;
+}
+
+.easyui-layout {
+	height: 100vh;
+}
+
+h3 {
+	text-align: center;
+}
+
+#northRegion {
+	height: 110px;
+
+}
+
+#menu {
+	padding: 5px;
+
+	.easyui-menubutton {
+		width: 100px;
+		overflow: hidden;
+	}
+	
+	.menus {
+		width: 200px;
+		overflow: hidden !important;
+	}
+}
+
+#southRegion {
+	height: 40px;
+}
+
+#westRegion {
+	width: 160px;
+}
+
+#eastRegion {
+	width: 160px;
+}
+
+#wEDITOR_PARAMETERS {
+	width: 420px; 
+	height: 470px; 
+
+	& #formEDITOR_PARAMETERS {
+		& fieldset, & input, & a {
+			margin-top: 10px !important;
+			margin-left: 15px !important;
+		}
+		& legend {
+			margin-top: 10px !important;
+			margin-left: 0px !important;
+		}
+		& #autoUpdateTime {
+			margin-left: 4px; 
+			font-size: 90%;
+		}
+		/*
+		a {
+			background-color: lightgray;
+		}
+		*/
+	}
+}
