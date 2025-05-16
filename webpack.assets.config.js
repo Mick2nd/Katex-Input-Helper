@@ -2,34 +2,45 @@ import path from 'path';
 import TerserPlugin from 'terser-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CopyPlugin from 'copy-webpack-plugin';
+import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
+import HtmlWebpackPlugin from 'html-webpack-plugin';
 
 export default () => { 
 	return {
+		optimization: {
+			minimizer: [
+		    // For webpack@5 you can use the `...` syntax to extend existing minimizers
+		    	`...`,
+		    	new CssMinimizerPlugin(),
+			],
+			minimize: true,
+		},
 		cache: false,
 		context: path.resolve(path.dirname('.'), '.'),
 		resolve: {
 			alias: {
-		    	'@images': path.resolve(path.dirname('.'), 'images/'),
+		    	'@images': path.resolve(path.dirname('.'), 'dist/assets/images/'),
 		     	'@fonts': path.resolve(path.dirname('.'), 'fonts/')
 			},
 		},
 		plugins: [
 			new TerserPlugin(),
-			new MiniCssExtractPlugin({ filename: 'styles.css' }),
+			new MiniCssExtractPlugin({ 
+				filename: 'styles.css',
+				chunkFilename: 'css/[name].styles.css' //	=> works, but name is essential
+			}),
 			new CopyPlugin({
 				patterns: [
 					{ from: 'src/assets/dialog.html', to: 'dialog.html' },
-					{ from: 'src/assets/dialog2.html', to: 'dialog2.html' },
 					{ from: 'src/assets/doc', to: 'doc' },
 					{ from: 'src/assets/formulas', to: 'formulas' },
 					{ from: 'src/assets/information', to: 'information' },
-					{ from: 'src/assets/js/jquery-easyui/locale', to: 'js/jquery-easyui/locale' },
-					{ from: 'src/assets/js/jquery-easyui/themes/default/images', to: 'js/jquery-easyui/themes/default/images' },
-					{ from: 'src/assets/js/jquery-easyui/themes/aguas/images', to: 'js/jquery-easyui/themes/aguas/images' },
-					{ from: 'src/assets/js/jquery-easyui/themes/icons', to: 'js/jquery-easyui/themes/icons' },
-					{ from: 'src/assets/js/jquery-easyui-MathEditorExtend/themes/rtl.css', to: 'js/jquery-easyui-MathEditorExtend/themes/rtl.css' },
-					{ from: 'src/assets/js/localization', to: 'js/localization' },
-				]
+				],
+			}),
+			new HtmlWebpackPlugin({
+				title: 'My Webpack App',
+				template: './src/assets/dialog.html',
+				filename: './index.html',
 			})
 		],
 		entry: [
@@ -38,8 +49,12 @@ export default () => {
 		output: {
 			clean: true,
 			filename: 'bundle.js',
+			chunkFilename: (pathData) => {
+				return pathData.chunk.name === 'main' ? 'bundle.js' : 'js/[name].js';
+			},
 			path: path.resolve(path.dirname('.'), 'dist/assets'),
 			assetModuleFilename: 'misc/[name]-[hash][ext]',
+			publicPath: '/Katex-Input-Helper/',
 		},
 		mode: 'development',
 		target: 'web',
@@ -63,15 +78,30 @@ export default () => {
 					use: [ MiniCssExtractPlugin.loader, 'css-loader' ],
 					sideEffects: true
 				},
-				/*
-				- copy operation works
-				- images appear doubled
-				- no icons in app
 				{
-					test: /\.(pdf|jpg|png|gif|svg|ico)$/,
-					loader: 'file-loader',
-					options: { name: 'images/[name].[ext]' }
-				}*/
+					test: /\.(pdf|jpg|png|svg|ico)$/,
+					type: 'asset/resource',
+					generator: {
+						filename: 'images/[name]-[hash][ext]'
+					}
+				},
+				/*
+				- images without hash as they are used by me
+				*/
+				{
+					test: /^.*?(\.gif|[\\\/]mini_add\.png|i18n[\\\/]icons[\\\/][a-z][a-z]\.png)$/,
+					type: 'asset/resource',
+					generator: {
+						filename: 'icons/[name][ext]'
+					}
+				},
+				{
+					test: /\.(woff|woff2|eot|ttf|otf)$/i,
+					type: 'asset/resource',
+					generator: {
+						filename: 'fonts/[name][ext]'
+					}
+				},
 			],
 			parser: {
 				javascript: {

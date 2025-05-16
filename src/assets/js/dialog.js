@@ -1485,7 +1485,7 @@ export class KatexInputHelper {
 					var fPanelID = $(fPanel).attr("id"); 
 					if (vme.symbolPanelsLoaded.indexOf(fPanelID) == -1) { 
 						vme.symbolPanelsLoaded.push(fPanelID);
-						$(fPanel).html(`<img src='js/jquery-easyui/themes/default/images/loading.gif' />`);
+						$(fPanel).html(`<img src="icons/loading.gif" />`);
 						
 						var options = $(fPanel).panel('options');
 						options.onLoad = async function() { 

@@ -32,9 +32,10 @@ export class Localizer {
 	 */
 	async basicLoad(langCode) {
 		try {
-			var langFile = `js/localization/${langCode}/lang.json`;
-			var response = await fetch(langFile);
-			var json = await response.json();
+			var json = await import(
+				/* webpackInclude: /\.json$/ */
+				`./localization/${langCode}/lang.json`);
+			
 			return json;
 		} catch(e) {
 			console.error(`Could not load language file - ${e}`);
@@ -61,10 +62,7 @@ export class Localizer {
 		// ATTENTION! NOT EVERY LOCALE has a corresponding EASYUI LOCALE
 		try {
 			var shortCode = inst.current._i18n_HTML_Lang;
-			var langFile = `js/jquery-easyui/locale/easyui-lang-${shortCode}.js`;
-			var response = await fetch(langFile);
-			var responseTxt = await response.text();
-			eval(responseTxt);
+			await import(`./jquery-easyui/locale/easyui-lang-${shortCode}.js`);
 		} catch(e) {
 			console.warn(`${shortCode} : no corresponding easyui locale`);
 		}
@@ -124,13 +122,16 @@ export class Localizer {
 			var langCode = json["_i18n_HTML_Lang"]; 
 			var langDir = json["_i18n_HTML_Dir"]; 
 			var langAuthor = json["_i18n_Author"]; 
+			var flag = langCode;
+			if (langCode == 'en') { flag = 'us'; }
+			
+			var ico = await import(`./i18n/icons/${flag}.png`);
 			
 			html += 
-				"\n\t" + 
-				"<input type='radio' name='localType' id='" + lang + "_localType' value='" + lang + "' />" + 
-				"<label for='" + lang + "_localType' dir='" + langDir + "'>" + 
-				"<!--img src='js/i18n/icons/" + langCode + ".png' width='16' height='11' alt='" + langCode + "' / -->" + langage + "</label> - " + 
-				langAuthor + "<br />";
+				`\n\t` + 
+				`<input type='radio' name='localType' id='${lang}_localType' value='${lang}' />` + 
+				`<img src='./icons/${flag}.png' width='16' height='11' alt='${langCode}' /> &nbsp; ` + 
+				`<label for='${lang}_localType' dir='${langDir}'>${langage}</label> - ${langAuthor} <br />`;
 		}
 		html += "\n</fieldset>";
 		return html; 

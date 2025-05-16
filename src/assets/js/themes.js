@@ -40,7 +40,7 @@ export class Themes extends Observable {
 	 */
 	async initialiseThemeChoice(activeTheme, dir = 'ltr') {
 		var inst = this;
-		this.appendCss(activeTheme, dir);													// initialisation -> 'load' css files
+		await this.appendCss(activeTheme, dir);												// initialisation -> 'load' css files
 		$("[name='style']").filter(`[value=${activeTheme}]`).attr("checked", "checked"); 	// select Radio button
 
 		$("input[name='style']").change(function() { 										// change handler of style changes
@@ -63,62 +63,20 @@ export class Themes extends Observable {
 		if (activeTheme == this.activeTheme) {												// no change
 			return;
 		}
-
-		/* NOT WORKING
-		$('link[rel="stylesheet"]')
-		.each(function() {
-			console.debug(`Stylesheet`);
-			var title = $(this).attr("title"); 
-			if (title) { 
-				if (title != activeTheme) { 
-					$(this).attr("disabled", true); 
-				} else { 
-					$(this).attr("disabled", false); 
-					colorType = $(this).attr("colorType"); 									// and determine color type
-				} 
-			} 
-		});
-		
-		this.notify(activeTheme, this.dir, colorType);										// finally notify observers
-		
-		var css1 = `./js/jquery-easyui/themes/${activeTheme}/easyui.css`;
-		var css2 = `./js/jquery-easyui-MathEditorExtend/themes/${activeTheme}/easyui.css`;
-		var opts = { with: { type: 'css' } };
-		
-		import(css1, opts)
-		.then(() => { import(css2, opts); })
-		.then(() => { this.notify(activeTheme, this.dir, colorType); });
-		*/
 		
 		this.activeTheme = activeTheme;
 		var colorType = '';
 		var opts = { with: { type: 'css' } };
 		this.disableThemeLinks();
 
-		// WORKS, but CodeMirror is not grayed
-		switch(activeTheme) {
-			case 'aguas':
-				await import("./jquery-easyui/themes/default/easyui.css", opts);
-				await import("./jquery-easyui-MathEditorExtend/themes/aguas/easyui.css", opts);
-				break;
-			case 'gray':
-				await import("./jquery-easyui/themes/gray/easyui.css", opts);
-				await import("./jquery-easyui-MathEditorExtend/themes/gray/easyui.css", opts);
-				break;
-			case 'metro':
-				await import("./jquery-easyui/themes/metro/easyui.css", opts);
-				await import("./jquery-easyui-MathEditorExtend/themes/metro/easyui.css", opts);
-				break;
-			case 'bootstrap':
-				await import("./jquery-easyui/themes/bootstrap/easyui.css", opts);
-				await import("./jquery-easyui-MathEditorExtend/themes/bootstrap/easyui.css", opts);
-				break;
-			case 'black':
-				await import("./jquery-easyui/themes/black/easyui.css", opts);
-				await import("./jquery-easyui-MathEditorExtend/themes/black/easyui.css", opts);
-				colorType = 'black';
-				break;
-		}
+		// TRYING alternative way
+		// WORKS and loads all present themes!!
+		var mainTheme = activeTheme;
+		if (activeTheme == 'aguas') { mainTheme = 'default'; }
+		if (activeTheme == 'black') { colorType = 'black'; }
+		await import(`./jquery-easyui/themes/${mainTheme}/easyui.css`, opts);
+		await import(`./jquery-easyui-MathEditorExtend/themes/${activeTheme}/easyui.css`, opts);
+		
 		this.enableThemeLinks(activeTheme);
 		this.notify(activeTheme, this.dir, colorType);
 	}
@@ -127,7 +85,7 @@ export class Themes extends Observable {
 	 * @abstract Disables link tags to the theme resources.
 	 * 
 	 * The hope was this could enforce a new load of themes every time one selects any.
-	 * But this has not fulfilled yet.
+	 * Yes, but it must be combined with *enableThemeLinks*.
 	 */
 	disableThemeLinks() {
 		$('link[href$="easyui_css.styles.css"]').attr('disabled', true);
@@ -152,59 +110,17 @@ export class Themes extends Observable {
 	 * @param activeTheme - the active theme
 	 * @param dir - direction of the active language (ltr or rtl)
 	 */
-	appendCss(activeTheme, dir = 'ltr') {
+	async appendCss(activeTheme, dir = 'ltr') {
 		console.info(`Active theme is ${activeTheme}`);
-		var vme = this;
 		
-		function singleEntry(href, title, id = "") {
-			var entry = {
-					element: '<link rel="stylesheet" disabled="true" />',
-					attributes: { 
-						href: `js/${href}`,
-						title: title,
-						disabled: `${activeTheme == title}`
-					}
-			};
-			if (id != "") entry.attributes.id = id;
-			return entry;
-		}
+		var opts = { with: { 
+			type: 'css',
+		} };
+		await import(`./jquery-easyui-MathEditorExtend/themes/rtl.css`, opts);
+		$('link').last()
+		.attr('id', 'RTLstyle')
+		.attr('disabled', true);
 		
-		function singleEntryBasic(href) {
-			return {
-					element: '<link rel="stylesheet" />',
-					attributes: { 
-						href: `js/${href}`
-					}
-			};
-		}
-		
-		function singleEntryId(href, id) {
-			return {
-					element: '<link rel="stylesheet" disabled="true" />',
-					attributes: { 
-						href: `js/${href}`,
-						id: id
-					}
-			};
-		}
-
-		var cssDescription = [
-			/*
-			singleEntry("jquery-easyui/themes/default/easyui.css", "aguas"),
-			singleEntry("jquery-easyui-MathEditorExtend/themes/aguas/easyui.css", "aguas"),
-			singleEntry("jquery-easyui/themes/gray/easyui.css", "gray"),
-			singleEntry("jquery-easyui-MathEditorExtend/themes/gray/easyui.css", "gray"),
-			singleEntry("jquery-easyui/themes/metro/easyui.css", "metro"),
-			singleEntry("jquery-easyui-MathEditorExtend/themes/metro/easyui.css", "metro"),
-			singleEntry("jquery-easyui/themes/bootstrap/easyui.css", "bootstrap"),
-			singleEntry("jquery-easyui-MathEditorExtend/themes/bootstrap/easyui.css", "bootstrap"),
-			singleEntry("jquery-easyui/themes/black/easyui.css", "black"),
-			singleEntry("jquery-easyui-MathEditorExtend/themes/black/easyui.css", "black", "EasyuiCSS"),
-			*/
-			singleEntryId("jquery-easyui-MathEditorExtend/themes/rtl.css", "RTLstyle"),
-		];
-		
-		this.universalLoad('head', cssDescription);
 		this.setRTLstyle(dir);
 		this.cssActive = true;
 	}
