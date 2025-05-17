@@ -1,4 +1,4 @@
-import katex from './katex/katex.min';
+import katex from ''katex/dist/katex';
 import { Messager } from './helpers';
 
 

@@ -3,7 +3,7 @@ import { Observable } from "./patterns/observable";
 /**
  * @abstract Supports the localization of this application.
  * 
- * This is an Observable as it recognizes the change of Language and notifies its observers.
+ * This uses an Observable as it recognizes the change of Language and notifies its observers.
  */
 export class Localizer {
 	
@@ -36,6 +36,9 @@ export class Localizer {
 				/* webpackInclude: /\.json$/ */
 				`./localization/${langCode}/lang.json`);
 			
+			if ('default' in json) {								// workaround: sometimes no json is imported
+				json = json['default'];
+			}
 			return json;
 		} catch(e) {
 			console.error(`Could not load language file - ${e}`);

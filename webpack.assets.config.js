@@ -1,11 +1,15 @@
 import path from 'path';
+import webpack from 'webpack';
 import TerserPlugin from 'terser-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CopyPlugin from 'copy-webpack-plugin';
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 
-export default () => { 
+export default (env) => { 
+	const PUBLIC_PATH = (env.ghpages ? "/Katex-Input-Helper/" : "auto");
+	const MODE = (env.kihmode ? env.kihmode : "development");
+	
 	return {
 		optimization: {
 			minimizer: [
@@ -14,6 +18,41 @@ export default () => {
 		    	new CssMinimizerPlugin(),
 			],
 			minimize: true,
+			/*
+			splitChunks: {
+				chunks: 'async',
+				minSize: 20000,
+				minRemainingSize: 0,
+				minChunks: 1,
+				maxAsyncRequests: 30,
+				maxInitialRequests: 30,
+				enforceSizeThreshold: 50000,
+				cacheGroups: {
+					commons: {
+						name: 'commons',
+						chunks: 'async',
+						minChunks: 2,
+					},
+					vendors: {
+						test: /[\\/]node_modules[\\/]/,
+						priority: -10,
+				  		reuseExistingChunk: true,
+						filename: 'js/vendors/[name].js',			// no action
+						chunks: 'async',
+					},
+					easyui: {
+						test: /src[\\/]assets[\\/]js[\\/]jquery-easyui/,
+						priority: -15,
+						filename: 'js/easyui/[name].js',			// no action
+						chunks: 'all',
+					},
+					default: {
+						minChunks: 2,
+				  		priority: -20,
+				  		reuseExistingChunk: true,
+					},
+				},
+			}*/
 		},
 		cache: false,
 		context: path.resolve(path.dirname('.'), '.'),
@@ -24,9 +63,10 @@ export default () => {
 			},
 		},
 		plugins: [
+			
 			new TerserPlugin(),
 			new MiniCssExtractPlugin({ 
-				filename: 'styles.css',
+				filename: '[name].css',
 				chunkFilename: 'css/[name].styles.css' //	=> works, but name is essential
 			}),
 			new CopyPlugin({
@@ -48,15 +88,15 @@ export default () => {
 		],
 		output: {
 			clean: true,
-			filename: 'bundle.js',
+			filename: '[name].js',
 			chunkFilename: (pathData) => {
-				return pathData.chunk.name === 'main' ? 'bundle.js' : 'js/[name].js';
+				return pathData.chunk.name === 'main' ? '[name].js' : 'js/[name].js';
 			},
 			path: path.resolve(path.dirname('.'), 'dist/assets'),
 			assetModuleFilename: 'misc/[name]-[hash][ext]',
-			publicPath: '/Katex-Input-Helper/',
+			publicPath: PUBLIC_PATH,
 		},
-		mode: 'development',
+		mode: MODE,
 		target: 'web',
 		module: {
 			rules: [

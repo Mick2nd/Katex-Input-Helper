@@ -120,7 +120,7 @@ class Documentations {
  */
 export class KatexInputHelper {
 
-	version = "2.0.0"; 
+	version = "2.0.1"; 
 	codeType = 'Latex'; 
 	saveOptionInCookies = false; 
 	isBuild = false; 
@@ -282,205 +282,6 @@ export class KatexInputHelper {
 	 * @abstract Initialize. Performs the whole initialization.
 	 */
 	async initialise() { 
-		/* TEST: Dynamically create data-options
-		   For a better handling look at TEST dialog. 
-		*/
-		if (this.useEasyLoader) {
-			var options = {
-				'#WaitMsg': {
-					modal: true,
-					maximizable: false,
-					minimizable: false,
-					collapsible: false,
-					closable: false,
-					maximized: true
-				},
-				'#wEDITOR_PARAMETERS': {
-					closed:true,
-					modal:true,
-					buttons:'#btEDITOR_PARAMETERS',
-					resizable:true
-				},
-				'#wLANGUAGE_CHOISE': {
-					closed:true,
-					modal:true,
-					buttons:'#btLANGUAGE_CHOISE',
-					resizable:true
-				},
-				'#wSTYLE_CHOISE': {
-					closed:true,
-					modal:true,
-					buttons:'#btSTYLE_CHOISE',
-					resizable:true
-			},
-				'#wMATRIX': {
-					closed:true,
-					modal:true,
-					buttons:'#btMATRIX',
-					resizable:true
-				},
-				'#wf_COMMUTATIVE_DIAGRAM_MORE': {
-					closed:true,
-					modal:false,
-					shadow:false,
-					resizable:true,
-					collapsible:true
-				},
-				'#wf_CHEMICAL_FORMULAE_MORE': {
-					closed:true,
-					modal:false,
-					shadow:false,
-					resizable:true,
-					collapsible:true
-				},
-				'#wf_BRACKET_SYMBOLS_MORE': {
-					closed:true,
-					modal:false,
-					shadow:false,
-					resizable:true,
-					collapsible:true
-				},
-				'#wf_RELATION_SYMBOLS_MORE': {
-					closed:true,
-					modal:false,
-					shadow:false,
-					resizable:true,
-					collapsible:true
-				},
-				'#wf_ARROW_SYMBOLS_MORE': {
-					closed:true,
-					modal:false,
-					shadow:false,
-					resizable:true,
-					collapsible:true
-				},
-				'#wf_FR_CHAR_MORE': {
-					closed:true,
-					modal:false,
-					shadow:false,
-					resizable:true,
-					collapsible:true
-				},
-				'#wf_BBB_CHAR_MORE': {
-					closed:true,
-					modal:false,
-					shadow:false,
-					resizable:true,
-					collapsible:true
-				},
-				'#wf_L_U_GREEK_CHAR_MORE': {
-					closed:true,
-					modal:false,
-					shadow:false,
-					resizable:true,
-					collapsible:true
-				},
-				'#wf_ALL_CHAR_MORE': {
-					closed:true,
-					modal:false,
-					shadow:false,
-					resizable:true,
-					collapsible:true
-				},
-				'#wf_EQUATION_MORE': {
-					closed:true,
-					modal:false,
-					shadow:false,
-					resizable:true,
-					collapsible:true
-				},
-				'#wf_CUSTOM_EQUATIONS_MORE': {
-					closed:true,
-					modal:false,
-					shadow:false,
-					resizable:true,
-					collapsible:true,
-					buttons:'#btCUSTOM_EQUATIONS_BUTTONS'
-				},
-				'#wf_HORIZONTAL_SPACING_MORE': {
-					closed:true,
-					modal:false,
-					shadow:false,
-					resizable:true,
-					collapsible:true
-				},
-				'#wf_VERTICAL_SPACING_MORE': {
-					closed:true,
-					modal:false,
-					shadow:false,
-					resizable:true,
-					collapsible:true
-				},
-				'#wf_SPECIAL_CHARACTER_MORE': {
-					closed:true,
-					modal:false,
-					shadow:false,
-					resizable:true,
-					collapsible:true
-				},
-				'#wLATEX_CODES_LIST': {
-					closed:true,
-					modal:false,
-					collapsible:false,
-					minimizable:false,
-					maximizable:false,
-					closable:true
-				},
-				'#wASCIIMATH_CODES_LIST': {
-					closed:true,
-					modal:false,
-					collapsible:false,
-					minimizable:false,
-					maximizable:false,
-					closable:true
-				},
-				'#wUNICODES_LIST': {
-					resizable:true,
-					closed:true,
-					modal:false,
-					collapsible:false,
-					minimizable:false,
-					maximizable:false,
-					closable:true
-				},
-				'#wLANGUAGE_LIST': {
-					closed:true,
-					modal:false,
-					collapsible:false,
-					minimizable:false,
-					maximizable:false,
-					closable:true
-				},
-				'#wINFORMATIONS': {
-					resizable:true,
-					closed:true,
-					modal:false,
-					collapsible:false,
-					minimizable:false,
-					maximizable:false,
-					closable:true
-				}
-			}
-			var menuOptions = [
-				{ iconCls: 'icon-file', menu: '#mFILE' },
-				{ iconCls: 'icon-insert', menu: '#mINSERT' },
-				{ iconCls: 'icon-plugin', menu: '#mTOOLS' },
-				{ iconCls: 'icon-watch', menu: '#mVIEW' },
-				{ iconCls: 'icon-option', menu: '#mOPTIONS' },
-				{ iconCls: 'icon-info', menu: '#mINFORMATIONS' },
-			];
-
-			$(Object.keys(options).join(','))
-			.each(function() {
-				var id = $(this).attr('id');
-				$(this).dialog(options[id]);
-			});
-			$('#menu a')
-			.each(function(idx) {
-				$(this).menubutton(menuOptions[idx]);
-			});
-		}
-		/* TEST END */
 
 		var vme = this; 
 		
@@ -631,7 +432,7 @@ export class KatexInputHelper {
 					case "mMATH_ML": vme.viewMathML(vme.mathVisualOutput.id); break; 
 					case "mUNICODES_LIST": await vme.openWindow('wUNICODES_LIST'); await vme.initialiseUniCodesList(); break; 
 					case "mLATEX_CODES_LIST": await vme.openWindow('wLATEX_CODES_LIST'); await vme.initialiseLatexMathjaxCodesList(); break; 
-					case "mLANG_RESSOURCE_LIST": await vme.openWindow('wLANGUAGE_LIST'); vme.initialiseLangRessourcesList(); break; 
+					case "mLANG_RESSOURCE_LIST": await vme.openWindow('wLANGUAGE_LIST'); await vme.initialiseLangRessourcesList(); break; 
 					case "mLATEX_DOCUMENTATION": vme.documentations.showLatexDocumentation(); break;
 					case "mMHCHEM_DOCUMENTATION": vme.documentations.showMhchemDocumentation(); break;
 					case "mAMSCD_DOCUMENTATION": vme.documentations.showAmscdDocumentation(); break;
@@ -991,7 +792,12 @@ export class KatexInputHelper {
 					return false;	
 				}); 
 			this.uniCodesListLoaded = true; 
-			$('#unicodeChoise').combobox("reload", `formulas/unicodeChoiseData.json`);
+			// Code below did not work in the web application
+			//$('#unicodeChoise').combobox("reload", `formulas/unicodeChoiseData.json`);
+			var json = await import(
+				/* webpackInclude: /\.json$/ */
+				`../formulas/unicodeChoiseData.json`);
+			$('#unicodeChoise').combobox('loadData', json);
 		}
 	}
 	
@@ -1241,7 +1047,7 @@ export class KatexInputHelper {
 	 * @abstract Wrapper around Localizer routine. Builds resources dialog.
 	 */
 	async initialiseLangRessourcesList() {
-		await this.localizer.buildLocalResources(() => {});
+		await this.localizer.buildLocalResources();
 	}
 	
 	/**
@@ -1395,7 +1201,7 @@ export class KatexInputHelper {
 			
 			if (colorType == "black") {
 				colorImg = "white"
-				codemirrorCSS = "twilight"; 
+				codemirrorCSS = "zenburn"; 
 				colorpickerCSS = "black";
 			}
 			this.codeMirrorTheme = codemirrorCSS;
@@ -1487,7 +1293,7 @@ export class KatexInputHelper {
 						vme.symbolPanelsLoaded.push(fPanelID);
 						$(fPanel).html(`<img src="icons/loading.gif" />`);
 						
-						var options = $(fPanel).panel('options');
+						var options = $(fPanel).panel('options');				// avoid recreation of panel (arrows lost)
 						options.onLoad = async function() { 
 							await vme.initialiseSymbolContent(fPanelID); 
 							vme.math.updateHeaders(`#${fPanelID}`);				// with panel id not working
@@ -1635,28 +1441,25 @@ export class KatexInputHelper {
 	 * This method is only called once in constructor.
 	 */
 	setBaseLocation() {
-		var location = $("script[src]")
+		var bundlePath = $("script[src]")
 			.last()
 			.attr("src")
 			.split('/')
-			.slice(0, this.useEasyLoader ? -4 : -1)				// modified -2 => -1 for Web app with webpack
+			.slice(0, -1)
 			.join('/')
-			.replace(/ /g, '%20')
-			.replace('file:///', 'file://')
-			.replace('file://', 'file:///') + '/';
-		console.info(`Base location is : ${location}`);
-		if (!location.includes('joplin')) {
-			
-			location = $("script[src]")							// seems not to work
-			.last()
-			.attr("src")
-			.replace('bundle.js', '');
-
-			location = "http://localhost:9000/";				// -> use fixed server address
+			.replace(/ /g, '%20') + '/';
+		if (bundlePath == '/' && 
+			window.location.protocol == 'file:') {		// local file system
+			bundlePath = `${window.location}`
+			.split('/')
+			.slice(0, -1)
+			.join('/')
+			.replace(/ /g, '%20') + '/';			
 		}
-		
+		// $('h3').text(bundlePath);
+
 		$('html > head').append($('<base />'));
-		$('html > head > base').attr('href', location);
+		$('html > head > base').attr('href', bundlePath);
 		
 		return location;
 	}

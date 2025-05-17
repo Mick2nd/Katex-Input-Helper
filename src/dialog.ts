@@ -142,13 +142,14 @@ export class Dialog
 	 */
 	public loadCss = async function(handle) : Promise<void> {
 		
-		var css = this.useEasyLoader ? [] : [
+		var css = [
 			/*
 				Ergebnis der Versuche soweit:
 				- alles nachladen funktioniert nicht so gut
 				- mit diesem Stand erst mal weiter arbeiten
 			*/
-			"./assets/styles.css"
+			//"./assets/vendor.css",
+			"./assets/main.css"
 		];
 		
 		for (const cssPath of css) {
@@ -162,11 +163,9 @@ export class Dialog
 	 * @param handle - the dialog handle
 	 */
 	public loadJs = async function(handle) : Promise<void> {
-		var js = this.useEasyLoader ? [
-			"./assets/js/jquery-easyui/easyloader.js",
-			"./assets/js/bootLoader.js"
-		] : [
-			"./assets/bundle.js"
+		var js = [
+			//"./assets/vendor.js",
+			"./assets/main.js"
 		];
 		
 		for (const jsPath of js) {

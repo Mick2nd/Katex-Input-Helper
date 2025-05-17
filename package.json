@@ -1,6 +1,6 @@
 {
   "name": "joplin-plugin-katex-input-helper",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "scripts": {
     "dist": "webpack --env joplin-plugin-config=buildMain && webpack --env joplin-plugin-config=buildExtraScripts && npm run build-assets && npm run build-docs && webpack --env joplin-plugin-config=createArchive",
     "prepare": "npm run dist",
@@ -9,10 +9,11 @@
     "build-docs": "typedoc --options typedoc.json && npm exec --package=@atao60/fse-cli fse copy ./img ./docs/img",
     "test": "vitest --root './tests' --run --reporter verbose",
     "jtest": "jest",
-    "build-assets": "webpack --config webpack.assets.config.js --mode development",
+    "build-assets": "webpack --config webpack.assets.config.js",
+    "build-assets-prod": "webpack --config webpack.assets.config.js --env kihmode=production",
     "serve": "webpack serve --config webpack.assets.config.js",
     "stop-serve": "npx kill-port 9000",
-	"deploy": "gh-pages -d dist"
+    "deploy": "webpack --config webpack.assets.config.js --env ghpages && gh-pages -d dist/assets"
   },
   "license": "MIT",
   "keywords": [
@@ -31,6 +32,7 @@
     "babel": "^5.8.38",
     "babel-loader": "^10.0.0",
     "chalk": "^4.1.0",
+    "codemirror": "^5.65.19",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^7.1.2",
     "css-minimizer-webpack-plugin": "^7.0.2",
@@ -42,6 +44,7 @@
     "html-webpack-plugin": "^5.6.3",
     "inversify": "^7.5.1",
     "jest": "^29.7.0",
+    "jquery": "^3.7.1",
     "json-loader": "^0.5.7",
     "mini-css-extract-plugin": "^2.9.2",
     "path": "^0.12.7",

@@ -72,17 +72,6 @@ export class BootLoader {
 	}
 	
 	/**
-	 * @abstract A using function encapsulated by a Promise.
-	 * 
-	 * @async implements the Promise contract
-	 * @param script - the url of the script to be loaded
-	 * @returns - the Promise indicating the state of the transaction
-	 */
-	async usingAsync(script) {
-		return this.promisify(/*using*/easyloader.load.bind(easyloader), script);
-	}
-	
-	/**
 	 * @abstract The promise is fulfilled if the document becomes ready.
 	 * 
 	 * @async implements the Promise contract
@@ -100,77 +89,6 @@ export class BootLoader {
 	async setTimeoutAsync(delay) {
 		return this.promisify(setTimeout, delay);
 	}	
-	
-	/**
-	 * @abstract Initializes the scripts (css and js) using the easyloader.
-	 * 
-	 * All but this boot loader and the easy loader is loaded here.
-	 * 
-	 * @async implements the Promise contract
-	 */
-	async initScripts() {
-		this.baseLocation = this.getBaseLocation();
-		easyloader.base = this.baseLocation;    					// set the easyui base directory
-		easyloader.css = false;
-		console.dir(easyloader.modules);
-	
-		var modules = [ 
-			'parser', 'layout','window', 'dialog', 'panel', 'datagrid', 'tree', 
-			'menubutton', 'menu', 'accordion', 'linkbutton', 'tooltip', 'tabs', 
-			'messager', 'combobox' ];
-		
-		var scripts = [
-			//"./jquery.easyui.min.js",
-			"./datagrid-cellediting.js",
-			"./datagrid-filter.js",
-			"../jquery-colorpicker/js/colorpicker.js",
-			"../codemirror/lib/codemirror.js",
-			"../katex/katex.min.js",
-			"../katex/mhchem.min.js",
-			
-			"../patterns/observable.js",
-			"../localization.js",
-			"../themes.js",
-			"../parserExtension.js",
-			"../parameters.js",
-			"../fileHandling.js",
-			"../helpers.js",
-			"../math.js",
-			"../categoriesTree.js",
-			"../panels.js",
-			"../dialog.js"
-		];
-		
-		var csss = [
-			"./themes/default/easyui.css",
-			"./themes/icon.css",
-			"../jquery-easyui-MathEditorExtend/themes/aguas/easyui.css",
-			"../jquery-easyui-MathEditorExtend/themes/icon.css",
-			"../jquery-colorpicker/css/colorpicker.css",
-			"../codemirror/lib/codemirror.css",
-			"../keyboard/Keyboard.css",
-			"../katex/katex.min.css",
-			"../dialog.css"
-		];
-
-		await this.usingAsync('./jquery.min.js');
-
-		for (var module of modules) {
-			await this.usingAsync(module);
-		}
-	
-		for (var css of csss) {
-			await this.usingAsync(css);
-			// works but has no effect
-			$('link')
-			.last()
-			.removeAttr('media');
-		}
-		
-		for (var script of scripts) {
-			await this.usingAsync(script);
-		}
-	}
 	
 	/**
 	 * @abstract Initializes the app.
@@ -208,55 +126,6 @@ export class BootLoader {
 		await this.initApp(false);
 		console.debug('Promise check : app started.');
 		this.check();
-	}
-
-	/**
-	 * @abstract Initialization scenario 2 : with easy loader.
-	 * 
-	 * @async implements the Promise contract
-	 */
-	async init2() {
-		var counter = 0;
-		while ((typeof easyloader !== 'object' || !document.currentScript) && ++counter <= 50) {
-			await this.setTimeoutAsync(100);
-		}
-		if (counter > 50) {
-			throw Error("easyloader not loaded");
-		}
-		console.info(`easyloader loaded : ${typeof easyloader} `);
-
-		await this.initScripts();
-		console.debug('Promise check : scripts loaded.');
-		
-		await this.readyAsync();
-		console.debug('Promise check : document ready.');
-		
-		// trial to shift misplaced menus
-		// $('#mFile, #mInsert, #mTools, #mView, #mOptions, #mInformations').append($('#menu'));
-		
-		await this.initApp(true);
-		console.debug('Promise check : app started.');
-		this.check();
-	}
-
-	/**
-	 * @abstract Sets the base location.
-	 * 
-	 * This will be needed for relative paths of some content like css or js files.
-	 * Is here used only for *easyloader*.
-	 * 
-	 * @returns the location of this script, ending with a slash
-	 */
-	getBaseLocation() {
-		var location = document.currentScript.src
-			.split('/')
-			.slice(0, -1)										// up to js folder
-			.join('/')
-			.replace(/ /g, '%20')
-			.replace('file:///', 'file://')
-			.replace('file://', 'file:///') + '/jquery-easyui/';
-			
-		return location;
 	}
 	
 	/**
@@ -372,9 +241,7 @@ if (!window.bootLoaderLoaded) {
 	});
 }
 
-/*
 // This helps to import symbols in test suite
 try {
 	module.exports = BootLoader;
 } catch(e) { }
-*/
