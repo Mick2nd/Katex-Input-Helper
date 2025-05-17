@@ -4,8 +4,8 @@ import './jquery-easyui/jquery.easyui.min';
 import './jquery-easyui/datagrid-dnd';
 import './jquery-easyui/datagrid-filter';
 import './jquery-easyui/datagrid-cellediting';
-import katex from './katex/katex.min';
-import './katex/mhchem';
+import katex from 'katex/dist/katex';
+import 'katex/dist/contrib/mhchem';
 import CodeMirror from './codemirror/lib/codemirror';
 
 import { Observable } from './patterns/observable';
