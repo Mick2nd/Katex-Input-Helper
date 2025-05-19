@@ -1,6 +1,6 @@
-import katex from 'katex/dist/katex';
 import { Messager } from './helpers';
-
+const katex = await import('katex/dist/katex');
+await import('katex/dist/contrib/mhchem');
 
 /**
  * Class responsible for Math Formula handling.

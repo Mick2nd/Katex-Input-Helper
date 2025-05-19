@@ -206,7 +206,7 @@ const pluginConfig = { ...baseConfig, entry: './src/index.ts',
 		new CopyPlugin({
 			patterns: [
 				{
-					from: '**/*',
+					from: '*',
 					context: path.resolve(__dirname, 'src'),
 					to: path.resolve(__dirname, 'dist'),
 					globOptions: {
@@ -215,6 +215,7 @@ const pluginConfig = { ...baseConfig, entry: './src/index.ts',
 							// already copied into /dist so we don't copy them.
 							'**/*.ts',
 							'**/*.tsx',
+							'assets/**/*'
 						],
 					},
 				},

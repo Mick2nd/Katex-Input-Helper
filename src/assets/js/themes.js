@@ -9,25 +9,13 @@ export class Themes extends Observable {
 	dir = "";
 	cssActive = false;
 	activeTheme = "";
+	supportedThemes = [ 'aguas', 'gray', 'black', 'bootstrap', 'metro' ];
 	
 	/**
 	 * @abstract Constructor.
 	 */
 	constructor() {
 		super();
-	}
-	
-	/**
-	 * @abstract Appends attributes of one or more elements to another. 
-	 */
-	universalLoad(where, what) {
-		for (var entry of what) {
-			$(where)
-			.append(
-				$(entry.element)
-				.attr(entry.attributes)
-			);
-		}
 	}
 	
 	/**
@@ -66,39 +54,25 @@ export class Themes extends Observable {
 		
 		this.activeTheme = activeTheme;
 		var colorType = '';
-		var opts = { with: { type: 'css' } };
-		this.disableThemeLinks();
 
-		// TRYING alternative way
-		// WORKS and loads all present themes!!
-		var mainTheme = activeTheme;
-		if (activeTheme == 'aguas') { mainTheme = 'default'; }
 		if (activeTheme == 'black') { colorType = 'black'; }
-		await import(`./jquery-easyui/themes/${mainTheme}/easyui.css`, opts);
-		await import(`./jquery-easyui-MathEditorExtend/themes/${activeTheme}/easyui.css`, opts);
 		
-		this.enableThemeLinks(activeTheme);
-		this.notify(activeTheme, this.dir, colorType);
-	}
-	
-	/**
-	 * @abstract Disables link tags to the theme resources.
-	 * 
-	 * The hope was this could enforce a new load of themes every time one selects any.
-	 * Yes, but it must be combined with *enableThemeLinks*.
-	 */
-	disableThemeLinks() {
-		$('link[href$="easyui_css.styles.css"]').attr('disabled', true);
-	}
-	
-	/**
-	 * @abstract Enables css link tags again after disabling them.
-	 */
-	enableThemeLinks(theme) {
-		$(`link[href$="${theme}_easyui_css.styles.css"]`).removeAttr('disabled');
-		if (theme == 'aguas') {
-			$(`link[href$="default_easyui_css.styles.css"]`).removeAttr('disabled'); 	// ?
+		for (const theme of this.supportedThemes) {
+			if (theme === 'aguas') { continue; }
+			
+			/*
+			if (theme == activeTheme) {
+				$(`#${theme}`).removeAttr('disabled');
+				$(`#${theme}-extend`).removeAttr('disabled');
+			} else {
+				$(`#${theme}`).attr('disabled', true);
+				$(`#${theme}-extend`).attr('disabled', true);
+			}
+			*/
+			$(`#${theme}, #${theme}-extend`).attr('disabled', theme !== activeTheme);
 		}
+		
+		this.notify(activeTheme, this.dir, colorType);
 	}
 
 	/**
@@ -121,8 +95,21 @@ export class Themes extends Observable {
 		.attr('id', 'RTLstyle')
 		.attr('disabled', true);
 		
-		this.setRTLstyle(dir);
+		for (const theme of this.supportedThemes) {
+			if (theme === 'aguas') { continue; }
+				
+			await import(`./jquery-easyui/themes/${theme}/easyui.css`, opts);
+			$('link').last()
+			.attr('id', theme);
+
+			await import(`./jquery-easyui-MathEditorExtend/themes/${theme}/easyui.css`, opts);
+			$('link').last()
+			.attr('id', `${theme}-extend`);
+		}
+		
+		this.activateStyle(activeTheme);
 		this.cssActive = true;
+		this.setRTLstyle(dir);
 	}
 	
 	/**
@@ -139,12 +126,14 @@ export class Themes extends Observable {
 		this.dir = dir;
 		if (this.cssActive) {
 			console.info(`Html Dir is: ${dir}`);
-			var disabled = document.getElementById("RTLstyle").disabled;
-			var newDisabled = dir !== 'rtl';										// suppress unnecessary changes => measure did not help
-			if (newDisabled != disabled) {
-				document.getElementById("RTLstyle").disabled = newDisabled;
-				console.info(`RTL style set to: ${newDisabled}`);
+			/*
+			if (dir === 'rtl') {
+				$("#RTLstyle").removeAttr('disabled');
+			} else {
+				$("#RTLstyle").attr('disabled', true);
 			}
+			*/		
+			$("#RTLstyle").attr('disabled', dir !== 'rtl');
 		}
 	}
 }

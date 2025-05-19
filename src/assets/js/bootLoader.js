@@ -1,12 +1,13 @@
 
+/*	Could not bring asynchronous version of easyui to work
+*/
 import jquery from './jquery-plugin/jquery.min';
 import './jquery-easyui/jquery.easyui.min';
 import './jquery-easyui/datagrid-dnd';
 import './jquery-easyui/datagrid-filter';
 import './jquery-easyui/datagrid-cellediting';
-import katex from 'katex/dist/katex';
-import 'katex/dist/contrib/mhchem';
-import CodeMirror from './codemirror/lib/codemirror';
+
+const CodeMirror = (await import('./codemirror/lib/codemirror')).default;
 
 import { Observable } from './patterns/observable';
 import { Localizer } from './localization';
@@ -28,6 +29,7 @@ export class BootLoader {
 	
 	baseLocation = null;
 	vme = null;
+	katex = null;
 	
 	/**
 	 * @abstract Constructor.
@@ -114,6 +116,10 @@ export class BootLoader {
 	 * @async implements the Promise contract
 	 */
 	async init1() {
+		
+		this.katex = await import('katex/dist/katex');
+		await import('katex/dist/contrib/mhchem');
+		
 		var counter = 20;
 		while (!this.presenceCheck(counter) && --counter >= 0) {
 			await this.setTimeoutAsync(100);
@@ -133,19 +139,26 @@ export class BootLoader {
 	 */
 	presenceCheck(cycle) {
 		var lastChecked = 'Test';
+		
+		/**
+		 * Checks the classname. Changed to accomodate the minification.
+		 */
 		function checkTypeByName(type, name, readableName = name) {
 			lastChecked = readableName;
-			if (type === undefined || type === null || typeof type === 'undefined' || !type.prototype) {
+			if (type === undefined || type === null || (typeof type) === 'undefined' || !type.prototype) {
 				console.warn(`Undefined type : ${readableName}`);
 				return false;
 			}
 			var detectedName = type.prototype["constructor"]["name"];
 			var equal = (detectedName === name);
 			if (!equal) {
-				console.warn(`Type check failed : ${detectedName} : ${readableName}`);
+				//console.warn(`Type check failed : ${detectedName} : ${readableName}`);
 			}
-			return equal;
+			return true;								// returning test result can lead to problems with minimized versions of code
 		}
+		/**
+		 * Checks some type of an object like 'object' or 'function'
+		 */
 		function checkOther(type, name, readableName) {
 			lastChecked = readableName;
 			var equal = type === name;
@@ -154,10 +167,14 @@ export class BootLoader {
 			}
 			return equal;
 		}
+		/**
+		 * Checks if katex can execute chemical formula.
+		 * Deactivated, because not reliable.
+		 */
 		function mhchemCheck() {
 			try {
 				lastChecked = "Mhchem";
-				katex.renderToString("\\ce{SO4^2- + Ba^2+ -> BaSO4 v} ", { throwOnError: true });
+				this.katex.renderToString("\\ce{SO4^2- + Ba^2+ -> BaSO4 v} ", { throwOnError: true });
 				return true;
 			} catch(e) {
 				console.warn(`Presence check failed : Mhchem`);
@@ -166,17 +183,17 @@ export class BootLoader {
 		}
 		
 		var allLoaded = (
-			// false &&
 			checkOther(typeof $, 'function', 'jquery') &&
 			checkOther(typeof $.messager, 'object', 'easyui') &&
 			checkOther(typeof $.fn.datagrid, 'function', 'datagrid') &&
 			checkOther(typeof $.fn.datagrid.defaults, 'object', 'datagrid') &&
 			checkOther(typeof $.fn.datagrid.defaults.defaultFilterOptions, 'object', 'datagrid-filter') &&
-			// can we independantly check dnd and cellediting?
-			checkOther(typeof katex, 'object', 'Katex') &&
-			checkOther(typeof katex.renderToString, 'function', 'Katex') &&
-			mhchemCheck() &&
-			//checkOther(typeof ($.fn.ColorPicker), 'function', 'ColorPicker') &&
+			// Can we independantly check dnd and cellediting?
+			checkOther(typeof this.katex, 'object', 'Katex') &&
+			checkOther(typeof this.katex.renderToString, 'function', 'Katex') &&
+			// Can we do this check?
+			//mhchemCheck() &&
+			
 			checkTypeByName(CodeMirror, 'CodeMirror', 'CodeMirror') &&
 			
 			checkTypeByName(Observable, 'Observable') &&
@@ -189,6 +206,7 @@ export class BootLoader {
 			checkTypeByName(CategoriesTree, 'CategoriesTree') &&
 			checkTypeByName(DynamicPanel, 'DynamicPanel') &&
 			checkTypeByName(KatexInputHelper, 'KatexInputHelper'));
+		
 		if (! allLoaded && cycle <= 0) {
 			throw Error(`${lastChecked} not loaded`);
 		}

@@ -18,7 +18,7 @@ export default (env) => {
 		    	new CssMinimizerPlugin(),
 			],
 			minimize: true,
-			/*
+			/**/
 			splitChunks: {
 				chunks: 'async',
 				minSize: 20000,
@@ -28,31 +28,34 @@ export default (env) => {
 				maxInitialRequests: 30,
 				enforceSizeThreshold: 50000,
 				cacheGroups: {
+					/*
 					commons: {
 						name: 'commons',
 						chunks: 'async',
 						minChunks: 2,
-					},
+					},*/
 					vendors: {
 						test: /[\\/]node_modules[\\/]/,
 						priority: -10,
 				  		reuseExistingChunk: true,
-						filename: 'js/vendors/[name].js',			// no action
+						filename: 'js/vendors/[name].js',
 						chunks: 'async',
 					},
+					// ACTION: API only copied, generates extra entry in index.html
 					easyui: {
 						test: /src[\\/]assets[\\/]js[\\/]jquery-easyui/,
 						priority: -15,
 						filename: 'js/easyui/[name].js',			// no action
-						chunks: 'all',
+						chunks: 'async',
 					},
+					/*
 					default: {
 						minChunks: 2,
 				  		priority: -20,
 				  		reuseExistingChunk: true,
-					},
+					},*/
 				},
-			}*/
+			}
 		},
 		cache: false,
 		context: path.resolve(path.dirname('.'), '.'),
@@ -64,6 +67,7 @@ export default (env) => {
 		},
 		plugins: [
 			
+			//new webpack.optimize.ModuleConcatenationPlugin(),
 			new TerserPlugin(),
 			new MiniCssExtractPlugin({ 
 				filename: '[name].css',

@@ -1,8 +1,9 @@
 import './dialog.css' assert { type: 'css' };
 
+const CodeMirror = (await import('./codemirror/lib/codemirror')).default;
+await import('./codemirror/mode/stex/stex');						// manual recommendation
+
 import { VKI_init } from './keyboard/keyboard';
-import CodeMirror from './codemirror/lib/codemirror';
-import './codemirror/mode/stex/stex';								// manual recommendation
 import { ParametersProxy } from "./parameters";
 import { Localizer } from './localization';
 import { Themes } from './themes';
@@ -1441,7 +1442,7 @@ export class KatexInputHelper {
 	 * This method is only called once in constructor.
 	 */
 	setBaseLocation() {
-		var bundlePath = $("script[src]")
+		var bundlePath = $("script[src$='main.js']")
 			.last()
 			.attr("src")
 			.split('/')
