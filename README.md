@@ -103,6 +103,8 @@ The custom equations dialog with categories tree
 
 - The language switcher is now equipped with country flags.
 - The functionality of this plug-in is now also available as [Web app](https://mick2nd.github.io/Katex-Input-Helper/index.html) hosted on Github.
+This can be used as Demo or to have a look at pre-published versions.
+- Made the production version working hereby reducing the size of the plug-in.
 
 ### 2.0.0
 

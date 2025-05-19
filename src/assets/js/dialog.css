@@ -4,10 +4,10 @@
 @import './jquery-easyui-MathEditorExtend/themes/icon.css';
 @import './jquery-easyui-MathEditorExtend/themes/aguas/easyui.css';
 @import './keyboard/keyboard.css';
-@import './codemirror/lib/codemirror.css';
-@import './codemirror/theme/darcula.css';
-@import './codemirror/theme/twilight.css';
-@import './codemirror/theme/zenburn.css';
+@import 'codemirror/lib/codemirror.css';
+@import 'codemirror/theme/darcula.css';
+@import 'codemirror/theme/twilight.css';
+@import 'codemirror/theme/zenburn.css';
 
 body {
 	height: 100%;

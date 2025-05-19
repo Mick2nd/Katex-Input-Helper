@@ -1,13 +1,13 @@
 
-/*	Could not bring asynchronous version of easyui to work
-*/
-import jquery from './jquery-plugin/jquery.min';
+/*	Could not bring asynchronous version of easyui to work.
+ *	jquery node_module working with ProvidePlugin.
+ */
 import './jquery-easyui/jquery.easyui.min';
 import './jquery-easyui/datagrid-dnd';
 import './jquery-easyui/datagrid-filter';
 import './jquery-easyui/datagrid-cellediting';
 
-const CodeMirror = (await import('./codemirror/lib/codemirror')).default;
+const CodeMirror = (await import('codemirror/lib/codemirror')).default;
 
 import { Observable } from './patterns/observable';
 import { Localizer } from './localization';

@@ -1,7 +1,7 @@
 import './dialog.css' assert { type: 'css' };
 
-const CodeMirror = (await import('./codemirror/lib/codemirror')).default;
-await import('./codemirror/mode/stex/stex');						// manual recommendation
+const CodeMirror = (await import('codemirror/lib/codemirror')).default;
+await import('codemirror/mode/stex/stex');						// manual recommendation
 
 import { VKI_init } from './keyboard/keyboard';
 import { ParametersProxy } from "./parameters";
@@ -121,7 +121,8 @@ class Documentations {
  */
 export class KatexInputHelper {
 
-	version = "2.0.1"; 
+	version = "2.0.1";
+	versions = null;
 	codeType = 'Latex'; 
 	saveOptionInCookies = false; 
 	isBuild = false; 
@@ -284,7 +285,8 @@ export class KatexInputHelper {
 	 */
 	async initialise() { 
 
-		var vme = this; 
+		var vme = this;
+		this.versions = await import( /* webpackInclude: /\.json$/ */ './versions.json'); 
 		
 		this.parser.initialise();		
 		await this.parameters.queryParameters();							// from Plugin		
@@ -1416,17 +1418,15 @@ export class KatexInputHelper {
 		await vme.parser.parseAsync('div[href]', 0, 100);
 		console.info(`Parse completed for : div[href]`);
 
-		var VKI_version = '1.49';
-		var easyuiVersion = '1.11';
 		$("#VMEversion").html(`
 				<table class="inline-table">
-					<tr><td><b> ${vme.version} </b></td><td><b>Katex Input Helper / Visual Math Editor</b>, (This software)</td></tr>
-					<tr><td> 0.16 </td><td>Katex</td></tr>
+					<tr><td><b> ${vme.versions.version} </b></td><td><b>Katex Input Helper / Visual Math Editor</b>, (This software)</td></tr>
+					<tr><td> ${vme.versions.katexVersion} </td><td>Katex</td></tr>
 					<tr><td> ${CodeMirror.version} </td><td>Code Mirror</td></tr>
-					<tr><td> ${VKI_version} </td><td>Virtual Keyboard</td></tr>
+					<tr><td> ${vme.versions.VKI_version} </td><td>Virtual Keyboard</td></tr>
 					<tr><td> ${$.fn.jquery} </td><td>Jquery</td></tr>
-					<tr><td> ${easyuiVersion} </td><td>Jquery Easyui</td></tr>
-					<tr><td> 23/05/2009 </td><td>Jquery Color Picker</td></tr>
+					<tr><td> ${vme.versions.easyuiVersion} </td><td>Jquery Easyui</td></tr>
+					<tr><td> ${vme.versions.colorPickerVersion} </td><td>Jquery Color Picker</td></tr>
 				<table>`); 
 		$("#VMEdate").html((new Date()).getFullYear());
 		
