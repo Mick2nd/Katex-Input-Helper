@@ -30,12 +30,26 @@ const splitChunksConfig = {
 	enforceSizeThreshold: 50000,
 
 	cacheGroups: {
-		/*
+		/* NO IDEA WHAT THE PURPOSE IS
+		   A configuration sample?
+		   Creates a 1 MB large commons script, seems to have precedence over vendors. 
+		
 		commons: {
 			name: 'commons',
 			chunks: 'async',
 			minChunks: 2,
-		},*/
+		},
+		*/
+		/*	NO ACTION like easyui
+		i18n: {
+			test: /[\\/]i18n[\\/]/,
+			priority: -10,
+			reuseExistingChunk: true,
+			filename: 'js/i18n/[name].js',
+			chunks: 'async',
+		},
+		*/
+		
 		vendors: {
 			test: /[\\/](node_modules)[\\/]/,
 			priority: -10,
@@ -43,19 +57,26 @@ const splitChunksConfig = {
 			filename: 'js/vendors/[name].js',
 			chunks: 'async',
 		},
-		// ACTION: API only copied, generates extra entry in index.html
+		
+		/*	ACTION: API only copied, generates extra entry in index.html
+			This is deactivated, if async chunks are selected
+			
 		easyui: {
 			test: /src[\\/]assets[\\/]js[\\/]jquery-easyui/,
 			priority: -15,
 			filename: 'js/easyui/[name].js',			// no action
 			chunks: 'async',
 		},
-		/*
+		*/
+		/* NO IDEA WHAT THE PURPOSE IS
+		   A configuration sample?
+		
 		default: {
 			minChunks: 2,
 	  		priority: -20,
 	  		reuseExistingChunk: true,
-		},*/
+		},
+		*/
 	},
 };
 
@@ -63,6 +84,7 @@ const splitChunksConfig = {
  * Extracted Rules Config
  */
 const rulesConfig = [
+	/*	NO DISADVANTAGE TO DEACTIVATE BABEL
 	{
 		test: /\.js$/,
 		include: [ path.resolve(path.dirname('.'), 'src/assets/js') ],
@@ -73,7 +95,7 @@ const rulesConfig = [
 		    	['@babel/preset-env']
 		   	],
 		}
-	},				
+	},*/				
 	{
 		test: /\.css$/,
 		include: [ path.resolve(path.dirname('.'), 'src/assets/js') ],
@@ -90,12 +112,13 @@ const rulesConfig = [
 	},
 	/*
 	- images without hash as they are used by me
+	- country flags, gifs, certain other icon
 	*/
 	{
 		test: /^.*?(\.gif|[\\\/]mini_add\.png|i18n[\\\/]icons[\\\/][a-z][a-z]\.png)$/,
 		type: 'asset/resource',
 		generator: {
-			filename: 'icons/[name][ext]'
+			filename: 'icons/[name][ext]',
 		}
 	},
 	{
@@ -111,15 +134,22 @@ const rulesConfig = [
  * Extracted Plugins Config
  */
 const pluginsConfig = [
-			
-	//new webpack.optimize.ModuleConcatenationPlugin(),
+	/*	THERE CAN BE SEEN NO EFFECT ON GENERATED JS
+		Also with deactivated Babel		
+	new webpack.optimize.ModuleConcatenationPlugin(),
+	*/
+	
+	/*	Limits effectively the number of chunks, but then themes are no longer
+		working
+	new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 20 }),
+	*/
 	new webpack.ProvidePlugin({
 		$: 'jquery',
 		jQuery: 'jquery',
 	}),
-	// Don't know how to use this!
+	// DEFINES GLOBAL VARIABLES, but babel-loader must not be active
 	new webpack.DefinePlugin({
-		KIH_VERSION: JSON.stringify('version')
+		KIH_VERSION: JSON.stringify('7.44')
 	}),
 	new TerserPlugin(),
 	new MiniCssExtractPlugin({ 
@@ -174,8 +204,31 @@ export default (env) => {
 		output: {
 			clean: true,
 			filename: '[name].js',
-			chunkFilename: (pathData) => {
-				return pathData.chunk.name === 'main' ? '[name].js' : 'js/[name].js';
+			chunkFilename: 
+			/*	BELIEVE, this is more or less for different entries
+				Sample code not working. 
+				'js/[name].js',
+			*/
+			(pathData) => {
+				let name = pathData.chunk.name;
+				if (!name) { name = pathData.chunk.id; }
+				
+				if (typeof name !== 'string') {
+					return 'js/[name].js';
+				}
+				if (name.includes('i18n')) {
+					return 'js/i18n/[name].js';
+				}
+				if (name.includes('codemirror')) {
+					return 'js/vendors/[name].js';
+				}
+				if (name.includes('easyui')) {
+					return 'js/easyui/[name].js';
+				}
+				if (name.includes('localization')) {
+					return 'js/localization/[name].js';
+				}
+				return 'js/[name].js';
 			},
 			path: path.resolve(path.dirname('.'), 'dist/assets'),
 			assetModuleFilename: 'misc/[name]-[hash][ext]',

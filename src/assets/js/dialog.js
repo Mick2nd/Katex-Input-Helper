@@ -3,6 +3,8 @@ import './dialog.css' assert { type: 'css' };
 const CodeMirror = (await import('codemirror/lib/codemirror')).default;
 await import('codemirror/mode/stex/stex');						// manual recommendation
 
+await import('jquery-contextmenu');
+
 import { VKI_init } from './keyboard/keyboard';
 import { ParametersProxy } from "./parameters";
 import { Localizer } from './localization';
@@ -15,6 +17,7 @@ import { KIHPanels } from "./panels";
 
 var console; 
 if (window.console) console = window.console; else console = { log: function(msg) { }, error: function(msg) { } }; 
+console.log(KIH_VERSION);
 
 /**
  * @abstract Responsible for showing documentation.
@@ -121,7 +124,6 @@ class Documentations {
  */
 export class KatexInputHelper {
 
-	version = "2.0.1";
 	versions = null;
 	codeType = 'Latex'; 
 	saveOptionInCookies = false; 
@@ -131,6 +133,7 @@ export class KatexInputHelper {
 	textareaID = null; 
 	codeMirrorEditor = null;
 	codeMirrorTheme = '';
+	mobile = false;
 	symbolPanelsLoaded = []; 
 	latexMathjaxCodesListLoaded = false; 
 	uniCodesListLoaded = false; 
@@ -158,16 +161,21 @@ export class KatexInputHelper {
 	panels = null;
 	useEasyLoader = true;
 	baseLocation = "";
+	fromContextMenu = false;
 	
 	/**
 	 * Constructor
 	 */
-	constructor(useEasyLaoder = true) {
+	constructor(mobile = false) {
 		var vme = this;
 		window.vme = this;
 		globalThis.vme = this;
-		this.useEasyLoader = useEasyLaoder;
+		this.mobile = mobile;
 	
+		$('body').on('error', (event) => {
+			console.error(`Error : %O`, event);
+		})
+		
 		// independent of plugin variant
 		this.baseLocation = this.setBaseLocation();
 		
@@ -292,7 +300,7 @@ export class KatexInputHelper {
 		await this.parameters.queryParameters();							// from Plugin		
 
 		// IN QUESTION
-		vme.initialiseCodeMirror(); 
+		await vme.initialiseCodeMirror();
 		this.localizer.subscribe(this.onLocaleChanged.bind(this));
 		await this.localizer.initialiseLanguageChoice(this.localType);		// Progress dialog uses localized text
 		
@@ -335,7 +343,7 @@ export class KatexInputHelper {
 	 */
 	setFocus() { 
 		$("#mathTextInput").focus(); 
-		if (this.codeMirrorEditor) this.codeMirrorEditor.focus(); 
+		if (this.codeMirrorEditor) { this.codeMirrorEditor.focus(); } 
 	}
 	
 	/**
@@ -367,9 +375,9 @@ export class KatexInputHelper {
 	 * - change handler -> auto update of formula
 	 * - context menu binding
 	 */
-	initialiseCodeMirror() { 
+	async initialiseCodeMirror() { 
 		var vme = this; 
-		vme.codeMirrorEditor = CodeMirror.fromTextArea(document.getElementById("mathTextInput"), { 
+		vme.codeMirrorEditor = CodeMirror.fromTextArea($("#mathTextInput")[0], { 
 			mode: vme.encloseAllFormula ? "text/html" : "text/x-latex", 
 			autofocus: true, 
 			showCursorWhenSelecting: true, 
@@ -383,24 +391,85 @@ export class KatexInputHelper {
 			tabSize: 4, 
 			indentUnit: 4, 
 			indentWithTabs: true, 
-			theme: "default"
+			theme: "default",
+			inputStyle: vme.mobile ? 'contenteditable' : 'textarea'
 		}); 
 		vme.codeMirrorEditor.on("change", function() { vme.autoUpdateOutput(); }); 
 		
-		$(".CodeMirror").bind('contextmenu', function(event) { 
-			event.preventDefault(); 
-			$('#mINSERT').menu('show', { left: event.pageX, top: event.pageY }); 
-			return false; 
-		}); 
+		if(!vme.mobile) {
+			/*	The context menu appears but throws on click or mouse move afterwards:
+				NO OWNER.
+			 */
+			$(".CodeMirror").bind('contextmenu', (event) => vme.onContextMenu('#mINSERT', event)); 
+		} else {
+			$('.CodeMirror').css('fontSize', '1.3em');
+		}
 		
 		this.math.setEditorInstance(this.codeMirrorEditor);
 		
-		$('#divMathTextInput').panel({
-			onResize: function(width, height) {
+		var panelOptions = $('#divMathTextInput').panel('options');
+		panelOptions.onResize = function(width, height) {
+			try {
 				vme.codeMirrorEditor.setSize(width, height);
 				vme.codeMirrorEditor.refresh();
-			}
+			} catch(e) { }
+		};
+	}
+
+	/**
+	 * @abstract Handles context menu invocation.
+	 * 
+	 * TODO: This is a workaround because of crashs raised otherwise. The hide method
+	 * will be overridden. Left unwanted effect: display of menu at false location,
+	 * if main menu was invoked before.
+	 */	
+	onContextMenu(selector, event) {
+		event.preventDefault();
+		
+		var options = $(selector).menu('options');
+		var onHide = options.onHide;
+		var onShow = options.onShow;
+		
+		// has the effect of not highlighting main menu
+		options.onShow = function() {
+			return false;
+		}
+
+		// has the effect of avoiding crash		
+		options.onHide = function() {
+			$(this).menu('hide');
+			options.onHide = onHide;
+			options.onShow = onShow;
+			return false;
+		};
+		
+		try {
+			$(selector).menu('show', { left: event.pageX, top: event.pageY }); 
+		} catch(e) { 
+		}
+		return false; 
+	}
+	
+	// TRIAL to overcome contextmenu problem.
+	onMainMenu() {
+		
+		var mbOptions = $('#mbINSERT').menubutton('options');
+		mbOptions.menu = null;
+
+		// There is no reaction on this!
+		$('#mbINSERT').on('mouseover', function(event) {
+			event.preventDefault();
+			$('mINSERT').menu('show', { left: event.pageX, top: event.pageY });
+			return false;
 		});
+
+		$('#mbINSERT').on('mouseout', function(event) {
+			event.preventDefault();
+			$('mINSERT').menu('hide');
+			return false;
+		});
+		
+		return false;
 	}
 	
 	/**
@@ -419,14 +488,16 @@ export class KatexInputHelper {
 		$("a.easyui-linkbutton").linkbutton({ plain: true }); 
 		$(document).bind('contextmenu', function(event) { event.preventDefault(); return false; }); 
 		
-		// The whole menu commands. 
+		// The whole menu commands.
+		// TRY different way: use options
 		$("#mFILE, #mINSERT, #mTOOLS, #mVIEW, #mOPTIONS, #mINFORMATIONS").menu({
 			onClick: async function(item) {
+				console.log(`ITEM : %O`, this);
 				switch (item.target.id) {
 					case "mEDITOR_PARAMETERS": await vme.openWindow('wEDITOR_PARAMETERS'); break; 
 					case "mSTYLE_CHOISE": await vme.openWindow('wSTYLE_CHOISE'); break; 
 					case "mLANGUAGE_CHOISE": await vme.openWindow('wLANGUAGE_CHOISE'); break; 
-					case "mMATRIX": await vme.showMatrixWindow(3, 3); break; 
+					case "mMATRIX": vme.showMatrixWindow(3, 3); break; 
 					case "mCOMMUTATIVE_DIAGRAM": await vme.initialiseUImoreDialogs("f_COMMUTATIVE_DIAGRAM"); break; 
 					case "mCHEMICAL_FORMULAE": await vme.initialiseUImoreDialogs("f_CHEMICAL_FORMULAE"); break; 
 					case "mSAVE_EQUATION": vme.saveEquationFile(); break; 
@@ -460,6 +531,14 @@ export class KatexInputHelper {
 				}
 			}
 		});
+		// NO ACTION? : 
+		// vme.onMainMenu();
+		
+		/*	SEEMS to have no effect
+		$("#mFILE, #mINSERT, #mTOOLS, #mVIEW, #mOPTIONS, #mINFORMATIONS")
+		.addClass('easyui-menu');
+		await this.parser.parseAsync("#mFILE, #mINSERT, #mTOOLS, #mVIEW, #mOPTIONS, #mINFORMATIONS");
+		*/
 		
 		if (!window.opener) { 
 			$("#mQUIT_EDITOR").addClass("menu-item-disabled").click(function(event) { }); 
@@ -512,11 +591,7 @@ export class KatexInputHelper {
 			vme.printCodeType(); 
 			vme.updateOutput(); 
 		});
-		$("#mathVisualOutput").bind('contextmenu', function(event) { 
-			event.preventDefault(); 
-			$('#mVIEW').menu('show', { left: event.pageX, top: event.pageY }); 
-			return false; 
-		}); 
+		$("#mathVisualOutput").bind('contextmenu', (event) => vme.onContextMenu('#mVIEW', event)); 
 		$("[information]").mouseover(function(event) { 
 			$("#divInformation").html(vme.getLocalText($(this).attr("information"))); 
 		}); 
@@ -1458,6 +1533,9 @@ export class KatexInputHelper {
 			.replace(/ /g, '%20') + '/';			
 		}
 		// $('h3').text(bundlePath);
+		var heading = $('h3').text();
+		$('h3').text(`${heading} on ${this.mobile ? 'mobile' : 'desktop'} device`);
+		// this.mobile ? 'mobile' : 'desktop'
 
 		$('html > head').append($('<base />'));
 		$('html > head > base').attr('href', bundlePath);

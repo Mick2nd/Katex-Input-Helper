@@ -1,7 +1,7 @@
 /**
- * EasyUI for jQuery 1.11.0
+ * EasyUI for jQuery 1.11.3
  * 
- * Copyright (c) 2009-2024 www.jeasyui.com. All rights reserved.
+ * Copyright (c) 2009-2025 www.jeasyui.com. All rights reserved.
  *
  * Licensed under the freeware license: http://www.jeasyui.com/license_freeware.php
  * To use it on other terms please contact us: info@jeasyui.com
@@ -20,7 +20,9 @@ clearTimeout(_5.vtimer);
 if(_5.ftimer){
 clearTimeout(_5.ftimer);
 }
+if($(_4).hasClass("tooltip-f")){
 $(_4).tooltip("destroy");
+}
 $(_4)._unbind();
 $(_4).remove();
 };

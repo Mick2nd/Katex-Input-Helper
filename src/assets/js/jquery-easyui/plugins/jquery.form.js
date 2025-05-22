@@ -1,7 +1,7 @@
 /**
- * EasyUI for jQuery 1.11.0
+ * EasyUI for jQuery 1.11.3
  * 
- * Copyright (c) 2009-2024 www.jeasyui.com. All rights reserved.
+ * Copyright (c) 2009-2025 www.jeasyui.com. All rights reserved.
  *
  * Licensed under the freeware license: http://www.jeasyui.com/license_freeware.php
  * To use it on other terms please contact us: info@jeasyui.com
@@ -233,7 +233,7 @@ return false;
 }
 };
 function _2b(_30,val){
-var _31=$(_21).find("[textboxName=\""+_30+"\"],[sliderName=\""+_30+"\"]");
+var _31=$(_21).find("[textboxName=\""+_30+"\"],[sliderName=\""+_30+"\"],[rateName=\""+_30+"\"]");
 if(_31.length){
 for(var i=0;i<_23.fieldTypes.length;i++){
 var _32=_23.fieldTypes[i];
@@ -416,7 +416,7 @@ $.fn.form.parseOptions=function(_55){
 var t=$(_55);
 return $.extend({},$.parser.parseOptions(_55,[{ajax:"boolean",dirty:"boolean"}]),{url:(t.attr("action")?t.attr("action"):undefined)});
 };
-$.fn.form.defaults={fieldTypes:["tagbox","combobox","combotree","combogrid","combotreegrid","datetimebox","datebox","timepicker","combo","datetimespinner","timespinner","numberspinner","spinner","slider","searchbox","numberbox","passwordbox","filebox","textbox","switchbutton","radiobutton","checkbox"],novalidate:false,focusOnValidate:true,ajax:true,iframe:true,dirty:false,dirtyFields:[],url:null,queryParams:{},onSubmit:function(_56){
+$.fn.form.defaults={fieldTypes:["tagbox","combobox","combotree","combogrid","combotreegrid","datetimebox","datebox","timepicker","combo","datetimespinner","timespinner","numberspinner","spinner","rate","slider","searchbox","numberbox","passwordbox","filebox","textbox","switchbutton","radiobutton","checkbox"],novalidate:false,focusOnValidate:true,ajax:true,iframe:true,dirty:false,dirtyFields:[],url:null,queryParams:{},onSubmit:function(_56){
 return $(this).form("validate");
 },onProgress:function(_57){
 },success:function(_58){

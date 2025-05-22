@@ -1,7 +1,7 @@
 /**
- * EasyUI for jQuery 1.11.0
+ * EasyUI for jQuery 1.11.3
  * 
- * Copyright (c) 2009-2024 www.jeasyui.com. All rights reserved.
+ * Copyright (c) 2009-2025 www.jeasyui.com. All rights reserved.
  *
  * Licensed under the freeware license: http://www.jeasyui.com/license_freeware.php
  * To use it on other terms please contact us: info@jeasyui.com
@@ -26,7 +26,7 @@ _5.css({position:"absolute",display:"inline-block",left:-20000});
 _5._size(_4,_6);
 var _a=_5.find(".l-btn-left");
 _a.css("margin-top",0);
-_a.css("margin-top",parseInt((_5.height()-_a.height())/2)+"px");
+_a.css("margin-top",Math.round((_5.height()-_a.height())/2)+"px");
 if(!_7){
 _5.insertAfter(_8);
 _5.css(_9);

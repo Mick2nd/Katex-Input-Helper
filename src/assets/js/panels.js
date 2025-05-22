@@ -8,6 +8,7 @@ export class KIHPanel {
 	id = "";
 	parent = null;
 	initialised = false;
+	isOpen = false;
 	
 	/**
 	 * @abstract Constructor
@@ -38,12 +39,20 @@ export class KIHPanel {
 	}
 	
 	/**
+	 * @abstract Called if a window is closed.
+	 */
+	onClose() {
+		this.isOpen = false;
+	}
+	
+	/**
 	 * @abstract Builds an object from the events to be provided when the panel is created.
 	 */
 	get handlers() {
 		return {
 			onMove: this.onMove.bind(this),
-			onResize: this.onResize.bind(this)
+			onResize: this.onResize.bind(this),
+			onClose: this.onClose.bind(this)
 		};
 	}
 	
@@ -78,6 +87,19 @@ export class KIHPanel {
 	 */
 	open() {
 		$(`#${this.id}`).dialog('open');
+		this.isOpen = true;
+	}
+	
+	/**
+	 * @abstract Toggles the dialog between open and closed
+	 */
+	toggle() {
+		if (this.isOpen) {
+			$(`#${this.id}`).dialog('close');
+			this.isOpen = false;
+		} else {
+			this.show();
+		}
 	}
 
 	/**
@@ -184,6 +206,7 @@ export class KIHWindow extends KIHPanel {
 	 */
 	open() {
 		$(`#${this.id}`).window('open');
+		this.isOpen = true;
 	}
 }
 
@@ -773,7 +796,7 @@ export class KIHPanels {
 			this.panels[id] = new KIHPanel(id, this);
 			await this.initialise(id);
 		}
-		await this.show(id);
+		await this.toggle(id);
 	}
 
 	async showMoreDialog(id, initialiseSymbolContent) {
@@ -781,7 +804,7 @@ export class KIHPanels {
 			this.panels[id] = new KIHMoreDialog(id, this);
 			await this.initialise(id, initialiseSymbolContent);
 		}
-		await this.show(id);
+		await this.toggle(id);
 	}
 	
 	async showWindow(id) {
@@ -789,7 +812,7 @@ export class KIHPanels {
 			this.panels[id] = new KIHWindow(id, this);
 			await this.initialise(id);
 		}
-		await this.show(id);
+		await this.toggle(id);
 	}
 	
 	async showDynamicPanel(math) {
@@ -798,7 +821,7 @@ export class KIHPanels {
 			this.panels[id] = new DynamicPanel(math);
 			await this.initialise(id);
 		}
-		await this.show(id);
+		await this.toggle(id);
 	}
 	
 	async initialise(id, initialiseSymbolContent = null) {
@@ -807,6 +830,10 @@ export class KIHPanels {
 	
 	async show(id) {
 		await this.panels[id].show();
+	}
+
+	async toggle(id) {
+		await this.panels[id].toggle();
 	}
 }
 

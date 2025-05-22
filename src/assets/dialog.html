@@ -41,7 +41,7 @@
 				
 				<div id="menu">				
 					<a class="easyui-menubutton" data-options="iconCls:'icon-file',menu:'#mFILE'"><span locate="FILE"></span></a> 
-					<a class="easyui-menubutton" data-options="iconCls:'icon-insert',menu:'#mINSERT'"><span locate="INSERT"></span></a> 
+					<a id="mbINSERT" class="easyui-menubutton" data-options="iconCls:'icon-insert',menu:'#mINSERT'"><span locate="INSERT"></span></a> 
 					<a class="easyui-menubutton" data-options="iconCls:'icon-plugin',menu:'#mTOOLS'"><span locate="TOOLS"></span> </a>
 					<a class="easyui-menubutton" data-options="iconCls:'icon-watch',menu:'#mVIEW'"><span locate="VIEW"></span></a> 
 					<a class="easyui-menubutton" data-options="iconCls:'icon-option',menu:'#mOPTIONS'"><span locate="OPTIONS"></span></a> 
@@ -58,7 +58,7 @@
 					</div>
 					<input type="file" id="fOPEN_EQUATION" style="display: none" />
 				</div>
-				<div id="mINSERT" class="easyui-menu menus">
+				<div id="mINSERT" class="menus">
 					<div iconcls="icon-char" id="mCHARS">
 						<span class='rtl-menu-item' locate="CHAR"></span>
 						<div style="width: 200px;">
@@ -259,8 +259,9 @@
 						id="f_SUM_PROD_SYMBOLS"></div>
 					
 					<!-- THIS MAY CAUSE FILE NOT FOUND : replacement see below
-					<div title="<span information='MATRIX_SYMBOLS' class='rtl-title-withicon'><img class='symbol_btn icon-matrix_13_black' src='jquery-easyui/themes/default/images/blank.gif' width='15' height='20' />  &nbsp;&nbsp; 
-						<img class='symbol_btn icon-matrix_33_black' src='js/jquery-easyui/themes/default/images/blank.gif' width='15' height='20' /></span>"
+					<div title="<span information='MATRIX_SYMBOLS' class='rtl-title-withicon'>
+						<img class='symbol_btn icon-matrix_13_black' src='./icons/blank.gif' width='15' height='20' />  &nbsp;&nbsp; 
+						<img class='symbol_btn icon-matrix_33_black' src='./icons/blank.gif' width='15' height='20' /></span>"
 						id="f_MATRIX_SYMBOLS">
 					</div>
 					 -->

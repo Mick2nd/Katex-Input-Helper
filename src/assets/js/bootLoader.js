@@ -90,7 +90,22 @@ export class BootLoader {
 	 */
 	async setTimeoutAsync(delay) {
 		return this.promisify(setTimeout, delay);
-	}	
+	}
+	
+	/**
+	 * @abstract Checks if running device is mobile device.
+	 */
+	get isMobile() {
+		// Solution from Internet ... does not work
+		// Check for Samsung device ... good enough to detect Samsung Internet Browser
+		// var mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+		// var mobile = /Samsung/i.test(navigator.userAgent);
+		// var isMobile = ('ontouchstart' in document.documentElement && /mobi/i.test(navigator.userAgent)) || mobile ;
+		var mobile = 
+			navigator.userAgentData?.mobile || 
+			/mobi|ios|arm/i.test(navigator.platform); 
+		return mobile ? true : false;
+	}
 	
 	/**
 	 * @abstract Initializes the app.
@@ -99,9 +114,9 @@ export class BootLoader {
 	 * 
 	 * @async implements the Promise contract
 	 */
-	async initApp(useEasyLoader) {
+	async initApp(mobile) {
 		try {
-			this.vme = new KatexInputHelper(useEasyLoader);
+			this.vme = new KatexInputHelper(mobile);
 			window.vme = this.vme;											// prevents garbage collection?
 			await this.vme.initialise();
 			$('#myContainer').layout({fit: true});
@@ -119,7 +134,15 @@ export class BootLoader {
 		
 		this.katex = await import('katex/dist/katex');
 		await import('katex/dist/contrib/mhchem');
+		var mobile = this.isMobile;
 		
+		if (mobile) {
+			var opts = { with: { 
+				type: 'css',
+			} };
+			await import('./jquery-easyui/jquery.easyui.mobile');
+			await import('./jquery-easyui/themes/mobile.css', opts);
+		}		
 		var counter = 20;
 		while (!this.presenceCheck(counter) && --counter >= 0) {
 			await this.setTimeoutAsync(100);
@@ -129,7 +152,7 @@ export class BootLoader {
 		await this.readyAsync();
 		console.debug('Promise check : document ready.');
 		
-		await this.initApp(false);
+		await this.initApp(mobile);
 		console.debug('Promise check : app started.');
 		this.check();
 	}

@@ -73,10 +73,10 @@ h3 {
 }
 
 #westRegion {
-	width: 210px;
+	width: 230px;
 	
 	.easyui-accordion > div {
-		overflow: auto !important;
+		overflow: hidden !important;
 	}
 }
 
@@ -132,10 +132,10 @@ h3 {
 }
 
 #eastRegion {
-	width: 210px;
+	width: 250px;
 	
 	.easyui-accordion > div {
-		overflow: auto !important;
+		overflow: hidden !important;
 	}
 }
 

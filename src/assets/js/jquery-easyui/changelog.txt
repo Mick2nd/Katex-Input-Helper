@@ -1,8 +1,11 @@
 Version 1.11.x
 ----------------
+* Improvement:
+ * treegrid: Add 'findBy' method.
 * New Plugins
  * swiper: Allow the user to create slideshows with smooth animations.
  * timeline: Allow the user to create a simple time line for projects.
+ * rate: Allow the user to select number of items stars for rating operation on something.
 
 Version 1.10.x
 --------------
