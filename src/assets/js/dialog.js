@@ -954,8 +954,16 @@ export class KatexInputHelper {
 		var width = 20 + $("#tableMATRIX").width(); 
 		var height = 100 + $("#tableMATRIX").height(); 
 		if (width < 240) width = 240; 
-		if (height < 160) height = 160; 
-		$('#wMATRIX').dialog({ title: vme.getLocalText("MATRIX"), width: width, height: height }); 
+		if (height < 160) height = 160;
+		
+		var options = $('#wMATRIX').dialog('options');
+		$('#wMATRIX').dialog({ 
+			title: vme.getLocalText("MATRIX"), 
+			width: width, 
+			height: height,
+			left: options.left,									// HAS NO EFFECT !!
+			top: options.top 
+		}); 
 		$('#wMATRIX').dialog('open');
 	}
 	
