@@ -125,6 +125,8 @@
 
 	"RESET": "Reset",
 	"RESET_WINDOW_POSITIONS": "Window Positions",
+	"RESTART": "Restart",
+	"RESTART_REQUIRED": "For the changes to take effect, please restart the application",
 
 	"VKI_00": "Number Pad",
 	"VKI_01": "Display virtual keyboard interface",

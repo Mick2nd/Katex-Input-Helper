@@ -125,6 +125,8 @@
 
 	"RESET": "Réinitialiser",
 	"RESET_WINDOW_POSITIONS": "Positions des fenêtres",
+	"RESTART": "Redémarrage",
+	"RESTART_REQUIRED": "Pour que les modifications prennent effet, veuillez redémarrer l'application",
 	
 	"VKI_00": "Pavé numérique",
 	"VKI_01": "Ouvrir le clavier virtuel",

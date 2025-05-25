@@ -89,7 +89,7 @@ export class CategoriesTree {
 			var keys = ['text', 'state', 'attributes', 'selected', 'haveSamples'];
 			var to = { };
 			for (var key of Object.keys(from)) {
-				if (keys.includes(key)) {
+				if (keys.some(item => item == key)) {
 					to[key] = from[key];
 				}
 			}
@@ -481,7 +481,7 @@ export class CategoriesTree {
 	 */
 	deleteEquations(from, checked) {
 		from.equations = from.equations.filter(									// then delete them from the source (from)
-			(elem, index) => !checked.includes(index));
+			(elem, index) => !checked.some(item => item == index));
 	}
 	
 	/**

@@ -105,13 +105,15 @@ The custom equations dialog with categories tree
 - The functionality of this plug-in is now also available as [Web app](https://mick2nd.github.io/Katex-Input-Helper/index.html) 
 hosted on Github. This can be used as Demo or to have a look at pre-published versions. 
 It's also running on mobile devices.
+- The browser version is equipped with cookies to support persistence of settings.
 - Made the production version working hereby reducing the size of the plug-in.
 - The browser version (see above) is also adapted for mobile devices.
 
 **Bug fixes**
 
 - The context menus crashed on the trial to invoke and click them. A workaround helps here.
-But this is not fully satisfying as you might see.
+This fact is completely invisible to the user.
+- The "Reset Windows Positions" functionality was broken, which is fixed now.
 
 ### 2.0.0
 

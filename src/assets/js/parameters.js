@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 
 /**
  * @abstract Factory method generating a Proxy for KIHParameters.
@@ -11,8 +12,8 @@ export function ParametersProxy() {
 				var changed = target[prop] != value;
 				if (changed) {
 					target[prop] = value;
+					target.storeCookie(prop, value);
 					if (!target.transaction.isOngoingTransaction) {
-						// console.debug(`property set: ${prop} = ${value}, set : ${target[prop]}`);
 						target.transaction.complete();
 					}
 				}
@@ -46,6 +47,7 @@ export class KIHParameters {
 	transaction = null;
 	mouseState = null;
 	displayMode = true;
+	mode = "plugin";
 	
 	/**
 	 * @abstract Constructor.
@@ -54,18 +56,24 @@ export class KIHParameters {
 		this.transaction = new Transaction();
 		this.transaction.configure(this.writeParameters.bind(this));
 		this.mouseState = new MouseState(this.transaction);
+		
+		document.cookie = "mjx.menu=";
 	}
 	
 	/**
 	 * @abstract Queries the parameters from the Plugin.
 	 */
 	async queryParameters() {
-		
+				
+		var inst = this;
 		var api = window.webviewApi; 
 		if (!api) {
-			api = { postMessage: async ( o ) => { } }; 
+			this.mode = "web";
+			api = { postMessage: async ( o ) => { 
+					return inst.loadCookies();
+				} 
+			}; 
 		}
-		var inst = this;
 		var response = await api.postMessage({
 			id: this.id,
 			cmd: 'getparams'
@@ -81,6 +89,8 @@ export class KIHParameters {
 					inst.resizePanel(key);
 				}
 			}
+			// Window position mismatch
+			//inst.resetWindowPositions();
 			inst.transaction.end();
 			
 			/**
@@ -117,6 +127,11 @@ export class KIHParameters {
 				var o = css.dimensionsOf(key);
 				this[key] = o;
 				$(`#${key}`).panel('resize', o);
+				
+				// TODO: has no effect, restart required
+				//options.top = o.top;
+				//options.left = o.left;
+				//$(`#${key}`).panel('move', this[id]);
 			}
 		}
 
@@ -156,9 +171,9 @@ export class KIHParameters {
 	 */
 	get filteredParameters() {
 		var o = { };
-		var doNotUse = [ "transaction", "displayMode", "mouseState" ];
+		var doNotUse = [ "transaction", "displayMode", "mouseState", "mode" ];
 		for (const [key, val] of Object.entries(this)) {
-			if (!doNotUse.includes[key]) {
+			if (!doNotUse.some(item => item == key)) {
 				o[key] = val;
 			}
 		}
@@ -167,9 +182,110 @@ export class KIHParameters {
 	}
 	
 	/**
+	 * @abstract Checks for a single key if its data item should be stored as Cookie.
+	 * 
+	 * @param {string} key - the key to be checked
+	 * @param {boolean} [persistEquations=true] - setting for equationCollection
+	 * @param {boolean} [persistWindowPositions=true] - setting for window positions
+	 */
+	shouldBeStored(key, persistEquations = true, persistWindowPositions = true) {
+		var doUse = [ 
+			"style", 
+			"localType", 
+			"equation",
+			"autoUpdateTime", 
+			"menuupdateType",
+			"autoupdateType", 
+			"persistEquations",
+			"persistWindowPositions"
+		];
+		return (
+			this.mode == 'web' && 
+			(doUse.some(item => item == key) || 
+			 (persistWindowPositions && key.substring(0, 1) == 'w') ||
+		 	 (persistEquations && key == "equationCollection")));
+	}
+	
+	/**
+	 * @abstract Store a single cookie after checking if it's desired.
+	 * 
+	 * @param {string} key - key, e.g. name of the item to be stored
+	 * @param {*} val - value to be stored
+	 */
+	storeCookie(key, val) {
+		if (this.shouldBeStored(key, this.persistEquations, this.persistWindowPositions)) {
+			var json = null;
+			try {
+				json = JSON.stringify(val);
+				var final = json;
+				if (key == 'equation' || key == 'equationCollection') {				
+					final = Buffer.from(json, 'utf8').toString('hex');
+				}
+				window.localStorage.setItem(key, final);
+			} catch(e) {
+				alert(`alert : ${json} : ${e}`);
+				window.localStorage.removeItem(key);
+			}
+		} else {
+			window.localStorage.removeItem(key);
+		}
+	}
+
+	/**
+	 * @abstract Loads all cookies. Cookies must be defined and must not be deactivated.
+	 */
+	loadCookies() {
+		try {
+			var cookies = { };
+			var persist = window.localStorage.getItem('persistEquations');
+			const persistEquations = persist != null ? persist : true;
+			persist = window.localStorage.getItem('persistWindowPositions');
+			const persistWindowPositions = persist != null ? persist : true;
+			
+			for (var idx = 0; idx < window.localStorage.length; idx++) {
+				const key = window.localStorage.key(idx);
+				var val = window.localStorage.getItem(key);
+				if (val == '') { continue; }
+				if (this.shouldBeStored(key, persistEquations, persistWindowPositions)) {
+					try {
+						if (key == 'equation' || key == 'equationCollection') {
+							val = Buffer.from(val, 'hex').toString('utf-8');
+						}
+					} catch(e) { 
+						alert(`Hex Cookie conversion error : ${key} : ${e}`);
+					}
+					val = JSON.parse(val); 
+					cookies[key] = val;
+				}
+			}
+			
+			return cookies;
+			
+		} catch(e) {
+			var msg = `Cookies inconsistent : ${e}`;
+			console.warn(msg);
+			alert(msg);
+			this.resetCookies();
+			return { };
+		}
+	}
+	
+	/**
+	 * @abstract Resets the cookies if they are in a inconsistent or fresh state.
+	 */
+	resetCookies() {
+		for (const [ key, val ] in Object.entries(this.filteredParameters)) {
+			this.storeCookie(key, val);
+		}
+	}
+		
+	/**
 	 * @abstract onPanelMove handler for some dialogs and windows.
 	 */
 	onPanelMove(id, left, top) {
+		if (!(id in this)) {
+			this[id] = { };
+		}
 		if (id in this && (this[id].left != left || this[id].top != top)) {
 			this[id].left = left;
 			this[id].top = top;
@@ -180,6 +296,10 @@ export class KIHParameters {
 			//this[id].height = dimensions.height;
 			
 			this.transaction.complete();
+		}
+
+		if (this.mode == 'web') {
+			this.storeCookie(id, this[id]);
 		}
 	}
 	
@@ -196,6 +316,9 @@ export class KIHParameters {
 	 * @param height - the height established by the user
 	 */
 	onPanelResize(id, width, height) {
+		if (!(id in this)) {
+			this[id] = { };
+		}
 		if (id in this && (this[id].width != width || this[id].height != height)) {
 			this[id].width = width;
 			this[id].height = height;
@@ -207,6 +330,10 @@ export class KIHParameters {
 			this[id].top = dimensions.top;
 			
 			this.transaction.complete();
+		}
+		
+		if (this.mode == 'web') {
+			this.storeCookie(id, this[id]);
 		}
 	}
 	
@@ -221,15 +348,18 @@ export class KIHParameters {
 	}
 	
 	/**
-	 * @abstract Resizes a given panel by using the 'configured' settings.
+	 * @abstract Resizes (and repositions) a given panel by using the 'configured' settings.
+	 * 
+	 * For repositioning after reset a restart is required.
 	 * 
 	 * @param id - the panel id as in HTML
 	 */
 	resizePanel(id) {
 		if (id in this && this[id] != undefined) {
 			try {
+				var options = $(`#${id}`).panel('options');
 				var o = this[id];
-				$(`#${id}`).panel('resize', this[id]);
+				$(`#${id}`).panel('resize', o);
 			} catch(e) {
 				console.error(`Exception resizing panel ${id} : ${e}`);
 			}
@@ -407,12 +537,17 @@ class Css {
 	 * @abstract Finds the style sheet.
 	 */
 	findSheet() {
+		var sheets = [ ];
 		for (const sheet of document.styleSheets) {
-			if (sheet.href && sheet.href.endsWith('dialog.css')) {
+			if (sheet.href && sheet.href.endsWith('main.css')) {
+				sheets.push(sheet);
 				this.sheet = sheet;
-				return;
+				//return;
 			}
-		}		
+		}
+		if (sheets.length != 1) {
+			console.warn(`Number of main.css sheets is ${sheets.length}`);
+		}
 	}
 	
 	/**
@@ -422,17 +557,30 @@ class Css {
 	 * @returns object with width and height entries, returns *auto* if not found
 	 */
 	dimensionsOf(id) {
-		for (const rule of this.sheet.cssRules) {
-			if (rule.type == rule.STYLE_RULE && rule.selectorText === ('#' + id)) {
-				const width = rule.styleMap.get('width');
-				const height = rule.styleMap.get('height');
-				return {
-					width: width.value + width.unit,
-					height: height.value + height.unit
-				};
+		try {
+			for (const rule of this.sheet.cssRules) {
+				if (rule.type == rule.STYLE_RULE && rule.selectorText === ('#' + id) && rule.styleMap != null) {
+					const width = rule.styleMap.get('width');
+					const height = rule.styleMap.get('height');
+					const dim = {
+						width: width.value + width.unit,
+						height: height.value + height.unit,
+					};
+					
+					dim.left = "50% - (width.value / 2 + width.unit)";
+					dim.top = "50% - (height.value / 2 + height.unit)";
+					
+					return dim;
+				}
 			}
+		} catch(e) {
+			const msg = `Style not found for ${id} : ${e}`;
+			console.warn(msg);
 		}
-		return { width: 'auto', height: 'auto'};
+		const msg = `Style not found for ${id}`;
+		console.warn(msg);
+		
+		return { width: 'auto', height: 'auto', left: '30%', top: '30%'};
 	}
 }
 

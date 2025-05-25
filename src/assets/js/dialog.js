@@ -421,7 +421,7 @@ export class KatexInputHelper {
 	 * 
 	 * TODO: This is a workaround because of crashs raised otherwise. The hide method
 	 * will be overridden. Left unwanted effect: display of menu at false location,
-	 * if main menu was invoked before.
+	 * this can be handled by shifting the menu via CSS.
 	 */	
 	onContextMenu(selector, event) {
 		event.preventDefault();
@@ -443,33 +443,38 @@ export class KatexInputHelper {
 			return false;
 		};
 		
+		this.logProperties(selector);
+		// this code uses CSS to shift the context menu to the desired location (and its)
+		// shadow
 		try {
-			$(selector).menu('show', { left: event.pageX, top: event.pageY }); 
+			$(selector).menu('show', { left: event.pageX, top: event.pageY });
+			$(`${selector}`).css({
+				position: 'absolute',
+				left: `${event.pageX}px`,
+				top: `${event.pageY}px`,
+				display: 'block'
+			});
+			
+			var next = $(selector).next();
+			if (next.hasClass('menu-shadow')) {
+				next.css({
+					position: 'absolute',
+					left: `${event.pageX}px`,
+					top: `${event.pageY}px`,
+					display: 'block'
+				});
+			}
 		} catch(e) { 
 		}
-		return false; 
+		return false;
 	}
 	
-	// TRIAL to overcome contextmenu problem.
-	onMainMenu() {
-		
-		var mbOptions = $('#mbINSERT').menubutton('options');
-		mbOptions.menu = null;
-
-		// There is no reaction on this!
-		$('#mbINSERT').on('mouseover', function(event) {
-			event.preventDefault();
-			$('mINSERT').menu('show', { left: event.pageX, top: event.pageY });
-			return false;
-		});
-
-		$('#mbINSERT').on('mouseout', function(event) {
-			event.preventDefault();
-			$('mINSERT').menu('hide');
-			return false;
-		});
-		
-		return false;
+	/**
+	 * Logs some properties of the element selected by the selector.
+	 */
+	logProperties(selector) {
+		console.log(`Context-menu display : ${$(selector).css('display')}, ${$(selector).css('position')}`);
+		console.log(`Context-menu %O`, $(selector)[0]);
 	}
 	
 	/**
@@ -531,14 +536,6 @@ export class KatexInputHelper {
 				}
 			}
 		});
-		// NO ACTION? : 
-		// vme.onMainMenu();
-		
-		/*	SEEMS to have no effect
-		$("#mFILE, #mINSERT, #mTOOLS, #mVIEW, #mOPTIONS, #mINFORMATIONS")
-		.addClass('easyui-menu');
-		await this.parser.parseAsync("#mFILE, #mINSERT, #mTOOLS, #mVIEW, #mOPTIONS, #mINFORMATIONS");
-		*/
 		
 		if (!window.opener) { 
 			$("#mQUIT_EDITOR").addClass("menu-item-disabled").click(function(event) { }); 
@@ -584,7 +581,8 @@ export class KatexInputHelper {
 		}); 
 		$('#btRESET_WINDOW_POSITIONS').click(function(event) { 
 			event.preventDefault(); 
-			vme.parameters.resetWindowPositions(); 
+			vme.parameters.resetWindowPositions();
+			vme.messager.show('RESTART', 'RESTART_REQUIRED');
 		}); 
 		$("input[name='codeType']").change(function() { 
 			vme.codeType = $("input[name='codeType']:checked").val(); 
@@ -1532,10 +1530,10 @@ export class KatexInputHelper {
 			.join('/')
 			.replace(/ /g, '%20') + '/';			
 		}
+		// TEST CODE to check path OR mobile detection
 		// $('h3').text(bundlePath);
-		var heading = $('h3').text();
-		$('h3').text(`${heading} on ${this.mobile ? 'mobile' : 'desktop'} device`);
-		// this.mobile ? 'mobile' : 'desktop'
+		// var heading = $('h3').text();
+		// $('h3').text(`${heading} on ${this.mobile ? 'mobile' : 'desktop'} device`);
 
 		$('html > head').append($('<base />'));
 		$('html > head > base').attr('href', bundlePath);

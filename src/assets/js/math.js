@@ -183,10 +183,11 @@ export class MathFormulae {
 	 * No longer working. Use workaround.
 	 */
 	updateLatexMenu() {
-		var html = katex.renderToString('\\LaTeX', { thrownOnError: false });
-		console.debug(`LaTeX symbol : ${html}`);
+		// THIS code runs in the Browser, but not as plug-in.
+		//var html = katex.renderToString('\\LaTeX', { thrownOnError: false });
+		//$('#mLaTeX_TEXT span').html(html);
+		
 		$('#mLaTeX_TEXT span').text('LaTeX');
-		// this.inplaceUpdate('#mLaTeX_TEXT span', false);
 	}
 	
 	/**

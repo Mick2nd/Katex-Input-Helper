@@ -20,7 +20,7 @@ copyVersion();
 /**
  * Extracted Split Chunks Config
  */
-const splitChunksConfig = {
+const splitChunksConfig = (env) => { return {
 	chunks: 'async',
 	minSize: 20000,
 	minRemainingSize: 0,
@@ -78,12 +78,12 @@ const splitChunksConfig = {
 		},
 		*/
 	},
-};
+}};
 
 /**
  * Extracted Rules Config
  */
-const rulesConfig = [
+const rulesConfig = (env) => [
 	/*	NO DISADVANTAGE TO DEACTIVATE BABEL
 	{
 		test: /\.js$/,
@@ -133,7 +133,7 @@ const rulesConfig = [
 /**
  * Extracted Plugins Config
  */
-const pluginsConfig = [
+const pluginsConfig = (env) => [
 	/*	THERE CAN BE SEEN NO EFFECT ON GENERATED JS
 		Also with deactivated Babel		
 	new webpack.optimize.ModuleConcatenationPlugin(),
@@ -149,7 +149,8 @@ const pluginsConfig = [
 	}),
 	// DEFINES GLOBAL VARIABLES, but babel-loader must not be active
 	new webpack.DefinePlugin({
-		KIH_VERSION: JSON.stringify('7.44')
+		KIH_VERSION: JSON.stringify('7.44'),
+		PRODUCTION: env.kihmode ? (env.kihmode == 'production') : false
 	}),
 	new TerserPlugin(),
 	new MiniCssExtractPlugin({ 
@@ -187,7 +188,7 @@ export default (env) => {
 			],
 			minimize: true,
 			/**/
-			splitChunks: splitChunksConfig
+			splitChunks: splitChunksConfig(env)
 		},
 		cache: false,
 		context: path.resolve(path.dirname('.'), '.'),
@@ -197,7 +198,7 @@ export default (env) => {
 		     	'@fonts': path.resolve(path.dirname('.'), 'fonts/')
 			},
 		},
-		plugins: pluginsConfig,
+		plugins: pluginsConfig(env),
 		entry: [
 			'./src/assets/js/bootLoader.js',
 		],
@@ -237,7 +238,7 @@ export default (env) => {
 		mode: MODE,
 		target: 'web',
 		module: {
-			rules: rulesConfig,
+			rules: rulesConfig(env),
 			parser: {
 				javascript: {
 				  // Set the module to `'strict'` or `'non-strict'` mode. This can affect the module's behavior, as some behaviors differ between strict and non-strict modes.

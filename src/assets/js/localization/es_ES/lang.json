@@ -125,6 +125,8 @@
 
 	"RESET": "Reiniciar",
 	"RESET_WINDOW_POSITIONS": "Posiciones de ventana",
+	"RESTART": "Reanudar",
+	"RESTART_REQUIRED": "Para que los cambios surtan efecto, reinicie la aplicación.",
 	
 	"VKI_00": "Teclado",
 	"VKI_01": "Mostrar la interfaz teclado virtual",

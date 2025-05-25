@@ -125,6 +125,8 @@
 
 	"RESET": "Cài lại",
 	"RESET_WINDOW_POSITIONS": "Vị trí cửa sổ",
+	"RESTART": "Khởi động lại",
+	"RESTART_REQUIRED": "Để những thay đổi có hiệu lực, vui lòng khởi động lại ứng dụng",
 	
 	"VKI_00": "bàn phím",
 	"VKI_01": "Mở bàn phím ảo",

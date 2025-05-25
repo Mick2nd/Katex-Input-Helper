@@ -124,6 +124,8 @@
 
 	"RESET": "Zurücksetzen",
 	"RESET_WINDOW_POSITIONS": "Fensterpositionen",
+	"RESTART": "Neustart",
+	"RESTART_REQUIRED": "Damit die Änderungen wirksam werden, bitte die Anwendung neustarten.",
 	
 	"VKI_00": "Keypad",
 	"VKI_01": "Anzeige virtuelle Tastatur",
