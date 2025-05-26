@@ -1,5 +1,6 @@
 import { Messager, Utilities } from './helpers';
 import { CategoriesTree } from './categoriesTree';
+import { FileHandler } from './fileHandling';
 
 /**
  * @abstract The base class of all Panels, Dialogs, Windows.
@@ -59,7 +60,7 @@ export class KIHPanel {
 	/**
 	 * @abstract Initialise method, creates the *Panel* with the handlers provided.
 	 */
-	async initialise() {
+	async initialise(dummy: any = null) {
 		$(`#${this.id}`).dialog(this.handlers)
 	}
 	
@@ -106,6 +107,7 @@ export class KIHPanel {
 	 * @abstract Used to localize an option.
 	 * 
 	 * Place this service into this base class to get access everywhere.
+	 * TODO: use Utility function.
 	 */	
 	localizeOption(option, id = null, func = $.fn.panel) {
 		id = id ? id : this.id;
@@ -113,8 +115,8 @@ export class KIHPanel {
 		var html = $.parseHTML(text);													// parse it into html object
 		var key = $(html).attr('locate');												// extract the locate attribute
 		var located = this.parent.localizer.getLocalText(key);							// use it to get localized text
-		html = $(html).html(located)[0].outerHTML;										// insert it into orginal html
-		return html;
+		var htmlString = (($(html).html(located)[0] as any) as Element).outerHTML;		// insert it into orginal html
+		return htmlString;
 	}
 }
 
@@ -144,7 +146,7 @@ export class KIHMoreDialog extends KIHPanel {
 	 * 
 	 * @param initialiseSymbolContent - method of the client to be invoked during loading
 	 */
-	async initialise(initialiseSymbolContent) {
+	override async initialise(initialiseSymbolContent) {
 		// id is the MORE id as in dialog.html file with 'w' and '_MORE'
 		var vme = this;
 		var fPanelMoreID = this.id;
@@ -185,8 +187,8 @@ export class KIHWindow extends KIHPanel {
 	 * 
 	 * TODO: harmonize with More Dialog class.
 	 */
-	async initialise() {
-		var handlers = this.handlers;
+	override async initialise(dummy: any = null) {
+		var handlers: any = this.handlers;
 		handlers.title = this.localizeOption('title');
 		$(`#${this.id}`).window(handlers)
 	}
@@ -291,7 +293,7 @@ export class DynamicPanel extends KIHPanel {
 	/**
 	 * @abstract It is intended to create this Panel dynamically taking the content from the Settings.
 	 */
-	async initialise() {
+	override async initialise(dummy: any = null) {
 		var inst = this;
 		
 		await super.initialise();
@@ -466,7 +468,7 @@ export class DynamicPanel extends KIHPanel {
 		
 		var customEquations = data.filterRows.map(function(row) {
 			var title = row.title;
-			var fragment = $.parseHTML(row.formula)[0];
+			var fragment = $.parseHTML(row.formula)[0] as HTMLElement;
 			var formula = fragment.attributes['latex'].value;
 			return [ title, formula ];
 		});

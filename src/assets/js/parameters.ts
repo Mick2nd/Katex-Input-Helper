@@ -237,10 +237,10 @@ export class KIHParameters {
 	loadCookies() {
 		try {
 			var cookies = { };
-			var persist = window.localStorage.getItem('persistEquations');
-			const persistEquations = persist != null ? persist : true;
-			persist = window.localStorage.getItem('persistWindowPositions');
-			const persistWindowPositions = persist != null ? persist : true;
+			var persist = window.localStorage.getItem('persistEquations') == 'true';
+			const persistEquations = persist;
+			persist = window.localStorage.getItem('persistWindowPositions') == 'true';
+			const persistWindowPositions = persist;
 			
 			for (var idx = 0; idx < window.localStorage.length; idx++) {
 				const key = window.localStorage.key(idx);
@@ -274,7 +274,7 @@ export class KIHParameters {
 	 * @abstract Resets the cookies if they are in a inconsistent or fresh state.
 	 */
 	resetCookies() {
-		for (const [ key, val ] in Object.entries(this.filteredParameters)) {
+		for (const [ key, val ] of Object.entries(this.filteredParameters)) {
 			this.storeCookie(key, val);
 		}
 	}
@@ -565,10 +565,9 @@ class Css {
 					const dim = {
 						width: width.value + width.unit,
 						height: height.value + height.unit,
+						left: "50% - (width.value / 2 + width.unit)",
+						top: "50% - (height.value / 2 + height.unit)"
 					};
-					
-					dim.left = "50% - (width.value / 2 + width.unit)";
-					dim.top = "50% - (height.value / 2 + height.unit)";
 					
 					return dim;
 				}

@@ -125,7 +125,7 @@ export class MathFormulae {
 						} else if (dm) {
 							inst.updateAnchor(a);
 						} else {															// direct image case
-							var img = a.firstChild;
+							var img = a.firstChild as Element;
 							if (img && img.nodeType != Node.TEXT_NODE && img.hasAttribute('src')) {
 							}
 						}

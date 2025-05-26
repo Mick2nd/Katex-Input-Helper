@@ -1,3 +1,4 @@
+import { promisify } from './parserExtension';
 
 /**
  * Supports some (asynchronous) file operations.
@@ -36,8 +37,8 @@ export class FileHandler {
 	 * 
 	 * @param file - the file object
 	 */
-	async readFile(file) {
-		return promisify(this, this.readFileCb, file);
+	async readFile(file) : Promise<string> {
+		return promisify(this, this.readFileCb, file) as Promise<string>;
 	}
 	
 	readFileCb(file, cb) {
@@ -53,7 +54,7 @@ export class FileHandler {
 	 * 
 	 * Selects a file with the file open dialog and reads and returns the file content.
 	 */
-	async loadFile(fileInputId) {
+	async loadFile(fileInputId) : Promise<string> {
 		
 		var file = await this.selectFile(fileInputId);
 		var text = await this.readFile(file);

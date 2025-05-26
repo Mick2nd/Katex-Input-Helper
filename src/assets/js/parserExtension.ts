@@ -202,7 +202,7 @@ export class ParserExtension {
  * @param args - args of the function. The function has one additional callback parameter
  * @returns the Promise, will be fulfilled if the callback is invoked
  */
-async function promisify(ob, fnc, ...args)
+export async function promisify(ob, fnc, ...args)
 {
 	return new Promise((resolve, reject) =>
 	{			

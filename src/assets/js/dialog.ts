@@ -13,11 +13,13 @@ import { Messager, Utilities } from './helpers';
 import { ParserExtension } from './parserExtension';
 import { MathFormulae } from './math';
 import { KIHPanels } from "./panels";
+import { FileHandler } from "./fileHandling";
 
 
 var console; 
 if (window.console) console = window.console; else console = { log: function(msg) { }, error: function(msg) { } }; 
-console.log(KIH_VERSION);
+// TODO: not defined in Typescript
+//console.log(KIH_VERSION);
 
 /**
  * @abstract Responsible for showing documentation.
@@ -149,6 +151,7 @@ export class KatexInputHelper {
 	runNotMathJax = true;
 	runNotCodeMirror = false;
 
+	url: any = null;
 	rtlStyle = 'ltr';
 	location = "";
 	documentations = null;
@@ -162,6 +165,10 @@ export class KatexInputHelper {
 	useEasyLoader = true;
 	baseLocation = "";
 	fromContextMenu = false;
+	parser: any = null;
+	mathTextInput: any = null;
+	mathVisualOutput: any = null;
+	VKI_show: any = null;
 	
 	/**
 	 * Constructor
@@ -508,7 +515,7 @@ export class KatexInputHelper {
 					case "mSAVE_EQUATION": vme.saveEquationFile(); break; 
 					case "mOPEN_EQUATION": vme.testOpenFile(); break; 
 					case "mLaTeX_TEXT": vme.insert("\\LaTeX"); break; 
-					case "mMATH_ML": vme.viewMathML(vme.mathVisualOutput.id); break; 
+					//case "mMATH_ML": vme.viewMathML(vme.mathVisualOutput.id); break; 
 					case "mUNICODES_LIST": await vme.openWindow('wUNICODES_LIST'); await vme.initialiseUniCodesList(); break; 
 					case "mLATEX_CODES_LIST": await vme.openWindow('wLATEX_CODES_LIST'); await vme.initialiseLatexMathjaxCodesList(); break; 
 					case "mLANG_RESSOURCE_LIST": await vme.openWindow('wLANGUAGE_LIST'); await vme.initialiseLangRessourcesList(); break; 
@@ -585,7 +592,7 @@ export class KatexInputHelper {
 			vme.messager.show('RESTART', 'RESTART_REQUIRED');
 		}); 
 		$("input[name='codeType']").change(function() { 
-			vme.codeType = $("input[name='codeType']:checked").val(); 
+			vme.codeType = $("input[name='codeType']:checked").val() as string; 
 			vme.printCodeType(); 
 			vme.updateOutput(); 
 		});
@@ -887,8 +894,10 @@ export class KatexInputHelper {
 	
 	/**
 	 * @abstract Inserts a range of Unicode Characters for display in the table.
+	 * 
+	 * @param {boolean} breakFFFF - breaks rendering, TODO: default added, correct?
 	 */
-	async setUniCodesValues(i1, i2, breakFFFF) {
+	async setUniCodesValues(i1, i2, breakFFFF = false) {
 		var html = ("<table border='1' cellspacing='0' style='border-spacing:0px;border-collapse:collapse;'>"); 
 		html += `
 			<tr>
@@ -898,7 +907,7 @@ export class KatexInputHelper {
 			</tr>
 		`;
 		for (var i = i1; i <= i2; i++) { 
-			if (breakFFFF & i > 65535) break; 
+			if (breakFFFF && i > 65535) break; 
 			html += `
 				<tr>
 					<td>${i}</td>
@@ -932,10 +941,10 @@ export class KatexInputHelper {
 	 * @param {int} rows - the number of matrix rows 
 	 * @param {int} cols - the number of matrix columns
 	 */
-	async updateMatrixWindow(rows, cols) {
+	async updateMatrixWindow(rows = 3, cols = 3) {
 		var vme = this;
-		if (typeof (rows != "undefined") && rows != null) document.formMATRIX.rowsMATRIX.value = rows; 
-		if (typeof (cols != "undefined") && cols != null) document.formMATRIX.colsMATRIX.value = cols; 
+		if (typeof rows != "undefined" && rows != null) document.formMATRIX.rowsMATRIX.value = rows; 
+		if (typeof cols != "undefined" && cols != null) document.formMATRIX.colsMATRIX.value = cols; 
 		rows = document.formMATRIX.rowsMATRIX.value; 
 		cols = document.formMATRIX.colsMATRIX.value; 
 		var html = '<table style="border-spacing:0px; border-collapse:collapse;">'; 
@@ -1165,11 +1174,12 @@ export class KatexInputHelper {
 	
 	/**
 	 * @abstract OBSOLETE. NOT USED.
-	 */
+	 *	
 	insertBeforeEachLine(b) { 
 		this.encloseSelection("", "", function(a) { a = a.replace(/\r/g, ""); 
 			return b + a.replace(/\n/g, "\n" + b) }) 
 		}
+	*/
 	
 	/**
 	 * @abstract Plays a role in Html mode (obsolete).
@@ -1185,7 +1195,7 @@ export class KatexInputHelper {
 	
 	/**
 	 * @abstract OBSOLETE. NOT USED.
-	 */
+	 *
 	encloseSelection(f, j, h) {
 		this.mathTextInput.focus(); 
 		f = f || ""; 
@@ -1231,6 +1241,7 @@ export class KatexInputHelper {
 		}
 		if (this.menuupdateType) this.updateOutput();
 	}
+	*/
 	
 	/**
 	 * @abstract Menu command to open a file with formula.
@@ -1343,7 +1354,8 @@ export class KatexInputHelper {
 	
 	/**
 	 * @abstract Loads a script. Actually only used by virtual keyboard.
-	 */
+	 * WE HAVE other solution for this.
+	 * 
 	loadScript(url, callback) {
 		var script = document.createElement("script"); 
 		script.type = "text/javascript"; 
@@ -1361,7 +1373,8 @@ export class KatexInputHelper {
 		}
 		document.body.appendChild(script);
 	}
-
+	*/
+	
 	/**
 	 * @abstract Initializes an accordion (several palettes with symbols).
 	 */
@@ -1417,7 +1430,7 @@ export class KatexInputHelper {
 		 * 			 LATEX code used as info for tool tip and info line.
 		 */
 		function getSymbol(a) {
-			var info = beginEndInfo(a);
+			var info: any = beginEndInfo(a);
 			if (info !== null) return info[0] + info[1];
 			info = latex(a);
 			if (info !== null) return info;
@@ -1448,9 +1461,10 @@ export class KatexInputHelper {
 		});
 		$(`#${fPanelID} a.s`).on('click', function(event) {
 			event.preventDefault(); 
-			var info = beginEndInfo(this);
+			var info: any = beginEndInfo(this);
 			if (info !== null) {
-				vme.tag(...info);
+				const [ a, b ] = info;
+				vme.tag(a, b);
 				return;
 			}
 			info = latex(this);
@@ -1509,7 +1523,7 @@ export class KatexInputHelper {
 					<tr><td> ${vme.versions.easyuiVersion} </td><td>Jquery Easyui</td></tr>
 					<tr><td> ${vme.versions.colorPickerVersion} </td><td>Jquery Color Picker</td></tr>
 				<table>`); 
-		$("#VMEdate").html((new Date()).getFullYear());
+		$("#VMEdate").html((new Date()).getFullYear().toString());
 		
 		// updates exactly 2 dialogs (see selectors)
 		// TODO: necessary and additional ones required?
@@ -1522,7 +1536,7 @@ export class KatexInputHelper {
 	 * This will be needed for relative paths of some content like css or html files.
 	 * This method is only called once in constructor.
 	 */
-	setBaseLocation() {
+	setBaseLocation() : string {
 		var bundlePath = $("script[src$='main.js']")
 			.last()
 			.attr("src")
@@ -1546,7 +1560,7 @@ export class KatexInputHelper {
 		$('html > head').append($('<base />'));
 		$('html > head > base').attr('href', bundlePath);
 		
-		return location;
+		return bundlePath;
 	}
 }
 

@@ -48,7 +48,7 @@ export class CategoriesTree {
 	 * 
 	 * @async the async variant with Promise contract
 	 */
-	async setCustomEquations(value) {
+	async setCustomEquations(value: any) : Promise<void> {
 		var converted = this.convert(value);
 		converted = await this.addSamples(converted);
 		this.data = this.getCustomEquationsProxy(converted);
@@ -60,7 +60,7 @@ export class CategoriesTree {
 	 * 
 	 * The whole data set, JSON compatible, with categories and equations.
 	 */
-	set customEquations(value) {
+	set customEquations(value: any) {
 		var converted = this.convert(value);
 		this.data = this.getCustomEquationsProxy(converted);
 		this.initialise();										// it is essential to invoke it here before currentEquations 
@@ -87,7 +87,7 @@ export class CategoriesTree {
 		 */
 		function _copy(from) {
 			var keys = ['text', 'state', 'attributes', 'selected', 'haveSamples'];
-			var to = { };
+			var to: any = { };
 			for (var key of Object.keys(from)) {
 				if (keys.some(item => item == key)) {
 					to[key] = from[key];

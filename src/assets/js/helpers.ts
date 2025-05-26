@@ -79,14 +79,15 @@ export class Utilities {
 	 * @param option - the option name
 	 * @returns the changed option as html string
 	 */	
-	localizeOption(id, option) {
+	localizeOption(id: string, option: string) : string {
 		var text = $(`#${id}`).window('options')[option];								// do something to preserve the TITLE: this is an option
 		var html = $.parseHTML(text);													// parse it into html object
 		var key = $(html).attr('locate');												// extract the locate attribute
 		var located = this.localizer.getLocalText(key);									// use it to get localized text
-		html = $(html).html(located)[0].outerHTML;										// insert it into orginal html
+		// TODO: after change due to Typescript errors all seems to be okay
+		var htmlString = (($(html).html(located)[0] as any) as Element).outerHTML;		// insert it into orginal html
 	
-		return html;
+		return htmlString;
 	}		
 }
 

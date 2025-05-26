@@ -60,15 +60,6 @@ export class Themes extends Observable {
 		for (const theme of this.supportedThemes) {
 			if (theme === 'aguas') { continue; }
 			
-			/*
-			if (theme == activeTheme) {
-				$(`#${theme}`).removeAttr('disabled');
-				$(`#${theme}-extend`).removeAttr('disabled');
-			} else {
-				$(`#${theme}`).attr('disabled', true);
-				$(`#${theme}-extend`).attr('disabled', true);
-			}
-			*/
 			$(`#${theme}, #${theme}-extend`).attr('disabled', theme !== activeTheme);
 		}
 		
@@ -87,10 +78,10 @@ export class Themes extends Observable {
 	async appendCss(activeTheme, dir = 'ltr') {
 		console.info(`Active theme is ${activeTheme}`);
 		
-		var opts = { with: { 
+		var opts = { assert: { 
 			type: 'css',
 		} };
-		await import(`./jquery-easyui-MathEditorExtend/themes/rtl.css`, opts);
+		await import('./jquery-easyui-MathEditorExtend/themes/rtl.css', opts);
 		$('link').last()
 		.attr('id', 'RTLstyle')
 		.attr('disabled', true);
@@ -126,13 +117,6 @@ export class Themes extends Observable {
 		this.dir = dir;
 		if (this.cssActive) {
 			console.info(`Html Dir is: ${dir}`);
-			/*
-			if (dir === 'rtl') {
-				$("#RTLstyle").removeAttr('disabled');
-			} else {
-				$("#RTLstyle").attr('disabled', true);
-			}
-			*/		
 			$("#RTLstyle").attr('disabled', dir !== 'rtl');
 		}
 	}

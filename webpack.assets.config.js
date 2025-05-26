@@ -97,6 +97,11 @@ const rulesConfig = (env) => [
 		}
 	},*/				
 	{
+		test: /\.tsx?$/,
+		use: 'ts-loader',
+		exclude: /node_modules/,
+	},
+	{
 		test: /\.css$/,
 		include: [ path.resolve(path.dirname('.'), 'src/assets/js') ],
 		exclude: [ /node_modules/ ],
@@ -195,12 +200,13 @@ export default (env) => {
 		resolve: {
 			alias: {
 		    	'@images': path.resolve(path.dirname('.'), 'dist/assets/images/'),
-		     	'@fonts': path.resolve(path.dirname('.'), 'fonts/')
+		     	'@fonts': path.resolve(path.dirname('.'), 'fonts/'),
 			},
+			extensions: [".ts", ".tsx", ".js"]
 		},
 		plugins: pluginsConfig(env),
 		entry: [
-			'./src/assets/js/bootLoader.js',
+			'./src/assets/js/bootLoader.ts',
 		],
 		output: {
 			clean: true,

@@ -137,10 +137,11 @@ export class BootLoader {
 		var mobile = this.isMobile;
 		
 		if (mobile) {
-			var opts = { with: { 
-				type: 'css',
+			var opts = { assert: { 
+				type: 'css'
 			} };
-			await import('./jquery-easyui/jquery.easyui.mobile');
+			// TODO: came up with ts. check!!
+			//await import('./jquery-easyui/jquery.easyui.mobile');
 			await import('./jquery-easyui/themes/mobile.css', opts);
 		}		
 		var counter = 20;
