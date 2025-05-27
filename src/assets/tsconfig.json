@@ -10,5 +10,6 @@
 		"moduleResolution": "node",
 		"resolveJsonModule": true
 	},
-	"include": ["./**/*"]
+	"files": ["js/definitions.ts", "js/bootLoader.ts"],
+	"extends": "../../tsconfig.json"
 }

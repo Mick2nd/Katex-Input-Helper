@@ -49,7 +49,7 @@ export class CategoriesTree {
 	 * @async the async variant with Promise contract
 	 */
 	async setCustomEquations(value: any) : Promise<void> {
-		var converted = this.convert(value);
+		let converted = this.convert(value);
 		converted = await this.addSamples(converted);
 		this.data = this.getCustomEquationsProxy(converted);
 		this.initialise();										// it is essential to invoke it here before currentEquations 
@@ -61,7 +61,7 @@ export class CategoriesTree {
 	 * The whole data set, JSON compatible, with categories and equations.
 	 */
 	set customEquations(value: any) {
-		var converted = this.convert(value);
+		let converted = this.convert(value);
 		this.data = this.getCustomEquationsProxy(converted);
 		this.initialise();										// it is essential to invoke it here before currentEquations 
 	}
@@ -78,7 +78,7 @@ export class CategoriesTree {
 	/** @abstract Use this construct to make copies
 	 */	
 	getCustomEquationsProxy(data) {
-		var rows = null;
+		let rows = null;
 		rows = [ data ];
 		return _proxy(rows);
 
@@ -86,9 +86,9 @@ export class CategoriesTree {
 		 * @abstract Copy a single node with relevant data.
 		 */
 		function _copy(from) {
-			var keys = ['text', 'state', 'attributes', 'selected', 'haveSamples'];
-			var to: any = { };
-			for (var key of Object.keys(from)) {
+			let keys = ['text', 'state', 'attributes', 'selected', 'haveSamples'];
+			let to: any = { };
+			for (const key of Object.keys(from)) {
 				if (keys.some(item => item == key)) {
 					to[key] = from[key];
 				}
@@ -102,14 +102,14 @@ export class CategoriesTree {
 		 * @abstract Proxy an array of nodes.
 		 */
 		function _proxy(rows, parent = null) {
-			var targetRows = [ ];
-			for (var row of rows) {
-				var targetRow = _copy(row);
+			let targetRows = [ ];
+			for (let row of rows) {
+				let targetRow = _copy(row);
 				targetRows.push(targetRow);
 				if (parent != null) {
 					parent.children.push(targetRow);
 				}
-				var children = row.children;
+				let children = row.children;
 				if (children && children.length) {
 					_proxy(children, targetRow);
 				}
@@ -169,7 +169,7 @@ export class CategoriesTree {
 	 * @abstract One time initialization of the *tree* extension. 
 	 */
 	treeInitialise() {
-		var inst = this;
+		let inst = this;
 		$.extend($.fn.tree.methods, {
 			/**
 			 * @abstract Extension of tree methods with sort functionality.
@@ -187,7 +187,7 @@ export class CategoriesTree {
 			 */
 			isLeaf: function(jq, target) {
 				return (function() {
-					var node = $(jq[0]).tree('getNode', target);
+					let node = $(jq[0]).tree('getNode', target);
 					if (node != null) {
 						console.debug(`isLeaf: ${'attributes' in node} `);
 						return 'attributes' in node;
@@ -204,7 +204,7 @@ export class CategoriesTree {
 	 * @abstract Initialise routine. Part of the Custom Equations setter.
 	 */
 	initialise() {
-		var inst = this;
+		let inst = this;
 
 		function updateDndIcon(yes) {
 			$('body')
@@ -221,12 +221,12 @@ export class CategoriesTree {
 			onDragEnter: function(target, source) {
 				console.debug(`onDragEnter `);
 				console.dir(this);
-				var isLeaf = $(this).tree('isLeaf', target);
+				let isLeaf = $(this).tree('isLeaf', target);
 				updateDndIcon(!isLeaf);
 			},
 			onDragOver: function(target, source) {
 				console.debug(`onDragOver `);
-				var isLeaf = $(this).tree('isLeaf', target);
+				let isLeaf = $(this).tree('isLeaf', target);
 				updateDndIcon(!isLeaf);
 			},
 			onDragLeave: function(target, source) {
@@ -241,9 +241,9 @@ export class CategoriesTree {
 				if (point != 'append') {
 					return false;
 				}
-				var isLeaf = $(this).tree('isLeaf', target);
+				let isLeaf = $(this).tree('isLeaf', target);
 
-				var targetNode = $(this).tree('getNode', target);
+				let targetNode = $(this).tree('getNode', target);
 				inst.openFolder(targetNode, false);
 				inst.openFolder(targetNode, true);
 
@@ -253,7 +253,7 @@ export class CategoriesTree {
 				return !isLeaf;
 			},
 			onDrop: function(target, source, point) {
-				var targetNode = $(this).tree('getNode', target);
+				let targetNode = $(this).tree('getNode', target);
 				inst.openFolder(targetNode, false);
 				inst.openFolder(targetNode, true);
 				
@@ -264,11 +264,11 @@ export class CategoriesTree {
 				console.debug(`onDrop dropping ${source.text} `);
 			},
 			onBeforeSelect: function(node) {
-				var isLeaf = $(this).tree('isLeaf', node.target);
+				let isLeaf = $(this).tree('isLeaf', node.target);
 				return isLeaf;
 			},
 			onSelect: function(node) {
-				var isLeaf = $(this).tree('isLeaf', node.target);
+				let isLeaf = $(this).tree('isLeaf', node.target);
 				if (isLeaf) {
 					inst.previousLeaf = inst.currentLeaf;
 					inst.currentLeaf = node;
@@ -292,11 +292,11 @@ export class CategoriesTree {
 		this.expandAlt();
 		this.renumberIds();
 
-		var nodePath = '/Categories/Default';
+		let nodePath = '/Categories/Default';
 		if (this.customEquations.selected !== undefined) {
 			nodePath = this.customEquations.selected;
 		}
-		var node = this.nodeFromPath(nodePath); 				// this.tree.tree('find', { text: nodeText });
+		let node = this.nodeFromPath(nodePath); 				// this.tree.tree('find', { text: nodeText });
 		if (node != null) {
 			this.findNode(node);
 			this.tree.tree('select', node.target);			
@@ -311,10 +311,10 @@ export class CategoriesTree {
 	 * We distinguish 2 context menues: one for the Leafs and one for the Folders.
 	 */
 	onContextMenu(e, node) {
-		var inst = this;
+		let inst = this;
 
 		function remove() {
-			var nodeParent = inst.getParent(node);
+			let nodeParent = inst.getParent(node);
 			inst.tree.tree('remove', node.target);
 			
 			if (!nodeParent.children || nodeParent.children.length == 0) {
@@ -385,11 +385,11 @@ export class CategoriesTree {
 	 */
 	onLoadSuccess() {
 		console.debug(`onLoadSuccess`);
-		var inst = this;
+		let inst = this;
 		inst.tree
 		.find('.tree-node')
 		.each(function() {
-			var opts = $(this)
+			let opts = $(this)
 			/* TEST WITHOUT THIS
 			.droppable({ 
 				accept: 'div.tree-node, div.datagrid-div' 
@@ -399,11 +399,11 @@ export class CategoriesTree {
 			console.debug(`Found tree node with accept: ${opts.accept} `);
 
 			opts.accept = 'div.tree-node, div.datagrid-div';
-			var onDragEnter = opts.onDragEnter;
-			var onDragOver = opts.onDragOver;
-			var onDragLeave = opts.onDragLeave;
-			var onDrop = opts.onDrop;
-			var onBeforeDrop = opts.onBeforeDrop;
+			let onDragEnter = opts.onDragEnter;
+			let onDragOver = opts.onDragOver;
+			let onDragLeave = opts.onDragLeave;
+			let onDrop = opts.onDrop;
+			let onBeforeDrop = opts.onBeforeDrop;
 			
 			opts.onDragEnter = function(e, source) {
 				console.debug(`opts.onDragEnter`);
@@ -459,9 +459,9 @@ export class CategoriesTree {
 	moveEquations(from, to) {
 		try {
 			if (to !== from) {
-				var checkedEquations = this.getCheckedEquations();				// indices
-				for (var idx of checkedEquations) {								// first append the checked equations to the target
-					var equation = from.attributes.equations[idx];
+				let checkedEquations = this.getCheckedEquations();				// indices
+				for (let idx of checkedEquations) {								// first append the checked equations to the target
+					let equation = from.attributes.equations[idx];
 					to.attributes.equations.push(equation);
 				}
 
@@ -490,9 +490,9 @@ export class CategoriesTree {
 	 * @returns array of indices
 	 */
 	getCheckedEquations() {
-		var checkedRows = $('#customDatagrid')
+		let checkedRows = $('#customDatagrid')
 			.datagrid('getChecked');
-		var indexes = checkedRows.map(row => $('#customDatagrid')
+		let indexes = checkedRows.map(row => $('#customDatagrid')
 			.datagrid('getRowIndex', row));
 			
 		return indexes;
@@ -547,13 +547,13 @@ export class CategoriesTree {
 			return _traverse(node.children);
 			
 			function _traverse(nodes) {
-				for (var node of nodes) {
+				for (let node of nodes) {
 					if (node.text === text) {
 						return node;
 					}
-					var children = node.children;
+					let children = node.children;
 					if (children && children.length) {
-						var found = _traverse(children);
+						let found = _traverse(children);
 						if (found) {
 							return found;
 						}
@@ -568,13 +568,13 @@ export class CategoriesTree {
 		 */
 		async function loadSamples() {
 			
-			var response = await fetch('formulas/sampleEquations.json');
+			let response = await fetch('formulas/sampleEquations.json');
 			return await response.json();
 		}
 		
 		if (!from.haveSamples && !getSamplesNode(from, "Samples")) {
 			
-			var samples = await loadSamples();
+			let samples = await loadSamples();
 			samples = getSamplesNode(samples, "Samples");
 			from.children.push(samples)
 			from.haveSamples = true;
@@ -592,12 +592,12 @@ export class CategoriesTree {
 	 * @param order - the order. 'asc' for ascending 
 	 */
 	sort(order) {
-		var inst = this;
-		var tree = inst.tree;		
+		let inst = this;
+		let tree = inst.tree;		
 		order = order || 'asc';
 		
 		this.traverse(function(node) {
-			var nodes = node.children;
+			let nodes = node.children;
 			if (nodes) {
 				_sort(nodes);
 			}
@@ -608,12 +608,12 @@ export class CategoriesTree {
 		function _sort(nodes){
 			nodes.sort(function(r1, r2) {
 				
-				var sortFunc = function(a, b) {
+				let sortFunc = function(a, b) {
 					return a == b ? 0 : (a > b ? 1 : -1);
 				};
 
-				var isLeaf1 = inst.isLeaf(r1);
-				var isLeaf2 = inst.isLeaf(r2);
+				let isLeaf1 = inst.isLeaf(r1);
+				let isLeaf2 = inst.isLeaf(r2);
 				console.debug(`Leaf Test: ${r1.text}:${isLeaf1}, ${r2.text}:${isLeaf2}`)
 				if (isLeaf1 != isLeaf2) {
 					return (isLeaf1 ? 1 : -1) * (order == 'asc' ? 1 : -1);
@@ -627,10 +627,10 @@ export class CategoriesTree {
 	 * @abstract Expands the whole category tree. Empty folders are left closed.
 	 */
 	expandAlt() {
-		var inst = this;
+		let inst = this;
 		this.traverse(function(row) {
 			if (!inst.tree.tree('isLeaf', row.target)) {
-				var children = row.children;
+				let children = row.children;
 				inst.openFolder(row, children && children.length);
 			}
 		});
@@ -640,7 +640,7 @@ export class CategoriesTree {
 	 * @abstract Correct the Folder icons of the whole tree.
 	 */
 	correctIcons() {
-		var inst = this;
+		let inst = this;
 		this.traverse(function(node) {
 			if (!inst.tree.tree('isLeaf', node.target)) {
 				inst.correctIcon(node);
@@ -653,7 +653,7 @@ export class CategoriesTree {
 	 */
 	correctIcon(node) {
 		this.findNode(node);									// seems to be essential to get target
-		var icon = $(node.target).find('.tree-icon');
+		let icon = $(node.target).find('.tree-icon');
 		if (icon.hasClass('tree-file')) {
 			icon
 			.removeClass('tree-file')
@@ -679,15 +679,15 @@ export class CategoriesTree {
 	 * @param args - arguments for function to modify its behavior
 	 */
 	traverse(func, ...args) {
-		var inst = this;
-		var nodes = inst.tree.tree('getRoots');
+		let inst = this;
+		let nodes = inst.tree.tree('getRoots');
 		_traverse(nodes, ...args);
 
 		function _traverse(nodes, ...args) {
-			for (var node of nodes) {
+			for (let node of nodes) {
 				inst.findNode(node);
 				func(node, ...args);
-				var children = node.children;
+				let children = node.children;
 				if (children && children.length) {
 					_traverse(children, ...args);
 				}
@@ -725,11 +725,11 @@ export class CategoriesTree {
 	nodeFromPath(path) {
 		
 		let pathComponents = path.split('/').slice(1);
-		var rest = pathComponents;
-		var first = null;
+		let rest = pathComponents;
+		let first = null;
 		
-		var node = null;
-		var nodes = this.tree.tree('getRoots');
+		let node = null;
+		let nodes = this.tree.tree('getRoots');
 		return _traverse(nodes);
 
 		function _traverse(nodes) {
@@ -737,12 +737,12 @@ export class CategoriesTree {
 			first = rest[0];
 			rest = rest.slice(1);
 
-			for (var node of nodes) {
+			for (let node of nodes) {
 				if (node.text === first) {
 					if (rest.length === 0)
 						return node;
 					
-					var children = node.children;
+					let children = node.children;
 					if (children && children.length) {
 						return _traverse(children);
 					}
@@ -782,7 +782,7 @@ export class CategoriesTree {
 	 */
 	openFolder(node, open) {
 		this.findNode(node);										// seems to be essential to get target
-		var isLeaf = this.tree.tree('isLeaf', node.target);
+		let isLeaf = this.tree.tree('isLeaf', node.target);
 		if (isLeaf) {
 			return;
 		}
@@ -802,7 +802,7 @@ export class CategoriesTree {
 	 */
 	getParent(node) {
 		this.findNode(node);										// seems to be essential to get target
-		var parent = this.tree.tree('getParent', node.target);
+		let parent = this.tree.tree('getParent', node.target);
 		return parent;
 	}
 
@@ -811,7 +811,7 @@ export class CategoriesTree {
 	 */	
 	isLeaf(node) {
 		this.findNode(node);										// seems to be essential to get target
-		var isLeaf = this.tree.tree('isLeaf', node.target);
+		let isLeaf = this.tree.tree('isLeaf', node.target);
 		return isLeaf;
 	}
 

@@ -7,7 +7,7 @@ import './jquery-easyui/datagrid-dnd';
 import './jquery-easyui/datagrid-filter';
 import './jquery-easyui/datagrid-cellediting';
 
-const CodeMirror = (await import('codemirror/lib/codemirror')).default;
+const CodeMirror = (await import('codemirror')).default;
 
 import { Observable } from './patterns/observable';
 import { Localizer } from './localization';
@@ -52,7 +52,7 @@ export class BootLoader {
 		return new Promise(function(resolve, reject) {
 			try {
 				function resolveFunc() {
-					var msg = `Promise check: ${args} `;
+					let msg = `Promise check: ${args} `;
 					console.debug(msg);
 					resolve('Success');
 				}
@@ -79,7 +79,7 @@ export class BootLoader {
 	 * @async implements the Promise contract
 	 */
 	async readyAsync() {
-		var doc = $(document);
+		let doc = $(document);
 		return this.promisify(doc.ready.bind(doc));
 	}
 	
@@ -95,16 +95,16 @@ export class BootLoader {
 	/**
 	 * @abstract Checks if running device is mobile device.
 	 */
-	get isMobile() {
+	get isMobile() : boolean {
 		// Solution from Internet ... does not work
 		// Check for Samsung device ... good enough to detect Samsung Internet Browser
-		// var mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-		// var mobile = /Samsung/i.test(navigator.userAgent);
-		// var isMobile = ('ontouchstart' in document.documentElement && /mobi/i.test(navigator.userAgent)) || mobile ;
-		var mobile = 
-			navigator.userAgentData?.mobile || 
+		// let mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+		// let mobile = /Samsung/i.test(navigator.userAgent);
+		// let isMobile = ('ontouchstart' in document.documentElement && /mobi/i.test(navigator.userAgent)) || mobile ;
+		let mobile = 
+			navigator.userAgentData?.mobile ?? 
 			/mobi|ios|arm/i.test(navigator.platform); 
-		return mobile ? true : false;
+		return !!mobile;
 	}
 	
 	/**
@@ -114,7 +114,7 @@ export class BootLoader {
 	 * 
 	 * @async implements the Promise contract
 	 */
-	async initApp(mobile) {
+	async initApp(mobile: boolean) {
 		try {
 			this.vme = new KatexInputHelper(mobile);
 			window.vme = this.vme;											// prevents garbage collection?
@@ -134,17 +134,17 @@ export class BootLoader {
 		
 		this.katex = await import('katex/dist/katex');
 		await import('katex/dist/contrib/mhchem');
-		var mobile = this.isMobile;
+		let mobile = this.isMobile;
 		
 		if (mobile) {
-			var opts = { assert: { 
+			let opts = { assert: { 
 				type: 'css'
 			} };
 			// TODO: came up with ts. check!!
 			//await import('./jquery-easyui/jquery.easyui.mobile');
 			await import('./jquery-easyui/themes/mobile.css', opts);
 		}		
-		var counter = 20;
+		let counter = 20;
 		while (!this.presenceCheck(counter) && --counter >= 0) {
 			await this.setTimeoutAsync(100);
 		}
@@ -162,7 +162,7 @@ export class BootLoader {
 	 * @abstract Checks the presence of the required scripts.
 	 */
 	presenceCheck(cycle) {
-		var lastChecked = 'Test';
+		let lastChecked = 'Test';
 		
 		/**
 		 * Checks the classname. Changed to accomodate the minification.
@@ -173,8 +173,8 @@ export class BootLoader {
 				console.warn(`Undefined type : ${readableName}`);
 				return false;
 			}
-			var detectedName = type.prototype["constructor"]["name"];
-			var equal = (detectedName === name);
+			let detectedName = type.prototype["constructor"]["name"];
+			let equal = (detectedName === name);
 			if (!equal) {
 				//console.warn(`Type check failed : ${detectedName} : ${readableName}`);
 			}
@@ -185,7 +185,7 @@ export class BootLoader {
 		 */
 		function checkOther(type, name, readableName) {
 			lastChecked = readableName;
-			var equal = type === name;
+			let equal = type === name;
 			if (!equal) {
 				console.warn(`Type check failed : ${type} : ${readableName}`);
 			}
@@ -206,7 +206,7 @@ export class BootLoader {
 			}
 		}
 		
-		var allLoaded = (
+		let allLoaded = (
 			checkOther(typeof $, 'function', 'jquery') &&
 			checkOther(typeof $.messager, 'object', 'easyui') &&
 			checkOther(typeof $.fn.datagrid, 'function', 'datagrid') &&
@@ -243,7 +243,7 @@ export class BootLoader {
 	 * 			 console report.
 	 */
 	check() {
-		var ids = [
+		let ids = [
 			'html',
 			'head',
 			'body',
@@ -253,7 +253,7 @@ export class BootLoader {
 			'.easyui-menubutton',
 			'.easyui-dialog',
 		];
-		for (var id of ids) {
+		for (let id of ids) {
 			$(id)
 			.each(function() {
 				console.debug(`Element check : ${$(this).prop('tagName')} : ${$(this).attr('id')} `);
@@ -272,7 +272,7 @@ export class BootLoader {
 
 if (!window.bootLoaderLoaded) {
 	window.bootLoaderLoaded = true;
-	var kihBootLoader = new BootLoader();
+	let kihBootLoader = new BootLoader();
 	kihBootLoader.init1()
 	.then(() => {
 		kihBootLoader.check();

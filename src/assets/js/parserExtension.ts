@@ -24,7 +24,7 @@ export class ParserExtension {
 	 * @abstract The inititialization method
 	 */
 	initialise() {
-		var inst = this;
+		let inst = this;
 		try {
 			if (!inst.async) {
 				$.parser.onComplete = function(ctx) {
@@ -57,7 +57,7 @@ export class ParserExtension {
 	 */
 	async parseAsync(selector, ctx, delay = 0) {
 		try {
-			var item = {
+			let item = {
 				ctx: ctx,
 				delay: delay,
 				selector: selector,
@@ -79,7 +79,7 @@ export class ParserExtension {
 	 */
 	nextAsync(ctx) {
 		try {
-			var item = this.queue.shift();
+			let item = this.queue.shift();
 			this.item = item;
 		} catch(e) {
 			console.warn(`nextAsync without queued item for ${ctx} : ${this}`);
@@ -104,12 +104,12 @@ export class ParserExtension {
 			console.warn(`onCompleteAsync for external source - not handled.`);
 			return;
 		}
-		var item = this.item;
+		let item = this.item;
 		if (item != null) {
 			console.info(`onCompleteAsync for ${ctx}: ${this}`);
 			this.item = null;
 			if (item.delay > 0) {
-				var timer = setInterval(
+				let timer = setInterval(
 					() => {
 						item.onComplete(null, item.ctx);
 						clearInterval(timer);
@@ -137,7 +137,7 @@ export class ParserExtension {
 	
 	next(ctx) {
 		try {
-			var item = this.queue.shift();
+			let item = this.queue.shift();
 			this.item = item;
 			$.parser.parse(item.selector);			
 		} catch(e) {
@@ -147,12 +147,12 @@ export class ParserExtension {
 	}
 	
 	onComplete(ctx) {
-		var item = this.item;
+		let item = this.item;
 		if (item != null) {
 			console.info(`onComplete: ${this}`);
 			this.item = null;
 			if (item.delay > 0) {
-				var timer = setInterval(
+				let timer = setInterval(
 					() => {
 						item.onComplete(item.selector, item.ctx);
 						clearInterval(timer);

@@ -180,8 +180,13 @@ const baseConfig = {
 		rules: [
 			{
 				test: /\.tsx?$/,
-				use: 'ts-loader',
 				exclude: /node_modules/,
+				use: [{
+					loader: 'ts-loader',
+					options: {
+						configFile: 'tsconfig.json'
+					}
+				}]
 			},
 		],
 	},

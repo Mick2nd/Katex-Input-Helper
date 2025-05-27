@@ -27,12 +27,12 @@ export class Themes extends Observable {
 	 * @param dir - the language direction parameter (comes from the selected language)
 	 */
 	async initialiseThemeChoice(activeTheme, dir = 'ltr') {
-		var inst = this;
+		let inst = this;
 		await this.appendCss(activeTheme, dir);												// initialisation -> 'load' css files
 		$("[name='style']").filter(`[value=${activeTheme}]`).attr("checked", "checked"); 	// select Radio button
 
 		$("input[name='style']").change(function() { 										// change handler of style changes
-			var activeTheme = $("input[name='style']:checked").val(); 
+			let activeTheme = $("input[name='style']:checked").val(); 
 			inst.activateStyle(activeTheme).then(() => { });
 		}); 
 		
@@ -53,7 +53,7 @@ export class Themes extends Observable {
 		}
 		
 		this.activeTheme = activeTheme;
-		var colorType = '';
+		let colorType = '';
 
 		if (activeTheme == 'black') { colorType = 'black'; }
 		
@@ -78,7 +78,7 @@ export class Themes extends Observable {
 	async appendCss(activeTheme, dir = 'ltr') {
 		console.info(`Active theme is ${activeTheme}`);
 		
-		var opts = { assert: { 
+		let opts = { assert: { 
 			type: 'css',
 		} };
 		await import('./jquery-easyui-MathEditorExtend/themes/rtl.css', opts);

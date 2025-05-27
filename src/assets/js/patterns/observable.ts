@@ -39,7 +39,7 @@ export class Observable {
    */
   notify(...args) {
     this.observers.forEach(function(observer) {
-		var potentialPromise = observer(...args);
+		let potentialPromise = observer(...args);
     	if (potentialPromise instanceof Promise) {
 			potentialPromise.then(
 				(value) => {}
@@ -56,7 +56,7 @@ export class Observable {
    */
   async notifyAsync(...args) {
     this.observers.forEach(async function(observer) { 
-		var potentialPromise = observer(...args);
+		let potentialPromise = observer(...args);
     	if (potentialPromise instanceof Promise) {
 			await potentialPromise;
 		}

@@ -23,7 +23,7 @@ export class FileHandler {
 	selectFileCb(fileInputId, cb) {
 		$(`#${fileInputId}`)
 		.change(function(event) { 
-			var file = event.target.files ? event.target.files[0] : event.target.value; 
+			let file = event.target.files ? event.target.files[0] : event.target.value; 
 			cb(null, file); 
 		}); 
 		
@@ -42,7 +42,7 @@ export class FileHandler {
 	}
 	
 	readFileCb(file, cb) {
-		var reader = new FileReader(); 
+		let reader = new FileReader(); 
 		reader.onload = function() {
 			cb(null, this.result); 
 		}; 
@@ -56,8 +56,8 @@ export class FileHandler {
 	 */
 	async loadFile(fileInputId) : Promise<string> {
 		
-		var file = await this.selectFile(fileInputId);
-		var text = await this.readFile(file);
+		let file = await this.selectFile(fileInputId);
+		let text = await this.readFile(file);
 
 		return text;
 	}
@@ -73,17 +73,17 @@ export class FileHandler {
 	 */	
 	saveFile(content, type, fileAnchorId) {
 
-		var selector = `#${fileAnchorId}`;
-		var name = "equation_vme_latex.txt"; 
-		var blob = null;
+		let selector = `#${fileAnchorId}`;
+		let name = "equation_vme_latex.txt"; 
+		let blob = null;
 		
 		try { 
 			blob = new Blob([ content ], { type: type }); 
 		} catch (e) { } 
 		
-		var bloburl = null; 
+		let bloburl = null; 
 		if (blob) { 
-			var URL = window.URL || window.webkitURL; 
+			let URL = window.URL || window.webkitURL; 
 			try { 
 				bloburl = URL.createObjectURL(blob); 
 			} catch (e) { } 
@@ -92,7 +92,7 @@ export class FileHandler {
 		$(selector).attr("href", bloburl); 
 		$(selector).attr("download", name); 
 		$(selector).attr("type", type); 
-		var comp = document.getElementById(fileAnchorId); 
+		let comp = document.getElementById(fileAnchorId); 
 
 		// Test: TRIAL 1 was working, most probably we do not need the remaining code.
 		try { 
@@ -103,7 +103,7 @@ export class FileHandler {
 
 		try { 
 			if (document.createEvent) { 
-				var e = document.createEvent('MouseEvents'); 
+				let e = document.createEvent('MouseEvents'); 
 				e.initEvent('click', true, true); 
 				comp.dispatchEvent(e); 
 				console.info(`File Save : TRIAL 2`);
@@ -113,7 +113,7 @@ export class FileHandler {
 
 		try { 
 			if (document.createEventObject) { 
-				var evObj = document.createEventObject(); 
+				let evObj = document.createEventObject(); 
 				comp.fireEvent("onclick", evObj); 
 				console.info(`File Save : TRIAL 3`);
 				return; 
@@ -126,9 +126,7 @@ export class FileHandler {
 			return; 
 		}
 
-		// window.location = "data:" + type + ";charset=utf-8," + encodeURIComponent(content); 
-		console.info(`File Save : OUTCOME 5`);
-		return; 
+		console.info(`File Save : OUTCOME 5`); 
 	}
 }
 

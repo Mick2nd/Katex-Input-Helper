@@ -98,8 +98,13 @@ const rulesConfig = (env) => [
 	},*/				
 	{
 		test: /\.tsx?$/,
-		use: 'ts-loader',
 		exclude: /node_modules/,
+		use: [{
+			loader: 'ts-loader',
+			options: {
+				configFile: 'src/assets/tsconfig.json'
+			}
+		}]
 	},
 	{
 		test: /\.css$/,
@@ -155,7 +160,7 @@ const pluginsConfig = (env) => [
 	// DEFINES GLOBAL VARIABLES, but babel-loader must not be active
 	new webpack.DefinePlugin({
 		KIH_VERSION: JSON.stringify('7.44'),
-		PRODUCTION: env.kihmode ? (env.kihmode == 'production') : false
+		PRODUCTION: JSON.stringify(env.kihmode ? (env.kihmode == 'production') : false)
 	}),
 	new TerserPlugin(),
 	new MiniCssExtractPlugin({ 
@@ -165,7 +170,8 @@ const pluginsConfig = (env) => [
 	new CopyPlugin({
 		patterns: [
 			{ from: 'src/assets/dialog.html', to: 'dialog.html' },
-			{ from: 'src/assets/doc', to: 'doc' },
+			// NOWHERE needed
+			//{ from: 'src/assets/doc', to: 'doc' },
 			{ from: 'src/assets/formulas', to: 'formulas' },
 			{ from: 'src/assets/information', to: 'information' },
 		],
@@ -290,5 +296,6 @@ function copyVersion() {
 	const version = manifest.version;
 	const versions = readJson(versionPath);
 	versions.version = version;
+	versions.build ++;
 	writeJson(versionPath, versions);
 }

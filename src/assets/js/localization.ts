@@ -32,7 +32,7 @@ export class Localizer {
 	 */
 	async basicLoad(langCode) {
 		try {
-			var json = await import(
+			let json = await import(
 				/* webpackInclude: /\.json$/ */
 				`./localization/${langCode}/lang.json`);
 			
@@ -53,7 +53,7 @@ export class Localizer {
 	 * them in this instance. Notifies observers about this event.
 	 */
 	async load(langCode) {
-		var inst = this;
+		let inst = this;
 		
 		if (inst.fallback == null) {
 			inst.fallback = await inst.basicLoad('en_US');
@@ -63,8 +63,9 @@ export class Localizer {
 		inst.currentLocale = langCode;
 		
 		// ATTENTION! NOT EVERY LOCALE has a corresponding EASYUI LOCALE
+		let shortCode = "";
 		try {
-			var shortCode = inst.current._i18n_HTML_Lang;
+			shortCode = inst.current._i18n_HTML_Lang;
 			await import(`./jquery-easyui/locale/easyui-lang-${shortCode}.js`);
 		} catch(e) {
 			console.warn(`${shortCode} : no corresponding easyui locale`);
@@ -79,11 +80,11 @@ export class Localizer {
 	 */
 	getLocalText(code) {
 		if (this.current != null) {
-			var text = this.current[code];
+			let text = this.current[code];
 			if (text != undefined && text != '') return text;
 		}
 		if (this.fallback != null) {
-			var text = this.fallback[code];
+			let text = this.fallback[code];
 			if (text != undefined && text != '') return text;
 		}
 		
@@ -98,13 +99,13 @@ export class Localizer {
 	 * @param localType - the language code as de_DE or en_US
 	 */
 	async initialiseLanguageChoice(localType) {
-		var inst = this;
-		var html = await this.buildLocalTypes();
+		let inst = this;
+		let html = await this.buildLocalTypes();
 		$("#formLANGUAGE_CHOISE").html(html);
 		$("[name='localType']").filter(`[value=${localType}]`).attr("checked", "checked"); 
 		
 		$("input[name='localType']").change(async function() { 
-			var localType = $("input[name='localType']:checked").val(); 
+			let localType = $("input[name='localType']:checked").val(); 
 			await inst.load(localType); 
 		}); 
 
@@ -116,19 +117,19 @@ export class Localizer {
 	 * 			 files.
 	 */
 	async buildLocalTypes() {
-		var html = "<fieldset dir='ltr'>"; 
-		var inst = this;
+		let html = "<fieldset dir='ltr'>"; 
+		let inst = this;
 		
-		for (var lang of inst.locales) {
-			var json = await inst.basicLoad(lang);			
-			var langage = json["_i18n_Langage"]; 
-			var langCode = json["_i18n_HTML_Lang"]; 
-			var langDir = json["_i18n_HTML_Dir"]; 
-			var langAuthor = json["_i18n_Author"]; 
-			var flag = langCode;
+		for (let lang of inst.locales) {
+			let json = await inst.basicLoad(lang);			
+			let langage = json["_i18n_Langage"]; 
+			let langCode = json["_i18n_HTML_Lang"]; 
+			let langDir = json["_i18n_HTML_Dir"]; 
+			let langAuthor = json["_i18n_Author"]; 
+			let flag = langCode;
 			if (langCode == 'en') { flag = 'us'; }
 			
-			var ico = await import(`./i18n/icons/${flag}.png`);
+			let ico = await import(`./i18n/icons/${flag}.png`);
 			
 			html += 
 				`\n\t` + 
@@ -144,16 +145,16 @@ export class Localizer {
 	 * @abstract Assembles the content of the Language Resources dialog.
 	 */
 	async buildLocalResources() {
-		var inst = this;
+		let inst = this;
 
-		for (var lang of inst.locales) {
-			var json = await inst.basicLoad(lang);
-			var title = lang; 
-			var langage = json["_i18n_Langage"]; 
+		for (let lang of inst.locales) {
+			let json = await inst.basicLoad(lang);
+			let title = lang; 
+			let langage = json["_i18n_Langage"]; 
 			if (!$('#tLANGUAGE_LIST').tabs('exists', title)) {
-				var list = "<table border='1' cellspacing='0' style='border-spacing:0px;border-collapse:collapse;margin:20px;width:580px'>"; 
-				var dir = json["_i18n_HTML_Dir"]; 
-				for (var ressource in json) { 
+				let list = "<table border='1' cellspacing='0' style='border-spacing:0px;border-collapse:collapse;margin:20px;width:580px'>"; 
+				let dir = json["_i18n_HTML_Dir"]; 
+				for (let ressource in json) { 
 					list += (
 						"<tr><td valign='top'><b>" + ressource + "</b> : </td>" + 
 						"<td valign='top' class='rtl-align-right'" + ((dir == "rtl") ? "style='text-align:right;'" : "") + " dir='" + dir + "'>" + json[ressource].replace(/</gi, "&lt;") + "</td></tr>\n"); 

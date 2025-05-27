@@ -18,8 +18,8 @@ export class Messager {
 	 * Provided messages key is translated, so you get a localized message.
 	 */
 	error(msgKey, e) {
-		var error = this.localizer.getLocalText('ERROR');
-		var msg = this.localizer.getLocalText(msgKey);
+		let error = this.localizer.getLocalText('ERROR');
+		let msg = this.localizer.getLocalText(msgKey);
 		$.messager.alert(`<span class='rtl-title-withicon'>${error}</span>`, `${msg} - ${e}`, 'warning'); 		
 	}
 	
@@ -29,8 +29,8 @@ export class Messager {
 	 * Title key and Message key are translated.
 	 */
 	show(titleKey, msgKey, e = null) {
-		var inst = this;
-		var msg = inst.localizer.getLocalText(msgKey);
+		let inst = this;
+		let msg = inst.localizer.getLocalText(msgKey);
 		if (e != null) {
 			msg = `<div>${msg}:</div><div style="color: red;">${e}</div>`;
 		}
@@ -65,7 +65,7 @@ export class Utilities {
 	 * @returns the changed option as html string
 	 */
 	getOption(id, option) {
-		var text = $(`#${id}`).window('options')[option];
+		let text = $(`#${id}`).window('options')[option];
 		return text;		
 	}
 
@@ -80,12 +80,12 @@ export class Utilities {
 	 * @returns the changed option as html string
 	 */	
 	localizeOption(id: string, option: string) : string {
-		var text = $(`#${id}`).window('options')[option];								// do something to preserve the TITLE: this is an option
-		var html = $.parseHTML(text);													// parse it into html object
-		var key = $(html).attr('locate');												// extract the locate attribute
-		var located = this.localizer.getLocalText(key);									// use it to get localized text
+		let text = $(`#${id}`).window('options')[option];								// do something to preserve the TITLE: this is an option
+		let html = $.parseHTML(text);													// parse it into html object
+		let key = $(html).attr('locate');												// extract the locate attribute
+		let located = this.localizer.getLocalText(key);									// use it to get localized text
 		// TODO: after change due to Typescript errors all seems to be okay
-		var htmlString = (($(html).html(located)[0] as any) as Element).outerHTML;		// insert it into orginal html
+		let htmlString = (($(html).html(located)[0] as any) as Element).outerHTML;		// insert it into orginal html
 	
 		return htmlString;
 	}		

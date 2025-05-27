@@ -1,3 +1,6 @@
+declare let PRODUCTION: boolean;
+declare let KIH_VERSION: string;
+
 declare module "*.css" {
 	const content: Record<string, string>;
 	export default content;

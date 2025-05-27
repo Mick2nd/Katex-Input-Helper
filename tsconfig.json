@@ -8,5 +8,5 @@
 		"baseUrl": ".",
 		"esModuleInterop": true
 	},
-	"exclude": ["src/assets/js/bootLoader.ts", "src/assets/js/themes.ts"]
+	"files": ["src/index.ts"]
 }

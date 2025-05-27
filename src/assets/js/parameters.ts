@@ -4,12 +4,12 @@ import { Buffer } from 'buffer';
  * @abstract Factory method generating a Proxy for KIHParameters.
  */
 export function ParametersProxy() {
-	var parameters = new KIHParameters();
+	let parameters = new KIHParameters();
 	return new Proxy(
 		parameters,
 		{
 			set(target, prop, value, receiver) {
-				var changed = target[prop] != value;
+				let changed = target[prop] != value;
 				if (changed) {
 					target[prop] = value;
 					target.storeCookie(prop, value);
@@ -65,8 +65,8 @@ export class KIHParameters {
 	 */
 	async queryParameters() {
 				
-		var inst = this;
-		var api = window.webviewApi; 
+		let inst = this;
+		let api = window.webviewApi; 
 		if (!api) {
 			this.mode = "web";
 			api = { postMessage: async ( o ) => { 
@@ -74,7 +74,7 @@ export class KIHParameters {
 				} 
 			}; 
 		}
-		var response = await api.postMessage({
+		let response = await api.postMessage({
 			id: this.id,
 			cmd: 'getparams'
 		});
@@ -100,7 +100,7 @@ export class KIHParameters {
 			 * TODO: CHECK! IS THERE A DANGER ON THIS?
 			 * 
 			$(window).bind('unload', async function() {
-				var response = await webviewApi.postMessage({
+				let response = await webviewApi.postMessage({
 					id: this.id,
 					cmd: 'sendparams',
 					check: true
@@ -120,11 +120,11 @@ export class KIHParameters {
 	 */	
 	resetWindowPositions() {
 		this.transaction.begin();
-		var css = new Css();
+		let css = new Css();
 
 		for (const [key, val] of Object.entries(this)) {
 			if (key.startsWith('w')) {
-				var o = css.dimensionsOf(key);
+				let o = css.dimensionsOf(key);
 				this[key] = o;
 				$(`#${key}`).panel('resize', o);
 				
@@ -157,7 +157,7 @@ export class KIHParameters {
 	 * 			 to the caller.
 	 */
 	writeParameters(equation = "") {
-		var parameters = JSON.stringify(this.filteredParameters);
+		let parameters = JSON.stringify(this.filteredParameters);
 		$('#hidden').attr('value', parameters);
 		this.debugPrint();
 	}
@@ -170,8 +170,8 @@ export class KIHParameters {
 	 * @returns the filtered settings keys
 	 */
 	get filteredParameters() {
-		var o = { };
-		var doNotUse = [ "transaction", "displayMode", "mouseState", "mode" ];
+		let o = { };
+		let doNotUse = [ "transaction", "displayMode", "mouseState", "mode" ];
 		for (const [key, val] of Object.entries(this)) {
 			if (!doNotUse.some(item => item == key)) {
 				o[key] = val;
@@ -189,7 +189,7 @@ export class KIHParameters {
 	 * @param {boolean} [persistWindowPositions=true] - setting for window positions
 	 */
 	shouldBeStored(key, persistEquations = true, persistWindowPositions = true) {
-		var doUse = [ 
+		let doUse = [ 
 			"style", 
 			"localType", 
 			"equation",
@@ -214,10 +214,10 @@ export class KIHParameters {
 	 */
 	storeCookie(key, val) {
 		if (this.shouldBeStored(key, this.persistEquations, this.persistWindowPositions)) {
-			var json = null;
+			let json = null;
 			try {
 				json = JSON.stringify(val);
-				var final = json;
+				let final = json;
 				if (key == 'equation' || key == 'equationCollection') {				
 					final = Buffer.from(json, 'utf8').toString('hex');
 				}
@@ -236,15 +236,15 @@ export class KIHParameters {
 	 */
 	loadCookies() {
 		try {
-			var cookies = { };
-			var persist = window.localStorage.getItem('persistEquations') == 'true';
+			let cookies = { };
+			let persist = window.localStorage.getItem('persistEquations') == 'true';
 			const persistEquations = persist;
 			persist = window.localStorage.getItem('persistWindowPositions') == 'true';
 			const persistWindowPositions = persist;
 			
-			for (var idx = 0; idx < window.localStorage.length; idx++) {
+			for (let idx = 0; idx < window.localStorage.length; idx++) {
 				const key = window.localStorage.key(idx);
-				var val = window.localStorage.getItem(key);
+				let val = window.localStorage.getItem(key);
 				if (val == '') { continue; }
 				if (this.shouldBeStored(key, persistEquations, persistWindowPositions)) {
 					try {
@@ -262,7 +262,7 @@ export class KIHParameters {
 			return cookies;
 			
 		} catch(e) {
-			var msg = `Cookies inconsistent : ${e}`;
+			let msg = `Cookies inconsistent : ${e}`;
 			console.warn(msg);
 			alert(msg);
 			this.resetCookies();
@@ -291,7 +291,7 @@ export class KIHParameters {
 			this[id].top = top;
 			this.mouseState.increment();
 			// TODO: check
-			//var dimensions = this.getPanelDimensions(id);
+			//let dimensions = this.getPanelDimensions(id);
 			//this[id].width = dimensions.width;
 			//this[id].height = dimensions.height;
 			
@@ -324,7 +324,7 @@ export class KIHParameters {
 			this[id].height = height;
 			this.mouseState.increment();								// counts the number of resize / move events
 			
-			var dimensions = this.getPanelDimensions(id);
+			let dimensions = this.getPanelDimensions(id);
 			this.check(this[id], dimensions);							// checks for discrepancy
 			this[id].left = dimensions.left;
 			this[id].top = dimensions.top;
@@ -357,8 +357,7 @@ export class KIHParameters {
 	resizePanel(id) {
 		if (id in this && this[id] != undefined) {
 			try {
-				var options = $(`#${id}`).panel('options');
-				var o = this[id];
+				let o = this[id];
 				$(`#${id}`).panel('resize', o);
 			} catch(e) {
 				console.error(`Exception resizing panel ${id} : ${e}`);
@@ -372,8 +371,8 @@ export class KIHParameters {
 	 * TODO: Seems to be not correct!
 	 */
 	getPanelDimensions(id) {
-		var options = $(`#${id}`).panel('options');
-		var dimensions = { 
+		let options = $(`#${id}`).panel('options');
+		let dimensions = { 
 			left: options.left, 
 			top: options.top, 
 			width: options.width, 
@@ -537,7 +536,7 @@ class Css {
 	 * @abstract Finds the style sheet.
 	 */
 	findSheet() {
-		var sheets = [ ];
+		let sheets = [ ];
 		for (const sheet of document.styleSheets) {
 			if (sheet.href && sheet.href.endsWith('main.css')) {
 				sheets.push(sheet);
@@ -599,7 +598,7 @@ class MouseState {
 
 	constructor(transaction) {
 		this.transaction = transaction;
-		var inst = this;
+		let inst = this;
 
 		if (this.active) {
 			$('body').on('mousedown', function (event) {

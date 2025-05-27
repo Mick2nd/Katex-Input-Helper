@@ -56,7 +56,7 @@ export class MathFormulae {
 			return;
 		}
 		try {
-			var target = element;
+			let target = element;
 			if (target == null) {
 				console.debug(`Attention : writing to output area : ${displayMode}`);
 				console.trace(`Trace : `);
@@ -92,40 +92,40 @@ export class MathFormulae {
 	 */
 	async updateTables() {
 		try {
-			var inst = this;
-			var selector = '.panel-body table tbody tr td a.easyui-tooltip, .easyui-dialog div a.s';
-			var entries = $(selector);
+			let inst = this;
+			let selector = '.panel-body table tbody tr td a.easyui-tooltip, .easyui-dialog div a.s';
+			let entries = $(selector);
 			console.debug(`Katex: ${entries.length} td or div items`);
-			var im1 = 0;
+			let im1 = 0;
 			entries.each(function(idx, a) {
 				
 				if (a && $(this).find('.katex').length == 0) {								// check : no katex embedded
 					try {
-						var html = a.innerHTML;
-						var count = html.split('$').length - 1;
-						var text = a.innerText;
-						var dm = (text.startsWith('$$') || text.includes('{equation}'));	// $$ triggers display mode
+						let html = a.innerHTML;
+						let count = html.split('$').length - 1;
+						let text = a.innerText;
+						let dm = (text.startsWith('$$') || text.includes('{equation}'));	// $$ triggers display mode
 						if (count == 2 || text == '$\\$$' || text.includes('\\ce')) {		// normal case: math
 							text = text.replace(/□/g, '\\square');
 							inst.insertMath(text, a);
 						} else if (count > 2 && !dm) {										// image with surrounding characters
-							var text1 = a.firstChild.textContent;
+							let text1 = a.firstChild.textContent;
 							text1 = text1.substring(1, text1.length - 1);
 	
-							var text2 = a.lastChild.textContent;
+							let text2 = a.lastChild.textContent;
 							text2 = text2.substring(1, text2.length - 1);
 	
-							var img = a.children[0];
+							let img = a.children[0];
 							
 							inst.insertMath(text2, a);
-							var ch = a.children[0];
+							let ch = a.children[0];
 							inst.insertMath(text1, a);
 							a.appendChild(img);
 							a.appendChild(ch);
 						} else if (dm) {
 							inst.updateAnchor(a);
 						} else {															// direct image case
-							var img = a.firstChild as Element;
+							let img = a.firstChild as Element;
 							if (img && img.nodeType != Node.TEXT_NODE && img.hasAttribute('src')) {
 							}
 						}
@@ -153,12 +153,12 @@ export class MathFormulae {
 	 */
 	updateHeaders(selector = "") {
 		try {
-			var inst = this;
-			var entries = $(`.panel-title span`);
+			let inst = this;
+			let entries = $(`.panel-title span`);
 			if (selector != '') {
-				var options = $(selector).panel('options');
-				var title = options.title;
-				var info = $(title).attr('information');
+				let options = $(selector).panel('options');
+				let title = options.title;
+				let info = $(title).attr('information');
 				console.debug(`Katex: opening ${info} panel`);
 				entries = $(`.panel-title span[information=${info}]`);				
 			}
@@ -166,7 +166,7 @@ export class MathFormulae {
 			console.debug(`Katex: ${entries.length} header items`);
 			entries.each((idx, a) => {
 				if (a) {
-					var text = a.innerText;
+					let text = a.innerText;
 					if (text.startsWith('$')) {
 						inst.insertMath(text, a, true);
 					}
@@ -184,7 +184,7 @@ export class MathFormulae {
 	 */
 	updateLatexMenu() {
 		// THIS code runs in the Browser, but not as plug-in.
-		//var html = katex.renderToString('\\LaTeX', { thrownOnError: false });
+		//let html = katex.renderToString('\\LaTeX', { thrownOnError: false });
 		//$('#mLaTeX_TEXT span').html(html);
 		
 		$('#mLaTeX_TEXT span').text('LaTeX');
@@ -195,8 +195,8 @@ export class MathFormulae {
 	 */
 	inplaceUpdate(selector, javascript = true) {
 		try {
-			var inst = this;
-			var entries = $(selector);
+			let inst = this;
+			let entries = $(selector);
 			console.debug(`Katex: ${entries.length} in-place items for selector ${selector}`);
 			entries.each(function(idx, a) {
 				if (a && !inst.runNotKatex) {
@@ -220,7 +220,7 @@ export class MathFormulae {
 	 * @param a - the anchor to be equipped
 	 */
 	equipWithInteractivity(a, javascript = true) {
-		var vme = this;
+		let vme = this;
 		function getSymbol(obj) { 
 			if (typeof ($(obj).attr("latex")) != "undefined") { 
 				return $(obj).attr("latex"); 
@@ -234,12 +234,12 @@ export class MathFormulae {
 		}
 		
 		console.debug(`equipWithInteractivity ${a.attr('latex')}`);
-		var text = getSymbol(a);
+		let text = getSymbol(a);
 		this.equipWithTooltip(a, text, javascript);
 		
 		a.click(function(event) { 
 			event.preventDefault(); 
-			var latex = a.attr("latex");
+			let latex = a.attr("latex");
 			console.debug(`Click on equation: ${latex}`);
 			if (latex != undefined) { 
 				vme.insert(latex); 
@@ -266,7 +266,7 @@ export class MathFormulae {
 
 		selector.addClass("easyui-tooltip s");
 
-		var encoded = text.replace(/</g, '&lt;');									// GUI does not like text looking like tag begin -> encode
+		let encoded = text.replace(/</g, '&lt;');									// GUI does not like text looking like tag begin -> encode
 		if (javascript) {
 			selector.attr("href", "javascript:void(0)");
 			selector.tooltip({ 
@@ -290,13 +290,13 @@ export class MathFormulae {
 	 * Updates an anchor (or other tag) with a formula. Takes the text from original anchor content.
 	 */	
 	updateAnchor(a) {
-		var text = a.innerText;
+		let text = a.innerText;
 		if (text.includes('Rightarrow')) {
 			console.debug(`Found-arrow-text: ${text}`);
 		}
-		var mathText = text.includes('$');
-		var dm = (text.includes('$$') || text.includes('{equation}'));
-		text = text.replace(/^\s{0,5}\"?\${1,2}(.*?)\${1,2}\"?\s{0,5}$/s, '$1');
+		let mathText = text.includes('$');
+		let dm = (text.includes('$$') || text.includes('{equation}'));
+		text = text.replace(/^\s{0,5}"?\${1,2}(.*?)\${1,2}"?\s{0,5}$/s, '$1');
 		console.debug(`Processed text: ${text.substring(0, 20)}`);
 		if (mathText) this.insertMath(text, a, false, dm);
 	}
@@ -314,11 +314,11 @@ export class MathFormulae {
 	 * so to be returned by the dialog to its caller.
 	 */	
 	updateOutput() {
-		var vme = this; 
-		var encloseChar = "$"; 
-		var content = ""; 
+		let vme = this; 
+		let encloseChar = "$"; 
+		let content = ""; 
 		content = this.codeMirror.getValue(); 
-		var dm = content.includes('\\begin{CD}');
+		let dm = content.includes('\\begin{CD}');
 		if (content == "") content = " "; 
 		if (!vme.encloseAllFormula) { 
 			content = content.replace(/</gi, "&lt;"); 
