@@ -1,7 +1,7 @@
 import { Observable } from "./patterns/observable";
 
 /**
- * @abstract Supports the localization of this application.
+ * Supports the localization of this application.
  * 
  * This uses an Observable as it recognizes the change of Language and notifies its observers.
  */
@@ -14,23 +14,23 @@ export class Localizer {
 	observable = null;
 	
 	/**
-	 * @abstract Constructor. The script location is queried as needed to locate the language files.
+	 * Constructor. The script location is queried as needed to locate the language files.
 	 */
 	constructor(observableCls = Observable) {
 		this.observable = new observableCls();
 	}
 	
 	/**
-	 * @abstract Override of the Observable.
+	 * Override of the Observable.
 	 */
-	subscribe(func, ...args) {
+	subscribe(func: any, ...args: any) {
 		this.observable.subscribe(func, ...args);
 	}
 
 	/**
-	 * @abstract The basic load method. Reads a language file given by its language code.
+	 * The basic load method. Reads a language file given by its language code.
 	 */
-	async basicLoad(langCode) {
+	async basicLoad(langCode: string) {
 		try {
 			let json = await import(
 				/* webpackInclude: /\.json$/ */
@@ -47,12 +47,12 @@ export class Localizer {
 	}
 	
 	/**
-	 * @abstract The main load method.
+	 * The main load method.
 	 * 
 	 * Loads the fallback variant for en_US and the given languages language files and stores
 	 * them in this instance. Notifies observers about this event.
 	 */
-	async load(langCode) {
+	async load(langCode: string) {
 		let inst = this;
 		
 		if (inst.fallback == null) {
@@ -76,9 +76,9 @@ export class Localizer {
 	}
 	
 	/**
-	 * @abstract Queries the languages version of some text given by its key(code).
+	 * Queries the languages version of some text given by its key(code).
 	 */
-	getLocalText(code) {
+	getLocalText(code: string) {
 		if (this.current != null) {
 			let text = this.current[code];
 			if (text != undefined && text != '') return text;
@@ -92,20 +92,20 @@ export class Localizer {
 	}
 	
 	/**
-	 * @abstract Initialises the **Language Choice** dialog.
+	 * Initialises the **Language Choice** dialog.
 	 * 
 	 * This is a one time initialisation task
 	 * 
 	 * @param localType - the language code as de_DE or en_US
 	 */
-	async initialiseLanguageChoice(localType) {
+	async initialiseLanguageChoice(localType: string) {
 		let inst = this;
 		let html = await this.buildLocalTypes();
 		$("#formLANGUAGE_CHOISE").html(html);
 		$("[name='localType']").filter(`[value=${localType}]`).attr("checked", "checked"); 
 		
-		$("input[name='localType']").change(async function() { 
-			let localType = $("input[name='localType']:checked").val(); 
+		$("input[name='localType']").on('change', async function() { 
+			let localType = $("input[name='localType']:checked").val() as string; 
 			await inst.load(localType); 
 		}); 
 
@@ -113,7 +113,7 @@ export class Localizer {
 	}
 	
 	/**
-	 * @abstract Assembles the content of the Language selection dialog using the existing language 
+	 * Assembles the content of the Language selection dialog using the existing language 
 	 * 			 files.
 	 */
 	async buildLocalTypes() {
@@ -142,7 +142,7 @@ export class Localizer {
 	}
 	
 	/**
-	 * @abstract Assembles the content of the Language Resources dialog.
+	 * Assembles the content of the Language Resources dialog.
 	 */
 	async buildLocalResources() {
 		let inst = this;

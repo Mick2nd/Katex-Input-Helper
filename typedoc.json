@@ -9,6 +9,12 @@
 	"theme": "default", 
 	"basePath": ".",
 	"skipErrorChecking": true,
+	"validation": {
+	    "notExported": true,
+	    "invalidLink": true,
+	    "notDocumented": false,
+	},
+	"logLevel": "Error",
     "plugin": ["typedoc-umlclass"],
     "umlClassDiagram": 
     {

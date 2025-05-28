@@ -3,7 +3,7 @@ import { CategoriesTree } from './categoriesTree';
 import { FileHandler } from './fileHandling';
 
 /**
- * @abstract The base class of all Panels, Dialogs, Windows.
+ * The base class of all Panels, Dialogs, Windows.
  */
 export class KIHPanel {
 	id = "";
@@ -12,42 +12,42 @@ export class KIHPanel {
 	isOpen = false;
 	
 	/**
-	 * @abstract Constructor
+	 * Constructor
 	 */
-	constructor(id, parent) {
+	constructor(id: string, parent: any) {
 		this.id = id;
 		this.parent = parent;
 	}
 	
 	/**
-	 * @abstract The handler of move events, invoked when the panel is moved.
+	 * The handler of move events, invoked when the panel is moved.
 	 * 
 	 * This delegates to the *Parameters* instance.
 	 */
-	onMove(left, top) { 
+	onMove(left: number, top: number) { 
 		console.info(`Panel with id ${this.id} moved : ${left}, ${top}`);
 		this.parent.parameters.onPanelMove(this.id, left, top);
 	}
 	
 	/**
-	 * @abstract The handler of resize events, invoked when the panel is resized.
+	 * The handler of resize events, invoked when the panel is resized.
 	 * 
 	 * This delegates to the *Parameters* instance.
 	 */
-	onResize(width, height) {
+	onResize(width: number, height: number) {
 		console.info(`Panel with id ${this.id} resized : ${width}, ${height}`);
 		this.parent.parameters.onPanelResize(this.id, width, height);
 	}
 	
 	/**
-	 * @abstract Called if a window is closed.
+	 * Called if a window is closed.
 	 */
 	onClose() {
 		this.isOpen = false;
 	}
 	
 	/**
-	 * @abstract Builds an object from the events to be provided when the panel is created.
+	 * Builds an object from the events to be provided when the panel is created.
 	 */
 	get handlers() {
 		return {
@@ -58,14 +58,14 @@ export class KIHPanel {
 	}
 	
 	/**
-	 * @abstract Initialise method, creates the *Panel* with the handlers provided.
+	 * Initialise method, creates the *Panel* with the handlers provided.
 	 */
 	async initialise(dummy: any = null) {
 		$(`#${this.id}`).dialog(this.handlers)
 	}
 	
 	/**
-	 * @abstract Shows the *Panel* and resizes (Position, Size) it to stored values.
+	 * Shows the *Panel* and resizes (Position, Size) it to stored values.
 	 */
 	async show() {
 		this.resize();
@@ -73,7 +73,7 @@ export class KIHPanel {
 	}
 
 	/**
-	 * @abstract Resizes this panel with the values in parameters.
+	 * Resizes this panel with the values in parameters.
 	 */
 	resize() {
 		if (this.id in this.parent.parameters) {
@@ -84,7 +84,7 @@ export class KIHPanel {
 	}
 	
 	/**
-	 * @abstract Opens (shows) the Panel.
+	 * Opens (shows) the Panel.
 	 */
 	open() {
 		$(`#${this.id}`).dialog('open');
@@ -92,7 +92,7 @@ export class KIHPanel {
 	}
 	
 	/**
-	 * @abstract Toggles the dialog between open and closed
+	 * Toggles the dialog between open and closed
 	 */
 	toggle() {
 		if (this.isOpen) {
@@ -104,12 +104,12 @@ export class KIHPanel {
 	}
 
 	/**
-	 * @abstract Used to localize an option.
+	 * Used to localize an option.
 	 * 
 	 * Place this service into this base class to get access everywhere.
 	 * TODO: use Utility function.
 	 */	
-	localizeOption(option, id = null, func = $.fn.panel) {
+	localizeOption(option: string, id = null, func = $.fn.panel) {
 		id = id || this.id;
 		let text = func.bind($(`#${id}`))('options')[option];							// do something to preserve the TITLE: this is an option
 		let html = $.parseHTML(text);													// parse it into html object
@@ -121,7 +121,7 @@ export class KIHPanel {
 }
 
 /**
- * @abstract The More Dialog class.
+ * The More Dialog class.
  * 
  * This represents dialogs with Math content which is loaded on demand when the dialog is opened.
  * This content is in Katex format and will be translated to Math.
@@ -131,21 +131,21 @@ export class KIHPanel {
 export class KIHMoreDialog extends KIHPanel {
 	
 	/**
-	 * @abstract Constructor
+	 * Constructor
 	 */
-	constructor(id, parent) {
+	constructor(id: string, parent: any, ...params: any) {
 		super(id, parent);				
 	}
 
 	/**
-	 * @abstract Initialises (creates) the dialog.
+	 * Initialises (creates) the dialog.
 	 * 
 	 * This additionally to the *super* class method provides a translation method and a title for
 	 * Katex to Math in-place translation.
 	 * 
 	 * @param initialiseSymbolContent - method of the client to be invoked during loading
 	 */
-	override async initialise(initialiseSymbolContent) {
+	override async initialise(initialiseSymbolContent: any) {
 		// id is the MORE id as in dialog.html file with 'w' and '_MORE'
 		let fPanelMoreID = this.id;
 		let fPanelMore = $('#' + fPanelMoreID);
@@ -162,7 +162,7 @@ export class KIHMoreDialog extends KIHPanel {
 }
 
 /**
- * @abstract The KIHWindow class.
+ * The KIHWindow class.
  * 
  * This represents windows like the Configuration Parameters window, the Language Configuration
  * window or the Theme (Style) selection window.
@@ -170,15 +170,15 @@ export class KIHMoreDialog extends KIHPanel {
 export class KIHWindow extends KIHPanel {
 
 	/**
-	 * @abstract Constructor
+	 * Constructor
 	 */
-	constructor(id, parent) {
+	constructor(id: string, parent: any, ...params: any) {
 		super(id, parent);
 				
 	}
 	
 	/**
-	 * @abstract Initialises (creates) a window.
+	 * Initialises (creates) a window.
 	 * 
 	 * This is an adaptation of the KIHPanel version. It is able to provide a localized title
 	 * that would otherwise disappear.
@@ -192,7 +192,7 @@ export class KIHWindow extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract Shows the *Window* and resizes (Position, Size) it to stored values.
+	 * Shows the *Window* and resizes (Position, Size) it to stored values.
 	 * 
 	 * This is an adaptation of the KIHPanel version for KIHWindow.
 	 */
@@ -202,7 +202,7 @@ export class KIHWindow extends KIHPanel {
 	}
 
 	/**
-	 * @abstract Opens (shows) this window.
+	 * Opens (shows) this window.
 	 */
 	open() {
 		$(`#${this.id}`).window('open');
@@ -210,9 +210,126 @@ export class KIHWindow extends KIHPanel {
 	}
 }
 
+export class UnicodeWindow extends KIHWindow {
+
+	uniCodesListLoaded = false;
+	initialiseSymbolContent: any = null;
+		
+	constructor(panelId: string, parent: any, ...params: any) {
+		super(panelId, parent, params);
+		this.uniCodesListLoaded = false;
+	}
+
+	/**
+	 * Initialises the Unicode List.
+	 */
+	override async initialise(initialiseSymbolContent: any) : Promise<void> {
+		await super.initialise();
+		this.initialiseSymbolContent = initialiseSymbolContent;
+		
+		let vme = this;
+		function prependNumber(j: number) {
+			return String(j).padStart(3, "0");
+		} 
+
+		if (!this.uniCodesListLoaded) {
+			this.uniCodesListLoaded = true; 
+			$('#unicodeChoise').combobox({ 
+				valueField: 'value', 
+				textField: 'text', 
+				onSelect: async function(record) { 
+					/**
+					 * Hex to decimal conversion.
+					 */
+					function h2d(h: string) { return parseInt(h, 16); }
+					let range = record.value.split(","); 
+					await vme.setUniCodesValues(h2d(range[0]), h2d(range[1])); 
+				}, 
+				onLoadSuccess: async function() { 
+					$(this).combobox("select", "0x25A0,0x25FF"); 
+					await vme.setUniCodesValues(0x25A0, 0x25FF); 
+				} 
+			});
+
+			let html = "<table><caption>[0x0000,0xFFFF]</caption>"; 
+			for (let i = 0; i <= 650; i = i + 10) {
+				html += "\n<tr>"; 
+				for (let j = i; j < i + 10; j++) { 
+					if (j > 655) break;
+					let cellDec = prependNumber(j);
+					html += `<td><a style='border:1px solid #f0f0f0;' class='s' href='#'>${cellDec}</a></td>`; 
+				}
+				html += "</tr>";
+			}
+			html = html + "\n</table>"; 
+			$("#cUNICODES_LIST").html(html);
+			$("#cUNICODES_LIST a.s")
+			.on('click', async function(event) {
+				event.preventDefault();
+				let j = parseInt($(this).text());
+				await vme.selectUniCodesValues(((j * 100) + 1), ((j + 1) * 100));
+				return false;	
+			}); 
+			let json = await import(
+				/* webpackInclude: /\.json$/ */
+				`../formulas/unicodeChoiseData.json`);
+			$('#unicodeChoise').combobox('loadData', json);
+		}
+	}
+
+	/**
+	 * Selects a range of Unicode Characters and inserts it in a table.
+	 */
+	private async selectUniCodesValues(i1: number, i2: number) { 
+		$('#unicodeChoise').combobox("select", ""); 
+		await this.setUniCodesValues(i1, i2, true); 
+	}
+	
+	/**
+	 * Inserts a range of Unicode Characters for display in the table.
+	 * 
+	 * @param i1 - start number
+	 * @param i2  - end number (inclusive)
+	 * @param breakFFFF - breaks rendering, TODO: default added, correct?
+	 */
+	private async setUniCodesValues(i1: number, i2: number, breakFFFF = false) {
+		/**
+		 * Decimal to hex conversion.
+		 */
+		function d2h(d: number) { return d.toString(16).toUpperCase(); }
+		
+		let html = ("<table border='1' cellspacing='0' style='border-spacing:0px;border-collapse:collapse;'>"); 
+		html += `
+			<tr>
+				<th><span locate='UNICODES_INPUT'>${this.parent.localizer.getLocalText("UNICODES_INPUT")}</span></th>
+				<th>HEXA</th>
+				<th><span locate='OUTPUT'>${this.parent.localizer.getLocalText("OUTPUT")}</span></th>
+			</tr>
+		`;
+		for (let i = i1; i <= i2; i++) { 
+			if (breakFFFF && i > 65535) break; 
+			html += `
+				<tr>
+					<td>${i}</td>
+					<td style='text-align:center;'>${d2h(i)}</td>
+					<td style='font-size:150%;text-align:center;'>
+						<a href='#' class='s' latex='\\char"${d2h(i)} '>&#${i};</a>
+					</td>
+				</tr> 
+			`;
+		}
+		html = html + "\n</table>"; 
+		$("#cUNICODES_VALUES").html(html); 
+		$("#cUNICODES_VALUES").scrollTop(0);
+		if (this.uniCodesListLoaded && this.initialiseSymbolContent != null) {
+			await this.initialiseSymbolContent("cUNICODES_VALUES");
+		}
+	}
+}
+
 
 /**
- * @abstract This class is solely responsible for the Dynamic Panel for Custom Equations.
+ * This class is solely responsible for the Dynamic Panel for Custom Equations.
  */
 export class DynamicPanel extends KIHPanel {
 	parent = null;
@@ -228,13 +345,14 @@ export class DynamicPanel extends KIHPanel {
 	categoriesTree = null;
 	
 	/**
-	 * @abstract Constructor.
+	 * Constructor.
 	 */
-	constructor(parent) {
-		let panelId = 'wf_CUSTOM_EQUATIONS_MORE';
+	constructor(panelId: string, parent: any, ...params: any) {
+		let [ math, ...rest ] = params;
+		console.debug(`Params math parameter: %O`, math);
 		super(panelId, parent);
 		this.panelId = panelId;
-		this.parent = parent;
+		this.parent = math;
 		this.messager = new Messager(this.parent.localizer);
 		this.utilities = new Utilities(this.parent.localizer);
 		this.categoriesTree = new CategoriesTree();
@@ -249,7 +367,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract An Observer for the Locale Changed notifications.
+	 * An Observer for the Locale Changed notifications.
 	 * 
 	 * This changes all localized text in the dialog.
 	 */
@@ -289,7 +407,7 @@ export class DynamicPanel extends KIHPanel {
 	}	
 
 	/**
-	 * @abstract It is intended to create this Panel dynamically taking the content from the Settings.
+	 * It is intended to create this Panel dynamically taking the content from the Settings.
 	 */
 	override async initialise(dummy: any = null) {
 		let inst = this;
@@ -356,7 +474,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract Show override of the base class for localization.
+	 * Show override of the base class for localization.
 	 */
 	async show() {
 		// TODO: order changed to initialize span[locate]? -> changes nothing in appearance
@@ -365,21 +483,21 @@ export class DynamicPanel extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract Observer of *Category Tree* observable.
+	 * Observer of *Category Tree* observable.
 	 */
 	onTreeChanged(node) {
 		this.customEquationsToParameters();
 	}
 
 	/**
-	 * @abstract Observer of *Category Tree* observable.
+	 * Observer of *Category Tree* observable.
 	 */
 	onEquationMoved() {
 		this.clearCheckedAndUpdate();
 	}
 	
 	/**
-	 * @abstract Observer of *Category Tree* observable.
+	 * Observer of *Category Tree* observable.
 	 */
 	onNodeSelected(equations) {
 		try {
@@ -392,7 +510,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract Clears the checked checkboxes in datagrid and updates the latter.
+	 * Clears the checked checkboxes in datagrid and updates the latter.
 	 */
 	clearCheckedAndUpdate() {
 		try {
@@ -406,7 +524,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract Reads the Custom Equations from the parameters.
+	 * Reads the Custom Equations from the parameters.
 	 */
 	async customEquationsFromParameters() {
 		try {
@@ -419,7 +537,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 
 	/**
-	 * @abstract Called after each change of the content writes the Custom Equations back to the parameters.
+	 * Called after each change of the content writes the Custom Equations back to the parameters.
 	 */	
 	customEquationsToParameters() {
 		this.categoriesTree.currentEquations = this.toJson();
@@ -439,7 +557,7 @@ export class DynamicPanel extends KIHPanel {
 		let id = 0;
 		
 		try {
-			let equations = json; // JSON.parse(json);
+			let equations = json;
 			for (const equation of equations) {
 				if (typeof(equation[1]) == "string" && equation[1] != "[object Object]") {
 					this.addEquation(equation[0], equation[1], ++id);
@@ -451,7 +569,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract Reads the Equations from data grid and returns them.
+	 * Reads the Equations from data grid and returns them.
 	 * 
 	 * These are all equations now but filtered, if a filter is active.
 	 * 
@@ -473,7 +591,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract A test to get all data rows.
+	 * A test to get all data rows.
 	 * 
 	 * No longer needed, only for illustration purposes.
 	 */
@@ -496,7 +614,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract Checks if a filter is active in the datagrid.
+	 * Checks if a filter is active in the datagrid.
 	 * 
 	 * @returns true, if so
 	 */
@@ -510,7 +628,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract Determines the first free id for the id field making it unique.
+	 * Determines the first free id for the id field making it unique.
 	 */
 	freeId() {
 		let data = $(this.gridSelector)
@@ -521,7 +639,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract Adds an Equation to the grid.
+	 * Adds an Equation to the grid.
 	 * 
 	 * @param title - the title of the equation
 	 * @param formula - the formula itself in katex format
@@ -538,7 +656,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract Equips the datagrid (after render update).
+	 * Equips the datagrid (after render update).
 	 * 
 	 * - inplace update of the content
 	 * - row height fixing
@@ -552,7 +670,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract Initiates cell editing.
+	 * Initiates cell editing.
 	 */
 	editCell(index = -1) {
 		if (index == -1) {
@@ -574,7 +692,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract Builds a single Anchor from formula.
+	 * Builds a single Anchor from formula.
 	 * 
 	 * @param formula - the formula is capable of providing an interactive anchor
 	 * @returns the calculated anchor
@@ -585,7 +703,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 
 	/**
-	 * @abstract Compares 2 items of the datagrid for sorting.
+	 * Compares 2 items of the datagrid for sorting.
 	 * 
 	 * WORKS. Must observe the contract with the sorting API.
 	 * 
@@ -599,7 +717,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract Initialises a Data Grid given by the selector
+	 * Initialises a Data Grid given by the selector
 	 */
 	async initialiseDatagrid(selector) {
 		let inst = this;
@@ -673,7 +791,7 @@ export class DynamicPanel extends KIHPanel {
 				console.dir(source);
 			}
 		});
-		inst.equipDatagridWithInteractivity();								// TODO: is this a better place?
+		inst.equipDatagridWithInteractivity();
 		$(selector)
 		.datagrid('enableCellEditing')
 		.datagrid('gotoCell', {
@@ -698,7 +816,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 	
 	/**
-	 * @abstract Returns an object with view property, assigning overrides for render methods.
+	 * Returns an object with view property, assigning overrides for render methods.
 	 */
 	async viewRender() {
 		let inst = this;
@@ -719,7 +837,7 @@ export class DynamicPanel extends KIHPanel {
 	}
 
 	/**
-	 * @abstract Equips the data grid anchors with interactivity. 
+	 * Equips the data grid anchors with interactivity. 
 	 * 
 	 * This is necessary because original event handlers
 	 * do not stay active after changes.
@@ -763,7 +881,7 @@ export class DynamicPanel extends KIHPanel {
 }
 
 /**
- * @abstract The KIHPanels container for all Panels.
+ * The KIHPanels container for all Panels.
  * 
  * This hosts all Panel derived instances and is able to *show* them with a specialized method.
  * This method performs an initialisation lazily and one time and can show the Panel repeatedly.
@@ -777,57 +895,34 @@ export class KIHPanels {
 	panels = { };
 	
 	/**
-	 * @abstract Constructor
+	 * Constructor
 	 */
-	constructor(parameters, localizer, parser) {
+	constructor(parameters: any, localizer: any, parser: any) {
 		this.parameters = parameters;
 		this.localizer = localizer;
 		this.parser = parser;
 		this.messager = new Messager(localizer);
 	}
 	
-	async showPanel(id) {
+	async showWindowGeneric<T extends KIHPanel>(ctor: new(id: string, ...params: any[]) => T, id: string, ...params: any) {
+		
 		if (!(id in this.panels)) {
-			this.panels[id] = new KIHPanel(id, this);
-			await this.initialise(id);
-		}
-		await this.toggle(id);
-	}
-
-	async showMoreDialog(id, initialiseSymbolContent) {
-		if (!(id in this.panels)) {
-			this.panels[id] = new KIHMoreDialog(id, this);
+			this.panels[id] = new ctor(id, this, ...params);
+			let [ initialiseSymbolContent ] = params;
 			await this.initialise(id, initialiseSymbolContent);
 		}
 		await this.toggle(id);
 	}
 	
-	async showWindow(id) {
-		if (!(id in this.panels)) {
-			this.panels[id] = new KIHWindow(id, this);
-			await this.initialise(id);
-		}
-		await this.toggle(id);
-	}
-	
-	async showDynamicPanel(math) {
-		let id = 'wf_CUSTOM_EQUATIONS_MORE';
-		if (!(id in this.panels)) {
-			this.panels[id] = new DynamicPanel(math);
-			await this.initialise(id);
-		}
-		await this.toggle(id);
-	}
-	
-	async initialise(id, initialiseSymbolContent = null) {
+	async initialise(id: string, initialiseSymbolContent = null) {
 		await this.panels[id].initialise(initialiseSymbolContent);
 	}
 	
-	async show(id) {
+	async show(id: string) {
 		await this.panels[id].show();
 	}
 
-	async toggle(id) {
+	async toggle(id: string) {
 		await this.panels[id].toggle();
 	}
 }

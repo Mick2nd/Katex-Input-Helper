@@ -1,14 +1,14 @@
 import { Buffer } from 'buffer';
 
 /**
- * @abstract Factory method generating a Proxy for KIHParameters.
+ * Factory method generating a Proxy for KIHParameters.
  */
 export function ParametersProxy() {
 	let parameters = new KIHParameters();
 	return new Proxy(
 		parameters,
 		{
-			set(target, prop, value, receiver) {
+			set(target: any, prop: string, value: any, receiver: any) {
 				let changed = target[prop] != value;
 				if (changed) {
 					target[prop] = value;
@@ -23,7 +23,7 @@ export function ParametersProxy() {
 }
 
 /**
- * @abstract Manages control parameters, especially those which can be stored over sessions.
+ * Manages control parameters, especially those which can be stored over sessions.
  * 
  * It is based on the communication of messages to gain the settings of the plugin.
  */
@@ -50,7 +50,7 @@ export class KIHParameters {
 	mode = "plugin";
 	
 	/**
-	 * @abstract Constructor.
+	 * Constructor.
 	 */
 	constructor() {
 		this.transaction = new Transaction();
@@ -61,7 +61,7 @@ export class KIHParameters {
 	}
 	
 	/**
-	 * @abstract Queries the parameters from the Plugin.
+	 * Queries the parameters from the Plugin.
 	 */
 	async queryParameters() {
 				
@@ -69,7 +69,7 @@ export class KIHParameters {
 		let api = window.webviewApi; 
 		if (!api) {
 			this.mode = "web";
-			api = { postMessage: async ( o ) => { 
+			api = { postMessage: async ( o: any ) => { 
 					return inst.loadCookies();
 				} 
 			}; 
@@ -92,29 +92,13 @@ export class KIHParameters {
 			// Window position mismatch
 			//inst.resetWindowPositions();
 			inst.transaction.end();
-			
-			/**
-			 * Is there a way to use messages to return data to the caller?
-			 * Experience says NO!
-			 * 
-			 * TODO: CHECK! IS THERE A DANGER ON THIS?
-			 * 
-			$(window).bind('unload', async function() {
-				let response = await webviewApi.postMessage({
-					id: this.id,
-					cmd: 'sendparams',
-					check: true
-				});
-				return true;
-			});
-			*/
 		} else {
 			console.warn(`The "Katex Input Helper" plugin did not return a response to get parameters `);
 		}
 	}
 
 	/**
-	 * @abstract Resets all window positions. Defaults will be activated.
+	 * Resets all window positions. Defaults will be activated.
 	 * 
 	 * The defaults are taken from css file *dialog.css* (application css file).
 	 */	
@@ -122,16 +106,11 @@ export class KIHParameters {
 		this.transaction.begin();
 		let css = new Css();
 
-		for (const [key, val] of Object.entries(this)) {
+		for (const [key] of Object.entries(this)) {
 			if (key.startsWith('w')) {
 				let o = css.dimensionsOf(key);
 				this[key] = o;
 				$(`#${key}`).panel('resize', o);
-				
-				// TODO: has no effect, restart required
-				//options.top = o.top;
-				//options.left = o.left;
-				//$(`#${key}`).panel('move', this[id]);
 			}
 		}
 
@@ -139,31 +118,31 @@ export class KIHParameters {
 	}
 	
 	/**
-	 * @abstract Returns the window ids as array.
+	 * Returns the window ids as array.
 	 */
 	get windowIds() {
 		return Object.keys(this).filter(key => key.startsWith('w'));
 	}
 	
 	/**
-	 * @abstract Returns the windows selectors as one string.
+	 * Returns the windows selectors as one string.
 	 */
 	get windowSelectors() {
 		return this.windowIds.map(key => `#${key}`).join(',');
 	}
 	
 	/**
-	 * @abstract Writes parameters to the HIDDEN field as required to return some values back
+	 * Writes parameters to the HIDDEN field as required to return some values back
 	 * 			 to the caller.
 	 */
-	writeParameters(equation = "") {
+	writeParameters(_equation = "") {
 		let parameters = JSON.stringify(this.filteredParameters);
 		$('#hidden').attr('value', parameters);
 		this.debugPrint();
 	}
 	
 	/**
-	 * @abstract Filters some parameters out from the attributes of this instance.
+	 * Filters some parameters out from the attributes of this instance.
 	 * 
 	 * Those are not needed as settings nor are they JSON stringifyable.
 	 * 
@@ -182,14 +161,15 @@ export class KIHParameters {
 	}
 	
 	/**
-	 * @abstract Checks for a single key if its data item should be stored as Cookie.
+	 * Checks for a single key if its data item should be stored as Cookie.
 	 * 
-	 * @param {string} key - the key to be checked
-	 * @param {boolean} [persistEquations=true] - setting for equationCollection
-	 * @param {boolean} [persistWindowPositions=true] - setting for window positions
+	 * @param key - the key to be checked
+	 * @param [persistEquations=true] - setting for equationCollection
+	 * @param [persistWindowPositions=true] - setting for window positions
 	 */
-	shouldBeStored(key, persistEquations = true, persistWindowPositions = true) {
-		let doUse = [ 
+	shouldBeStored(key: string, persistEquations = true, persistWindowPositions = true) {
+		// Doubled implementation => subtle differences
+		let doUse = [
 			"style", 
 			"localType", 
 			"equation",
@@ -207,12 +187,12 @@ export class KIHParameters {
 	}
 	
 	/**
-	 * @abstract Store a single cookie after checking if it's desired.
+	 * Store a single cookie after checking if it's desired.
 	 * 
-	 * @param {string} key - key, e.g. name of the item to be stored
-	 * @param {*} val - value to be stored
+	 * @param key - key, e.g. name of the item to be stored
+	 * @param val - value to be stored
 	 */
-	storeCookie(key, val) {
+	storeCookie(key: string, val: any) {
 		if (this.shouldBeStored(key, this.persistEquations, this.persistWindowPositions)) {
 			let json = null;
 			try {
@@ -232,7 +212,7 @@ export class KIHParameters {
 	}
 
 	/**
-	 * @abstract Loads all cookies. Cookies must be defined and must not be deactivated.
+	 * Loads all cookies. Cookies must be defined and must not be deactivated.
 	 */
 	loadCookies() {
 		try {
@@ -271,7 +251,7 @@ export class KIHParameters {
 	}
 	
 	/**
-	 * @abstract Resets the cookies if they are in a inconsistent or fresh state.
+	 * Resets the cookies if they are in a inconsistent or fresh state.
 	 */
 	resetCookies() {
 		for (const [ key, val ] of Object.entries(this.filteredParameters)) {
@@ -280,9 +260,9 @@ export class KIHParameters {
 	}
 		
 	/**
-	 * @abstract onPanelMove handler for some dialogs and windows.
+	 * onPanelMove handler for some dialogs and windows.
 	 */
-	onPanelMove(id, left, top) {
+	onPanelMove(id: string, left: number|string, top: number|string) {
 		if (!(id in this)) {
 			this[id] = { };
 		}
@@ -290,10 +270,6 @@ export class KIHParameters {
 			this[id].left = left;
 			this[id].top = top;
 			this.mouseState.increment();
-			// TODO: check
-			//let dimensions = this.getPanelDimensions(id);
-			//this[id].width = dimensions.width;
-			//this[id].height = dimensions.height;
 			
 			this.transaction.complete();
 		}
@@ -304,18 +280,18 @@ export class KIHParameters {
 	}
 	
 	/**
-	 * @abstract onPanelResize handler for some dialogs and windows.
+	 * onPanelResize handler for some dialogs and windows.
 	 * 
 	 * A Resize can also change *left* and *top* values. That's why we must include 
 	 * those into consideration and add them to the object.
-	 * TODO: this only works, if left / top are updated during resize!!
+	 * This only works, if left / top are updated during resize!!
 	 * EXPERIENCE: resize with left change persisted although onPanelMove not detected
 	 * 
 	 * @param id - id of the panel
 	 * @param width - the width established by the user
 	 * @param height - the height established by the user
 	 */
-	onPanelResize(id, width, height) {
+	onPanelResize(id: string, width: number|string, height: number|string) {
 		if (!(id in this)) {
 			this[id] = { };
 		}
@@ -338,9 +314,9 @@ export class KIHParameters {
 	}
 	
 	/**
-	 * @abstract Checks for discrepancy between handler and options dimensions.
+	 * Checks for discrepancy between handler and options dimensions.
 	 */
-	check(windowState, dimensions) {
+	check(windowState: any, dimensions: any) {
 		if (Math.abs(windowState.width - dimensions.width) > 5 	||
 			Math.abs(windowState.height - dimensions.height) > 5) {
 			console.warn('KIHParameters : discrepancy deteced during window resize');
@@ -348,13 +324,13 @@ export class KIHParameters {
 	}
 	
 	/**
-	 * @abstract Resizes (and repositions) a given panel by using the 'configured' settings.
+	 * Resizes (and repositions) a given panel by using the 'configured' settings.
 	 * 
 	 * For repositioning after reset a restart is required.
 	 * 
 	 * @param id - the panel id as in HTML
 	 */
-	resizePanel(id) {
+	resizePanel(id: any) {
 		if (id in this && this[id] != undefined) {
 			try {
 				let o = this[id];
@@ -366,11 +342,11 @@ export class KIHParameters {
 	}
 	
 	/**
-	 * @abstract Returns the complete panel dimensions as from options.
+	 * Returns the complete panel dimensions as from options.
 	 * 
-	 * TODO: Seems to be not correct!
+	 * Seems to be not correct!
 	 */
-	getPanelDimensions(id) {
+	getPanelDimensions(id: string) {
 		let options = $(`#${id}`).panel('options');
 		let dimensions = { 
 			left: options.left, 
@@ -382,7 +358,7 @@ export class KIHParameters {
 	}
 	
 	/**
-	 * @abstract Selected console output of the attributes.
+	 * Selected console output of the attributes.
 	 */
 	debugPrint() {
 		this.printEquation();
@@ -392,21 +368,21 @@ export class KIHParameters {
 	}
 
 	/**
-	 * @abstract Console output of the equation.
+	 * Console output of the equation.
 	 */
 	printEquation() {
 		console.debug(`Return-Parameter : ${JSON.stringify(this.equation)} `);
 	}
 	
 	/**
-	 * @abstract Console output of the Custom Equations.
+	 * Console output of the Custom Equations.
 	 */
 	printEquationCollection() {
 		console.debug(`Equations-Parameter : ${JSON.stringify(this.equationCollection)} `);
 	}
 	
 	/**
-	 * @abstract Console output of the settings.
+	 * Console output of the settings.
 	 */
 	printSettingsConfiguration() {
 		for (const key of this.configurationKeys) {
@@ -415,7 +391,7 @@ export class KIHParameters {
 	}
 
 	/**
-	 * @abstract Console output of the Window Size and Position.
+	 * Console output of the Window Size and Position.
 	 */
 	printWindowConfiguration() {
 		for (const key of this.windowKeys) {
@@ -424,7 +400,7 @@ export class KIHParameters {
 	}
 	
 	/**
-	 * @abstract Returns the settings configuration keys.
+	 * Returns the settings configuration keys.
 	 */
 	get configurationKeys() {
 		return [
@@ -441,7 +417,7 @@ export class KIHParameters {
 	}
 	
 	/**
-	 * @abstract Returns the window configuration keys.
+	 * Returns the window configuration keys.
 	 */
 	get windowKeys() {
 		return Object.keys(this).filter(s => s.startsWith('w'));
@@ -449,7 +425,7 @@ export class KIHParameters {
 }
 
 /**
- * @abstract Supports transactions.
+ * Supports transactions.
  * 
  * - normal mode: each desired action of the client initiates execution of a completion routine.
  * - transaction mode: after a series of desired actions the execution of a completion 
@@ -463,44 +439,37 @@ class Transaction {
 	onEmpty = null;
 	
 	/**
-	 * @abstract Constructor
+	 * Configures the instance by providing *Completion* and *End* routines.
 	 */
-	constructor() {
-		
-	}
-	
-	/**
-	 * @abstract Configures the instance by providing *Completion* and *End* routines.
-	 */
-	configure(onComplete, onEnd = onComplete) {
+	configure(onComplete: any, onEnd = onComplete) {
 		this.onComplete = onComplete;
 		this.onCompleteBackup = onComplete;
 		this.onEnd = onEnd;
-		this.onEmpty = (...args) => { };
+		this.onEmpty = (...args: any) => { };
 	}
 	
 	/**
-	 * @abstract Completes a single *Action* but not during a *Transaction*.
+	 * Completes a single *Action* but not during a *Transaction*.
 	 * 
 	 * Executes the Completion routine, but not during a Transaction.
 	 */
-	complete(...args) {
+	complete(...args: any) {
 		this.onComplete(...args);
 	}
 	
 	/**
-	 * @abstract Begins a *Transaction*. The completion routine is deactivated.
+	 * Begins a *Transaction*. The completion routine is deactivated.
 	 */
 	begin() {
 		this.onComplete = this.onEmpty;
 	}
 	
 	/**
-	 * @abstract Ends a *Transaction*.
+	 * Ends a *Transaction*.
 	 * 
 	 * The *End* routine is executed, then the Completion routine is re-activated.
 	 */
-	end(...args) {
+	end(...args: any) {
 		this.onEnd(...args);
 		this.onComplete = this.onCompleteBackup;
 	}
@@ -510,7 +479,7 @@ class Transaction {
 	}
 	
 	/**
-	 * @abstract Checks and returns, if there is an ongoing Transaction.
+	 * Checks and returns, if there is an ongoing Transaction.
 	 */
 	get isOngoingTransaction() {
 		return this.onComplete === this.onEmpty;
@@ -518,7 +487,7 @@ class Transaction {
 }
 
 /**
- * @abstract This class supports retrieval of css info from the *dialog.css* CSS file.
+ * This class supports retrieval of css info from the *dialog.css* CSS file.
  * 
  * This is used to reset the dimensions of the dialogs.
  */
@@ -526,14 +495,14 @@ class Css {
 	sheet = null;
 	
 	/**
-	 * @abstract Constructor.
+	 * Constructor.
 	 */
 	constructor() {
 		this.findSheet();
 	}
 	
 	/**
-	 * @abstract Finds the style sheet.
+	 * Finds the style sheet.
 	 */
 	findSheet() {
 		let sheets = [ ];
@@ -550,12 +519,12 @@ class Css {
 	}
 	
 	/**
-	 * @abstract Searches for and retrieves the width and height given the window id.
+	 * Searches for and retrieves the width and height given the window id.
 	 * 
 	 * @param id - the id of the window (id attribute)
 	 * @returns object with width and height entries, returns *auto* if not found
 	 */
-	dimensionsOf(id) {
+	dimensionsOf(id: string) {
 		try {
 			for (const rule of this.sheet.cssRules) {
 				if (rule.type == rule.STYLE_RULE && rule.selectorText === ('#' + id) && rule.styleMap != null) {
@@ -583,7 +552,7 @@ class Css {
 }
 
 /**
- * @abstract Used to reduce write back to the hidden field based on the use of
+ * Used to reduce write back to the hidden field based on the use of
  * 			 Transactions and observation of the mouse state.
  * 
  * The hopes has not fulfilled as there is already a reduction of mouse events during
@@ -596,7 +565,7 @@ class MouseState {
 	mouseUp = true;
 	active = false;										// currently deactivated
 
-	constructor(transaction) {
+	constructor(transaction: any) {
 		this.transaction = transaction;
 		let inst = this;
 

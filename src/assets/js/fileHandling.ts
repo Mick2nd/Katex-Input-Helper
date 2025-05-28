@@ -5,24 +5,23 @@ import { promisify } from './parserExtension';
  */
 export class FileHandler {
 	
-	constructor() {
-		
-	}
-	
 	/**
-	 * @abstract Selects a file from file open dialog.
+	 * Selects a file from file open dialog.
 	 * 
 	 * This works in tandem with the callback selectFileCb.
 	 * 
 	 * @param fileInputId - the id of an input field serving for file open clicks.
 	 */
-	async selectFile(fileInputId) {
+	async selectFile(fileInputId:string) {
 		return promisify(this, this.selectFileCb, fileInputId);
 	}
 	
-	selectFileCb(fileInputId, cb) {
+	/**
+	 * Select request with callback.
+	 */
+	selectFileCb(fileInputId: string, cb: any) {
 		$(`#${fileInputId}`)
-		.change(function(event) { 
+		.on('change', function(event) { 
 			let file = event.target.files ? event.target.files[0] : event.target.value; 
 			cb(null, file); 
 		}); 
@@ -31,17 +30,20 @@ export class FileHandler {
 	}
 	
 	/**
-	 * @abstract Reads a file.
+	 * Reads a file.
 	 * 
 	 * A File object must be given, provided by the FileReader object.
 	 * 
 	 * @param file - the file object
 	 */
-	async readFile(file) : Promise<string> {
+	async readFile(file: any) : Promise<string> {
 		return promisify(this, this.readFileCb, file) as Promise<string>;
 	}
 	
-	readFileCb(file, cb) {
+	/**
+	 * Read request with callback.
+	 */
+	readFileCb(file: any, cb: any) {
 		let reader = new FileReader(); 
 		reader.onload = function() {
 			cb(null, this.result); 
@@ -50,11 +52,11 @@ export class FileHandler {
 	}
 	
 	/**
-	 * @abstract A load file transaction.
+	 * A load file transaction.
 	 * 
 	 * Selects a file with the file open dialog and reads and returns the file content.
 	 */
-	async loadFile(fileInputId) : Promise<string> {
+	async loadFile(fileInputId: string) : Promise<string> {
 		
 		let file = await this.selectFile(fileInputId);
 		let text = await this.readFile(file);
@@ -63,7 +65,7 @@ export class FileHandler {
 	}
 
 	/**
-	 * @abstract Lets You select a file where the given content is written to.
+	 * Lets You select a file where the given content is written to.
 	 * 
 	 * The output is written by the system after the file selection is initiated.
 	 * 
@@ -71,7 +73,7 @@ export class FileHandler {
 	 * @param type - a type string (MIME type)
 	 * @param fileAnchorId - the id field of an anchor to be used by the operation  
 	 */	
-	saveFile(content, type, fileAnchorId) {
+	saveFile(content: string, type: string, fileAnchorId: string) {
 
 		let selector = `#${fileAnchorId}`;
 		let name = "equation_vme_latex.txt"; 
@@ -103,8 +105,7 @@ export class FileHandler {
 
 		try { 
 			if (document.createEvent) { 
-				let e = document.createEvent('MouseEvents'); 
-				e.initEvent('click', true, true); 
+				let e = new MouseEvent('click', { bubbles: true, cancelable: true });
 				comp.dispatchEvent(e); 
 				console.info(`File Save : TRIAL 2`);
 				return; 

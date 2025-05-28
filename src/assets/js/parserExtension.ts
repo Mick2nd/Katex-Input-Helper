@@ -1,6 +1,6 @@
 
 /**
- * @abstract A the jquery parser using parser wrapper.
+ * A the jquery parser using parser wrapper.
  * 
  * To be preferred : the asynchronous version with xxxAsync.
  */
@@ -12,7 +12,7 @@ export class ParserExtension {
 	fatalError = null;
 	
 	/**
-	 * @abstract Constructor
+	 * Constructor
 	 * 
 	 * @param async - to be true if async mode is used (preferred)
 	 */
@@ -21,7 +21,7 @@ export class ParserExtension {
 	}
 	
 	/**
-	 * @abstract The inititialization method
+	 * The inititialization method
 	 */
 	initialise() {
 		let inst = this;
@@ -45,7 +45,7 @@ export class ParserExtension {
 	}
 	
 	/**
-	 * @abstract Parses object(s) for given selector.
+	 * Parses object(s) for given selector.
 	 * 
 	 * This method returns a Promise, e.g. is able to wait for the result of the call to become
 	 * ready.
@@ -55,7 +55,7 @@ export class ParserExtension {
 	 * @param delay - an optional delay (to be applied after the parser becomes ready)
 	 * @returns the Promise
 	 */
-	async parseAsync(selector, ctx, delay = 0) {
+	async parseAsync(selector: string, ctx: any, delay = 0) {
 		try {
 			let item = {
 				ctx: ctx,
@@ -66,7 +66,7 @@ export class ParserExtension {
 			};
 			this.queue.push(item);
 			this.nextAsync(ctx);
-			item.promise = this.promisify(this, this.startParseAsync);
+			item.promise = promisify(this, this.startParseAsync);
 			
 			return item.promise;
 		} catch(err) {
@@ -75,9 +75,9 @@ export class ParserExtension {
 	}
 	
 	/**
-	 * @abstract Retrieves the next selector in the queue.
+	 * Retrieves the next selector in the queue.
 	 */
-	nextAsync(ctx) {
+	nextAsync(ctx: any) {
 		try {
 			let item = this.queue.shift();
 			this.item = item;
@@ -88,17 +88,17 @@ export class ParserExtension {
 	}
 	
 	/**
-	 * @abstract Executes the prepared selector.
+	 * Executes the prepared selector.
 	 */
-	startParseAsync(cb) {
+	startParseAsync(cb: any) {
 		this.item.onComplete = cb;
 		$.parser.parse(this.item.selector);			
 	}
 
 	/**
-	 * @abstract The central completion routine.
+	 * The central completion routine.
 	 */
-	onCompleteAsync(ctx) {
+	onCompleteAsync(ctx: any) {
 		this.completeCount ++;
 		if (typeof ctx != "string") {
 			console.warn(`onCompleteAsync for external source - not handled.`);
@@ -124,7 +124,7 @@ export class ParserExtension {
 	}
 	
 	
-	parse(selector, ctx, onComplete, delay = 0) {
+	parse(selector: string, ctx: any, onComplete: any, delay = 0) {
 		this.queue.push({
 			selector: selector,
 			onComplete: onComplete,
@@ -135,7 +135,7 @@ export class ParserExtension {
 		this.next(ctx);
 	}
 	
-	next(ctx) {
+	next(ctx: any) {
 		try {
 			let item = this.queue.shift();
 			this.item = item;
@@ -146,7 +146,7 @@ export class ParserExtension {
 		}
 	}
 	
-	onComplete(ctx) {
+	onComplete(ctx: any) {
 		let item = this.item;
 		if (item != null) {
 			console.info(`onComplete: ${this}`);
@@ -169,44 +169,22 @@ export class ParserExtension {
 	toString() {
 		return `Diagnostic info: number: ${this.completeCount}, active item: ${JSON.stringify(this.item)}, queue: ${JSON.stringify(this.queue)}`;
 	}
-	
-	/**
-	 * @abstract Converts a method with given signature and callback to a Promise returning method
-	 * 
-	 */
-	async promisify(ob, fnc, ...args)
-	{
-		return new Promise((resolve, reject) =>
-		{			
-			fnc.bind(ob)(...args, (err, result) => {
-				
-			if (err)
-			{
-				console.error('Error occurred: ' + err)		
-				reject(err);
-			}
-			else
-			{
-				resolve(result);
-			}});
-		});
-	}
 }
 
 	
 /**
- * @abstract Converts a method with given signature and callback to a Promise returning method
+ * Converts a method with given signature and callback to a Promise returning method
  * 
  * @param ob - an object to be bound to the function parameter
  * @param fnc - a function object to be invoked
  * @param args - args of the function. The function has one additional callback parameter
  * @returns the Promise, will be fulfilled if the callback is invoked
  */
-export async function promisify(ob, fnc, ...args)
+export async function promisify(ob: any, fnc: any, ...args: any)
 {
 	return new Promise((resolve, reject) =>
 	{			
-		fnc.bind(ob)(...args, (err, result) => {
+		fnc.bind(ob)(...args, (err: any, result: any) => {
 			
 		if (err)
 		{

@@ -1,7 +1,7 @@
 import { Observable } from "./patterns/observable";
 
 /**
- * @abstract Manages the Categories Tree.
+ * Manages the Categories Tree.
  * 
  * The Leafs of the tree refer to a set of equations and constitute the categories.
  * The Folders constitute super categories.
@@ -22,7 +22,7 @@ export class CategoriesTree {
 	equationMoved = null;
 	
 	/**
-	 * @abstract Constructor.
+	 * Constructor.
 	 */
 	constructor() {
 		this.treeSelector = `#categories`;
@@ -34,14 +34,14 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Returns the tree jquery object.
+	 * Returns the tree jquery object.
 	 */
 	get tree() {
 		return this._tree;
 	}
 	
 	/**
-	 * @abstract The Custom Equations setter.
+	 * The Custom Equations setter.
 	 * 
 	 * The whole data set, JSON compatible, with categories and equations.
 	 * This variant adds also some Sample data.
@@ -56,7 +56,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract The Custom Equations setter.
+	 * The Custom Equations setter.
 	 * 
 	 * The whole data set, JSON compatible, with categories and equations.
 	 */
@@ -67,7 +67,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract The Custom Equations getter.
+	 * The Custom Equations getter.
 	 * 
 	 * The whole data set, JSON compatible, with categories and equations.
 	 */
@@ -75,7 +75,7 @@ export class CategoriesTree {
 		return this.data;
 	}
 
-	/** @abstract Use this construct to make copies
+	/** Use this construct to make copies
 	 */	
 	getCustomEquationsProxy(data) {
 		let rows = null;
@@ -83,7 +83,7 @@ export class CategoriesTree {
 		return _proxy(rows);
 
 		/**
-		 * @abstract Copy a single node with relevant data.
+		 * Copy a single node with relevant data.
 		 */
 		function _copy(from) {
 			let keys = ['text', 'state', 'attributes', 'selected', 'haveSamples'];
@@ -99,7 +99,7 @@ export class CategoriesTree {
 		}
 
 		/**
-		 * @abstract Proxy an array of nodes.
+		 * Proxy an array of nodes.
 		 */
 		function _proxy(rows, parent = null) {
 			let targetRows = [ ];
@@ -121,7 +121,7 @@ export class CategoriesTree {
 
 		
 	/**
-	 * @abstract A Proxy of the Custom Equations data.
+	 * A Proxy of the Custom Equations data.
 	 * 
 	 * This is capable of being serialized over JSON.
 	 */
@@ -130,7 +130,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract The Current Equations setter as for the current selected category.
+	 * The Current Equations setter as for the current selected category.
 	 */
 	set currentEquations(value) {
 		if (this.currentLeaf != null) {
@@ -149,7 +149,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract The Current Equations getter as for the current selected category.
+	 * The Current Equations getter as for the current selected category.
 	 */
 	get currentEquations() {
 		if (!this.currentLeaf) {
@@ -166,13 +166,13 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract One time initialization of the *tree* extension. 
+	 * One time initialization of the *tree* extension. 
 	 */
 	treeInitialise() {
 		let inst = this;
 		$.extend($.fn.tree.methods, {
 			/**
-			 * @abstract Extension of tree methods with sort functionality.
+			 * Extension of tree methods with sort functionality.
 			 */
 			sort: function(jq, order) {
 				return jq.each(function() {
@@ -183,7 +183,7 @@ export class CategoriesTree {
 			isLeafDefault: $.fn.tree.methods.isLeaf,
 			
 			/**
-			 * @abstract Extension (replacement) of tree methods with custom *isLeaf* method.
+			 * Extension (replacement) of tree methods with custom *isLeaf* method.
 			 */
 			isLeaf: function(jq, target) {
 				return (function() {
@@ -201,7 +201,7 @@ export class CategoriesTree {
 	}
 
 	/**
-	 * @abstract Initialise routine. Part of the Custom Equations setter.
+	 * Initialise routine. Part of the Custom Equations setter.
 	 */
 	initialise() {
 		let inst = this;
@@ -306,7 +306,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract The context menu of the tree nodes.
+	 * The context menu of the tree nodes.
 	 * 
 	 * We distinguish 2 context menues: one for the Leafs and one for the Folders.
 	 */
@@ -378,7 +378,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract The *onLoadSuccess* event handler.
+	 * The *onLoadSuccess* event handler.
 	 * 
 	 * Its main purpose is to support the drag an drop operations from the datagrid
 	 * to the tree.
@@ -449,7 +449,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract *moveEquations* moves the checked equations from a source to a target category (Leaf node).
+	 * *moveEquations* moves the checked equations from a source to a target category (Leaf node).
 	 * 
 	 * This method notifies Observers about the change, f.i. the datagrid panel.
 	 * 
@@ -474,7 +474,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Deletes a set of equations from the given set.
+	 * Deletes a set of equations from the given set.
 	 * 
 	 * @param from - the set of equations to be modified
 	 * @param checked - the indices of equations to be deleted
@@ -485,7 +485,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Returns the indices of the checked equations in the datagrid.
+	 * Returns the indices of the checked equations in the datagrid.
 	 * 
 	 * @returns array of indices
 	 */
@@ -499,7 +499,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Converts the Custom Equations from old to new format.
+	 * Converts the Custom Equations from old to new format.
 	 * 
 	 * The old format has only a single equations set and no category information.
 	 * 
@@ -530,7 +530,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Adds a Samples branch to the Categories tree.
+	 * Adds a Samples branch to the Categories tree.
 	 * 
 	 * This routine secures against repeated insertions.
 	 * 
@@ -564,7 +564,7 @@ export class CategoriesTree {
 		}
 		
 		/**
-		 * @abstract Loads a JSON file and returns the object.
+		 * Loads a JSON file and returns the object.
 		 */
 		async function loadSamples() {
 			
@@ -583,12 +583,11 @@ export class CategoriesTree {
 	}
 
 	/**
-	 * @abstract Sort routine. Sorts the whole category tree.
+	 * Sort routine. Sorts the whole category tree.
 	 * 
 	 * Folders first, then leafs. Alphabetically in ascending order.
 	 * This alternative uses *traverse*.
 	 * 
-	 * @param target - the jquery tree object
 	 * @param order - the order. 'asc' for ascending 
 	 */
 	sort(order) {
@@ -624,7 +623,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Expands the whole category tree. Empty folders are left closed.
+	 * Expands the whole category tree. Empty folders are left closed.
 	 */
 	expandAlt() {
 		let inst = this;
@@ -637,7 +636,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Correct the Folder icons of the whole tree.
+	 * Correct the Folder icons of the whole tree.
 	 */
 	correctIcons() {
 		let inst = this;
@@ -649,7 +648,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Correct the Folder icon of a single node.
+	 * Correct the Folder icon of a single node.
 	 */
 	correctIcon(node) {
 		this.findNode(node);									// seems to be essential to get target
@@ -671,7 +670,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Traverses the categories tree.
+	 * Traverses the categories tree.
 	 * 
 	 * For each node in tree invokes the given function with the given arguments.
 	 * 
@@ -696,7 +695,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Given a node in the tree, determines and returns the path string.
+	 * Given a node in the tree, determines and returns the path string.
 	 * 
 	 * This serves the purpose to provide a better way to characterize the current 
 	 * selection.
@@ -717,7 +716,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Given the path string, determines and returns the appropriate node.
+	 * Given the path string, determines and returns the appropriate node.
 	 * 
 	 * @param {string} path - the path of a node in the tree
 	 * @returns the node belonging to that path or null
@@ -754,7 +753,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Renumbers the ids of the nodes on tree to unique ones.
+	 * Renumbers the ids of the nodes on tree to unique ones.
 	 */
 	renumberIds() {
 		let id = 1;
@@ -764,7 +763,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Returns the first free id of the node ids.
+	 * Returns the first free id of the node ids.
 	 */
 	get freeId() {
 		let id = 0;
@@ -775,7 +774,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Opens or closes a folder.
+	 * Opens or closes a folder.
 	 * 
 	 * @param node - the folder node
 	 * @param open - the target state, true for open
@@ -798,7 +797,7 @@ export class CategoriesTree {
 	}
 	
 	/**
-	 * @abstract Determines the parent of the given node.
+	 * Determines the parent of the given node.
 	 */
 	getParent(node) {
 		this.findNode(node);										// seems to be essential to get target
@@ -807,7 +806,7 @@ export class CategoriesTree {
 	}
 
 	/**
-	 * @abstract Checks the given node if it is a leaf node.
+	 * Checks the given node if it is a leaf node.
 	 */	
 	isLeaf(node) {
 		this.findNode(node);										// seems to be essential to get target
@@ -816,7 +815,7 @@ export class CategoriesTree {
 	}
 
 	/**
-	 * @abstract Finds a node in the tree given an origin node object.
+	 * Finds a node in the tree given an origin node object.
 	 * 
 	 * @param node - origin node
 	 */

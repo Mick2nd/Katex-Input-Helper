@@ -314,13 +314,13 @@ h3 {
 	#cUNICODES_LIST {
 		float: left; 
 		width: calc(95% - 170px); 
-		height: 480px; 
+		height: calc(100% - 60px); 
 		overflow: auto;
 	}
 	#cUNICODES_VALUES {
 		float: right; 
 		width: 170px; 
-		height: 480px; 
+		height: calc(100% - 60px); 
 		overflow: auto;
 		td, th {
 			padding: 3px;

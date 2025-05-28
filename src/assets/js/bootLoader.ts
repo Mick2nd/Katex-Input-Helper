@@ -21,9 +21,9 @@ import { CategoriesTree } from './categoriesTree';
 import { DynamicPanel } from './panels';
 
 /**
- * @abstract The boot loader of the Katex Input Helper.
+ * The boot loader of the Katex Input Helper.
  * 
- * This is capable of supporting 2 different scenarios, one using *easyloader*, one not. 
+ * It serves as entry point of the application.
  */
 export class BootLoader {
 	
@@ -32,14 +32,11 @@ export class BootLoader {
 	katex = null;
 	
 	/**
-	 * @abstract Constructor.
+	 * Constructor.
 	 */
-	constructor() {
-
-	}
 
 	/**
-	 * @abstract Converts a method with given signature and callback to a Promise returning method.
+	 * Converts a method with given signature and callback to a Promise returning method.
 	 * 
 	 * A special case is the use of setTimeout, where the order of arguments is swapped.
 	 * 
@@ -48,7 +45,7 @@ export class BootLoader {
 	 * @param args - args of the function. The function has one additional callback parameter
 	 * @returns the Promise, will be fulfilled if the callback is invoked
 	 */
-	async promisify(fnc, ...args) {
+	async promisify(fnc: any, ...args: any[]) {
 		return new Promise(function(resolve, reject) {
 			try {
 				function resolveFunc() {
@@ -68,13 +65,13 @@ export class BootLoader {
 				}
 			} catch(err) {
 				console.error(`Error occurred: ${err} `);		
-				reject(err);
+				reject(Error(err));
 			}		
 		});
 	}
 	
 	/**
-	 * @abstract The promise is fulfilled if the document becomes ready.
+	 * The promise is fulfilled if the document becomes ready.
 	 * 
 	 * @async implements the Promise contract
 	 */
@@ -84,16 +81,19 @@ export class BootLoader {
 	}
 	
 	/**
-	 * @abstract The promise is fulfilled after a timeout is elapsed.
+	 * The promise is fulfilled after a timeout is elapsed.
 	 * 
 	 * @async implements the Promise contract
+	 * @param delay - the time in ms to wait for
 	 */
-	async setTimeoutAsync(delay) {
+	async setTimeoutAsync(delay: number) {
 		return this.promisify(setTimeout, delay);
 	}
 	
 	/**
-	 * @abstract Checks if running device is mobile device.
+	 * Checks if running device is mobile device.
+	 * 
+	 * @returns - Flag indicating a Mobile device
 	 */
 	get isMobile() : boolean {
 		// Solution from Internet ... does not work
@@ -108,11 +108,12 @@ export class BootLoader {
 	}
 	
 	/**
-	 * @abstract Initializes the app.
+	 * Initializes the app.
 	 * 
 	 * This is the true application logic.
 	 * 
 	 * @async implements the Promise contract
+	 * @param mobile - runs on mobile device, if true
 	 */
 	async initApp(mobile: boolean) {
 		try {
@@ -122,17 +123,18 @@ export class BootLoader {
 			$('#myContainer').layout({fit: true});
 			$('#divEquationInputOutput').layout({});
 		} finally {
+			console.info('App initialization finished');
 		}
 	}
 	
 	/**
-	 * @abstract Initialization scenario 1 : without easy loader.
+	 * Initialization scenario 1 : without easy loader.
 	 * 
 	 * @async implements the Promise contract
 	 */
 	async init1() {
 		
-		this.katex = await import('katex/dist/katex');
+		this.katex = await import('katex/dist/katex');			// This version of import is essential for mhchem
 		await import('katex/dist/contrib/mhchem');
 		let mobile = this.isMobile;
 		
@@ -159,15 +161,21 @@ export class BootLoader {
 	}
 	
 	/**
-	 * @abstract Checks the presence of the required scripts.
+	 * Checks the presence of the required scripts.
+	 * 
+	 * Checks until the cycle number becomes 0 (count down).
+	 * 
+	 * @param cycle - the current cycle
+	 * @returns true, if all dependencies are loaded
+	 * @throws if no cycle is left over and not all dependencies are loaded
 	 */
-	presenceCheck(cycle) {
+	presenceCheck(cycle: number) {
 		let lastChecked = 'Test';
 		
 		/**
 		 * Checks the classname. Changed to accomodate the minification.
 		 */
-		function checkTypeByName(type, name, readableName = name) {
+		function checkTypeByName(type: any, name: string, readableName = name) {
 			lastChecked = readableName;
 			if (type === undefined || type === null || (typeof type) === 'undefined' || !type.prototype) {
 				console.warn(`Undefined type : ${readableName}`);
@@ -175,15 +183,17 @@ export class BootLoader {
 			}
 			let detectedName = type.prototype["constructor"]["name"];
 			let equal = (detectedName === name);
-			if (!equal) {
-				//console.warn(`Type check failed : ${detectedName} : ${readableName}`);
+			if (!equal && !PRODUCTION) {
+				console.warn(`Type check failed : ${detectedName} : ${readableName}`);
+				return false;
 			}
 			return true;								// returning test result can lead to problems with minimized versions of code
 		}
+		
 		/**
 		 * Checks some type of an object like 'object' or 'function'
 		 */
-		function checkOther(type, name, readableName) {
+		function checkOther(type: string, name: string, readableName: string) {
 			lastChecked = readableName;
 			let equal = type === name;
 			if (!equal) {
@@ -191,6 +201,7 @@ export class BootLoader {
 			}
 			return equal;
 		}
+		
 		/**
 		 * Checks if katex can execute chemical formula.
 		 * Deactivated, because not reliable.
@@ -239,8 +250,8 @@ export class BootLoader {
 	}
 
 	/**
-	 * @abstract Performs a check about the presence of certain Html objects and provides
-	 * 			 console report.
+	 * Performs a check about the presence of certain Html objects and provides
+	 * console report.
 	 */
 	check() {
 		let ids = [
@@ -262,20 +273,21 @@ export class BootLoader {
 	}
 
 	/**
-	 * @abstract Displays an alert message in case of a crash.
+	 * Displays an alert message in case of a crash.
 	 */
-	fatal(err) {
+	fatal(err: any) {
 		alert('The Katex Input Helper could not be opened properly, \n' + 
 			`(${err}). \nPlease close it and open it again!`);
 	}
 }	
 
+// The main initialization logic
 if (!window.bootLoaderLoaded) {
 	window.bootLoaderLoaded = true;
 	let kihBootLoader = new BootLoader();
 	kihBootLoader.init1()
 	.then(() => {
-		kihBootLoader.check();
+		if (!PRODUCTION) { kihBootLoader.check(); }
 	})
 	.catch(err => {
 		console.error(`Error ${err} `, err);

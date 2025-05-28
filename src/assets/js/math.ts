@@ -1,5 +1,5 @@
 import { Messager } from './helpers';
-const katex = await import('katex/dist/katex');
+const katex = await import('katex/dist/katex');			// This version of import is essential for mhchem
 await import('katex/dist/contrib/mhchem');
 
 /**
@@ -24,7 +24,7 @@ export class MathFormulae {
 	/**
 	 * Constructor.
 	 */
-	constructor(runNotKatex, localizer, codeMirror, parameters, parser) {
+	constructor(runNotKatex: boolean, localizer: any, codeMirror: any, parameters: any, parser: any) {
 		this.mathTextInput = document.getElementById('mathTextInput'); 
 		this.mathVisualOutput = document.getElementById('mathVisualOutput');
 		this.codeMirror = codeMirror;
@@ -38,7 +38,7 @@ export class MathFormulae {
 	/**
 	 * Sets the Code Mirror Editor instance (method injection)
 	 */
-	setEditorInstance(codeMirror) {
+	setEditorInstance(codeMirror: any) {
 		this.codeMirror = codeMirror;
 	}
 	
@@ -50,7 +50,7 @@ export class MathFormulae {
 	 * @param multiple - if true inserts multiple math elements, separated by horizontal space
 	 * @param displayMode - in display mode can handle expressions differently (for instance environments) 
 	 */
-	insertMath(text, element = null, multiple = false, displayMode = false) {
+	insertMath(text: string, element = null, multiple = false, displayMode = false) {
 		if (text == '') {
 			console.warn(`Katex: no text`);
 			return;
@@ -75,7 +75,7 @@ export class MathFormulae {
 					}
 				}
 				
-				katex.render(text, target, { thrownOnError: false, strict: false, displayMode: displayMode, macros: { '\\box': '□' } });
+				katex.render(text, target, { throwOnError: false, strict: false, displayMode: displayMode, macros: { '\\box': '□' } });
 			} else {
 				target.innerTEXT = text;
 			}
@@ -97,7 +97,7 @@ export class MathFormulae {
 			let entries = $(selector);
 			console.debug(`Katex: ${entries.length} td or div items`);
 			let im1 = 0;
-			entries.each(function(idx, a) {
+			entries.each(function(idx: number, a) {
 				
 				if (a && $(this).find('.katex').length == 0) {								// check : no katex embedded
 					try {
@@ -127,6 +127,7 @@ export class MathFormulae {
 						} else {															// direct image case
 							let img = a.firstChild as Element;
 							if (img && img.nodeType != Node.TEXT_NODE && img.hasAttribute('src')) {
+								// TODO: handling required?
 							}
 						}
 					} catch(e) {
@@ -147,7 +148,7 @@ export class MathFormulae {
 	}
 	
 	/**
-	 * @abstract Updates the headers of some Panels by translating contained Math.
+	 * Updates the headers of some Panels by translating contained Math.
 	 * 
 	 * If a selector is given, it is assumed that it is a single panel from an accordion.
 	 */
@@ -164,7 +165,7 @@ export class MathFormulae {
 			}
 			
 			console.debug(`Katex: ${entries.length} header items`);
-			entries.each((idx, a) => {
+			entries.each((idx: number, a) => {
 				if (a) {
 					let text = a.innerText;
 					if (text.startsWith('$')) {
@@ -193,12 +194,12 @@ export class MathFormulae {
 	/**
 	 * For some dialogs, which are initialized lazily, updates the Math.
 	 */
-	inplaceUpdate(selector, javascript = true) {
+	inplaceUpdate(selector: string, javascript = true) {
 		try {
 			let inst = this;
 			let entries = $(selector);
 			console.debug(`Katex: ${entries.length} in-place items for selector ${selector}`);
-			entries.each(function(idx, a) {
+			entries.each(function(idx: number, a) {
 				if (a && !inst.runNotKatex) {
 					inst.updateAnchor(a);
 					if (typeof selector !== 'string' || !selector.startsWith('#mLaTeX_TEXT')) {
@@ -212,16 +213,16 @@ export class MathFormulae {
 	}
 	
 	/**
-	 * @abstract Equips some anchors with interactivity which they do not already have.
+	 * Equips some anchors with interactivity which they do not already have.
 	 * 
 	 * "Equips" means *tooltip* and *click* and *mouseover*.
 	 * If the anchor does not have a latex attribute, it will not be equipped
 	 * 
 	 * @param a - the anchor to be equipped
 	 */
-	equipWithInteractivity(a, javascript = true) {
+	equipWithInteractivity(a: any, javascript = true) {
 		let vme = this;
-		function getSymbol(obj) { 
+		function getSymbol(obj: any) { 
 			if (typeof ($(obj).attr("latex")) != "undefined") { 
 				return $(obj).attr("latex"); 
 			} else { 
@@ -237,7 +238,7 @@ export class MathFormulae {
 		let text = getSymbol(a);
 		this.equipWithTooltip(a, text, javascript);
 		
-		a.click(function(event) { 
+		a.click(function(event: any) { 
 			event.preventDefault(); 
 			let latex = a.attr("latex");
 			console.debug(`Click on equation: ${latex}`);
@@ -253,16 +254,16 @@ export class MathFormulae {
 	}
 	
 	/**
-	 * @abstract Equips a selector (preferibly an anchor) with a tooltip.
+	 * Equips a selector (preferibly an anchor) with a tooltip.
 	 * 
 	 * Additionally prepares the same info for the status line.
 	 * This is the central place for doing that.
 	 * 
-	 * @param selector {*} - ui item to be equipped
-	 * @param {string} text - the tooltip text 
-	 * @param {boolean} javascript 
+	 * @param selector - ui item to be equipped
+	 * @param text - the tooltip text 
+	 * @param javascript 
 	 */
-	equipWithTooltip(selector, text, javascript) {
+	equipWithTooltip(selector: any, text: string, javascript: boolean) {
 
 		selector.addClass("easyui-tooltip s");
 
@@ -277,11 +278,11 @@ export class MathFormulae {
 			});
 		} else {
 			selector.attr("href", "#")
-			.attr("title", function(index, attr) { return encoded; });
+			.attr("title", function(index: number, attr: string) { return encoded; });
 		}		
 
-		selector.on('mouseover', function(event) { $("#divInformation").html(encoded); });
-		selector.mouseout(function(event) { $("#divInformation").html("&nbsp;"); });
+		selector.on('mouseover', function(event: any) { $("#divInformation").html(encoded); });
+		selector.mouseout(function(event: any) { $("#divInformation").html("&nbsp;"); });
 		
 		return selector;
 	}
@@ -289,7 +290,7 @@ export class MathFormulae {
 	/**
 	 * Updates an anchor (or other tag) with a formula. Takes the text from original anchor content.
 	 */	
-	updateAnchor(a) {
+	updateAnchor(a: any) {
 		let text = a.innerText;
 		if (text.includes('Rightarrow')) {
 			console.debug(`Found-arrow-text: ${text}`);
@@ -302,9 +303,9 @@ export class MathFormulae {
 	}
 	
 	/**
-	 * @abstract Inserts given text into Code Mirror Editor and updates the formula in the output.
+	 * Inserts given text into Code Mirror Editor and updates the formula in the output.
 	 */
-	insert(b) {
+	insert(b: any) {
 		this.codeMirror.replaceSelection(b);
 		this.updateOutput();
 	}
@@ -323,9 +324,8 @@ export class MathFormulae {
 		if (!vme.encloseAllFormula) { 
 			content = content.replace(/</gi, "&lt;"); 
 			content = encloseChar + content + encloseChar; 
-		} else { 
 		}
-
+		
 		dm = dm || vme.parameters.displayMode;						// displayMode from invocation context enforces dm
 		vme.insertMath(content, null, false, dm); 
 		vme.setFocus();

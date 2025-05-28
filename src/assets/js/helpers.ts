@@ -1,34 +1,34 @@
 
 /**
- * @abstract Encapsulates the jquery messager with frequently used options.
+ * Encapsulates the jquery messager with frequently used options.
  */
 export class Messager {
 	localizer = null;
 	
 	/**
-	 * @abstract Constructor, localizer is injected.
+	 * Constructor, localizer is injected.
 	 */
-	constructor(localizer) {
+	constructor(localizer: any) {
 		this.localizer = localizer;
 	}
 	
 	/**
-	 * @abstract Displays an alert warning box.
+	 * Displays an alert warning box.
 	 * 
 	 * Provided messages key is translated, so you get a localized message.
 	 */
-	error(msgKey, e) {
+	error(msgKey: string, e: any) {
 		let error = this.localizer.getLocalText('ERROR');
 		let msg = this.localizer.getLocalText(msgKey);
 		$.messager.alert(`<span class='rtl-title-withicon'>${error}</span>`, `${msg} - ${e}`, 'warning'); 		
 	}
 	
 	/**
-	 * @abstract Shows an Panel with some information or hints.
+	 * Shows an Panel with some information or hints.
 	 * 
 	 * Title key and Message key are translated.
 	 */
-	show(titleKey, msgKey, e = null) {
+	show(titleKey: string, msgKey: string, e = null) {
 		let inst = this;
 		let msg = inst.localizer.getLocalText(msgKey);
 		if (e != null) {
@@ -43,20 +43,20 @@ export class Messager {
 
 
 /**
- * @abstract A Utilities class.
+ * A Utilities class.
  */
 export class Utilities {
 	localizer = null;
 		
 	/**
-	 * @abstract Constructor, localizer is injected.
+	 * Constructor, localizer is injected.
 	 */
-	constructor(localizer) {
+	constructor(localizer: any) {
 		this.localizer = localizer;
 	}
 	
 	/**
-	 * @abstract Gets an option.
+	 * Gets an option.
 	 * 
 	 * This extracts the option without translating it.
 	 * 
@@ -64,13 +64,13 @@ export class Utilities {
 	 * @param option - the option name
 	 * @returns the changed option as html string
 	 */
-	getOption(id, option) {
+	getOption(id: string, option: string) : string {
 		let text = $(`#${id}`).window('options')[option];
 		return text;		
 	}
 
 	/**
-	 * @abstract Used to localize an option.
+	 * Used to localize an option.
 	 * 
 	 * The option is part of a bigger **easyui** object like dialog, panel, window. Originally it
 	 * was meant to change the **title** of an object because that object was newly created in code.
