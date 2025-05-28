@@ -217,9 +217,9 @@ export class KIHParameters {
 	loadCookies() {
 		try {
 			let cookies = { };
-			let persist = window.localStorage.getItem('persistEquations') == 'true';
+			let persist = window.localStorage.getItem('persistEquations') != 'false';
 			const persistEquations = persist;
-			persist = window.localStorage.getItem('persistWindowPositions') == 'true';
+			persist = window.localStorage.getItem('persistWindowPositions') != 'false';
 			const persistWindowPositions = persist;
 			
 			for (let idx = 0; idx < window.localStorage.length; idx++) {
@@ -251,7 +251,7 @@ export class KIHParameters {
 	}
 	
 	/**
-	 * Resets the cookies if they are in a inconsistent or fresh state.
+	 * Resets the cookies if they are in an inconsistent or fresh state.
 	 */
 	resetCookies() {
 		for (const [ key, val ] of Object.entries(this.filteredParameters)) {

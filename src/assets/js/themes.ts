@@ -78,25 +78,59 @@ export class Themes extends Observable {
 	async appendCss(activeTheme: string, dir = 'ltr') {
 		console.info(`Active theme is ${activeTheme}`);
 		
-		let opts = { assert: { 
-			type: 'css',
-		} };
-		await import('./jquery-easyui-MathEditorExtend/themes/rtl.css', opts);
-		$('link').last()
+		let opts = { 
+			assert: { 
+				type: 'css',
+			}
+		};
+		await import(/* webpackChunkName: 'rtl'*/ './jquery-easyui-MathEditorExtend/themes/rtl.css', opts);
+		$('link[href$="rtl.styles.css"]')
 		.attr('id', 'RTLstyle')
 		.attr('disabled', true);
 		
+		/*
+		*/
 		for (const theme of this.supportedThemes) {
 			if (theme === 'aguas') { continue; }
 				
 			await import(`./jquery-easyui/themes/${theme}/easyui.css`, opts);
-			$('link').last()
+			$('link[href$=".styles.css"]').last()
 			.attr('id', theme);
 
 			await import(`./jquery-easyui-MathEditorExtend/themes/${theme}/easyui.css`, opts);
-			$('link').last()
+			$('link[href$=".styles.css"]').last()
 			.attr('id', `${theme}-extend`);
 		}
+		
+		// TEST
+//		await import(/* webpackChunkName: 'gray'*/  `./jquery-easyui/themes/gray/easyui.css`, opts);
+//		$('link[href$="gray.styles.css"]')
+//		.attr('id', 'gray');
+//		await import(/* webpackChunkName: 'gray-extend'*/ `./jquery-easyui-MathEditorExtend/themes/gray/easyui.css`, opts);
+//		$('link[href$="gray-extend.styles.css"]')
+//		.attr('id', `gray-extend`);
+//		
+//		await import(/* webpackChunkName: 'black'*/  `./jquery-easyui/themes/black/easyui.css`, opts);
+//		$('link[href$="black.styles.css"]')
+//		.attr('id', 'black');
+//		await import(/* webpackChunkName: 'black-extend'*/ `./jquery-easyui-MathEditorExtend/themes/black/easyui.css`, opts);
+//		$('link[href$="black-extend.styles.css"]')
+//		.attr('id', `black-extend`);
+//		
+//		await import(/* webpackChunkName: 'bootstrap'*/  `./jquery-easyui/themes/bootstrap/easyui.css`, opts);
+//		$('link[href$="bootstrap.styles.css"]')
+//		.attr('id', 'bootstrap');
+//		await import(/* webpackChunkName: 'bootstrap-extend'*/ `./jquery-easyui-MathEditorExtend/themes/bootstrap/easyui.css`, opts);
+//		$('link[href$="bootstrap-extend.styles.css"]')
+//		.attr('id', `bootstrap-extend`);
+//		
+//		await import(/* webpackChunkName: 'metro'*/  `./jquery-easyui/themes/metro/easyui.css`, opts);
+//		$('link[href$="metro.styles.css"]')
+//		.attr('id', 'metro');
+//		await import(/* webpackChunkName: 'metro-extend'*/ `./jquery-easyui-MathEditorExtend/themes/metro/easyui.css`, opts);
+//		$('link[href$="metro-extend.styles.css"]')
+//		.attr('id', `metro-extend`);
+		// TEST END
 		
 		this.activateStyle(activeTheme);
 		this.cssActive = true;
