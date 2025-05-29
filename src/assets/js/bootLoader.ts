@@ -7,6 +7,7 @@ import './jquery-easyui/datagrid-dnd';
 import './jquery-easyui/datagrid-filter';
 import './jquery-easyui/datagrid-cellediting';
 
+import platform from 'platform';
 const CodeMirror = (await import('codemirror')).default;
 
 import { Observable } from './patterns/observable';
@@ -101,10 +102,12 @@ export class BootLoader {
 		// let mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 		// let mobile = /Samsung/i.test(navigator.userAgent);
 		// let isMobile = ('ontouchstart' in document.documentElement && /mobi/i.test(navigator.userAgent)) || mobile ;
-		let mobile = 
-			navigator.userAgentData?.mobile ?? 
-			/mobi|ios|arm/i.test(navigator.platform); 
-		return !!mobile;
+		// let mobile = 
+		//	navigator.userAgentData?.mobile ?? 
+		//	/mobi|ios|arm/i.test(navigator.platform);
+		let mobile = /Android|iOS|Windows Phone/i.test(platform.os.family);
+		 
+		return mobile;
 	}
 	
 	/**

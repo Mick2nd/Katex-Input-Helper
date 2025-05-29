@@ -10,7 +10,7 @@ import { Themes } from './themes';
 import { Messager, Utilities } from './helpers';
 import { ParserExtension } from './parserExtension';
 import { MathFormulae } from './math';
-import { KIHPanels, DynamicPanel, KIHMoreDialog, KIHWindow, UnicodeWindow } from "./panels";
+import { KIHPanels, DynamicPanel, KIHMoreDialog, KIHWindow, UnicodeWindow, MatrixWindow } from "./panels";
 import { FileHandler } from "./fileHandling";
 
 
@@ -207,7 +207,7 @@ export class KatexInputHelper {
 		this.themes = new Themes();
 		this.parser = new ParserExtension(true);
 		this.math = new MathFormulae(false, this.localizer, null, this.parameters, this.parser);	// code mirror per method injection
-		this.panels = new KIHPanels(this.parameters, this.localizer, this.parser);
+		this.panels = new KIHPanels(this.parameters, this.localizer, this.parser, this.math);
 
 		this.mathTextInput = document.getElementById('mathTextInput'); 
 		this.mathVisualOutput = document.getElementById('mathVisualOutput'); 
@@ -384,11 +384,10 @@ export class KatexInputHelper {
 			mode: vme.encloseAllFormula ? "text/html" : "text/x-latex", 
 			autofocus: true, 
 			showCursorWhenSelecting: true, 
-			// Unknown property
-			//styleActiveLine: true, 
 			lineNumbers: true, 
 			lineWrapping: true, 
 			// Unknown property
+			//styleActiveLine: true, 
 			//matchBrackets: true, 
 			//autoCloseBrackets: true, 
 			//autoCloseTags: vme.encloseAllFormula ? true : false, 
@@ -512,7 +511,7 @@ export class KatexInputHelper {
 					case "mEDITOR_PARAMETERS": await vme.openWindow('wEDITOR_PARAMETERS'); break; 
 					case "mSTYLE_CHOISE": await vme.openWindow('wSTYLE_CHOISE'); break; 
 					case "mLANGUAGE_CHOISE": await vme.openWindow('wLANGUAGE_CHOISE'); break; 
-					case "mMATRIX": vme.showMatrixWindow(3, 3); break; 
+					case "mMATRIX": vme.panels.showWindowGeneric(MatrixWindow, 'wMATRIX'); break; 
 					case "mCOMMUTATIVE_DIAGRAM": await vme.initialiseUImoreDialogs("f_COMMUTATIVE_DIAGRAM"); break; 
 					case "mCHEMICAL_FORMULAE": await vme.initialiseUImoreDialogs("f_CHEMICAL_FORMULAE"); break; 
 					case "mSAVE_EQUATION": vme.saveEquationFile(); break; 
@@ -562,20 +561,6 @@ export class KatexInputHelper {
 		this.initialiseUIaccordion("#f_SYMBOLS2"); 
 
 		// Configures Clicks on close buttons and Key handlers, Context menus and others
-		$('#btMATRIX_CLOSE').on('click', function(event) { 
-			event.preventDefault(); 
-			$('#wMATRIX').dialog('close'); 
-			vme.setFocus(); 
-		}); 
-		$('#btMATRIX_SET').on('click', function(event) { 
-			event.preventDefault(); 
-			vme.setLatexMatrixInEditor(); 
-			vme.updateOutput(); 
-			$('#wMATRIX').dialog('close'); vme.setFocus(); 
-		}); 
-		$('#colsMATRIX, #rowsMATRIX').keyup(function(event) { 
-			vme.updateMatrixWindow(); 
-		}); 
 		$('#btSTYLE_CHOISE_CLOSE').on('click', function(event) { 
 			event.preventDefault(); 
 			$('#wSTYLE_CHOISE').dialog('close'); 
@@ -837,96 +822,6 @@ export class KatexInputHelper {
 			await this.initialiseSymbolContent("cLATEX_CODES_LIST"); 
 			this.latexMathjaxCodesListLoaded = true;
 		}
-	}
-	
-	/**
-	 * Opens the Matrix window with given rows and columns values.
-	 * 
-	 * @param rows - the number of matrix rows 
-	 * @param cols - the number of matrix columns
-	 */
-	showMatrixWindow(rows: number, cols: number) { 
-		this.openWindow('wMATRIX'); 
-		this.updateMatrixWindow(rows, cols); 
-	}
-	
-	/**
-	 * Updates the Matrix window with given rows and columns values.
-	 * 
-	 * @param rows - the number of matrix rows 
-	 * @param cols - the number of matrix columns
-	 */
-	async updateMatrixWindow(rows: number = 3, cols: number = 3) {
-		let vme = this;
-		if (typeof rows != "undefined" && rows != null) document.formMATRIX.rowsMATRIX.value = rows; 
-		if (typeof cols != "undefined" && cols != null) document.formMATRIX.colsMATRIX.value = cols; 
-		rows = document.formMATRIX.rowsMATRIX.value; 
-		cols = document.formMATRIX.colsMATRIX.value; 
-		let html = '<table style="border-spacing:0px; border-collapse:collapse;">'; 
-		let r: number, c: number, value: string; 
-		for (r = 1; r <= rows; r++) {
-			html += "<tr>"; 
-			for (c = 1; c <= cols; c++) {
-				value = ("a_{" + r + c + "}");
-				html = html + "<td><input type='text' size='5' name='a_" + r + c + "' value='" + value + "'/></td>";
-			}
-			html += "</tr>";
-		}
-		html += "</table>"; 
-		$("#showMATRIX").html(html); 
-		await this.parser.parseAsync('#wMATRIX');										// after dynamically set the content
-		$('#wMATRIX').dialog('open'); 
-		let width = 20 + $("#tableMATRIX").width(); 
-		let height = 100 + $("#tableMATRIX").height(); 
-		if (width < 240) width = 240; 
-		if (height < 160) height = 160;
-		
-		let options = $('#wMATRIX').dialog('options');
-		$('#wMATRIX').dialog({ 
-			title: vme.getLocalText("MATRIX"), 
-			width: width, 
-			height: height,
-			left: options.left,									// HAS NO EFFECT !!
-			top: options.top 
-		}); 
-		$('#wMATRIX').dialog('open');
-	}
-	
-	/**
-	 * Transfers the Matrix displayed in the Matrix window to the Editor.
-	 */
-	setLatexMatrixInEditor() {
-		let vme = this; 
-		let cols = document.formMATRIX.colsMATRIX.value; 
-		let rows = document.formMATRIX.rowsMATRIX.value; 
-		let formula = ""; 
-		let r: number, c: number; 
-		for (r = 1; r <= rows; r++) {
-			for (c = 1; c <= cols; c++) { 
-				eval("formula = formula + document.formMATRIX.a_" + r + c + ".value"); 
-				if (c < cols) formula += " & "; 
-			}
-			if (r < rows) formula += " \\\\ ";
-		}
-		let left = document.formMATRIX.leftbracketMATRIX.value; 
-		let right = document.formMATRIX.rightbracketMATRIX.value; 
-		let matrix = ""; 
-		if (left != "{:") matrix += "\\left "; 
-		if (left == "{" || left == "}") matrix += "\\"; 
-		if (left == "||") matrix += "\\|"; 
-		if (left == "(:") matrix += "\\langle"; 
-		if (left == ":)") matrix += "\\rangle"; 
-		if (left != "{:" && left != "||" && left != ":)" && left != "(:") matrix += document.formMATRIX.leftbracketMATRIX.value; 
-		matrix += " \\begin{matrix} "; matrix += formula; 
-		matrix += " \\end{matrix} "; 
-		if (right != ":}") matrix += " \\right "; 
-		if (right == "}" || right == "{") matrix += "\\";
-		if (right == "||") matrix += "\\|"; 
-		if (right == "(:") matrix += "\\langle"; 
-		if (right == ":)") matrix += "\\rangle"; 
-		if (right != ":}" && right != "||" && right != ":)" && right != "(:") matrix += document.formMATRIX.rightbracketMATRIX.value; 
-		matrix += " "; 
-		vme.insert(matrix);
 	}
 
 	/**
@@ -1257,29 +1152,6 @@ export class KatexInputHelper {
 	encodeStringForHTMLAttr(s: any) { 
 		if (typeof s == "string") return s.replace("\"", "&quot;"); else return ""; 
 	}
-	
-	/**
-	 * Loads a script. Actually only used by virtual keyboard.
-	 * WE HAVE other solution for this.
-	 * 
-	loadScript(url, callback) {
-		let script = document.createElement("script"); 
-		script.type = "text/javascript"; 
-		script.src = url; 
-		if (script.readyState) { 
-			script.onreadystatechange = function() {
-				 
-				if (script.readyState == "loaded" || script.readyState == "complete") { 
-					script.onreadystatechange = null; 
-					callback(); 
-				} 
-			}; 
-		} else { 
-			script.onload = function() { callback(); }; 
-		}
-		document.body.appendChild(script);
-	}
-	*/
 	
 	/**
 	 * Initializes an accordion (several palettes with symbols).

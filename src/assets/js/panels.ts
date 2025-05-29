@@ -118,6 +118,19 @@ export class KIHPanel {
 		let htmlString = (($(html).html(located)[0] as any) as Element).outerHTML;		// insert it into orginal html
 		return htmlString;
 	}
+	
+	protected focus() {
+		this.parent.math.codeMirror.focus();
+	}
+
+	protected updateOutput() {
+		this.parent.math.updateOutput();
+	}
+	
+	protected insert(b: string) {
+		this.parent.math.insert(b);
+		this.focus();
+	}	
 }
 
 /**
@@ -188,7 +201,7 @@ export class KIHWindow extends KIHPanel {
 	override async initialise(dummy: any = null) {
 		let handlers: any = this.handlers;
 		handlers.title = this.localizeOption('title');
-		$(`#${this.id}`).window(handlers)
+		$(`#${this.id}`).window(handlers);
 	}
 	
 	/**
@@ -207,6 +220,165 @@ export class KIHWindow extends KIHPanel {
 	open() {
 		$(`#${this.id}`).window('open');
 		this.isOpen = true;
+	}
+}
+
+export class MatrixWindow extends KIHWindow {
+	
+	/**
+	 * Ctor.
+	 */
+	constructor(panelId: string, parent: any, ...params: any) {
+		super(panelId, parent, params);
+	}
+
+	/**
+	 * Initialises the Matrix window.
+	 */
+	override async initialise(_dummy: any) : Promise<void> {
+		await super.initialise();
+
+		let vme = this;
+		$('#btMATRIX_CLOSE').on('click', function(event) { 
+			event.preventDefault(); 
+			vme.toggle();										// direct 'close' does not trigger onClose 
+			vme.focus(); 
+		}); 
+		$('#btMATRIX_SET').on('click', function(event) { 
+			event.preventDefault(); 
+			if (vme.setLatexMatrixInEditor()) {
+				vme.updateOutput(); 
+				vme.toggle();									// direct 'close' does not trigger onClose 
+				vme.focus(); 
+			} 
+		}); 
+		$('#colsMATRIX, #rowsMATRIX').on('keyup', function(event) { 
+			vme.updateMatrixWindow(); 
+		});
+		
+		this.updateMatrixWindow(3, 3);
+	}
+
+	/**
+	 * Updates the Matrix window with given rows and columns values.
+	 * 
+	 * @param rows - the number of matrix rows 
+	 * @param cols - the number of matrix columns
+	 */
+	async updateMatrixWindow(rows: number = undefined, cols: number = undefined) {
+		let vme = this;
+		if (typeof rows != "undefined" && rows != null) document.formMATRIX.rowsMATRIX.value = rows; 
+		if (typeof cols != "undefined" && cols != null) document.formMATRIX.colsMATRIX.value = cols; 
+		rows = document.formMATRIX.rowsMATRIX.value; 
+		cols = document.formMATRIX.colsMATRIX.value; 
+		
+		// build a table with rows and columns and display it
+		let html = '<table style="border-spacing:0px; border-collapse:collapse;">'; 
+		let r: number, c: number, value: string; 
+		for (r = 1; r <= rows; r++) {
+			html += "<tr>"; 
+			for (c = 1; c <= cols; c++) {
+				value = (`a_{${r}${c}}`);
+				html = html + `<td><input type='text' size='5' name='a_${r}${c}' value='${value}'/></td>`;
+			}
+			html += "</tr>";
+		}
+		html += "</table>"; 
+		$("#showMATRIX").html(html); 
+		await this.parent.parser.parseAsync('#wMATRIX');										// after dynamically set the content
+		$('#wMATRIX').dialog('open');
+		
+		// adapt the size of this wMATRIX window to fit the content
+		let width = 20 + $("#tableMATRIX").width(); 
+		let height = 100 + $("#tableMATRIX").height(); 
+		if (width < 240) width = 240; 
+		if (height < 160) height = 160;
+		
+		let options = $('#wMATRIX').dialog('options');
+		$('#wMATRIX').dialog({ 
+			title: vme.parent.localizer.getLocalText("MATRIX"), 
+			width: width, 
+			height: height,
+			left: options.left,									// HAS NO EFFECT !!
+			top: options.top 
+		}); 
+		$('#wMATRIX').dialog('open');
+	}
+	
+	/**
+	 * Transfers the Matrix displayed in the Matrix window to the Editor.
+	 */
+	setLatexMatrixInEditor() : boolean {
+		
+		let vme = this; 
+		let cols = document.formMATRIX.colsMATRIX.value; 
+		let rows = document.formMATRIX.rowsMATRIX.value; 
+		let left = document.formMATRIX.leftbracketMATRIX.value; 
+		let right = document.formMATRIX.rightbracketMATRIX.value; 
+		
+		if ((left == '{:') != (right == ':}')) {
+			this.parent.messager.show('KATEX', 'ONE_BRACKET_MISSING');
+			return false;
+		}
+		
+		/** 
+		 * Builds Latex formula for "Matrix Table"
+		 */
+		function matrixTable(rows: number, cols: number) : string {
+			let formula = ""; 
+			for (let r = 1; r <= rows; r++) {
+				for (let c = 1; c <= cols; c++) { 
+					eval("formula = formula + document.formMATRIX.a_" + r + c + ".value"); 
+					if (c < cols) formula += " & "; 
+				}
+				if (r < rows) formula += " \\\\ ";
+			}
+			
+			return formula;
+		}
+		
+		/**
+		 * Build Left bracket. Logic unclear, but unchanged.
+		 */
+		function leftBracket(left: string) : string {
+			let lbr = ""; 
+			if (left != "{:") lbr += "\\left "; 
+			if (left == "{" || left == "}") lbr += "\\"; 
+			if (left == "||") lbr += "\\|"; 
+			if (left == "(:") lbr += "\\langle"; 
+			if (left == ":)") lbr += "\\rangle"; 
+			if (left != "{:" && left != "||" && left != ":)" && left != "(:") {
+				lbr += left;
+			}
+			return lbr; 
+		}
+	
+		/**
+		 * Build Right bracket. Logic unclear, but unchanged.
+		 */
+		function rightBracket(right: string) : string {
+			let rbr = ""; 
+			if (right != ":}") rbr += " \\right "; 
+			if (right == "}" || right == "{") rbr += "\\";
+			if (right == "||") rbr += "\\|"; 
+			if (right == "(:") rbr += "\\langle"; 
+			if (right == ":)") rbr += "\\rangle"; 
+			if (right != ":}" && right != "||" && right != ":)" && right != "(:") {
+				rbr += right;
+			}
+			return rbr;			
+		}
+		
+		// build the final Matrix by adding brackets
+		let matrix = leftBracket(left);		
+		matrix += " \\begin{matrix} "; 
+		matrix += matrixTable(rows, cols); 
+		matrix += " \\end{matrix} ";
+		matrix += rightBracket(right); 
+		matrix += " "; 
+		vme.insert(matrix);
+		
+		return true;
 	}
 }
 
@@ -891,16 +1063,18 @@ export class KIHPanels {
 	parameters = null;
 	localizer = null;
 	parser = null;
+	math = null;
 	messager = null;
 	panels = { };
 	
 	/**
 	 * Constructor
 	 */
-	constructor(parameters: any, localizer: any, parser: any) {
+	constructor(parameters: any, localizer: any, parser: any, math: any) {
 		this.parameters = parameters;
 		this.localizer = localizer;
 		this.parser = parser;
+		this.math = math;
 		this.messager = new Messager(localizer);
 	}
 	

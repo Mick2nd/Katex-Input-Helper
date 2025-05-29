@@ -75,7 +75,7 @@ export class MathFormulae {
 					}
 				}
 				
-				katex.render(text, target, { throwOnError: false, strict: false, displayMode: displayMode, macros: { '\\box': '□' } });
+				katex.render(text, target, { throwOnError: true, strict: false, displayMode: displayMode, macros: { '\\box': '□' } });
 			} else {
 				target.innerTEXT = text;
 			}
