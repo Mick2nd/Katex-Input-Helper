@@ -1,1 +1,2 @@
-(self.webpackChunkjoplin_plugin_katex_input_helper=self.webpackChunkjoplin_plugin_katex_input_helper||[]).push([[3719],{7304:(p,e,l)=>{l.r(e)}}]);
+/*! For license information please see rtl.js.LICENSE.txt */
+(self.webpackChunkjoplin_plugin_katex_input_helper=self.webpackChunkjoplin_plugin_katex_input_helper||[]).push([["rtl"],{"./src/assets/js/jquery-easyui-MathEditorExtend/themes/rtl.css":(__unused_webpack_module,__webpack_exports__,__webpack_require__)=>{eval("__webpack_require__.r(__webpack_exports__);\n// extracted by mini-css-extract-plugin\n\n\n//# sourceURL=webpack://joplin-plugin-katex-input-helper/./src/assets/js/jquery-easyui-MathEditorExtend/themes/rtl.css?")}}]);

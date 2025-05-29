@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkjoplin_plugin_katex_input_helper=self.webpackChunkjoplin_plugin_katex_input_helper||[]).push([[3574],{3574:(p,e,n)=>{p.exports=n.p+"icons/de.png"}}]);
