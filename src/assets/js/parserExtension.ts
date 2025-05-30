@@ -1,10 +1,13 @@
+import { injectable } from 'inversify';
+import { IParser } from './interfaces';
 
 /**
  * A the jquery parser using parser wrapper.
  * 
  * To be preferred : the asynchronous version with xxxAsync.
  */
-export class ParserExtension {
+@injectable()
+export class ParserExtension implements IParser {
 	queue = [];
 	item = null;
 	async = false;
@@ -16,7 +19,7 @@ export class ParserExtension {
 	 * 
 	 * @param async - to be true if async mode is used (preferred)
 	 */
-	constructor(async = false) {
+	constructor(async = true) {
 		this.async = async;
 	}
 	

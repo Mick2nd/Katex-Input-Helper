@@ -2,6 +2,9 @@ import { Messager, Utilities } from './helpers';
 import { CategoriesTree } from './categoriesTree';
 import { FileHandler } from './fileHandling';
 
+import { inject, injectable } from 'inversify';
+import { ILocalizer, localizerId, IParser, parserId, IMath, mathId, parametersId } from './interfaces';
+
 /**
  * The base class of all Panels, Dialogs, Windows.
  */
@@ -64,6 +67,10 @@ export class KIHPanel {
 		$(`#${this.id}`).dialog(this.handlers)
 	}
 	
+	update(...params) {
+		
+	}
+	
 	/**
 	 * Shows the *Panel* and resizes (Position, Size) it to stored values.
 	 */
@@ -118,15 +125,24 @@ export class KIHPanel {
 		let htmlString = (($(html).html(located)[0] as any) as Element).outerHTML;		// insert it into orginal html
 		return htmlString;
 	}
-	
+
+	/**
+	 * Sets the Focus to Editor window thus enabling key clicks.
+	 */	
 	protected focus() {
 		this.parent.math.codeMirror.focus();
 	}
 
+	/**
+	 * Updates the output area with Editor content.
+	 */
 	protected updateOutput() {
 		this.parent.math.updateOutput();
 	}
 	
+	/**
+	 * Inserts a string into the Editor.
+	 */
 	protected insert(b: string) {
 		this.parent.math.insert(b);
 		this.focus();
@@ -223,6 +239,9 @@ export class KIHWindow extends KIHPanel {
 	}
 }
 
+/**
+ * The Matrix window is a special Window with extra functionality.
+ */
 export class MatrixWindow extends KIHWindow {
 	
 	/**
@@ -235,7 +254,7 @@ export class MatrixWindow extends KIHWindow {
 	/**
 	 * Initialises the Matrix window.
 	 */
-	override async initialise(_dummy: any) : Promise<void> {
+	override async initialise(...params) : Promise<void> {
 		await super.initialise();
 
 		let vme = this;
@@ -256,7 +275,11 @@ export class MatrixWindow extends KIHWindow {
 			vme.updateMatrixWindow(); 
 		});
 		
-		this.updateMatrixWindow(3, 3);
+	}
+	
+	override update(...params) {
+		let [ rows, cols ] = params;	
+		this.updateMatrixWindow(rows, cols);
 	}
 
 	/**
@@ -291,8 +314,8 @@ export class MatrixWindow extends KIHWindow {
 		// adapt the size of this wMATRIX window to fit the content
 		let width = 20 + $("#tableMATRIX").width(); 
 		let height = 100 + $("#tableMATRIX").height(); 
-		if (width < 240) width = 240; 
-		if (height < 160) height = 160;
+		width = Math.max(width, 260); 
+		height = Math.max(height, 160);
 		
 		let options = $('#wMATRIX').dialog('options');
 		$('#wMATRIX').dialog({ 
@@ -338,34 +361,37 @@ export class MatrixWindow extends KIHWindow {
 		}
 		
 		/**
-		 * Build Left bracket. Logic unclear, but unchanged.
+		 * Build Left bracket. Changed and tested.
 		 */
 		function leftBracket(left: string) : string {
-			let lbr = ""; 
-			if (left != "{:") lbr += "\\left "; 
-			if (left == "{" || left == "}") lbr += "\\"; 
-			if (left == "||") lbr += "\\|"; 
-			if (left == "(:") lbr += "\\langle"; 
-			if (left == ":)") lbr += "\\rangle"; 
-			if (left != "{:" && left != "||" && left != ":)" && left != "(:") {
-				lbr += left;
+			let lbr = "";
+			switch (left) {
+				case "{:": break;
+				case "{":
+				case "}": lbr = `\\left\\${left}`; break; 
+				case "||": lbr = "\\left\\|"; break;
+				case "(:": lbr = "\\left\\langle"; break;
+				case ":)": lbr = "\\left\\rangle"; break;
+				default: lbr = `\\left${left}`
 			}
 			return lbr; 
 		}
 	
 		/**
-		 * Build Right bracket. Logic unclear, but unchanged.
+		 * Build Right bracket. Changed and tested.
 		 */
 		function rightBracket(right: string) : string {
-			let rbr = ""; 
-			if (right != ":}") rbr += " \\right "; 
-			if (right == "}" || right == "{") rbr += "\\";
-			if (right == "||") rbr += "\\|"; 
-			if (right == "(:") rbr += "\\langle"; 
-			if (right == ":)") rbr += "\\rangle"; 
-			if (right != ":}" && right != "||" && right != ":)" && right != "(:") {
-				rbr += right;
+			let rbr = "";
+			switch (right) {
+				case ":}": break;
+				case "{":
+				case "}": rbr = `\\right\\${right}`; break; 
+				case "||": rbr = "\\right\\|"; break;
+				case "(:": rbr = "\\right\\langle"; break;
+				case ":)": rbr = "\\right\\rangle"; break;
+				default: rbr = `\\right${right}`
 			}
+			
 			return rbr;			
 		}
 		
@@ -1059,6 +1085,7 @@ export class DynamicPanel extends KIHPanel {
  * This method performs an initialisation lazily and one time and can show the Panel repeatedly.
  * Client is the central *Katex Input Helper* instance.
  */
+@injectable()
 export class KIHPanels {
 	parameters = null;
 	localizer = null;
@@ -1070,7 +1097,12 @@ export class KIHPanels {
 	/**
 	 * Constructor
 	 */
-	constructor(parameters: any, localizer: any, parser: any, math: any) {
+	constructor(
+		@inject(parametersId) parameters: any, 
+		@inject(localizerId) localizer: ILocalizer, 
+		@inject(parserId) parser: IParser,
+		@inject(mathId) math: IMath
+	) {
 		this.parameters = parameters;
 		this.localizer = localizer;
 		this.parser = parser;
@@ -1082,9 +1114,9 @@ export class KIHPanels {
 		
 		if (!(id in this.panels)) {
 			this.panels[id] = new ctor(id, this, ...params);
-			let [ initialiseSymbolContent ] = params;
-			await this.initialise(id, initialiseSymbolContent);
+			await this.initialise(id, ...params);
 		}
+		this.update(id, ...params);
 		await this.toggle(id);
 	}
 	
@@ -1098,6 +1130,10 @@ export class KIHPanels {
 
 	async toggle(id: string) {
 		await this.panels[id].toggle();
+	}
+	
+	update(id: string, ...params) {
+		this.panels[id].update(...params);
 	}
 }
 

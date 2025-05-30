@@ -7,7 +7,7 @@
  * To use it on other terms please contact us: info@jeasyui.com
  *
  */
-(function($){
+export default(function($){
 $.fn.navpanel=function(_1,_2){
 if(typeof _1=="string"){
 var _3=$.fn.navpanel.methods[_1];

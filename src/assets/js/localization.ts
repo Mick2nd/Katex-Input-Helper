@@ -1,3 +1,5 @@
+import { injectable } from 'inversify';
+import { ILocalizer } from './interfaces';
 import { Observable } from "./patterns/observable";
 
 /**
@@ -5,7 +7,8 @@ import { Observable } from "./patterns/observable";
  * 
  * This uses an Observable as it recognizes the change of Language and notifies its observers.
  */
-export class Localizer {
+@injectable()
+export class Localizer implements ILocalizer {
 	
 	current = null;
 	fallback = null;
@@ -114,7 +117,7 @@ export class Localizer {
 	
 	/**
 	 * Assembles the content of the Language selection dialog using the existing language 
-	 * 			 files.
+	 * files.
 	 */
 	async buildLocalTypes() {
 		let html = "<fieldset dir='ltr'>"; 

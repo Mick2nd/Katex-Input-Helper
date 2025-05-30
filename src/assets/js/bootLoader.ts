@@ -7,7 +7,7 @@ import './jquery-easyui/datagrid-dnd';
 import './jquery-easyui/datagrid-filter';
 import './jquery-easyui/datagrid-cellediting';
 
-import platform from 'platform';
+import MobileDetect from 'mobile-detect';
 const CodeMirror = (await import('codemirror')).default;
 
 import { Observable } from './patterns/observable';
@@ -21,15 +21,20 @@ import { FileHandler } from './fileHandling';
 import { CategoriesTree } from './categoriesTree';
 import { DynamicPanel } from './panels';
 
+import { injectable } from 'inversify';
+import { container } from './container';
+import { IBootLoader, IKatexInputHelper, katexInputHelperId } from './interfaces';
+
 /**
  * The boot loader of the Katex Input Helper.
  * 
  * It serves as entry point of the application.
  */
-export class BootLoader {
+@injectable()
+export class BootLoader implements IBootLoader {
 	
 	baseLocation = null;
-	vme = null;
+	vme: IKatexInputHelper = null;
 	katex = null;
 	
 	/**
@@ -96,18 +101,13 @@ export class BootLoader {
 	 * 
 	 * @returns - Flag indicating a Mobile device
 	 */
-	get isMobile() : boolean {
-		// Solution from Internet ... does not work
-		// Check for Samsung device ... good enough to detect Samsung Internet Browser
-		// let mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-		// let mobile = /Samsung/i.test(navigator.userAgent);
-		// let isMobile = ('ontouchstart' in document.documentElement && /mobi/i.test(navigator.userAgent)) || mobile ;
-		// let mobile = 
-		//	navigator.userAgentData?.mobile ?? 
-		//	/mobi|ios|arm/i.test(navigator.platform);
-		let mobile = /Android|iOS|Windows Phone/i.test(platform.os.family);
+	platformInfo() : any {
+		// Not reliable -> overridden in app
+		let md = new MobileDetect(navigator.userAgent);
+		let mobile = md.mobile() != null;
+		let osFamily = md.os() ?? 'desktop';
 		 
-		return mobile;
+		return { isMobile: mobile, osFamily: osFamily };
 	}
 	
 	/**
@@ -116,11 +116,10 @@ export class BootLoader {
 	 * This is the true application logic.
 	 * 
 	 * @async implements the Promise contract
-	 * @param mobile - runs on mobile device, if true
 	 */
-	async initApp(mobile: boolean) {
+	async initApp() {
 		try {
-			this.vme = new KatexInputHelper(mobile);
+			this.vme = container.get(katexInputHelperId);
 			window.vme = this.vme;											// prevents garbage collection?
 			await this.vme.initialise();
 			$('#myContainer').layout({fit: true});
@@ -139,16 +138,6 @@ export class BootLoader {
 		
 		this.katex = await import('katex/dist/katex');			// This version of import is essential for mhchem
 		await import('katex/dist/contrib/mhchem');
-		let mobile = this.isMobile;
-		
-		if (mobile) {
-			let opts = { assert: { 
-				type: 'css'
-			} };
-			// TODO: came up with ts. check!!
-			//await import('./jquery-easyui/jquery.easyui.mobile');
-			await import('./jquery-easyui/themes/mobile.css', opts);
-		}		
 		let counter = 20;
 		while (!this.presenceCheck(counter) && --counter >= 0) {
 			await this.setTimeoutAsync(100);
@@ -158,7 +147,7 @@ export class BootLoader {
 		await this.readyAsync();
 		console.debug('Promise check : document ready.');
 		
-		await this.initApp(mobile);
+		await this.initApp();
 		console.debug('Promise check : app started.');
 		this.check();
 	}
@@ -283,20 +272,6 @@ export class BootLoader {
 			`(${err}). \nPlease close it and open it again!`);
 	}
 }	
-
-// The main initialization logic
-if (!window.bootLoaderLoaded) {
-	window.bootLoaderLoaded = true;
-	let kihBootLoader = new BootLoader();
-	kihBootLoader.init1()
-	.then(() => {
-		if (!PRODUCTION) { kihBootLoader.check(); }
-	})
-	.catch(err => {
-		console.error(`Error ${err} `, err);
-		kihBootLoader.fatal(err);
-	});
-}
 
 // This helps to import symbols in test suite
 try {

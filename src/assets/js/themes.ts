@@ -1,4 +1,5 @@
 import { Observable } from "./patterns/observable";
+import { IThemes } from './interfaces';
 
 /**
  * Themes or Styles support. This is an Observable.

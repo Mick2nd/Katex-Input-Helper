@@ -1,14 +1,19 @@
+import { inject, injectable } from 'inversify';
+import { ILocalizer, localizerId, IMessager, IUtilities } from './interfaces';
 
 /**
  * Encapsulates the jquery messager with frequently used options.
  */
-export class Messager {
+@injectable()
+export class Messager implements IMessager {
 	localizer = null;
 	
 	/**
 	 * Constructor, localizer is injected.
 	 */
-	constructor(localizer: any) {
+	constructor(
+		@inject(localizerId) localizer: ILocalizer
+	) {
 		this.localizer = localizer;
 	}
 	
@@ -45,13 +50,16 @@ export class Messager {
 /**
  * A Utilities class.
  */
-export class Utilities {
+@injectable()
+export class Utilities implements IUtilities {
 	localizer = null;
 		
 	/**
 	 * Constructor, localizer is injected.
 	 */
-	constructor(localizer: any) {
+	constructor(
+		@inject(localizerId) localizer: any
+	) {
 		this.localizer = localizer;
 	}
 	

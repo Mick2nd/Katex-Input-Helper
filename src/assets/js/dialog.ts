@@ -4,15 +4,21 @@ const CodeMirror = (await import('codemirror')).default;
 await import('codemirror/mode/stex/stex');						// manual recommendation
 
 import { VKI_init } from './keyboard/keyboard';
-import { ParametersProxy } from "./parameters";
-import { Localizer } from './localization';
-import { Themes } from './themes';
-import { Messager, Utilities } from './helpers';
-import { ParserExtension } from './parserExtension';
-import { MathFormulae } from './math';
-import { KIHPanels, DynamicPanel, KIHMoreDialog, KIHWindow, UnicodeWindow, MatrixWindow } from "./panels";
+import { DynamicPanel, KIHMoreDialog, KIHWindow, UnicodeWindow, MatrixWindow } from "./panels";
 import { FileHandler } from "./fileHandling";
 
+import { inject } from 'inversify';
+import { 
+	IKatexInputHelper, 
+	ILocalizer, localizerId,
+	IMessager, messagerId, 
+	platformInfoId, 
+	IUtilities, utilitiesId, 
+	parametersId, 
+	IThemes, themesId, 
+	IParser, parserId, 
+	IMath, mathId,
+	IPanels, panelsId } from './interfaces';
 
 let console: any; 
 if (window.console) console = window.console; else console = { log: function(msg) { }, error: function(msg) { } }; 
@@ -119,7 +125,7 @@ class Documentations {
 /**
  * The main class Katex Input Helper
  */
-export class KatexInputHelper {
+export class KatexInputHelper implements IKatexInputHelper {
 
 	versions = null;
 	codeType = 'Latex'; 
@@ -130,7 +136,7 @@ export class KatexInputHelper {
 	textareaID = null; 
 	codeMirrorEditor = null;
 	codeMirrorTheme = '';
-	mobile = false;
+	platformInfo = null;
 	symbolPanelsLoaded = []; 
 	latexMathjaxCodesListLoaded = false; 
 	uniCodesListLoaded = false; 
@@ -150,13 +156,13 @@ export class KatexInputHelper {
 	rtlStyle = 'ltr';
 	location = "";
 	documentations = null;
-	localizer = null;
+	localizer: ILocalizer = null;
 	themes = null;
 	math = null;
 	parameters = null;
 	utilities = null;
 	messager = null;
-	panels = null;
+	panels: IPanels = null;
 	useEasyLoader = true;
 	baseLocation = "";
 	fromContextMenu = false;
@@ -168,11 +174,21 @@ export class KatexInputHelper {
 	/**
 	 * Constructor
 	 */
-	constructor(mobile = false) {
+	constructor(
+		@inject(parametersId) parameters: any,
+		@inject(localizerId) localizer: ILocalizer,
+		@inject(messagerId) messager : IMessager,
+		@inject(utilitiesId) utilities : IUtilities,
+		@inject(themesId) themes : IThemes,
+		@inject(parserId) parser : IParser,
+		@inject(mathId) math : IMath,
+		@inject(panelsId) panels : IPanels,
+		@inject(platformInfoId) platformInfo : any
+	) {
 		let vme = this;
 		window.vme = this;
 		globalThis.vme = this;
-		this.mobile = mobile;
+		this.platformInfo = platformInfo;
 	
 		$('body').on('error', (event) => {
 			console.error(`Error : %O`, event);
@@ -199,15 +215,15 @@ export class KatexInputHelper {
 			}
 		};
 		
+		this.parameters = parameters;
+		this.localizer = localizer;
+		this.messager = messager;
+		this.utilities = utilities;
+		this.themes = themes;
+		this.parser = parser;
+		this.math = math;					// code mirror per method injection
+		this.panels = panels;
 		this.documentations = new Documentations(false, this.baseLocation);
-		this.parameters = ParametersProxy();
-		this.localizer = new Localizer();
-		this.messager = new Messager(this.localizer);
-		this.utilities = new Utilities(this.localizer);
-		this.themes = new Themes();
-		this.parser = new ParserExtension(true);
-		this.math = new MathFormulae(false, this.localizer, null, this.parameters, this.parser);	// code mirror per method injection
-		this.panels = new KIHPanels(this.parameters, this.localizer, this.parser, this.math);
 
 		this.mathTextInput = document.getElementById('mathTextInput'); 
 		this.mathVisualOutput = document.getElementById('mathVisualOutput'); 
@@ -297,10 +313,21 @@ export class KatexInputHelper {
 
 		let vme = this;
 		this.versions = await import( /* webpackInclude: /\.json$/ */ './versions.json');
-		this.addBuild();
 		
 		this.parser.initialise();		
 		await this.parameters.queryParameters();							// from Plugin		
+
+		// Query string may be a better solution than detection
+		this.platformInfo = { isMobile: this.parameters.isMobile, osFamily: 'Unknown' };
+		this.addBuild();
+		
+		if (this.parameters.isMobile) {
+			let opts = { assert: { 
+				type: 'css'
+			} };
+			await import('./jquery-easyui/themes/mobile.css', opts);
+			let mob = await import('./jquery-easyui/jquery.easyui.mobile');
+		}
 
 		// IN QUESTION
 		await vme.initialiseCodeMirror();
@@ -396,11 +423,11 @@ export class KatexInputHelper {
 			indentUnit: 4, 
 			indentWithTabs: true, 
 			theme: "default",
-			inputStyle: vme.mobile ? 'contenteditable' : 'textarea'
+			inputStyle: vme.platformInfo.isMobile ? 'contenteditable' : 'textarea'
 		}); 
 		vme.codeMirrorEditor.on("change", function() { vme.autoUpdateOutput(); }); 
 		
-		if(!vme.mobile) {
+		if(!vme.platformInfo.isMobile) {
 			/*	The context menu appears but throws on click or mouse move afterwards:
 				NO OWNER.
 			 */
@@ -511,7 +538,7 @@ export class KatexInputHelper {
 					case "mEDITOR_PARAMETERS": await vme.openWindow('wEDITOR_PARAMETERS'); break; 
 					case "mSTYLE_CHOISE": await vme.openWindow('wSTYLE_CHOISE'); break; 
 					case "mLANGUAGE_CHOISE": await vme.openWindow('wLANGUAGE_CHOISE'); break; 
-					case "mMATRIX": vme.panels.showWindowGeneric(MatrixWindow, 'wMATRIX'); break; 
+					case "mMATRIX": vme.panels.showWindowGeneric(MatrixWindow, 'wMATRIX', 3, 3); break; 
 					case "mCOMMUTATIVE_DIAGRAM": await vme.initialiseUImoreDialogs("f_COMMUTATIVE_DIAGRAM"); break; 
 					case "mCHEMICAL_FORMULAE": await vme.initialiseUImoreDialogs("f_CHEMICAL_FORMULAE"); break; 
 					case "mSAVE_EQUATION": vme.saveEquationFile(); break; 
@@ -822,6 +849,16 @@ export class KatexInputHelper {
 			await this.initialiseSymbolContent("cLATEX_CODES_LIST"); 
 			this.latexMathjaxCodesListLoaded = true;
 		}
+	}
+
+	/**
+	 * Opens the Matrix window with given rows and columns values.
+	 * 
+	 * @param rows - the number of matrix rows 
+	 * @param cols - the number of matrix columns
+	 */
+	showMatrixWindow(rows: number, cols: number) {
+		this.panels.showWindowGeneric(MatrixWindow, 'wMATRIX', rows, cols); 
 	}
 
 	/**
@@ -1347,9 +1384,10 @@ export class KatexInputHelper {
 	addBuild() {
 		const heading = $('h3').text();
 		const build = `build ${String(this.versions.build).padStart(4, '0')}`;
-		const platform = `${this.mobile ? 'mobile' : 'desktop'}`;
+		const mobile = `${this.platformInfo.isMobile ? 'mobile' : 'desktop'}`;
+		const osFamily = this.platformInfo.osFamily;
 		if (!PRODUCTION) {
-			$('h3').text(`${heading} : ${build} on ${platform}`);
+			$('h3').text(`${heading} : ${build} on ${mobile}`);
 		}
 	}
 }

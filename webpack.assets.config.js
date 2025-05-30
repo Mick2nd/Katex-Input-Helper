@@ -212,7 +212,7 @@ export default (env) => {
 		},
 		plugins: pluginsConfig(env),
 		entry: [
-			'./src/assets/js/bootLoader.ts',
+			'./src/assets/js/container.ts',
 		],
 		output: {
 			clean: true,

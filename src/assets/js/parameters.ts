@@ -96,6 +96,19 @@ export class KIHParameters {
 			console.warn(`The "Katex Input Helper" plugin did not return a response to get parameters `);
 		}
 	}
+	
+	/**
+	 * Returns true for web variant with query string mobile=true
+	 */
+	get isMobile() : boolean {
+		if (this.mode != 'web') { return false; }
+		
+		let searchParams = new URLSearchParams(window.location.search);
+		if (searchParams.has('mobile')) {
+			return searchParams.get('mobile') == 'true';
+		}
+		return false;
+	}
 
 	/**
 	 * Resets all window positions. Defaults will be activated.

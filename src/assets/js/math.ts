@@ -2,12 +2,16 @@ import { Messager } from './helpers';
 const katex = await import('katex/dist/katex');			// This version of import is essential for mhchem
 await import('katex/dist/contrib/mhchem');
 
+import { inject, injectable } from 'inversify';
+import { IMath, localizerId, ILocalizer, parametersId, parserId, IParser } from './interfaces';
+
 /**
  * Class responsible for Math Formula handling.
  * The framework supported here is Katex.
  * CodeMirror is the only supported Editor case.
  */
-export class MathFormulae {
+@injectable()
+export class MathFormulae implements IMath {
 	
 	mathVisualOutput = null;
 	mathTextInput = null;
@@ -15,7 +19,7 @@ export class MathFormulae {
 	encloseAllFormula = false; 
 	menuupdateType = true;
 	localizer = null;
-	codeMirror = null;
+	codeMirror = null;					// per method injection
 	parameters = null;
 	parser = null;
 	dynamicPanels = [];
@@ -24,11 +28,13 @@ export class MathFormulae {
 	/**
 	 * Constructor.
 	 */
-	constructor(runNotKatex: boolean, localizer: any, codeMirror: any, parameters: any, parser: any) {
+	constructor(
+		@inject(localizerId) localizer: ILocalizer, 
+		@inject(parametersId) parameters: any, 
+		@inject(parserId) parser: IParser
+	) {
 		this.mathTextInput = document.getElementById('mathTextInput'); 
 		this.mathVisualOutput = document.getElementById('mathVisualOutput');
-		this.codeMirror = codeMirror;
-		this.runNotKatex = runNotKatex;
 		this.localizer = localizer;
 		this.parameters = parameters;
 		this.parser = parser;

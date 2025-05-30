@@ -8,7 +8,9 @@
 		"baseUrl": ".",
 		"esModuleInterop": true,
 		"moduleResolution": "node",
-		"resolveJsonModule": true
+		"resolveJsonModule": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true
 	},
 	"files": ["js/definitions.ts", "js/bootLoader.ts"],
 	"extends": "../../tsconfig.json"
