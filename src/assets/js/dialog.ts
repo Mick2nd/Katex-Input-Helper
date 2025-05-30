@@ -4,7 +4,7 @@ const CodeMirror = (await import('codemirror')).default;
 await import('codemirror/mode/stex/stex');						// manual recommendation
 
 import { VKI_init } from './keyboard/keyboard';
-import { DynamicPanel, KIHMoreDialog, KIHWindow, UnicodeWindow, MatrixWindow } from "./panels";
+import { DynamicPanel, KIHMoreDialog, KIHWindow, UnicodeWindow, MatrixWindow, InformationWindow } from "./panels";
 import { FileHandler } from "./fileHandling";
 
 import { inject } from 'inversify';
@@ -666,8 +666,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * @param numTab - number (index) of the tab (0..3)
 	 */
 	async openInformationTab(numTab: number) { 
-		await this.openWindow('wINFORMATIONS');
-		$('#tINFORMATIONS').tabs('select', numTab); 
+		this.panels.showWindowGeneric(InformationWindow, 'wINFORMATIONS', numTab); 
 	}
 	
 	/**

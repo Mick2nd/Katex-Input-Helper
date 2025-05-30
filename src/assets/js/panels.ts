@@ -240,6 +240,53 @@ export class KIHWindow extends KIHPanel {
 }
 
 /**
+ * The Information window. Additionally to an ordinary window this also handles
+ * tabs (tab is here a tab index).
+ */
+export class InformationWindow extends KIHWindow {
+	tab: number = 0;
+	tabChanged = false;
+
+	/**
+	 * Ctor.
+	 */
+	constructor(panelId: string, parent: any, ...params: any) {
+		super(panelId, parent, params);
+	}
+
+	/**
+	 * Initialises the Matrix window.
+	 */
+	override async initialise(...params) : Promise<void> {
+		await super.initialise();
+		let [ tab ] = params;
+		this.tab = tab;
+	}
+	
+	/**
+	 * The update method handles tab changes. This merely sets a flag indicating
+	 * the change.
+	 */
+	override update(...params) {
+		let [ tab ] = params;
+		this.tabChanged = tab != this.tab;
+		this.tab = tab;
+	}
+	
+	/**
+	 * The toggle method switches the isOpen state, but only if no tab switch took
+	 * place. In this case the tab is switched.
+	 */
+	override async toggle() {
+		if (!this.tabChanged || !this.isOpen) {
+			await super.toggle();
+		}
+		$('#tINFORMATIONS').tabs('select', this.tab); 			
+		this.tabChanged = false;
+	}
+}
+
+/**
  * The Matrix window is a special Window with extra functionality.
  */
 export class MatrixWindow extends KIHWindow {
@@ -408,6 +455,9 @@ export class MatrixWindow extends KIHWindow {
 	}
 }
 
+/**
+ * Represents the Unicode window.
+ */
 export class UnicodeWindow extends KIHWindow {
 
 	uniCodesListLoaded = false;

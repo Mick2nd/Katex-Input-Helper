@@ -97,6 +97,16 @@ The custom equations dialog with categories tree
 
 ## Release Notes
 
+### 2.1.0
+
+**New features**
+
+- The plug-in was migrated to typescript as programming language.
+- A dependency injection framework was introduced.
+- The handling of the information window was improved.
+- The web version of this app now supports a mobile parameter in the query string.
+- Extensive re-factorings of the source code to improve the code structure.
+
 ### 2.0.1
 
 **New features**
