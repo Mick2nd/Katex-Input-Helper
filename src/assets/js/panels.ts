@@ -361,7 +361,7 @@ export class MatrixWindow extends KIHWindow {
 		// adapt the size of this wMATRIX window to fit the content
 		let width = 20 + $("#tableMATRIX").width(); 
 		let height = 100 + $("#tableMATRIX").height(); 
-		width = Math.max(width, 260); 
+		width = Math.max(width, 280); 
 		height = Math.max(height, 160);
 		
 		let options = $('#wMATRIX').dialog('options');
@@ -471,9 +471,9 @@ export class UnicodeWindow extends KIHWindow {
 	/**
 	 * Initialises the Unicode List.
 	 */
-	override async initialise(initialiseSymbolContent: any) : Promise<void> {
+	override async initialise(...params: any) : Promise<void> {
 		await super.initialise();
-		this.initialiseSymbolContent = initialiseSymbolContent;
+		[ this.initialiseSymbolContent ] = params;
 		
 		let vme = this;
 		function prependNumber(j: number) {

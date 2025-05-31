@@ -104,7 +104,8 @@ The custom equations dialog with categories tree
 - The plug-in was migrated to typescript as programming language.
 - A dependency injection framework was introduced.
 - The handling of the information window was improved.
-- The web version of this app now supports a mobile parameter in the query string.
+- The web version of this app now supports a mobile parameter in the query string. But this is 
+  merely an experimental feature in an early stage.
 - Extensive re-factorings of the source code to improve the code structure.
 
 ### 2.0.1

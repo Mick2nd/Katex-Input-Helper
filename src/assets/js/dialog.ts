@@ -326,7 +326,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 				type: 'css'
 			} };
 			await import('./jquery-easyui/themes/mobile.css', opts);
-			let mob = await import('./jquery-easyui/jquery.easyui.mobile');
+			// Throws in matrix window
+			//let mobile = await import('./jquery-easyui/jquery.easyui.mobile');
 		}
 
 		// IN QUESTION
@@ -429,7 +430,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		
 		if(!vme.platformInfo.isMobile) {
 			/*	The context menu appears but throws on click or mouse move afterwards:
-				NO OWNER.
+				NO OWNER => special handling.
 			 */
 			$(".CodeMirror").on('contextmenu', (event) => vme.onContextMenu('#mINSERT', event)); 
 		} else {
@@ -547,7 +548,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 					// No longer functional
 					//case "mMATH_ML": vme.viewMathML(vme.mathVisualOutput.id); break; 
 					// TODO: complete transfer of functionality to Panels
-					case "mUNICODES_LIST": await vme.panels.showWindowGeneric(UnicodeWindow, 'wUNICODES_LIST'); break; 
+					case "mUNICODES_LIST": await vme.panels.showWindowGeneric(UnicodeWindow, 'wUNICODES_LIST', vme.initialiseSymbolContent.bind(vme)); break; 
 					case "mLATEX_CODES_LIST": await vme.openWindow('wLATEX_CODES_LIST'); await vme.initialiseLatexMathjaxCodesList(); break; 
 					case "mLANG_RESSOURCE_LIST": await vme.openWindow('wLANGUAGE_LIST'); await vme.initialiseLangRessourcesList(); break; 
 					case "mLATEX_DOCUMENTATION": vme.documentations.showLatexDocumentation(); break;

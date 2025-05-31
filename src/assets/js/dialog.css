@@ -319,7 +319,7 @@ h3 {
 	}
 	#cUNICODES_VALUES {
 		float: right; 
-		width: 170px; 
+		width: 180px; 
 		height: calc(100% - 60px); 
 		overflow: auto;
 		td, th {
