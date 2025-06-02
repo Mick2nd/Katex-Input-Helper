@@ -351,6 +351,8 @@ export class KIHParameters {
 			} catch(e) {
 				console.error(`Exception resizing panel ${id} : ${e}`);
 			}
+		} else {
+			console.warn(`Missing id in parameters : ${id}`);
 		}
 	}
 	

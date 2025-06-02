@@ -6,7 +6,7 @@ import { IThemes } from './interfaces';
  * 
  * @extends Observable
  */
-export class Themes extends Observable {
+export class Themes extends Observable implements IThemes {
 	dir = "";
 	cssActive = false;
 	activeTheme = "";

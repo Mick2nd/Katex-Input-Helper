@@ -1,9 +1,10 @@
-import { Messager } from './helpers';
 const katex = await import('katex/dist/katex');			// This version of import is essential for mhchem
 await import('katex/dist/contrib/mhchem');
+const CodeMirror = (await import('codemirror')).default;
+await import('codemirror/mode/stex/stex');						// manual recommendation
 
 import { inject, injectable } from 'inversify';
-import { IMath, localizerId, ILocalizer, parametersId, parserId, IParser } from './interfaces';
+import { IMath, localizerId, ILocalizer, parametersId, parserId, IParser, ICodeMirror, messagerId, IMessager } from './interfaces';
 
 /**
  * Class responsible for Math Formula handling.
@@ -19,7 +20,7 @@ export class MathFormulae implements IMath {
 	encloseAllFormula = false; 
 	menuupdateType = true;
 	localizer = null;
-	codeMirror = null;					// per method injection
+	codeMirror: ICodeMirror = null;					// per method injection
 	parameters = null;
 	parser = null;
 	dynamicPanels = [];
@@ -31,21 +32,45 @@ export class MathFormulae implements IMath {
 	constructor(
 		@inject(localizerId) localizer: ILocalizer, 
 		@inject(parametersId) parameters: any, 
-		@inject(parserId) parser: IParser
+		@inject(parserId) parser: IParser,
+		@inject(messagerId) messager: IMessager
 	) {
 		this.mathTextInput = document.getElementById('mathTextInput'); 
 		this.mathVisualOutput = document.getElementById('mathVisualOutput');
 		this.localizer = localizer;
 		this.parameters = parameters;
 		this.parser = parser;
-		this.messager = new Messager(localizer);
+		this.messager = messager;
+		this.codeMirror = this.codeMirrorEditor;
 	}
-	
+
 	/**
-	 * Sets the Code Mirror Editor instance (method injection)
+	 * Instantiates the Code Mirror editor. Initialization is postponed.
 	 */
-	setEditorInstance(codeMirror: any) {
-		this.codeMirror = codeMirror;
+	get codeMirrorEditor() : ICodeMirror {
+		const codeMirrorEditor = CodeMirror.fromTextArea($("#mathTextInput")[0] as HTMLTextAreaElement, { 
+			mode: "text/x-latex", 
+			autofocus: true, 
+			showCursorWhenSelecting: true, 
+			lineNumbers: true, 
+			lineWrapping: true, 
+			tabSize: 4,
+			indentUnit: 4, 
+			indentWithTabs: true, 
+			theme: "default",
+			inputStyle: "textarea"
+		}); 
+		
+		(codeMirrorEditor as ICodeMirror).version = CodeMirror.version;
+		let panelOptions = $('#divMathTextInput').panel('options');
+		panelOptions.onResize = function(width: string|number, height: string|number) {
+			try {
+				codeMirrorEditor.setSize(width, height);
+				codeMirrorEditor.refresh();
+			} catch(e) { }
+		};
+		
+		return codeMirrorEditor as ICodeMirror;
 	}
 	
 	/**

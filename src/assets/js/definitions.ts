@@ -57,3 +57,7 @@ interface Document {
 	createEventObject?: any;
 	formMATRIX?: any;
 }
+
+interface EditorFromTextArea {
+	version?: string;
+}

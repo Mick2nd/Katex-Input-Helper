@@ -1,9 +1,9 @@
-import { Messager, Utilities } from './helpers';
 import { CategoriesTree } from './categoriesTree';
 import { FileHandler } from './fileHandling';
 
-import { inject, injectable } from 'inversify';
-import { ILocalizer, localizerId, IParser, parserId, IMath, mathId, parametersId } from './interfaces';
+import { inject, injectable, injectFromBase } from 'inversify';
+import { ILocalizer, IParser, IMath, utilitiesId, IUtilities, categoriesTreeId, ICategoriesTree,
+	IMessager, dynamicParametersId, panelFactoryId } from './interfaces';
 
 /**
  * The base class of all Panels, Dialogs, Windows.
@@ -13,14 +13,28 @@ export class KIHPanel {
 	parent = null;
 	initialised = false;
 	isOpen = false;
+	math: IMath = null;;
+	localizer: ILocalizer = null;
+	parameters: any = null;
+	messager: IMessager = null;
+	parser: IParser = null;
 	
 	/**
 	 * Constructor
+	 *
 	 */
-	constructor(id: string, parent: any) {
+	constructor(
+		@inject(dynamicParametersId)params: any
+	) {	
+		const [ math, localizer, parameters, messager, parser, id, parent ] = params;
+		this.math = math;
+		this.localizer = localizer;
+		this.parameters = parameters;
+		this.messager = messager;
+		this.parser = parser;
 		this.id = id;
 		this.parent = parent;
-	}
+	}	
 	
 	/**
 	 * The handler of move events, invoked when the panel is moved.
@@ -29,7 +43,7 @@ export class KIHPanel {
 	 */
 	onMove(left: number, top: number) { 
 		console.info(`Panel with id ${this.id} moved : ${left}, ${top}`);
-		this.parent.parameters.onPanelMove(this.id, left, top);
+		this.parameters.onPanelMove(this.id, left, top);
 	}
 	
 	/**
@@ -39,7 +53,7 @@ export class KIHPanel {
 	 */
 	onResize(width: number, height: number) {
 		console.info(`Panel with id ${this.id} resized : ${width}, ${height}`);
-		this.parent.parameters.onPanelResize(this.id, width, height);
+		this.parameters.onPanelResize(this.id, width, height);
 	}
 	
 	/**
@@ -67,7 +81,10 @@ export class KIHPanel {
 		$(`#${this.id}`).dialog(this.handlers)
 	}
 	
-	update(...params) {
+	/**
+	 * Virtual method. Updates a panel. F.i. used for Information Window.
+	 */
+	async update(...params) : Promise<void> {
 		
 	}
 	
@@ -83,11 +100,7 @@ export class KIHPanel {
 	 * Resizes this panel with the values in parameters.
 	 */
 	resize() {
-		if (this.id in this.parent.parameters) {
-			$(`#${this.id}`).panel('resize', this.parent.parameters[this.id]);
-		} else {
-			console.warn(`Missing id in parameters : ${this.id}`);
-		}
+		this.parameters.resizePanel(this.id);
 	}
 	
 	/**
@@ -121,7 +134,7 @@ export class KIHPanel {
 		let text = func.bind($(`#${id}`))('options')[option];							// do something to preserve the TITLE: this is an option
 		let html = $.parseHTML(text);													// parse it into html object
 		let key = $(html).attr('locate');												// extract the locate attribute
-		let located = this.parent.localizer.getLocalText(key);							// use it to get localized text
+		let located = this.localizer.getLocalText(key);									// use it to get localized text
 		let htmlString = (($(html).html(located)[0] as any) as Element).outerHTML;		// insert it into orginal html
 		return htmlString;
 	}
@@ -130,21 +143,21 @@ export class KIHPanel {
 	 * Sets the Focus to Editor window thus enabling key clicks.
 	 */	
 	protected focus() {
-		this.parent.math.codeMirror.focus();
+		this.math.codeMirror.focus();
 	}
 
 	/**
 	 * Updates the output area with Editor content.
 	 */
 	protected updateOutput() {
-		this.parent.math.updateOutput();
+		this.math.updateOutput();
 	}
 	
 	/**
 	 * Inserts a string into the Editor.
 	 */
 	protected insert(b: string) {
-		this.parent.math.insert(b);
+		this.math.insert(b);
 		this.focus();
 	}	
 }
@@ -157,15 +170,8 @@ export class KIHPanel {
  * 
  * @extends KIHPanel
  */
-export class KIHMoreDialog extends KIHPanel {
+@injectFromBase() export class KIHMoreDialog extends KIHPanel {
 	
-	/**
-	 * Constructor
-	 */
-	constructor(id: string, parent: any, ...params: any) {
-		super(id, parent);				
-	}
-
 	/**
 	 * Initialises (creates) the dialog.
 	 * 
@@ -196,15 +202,7 @@ export class KIHMoreDialog extends KIHPanel {
  * This represents windows like the Configuration Parameters window, the Language Configuration
  * window or the Theme (Style) selection window.
  */
-export class KIHWindow extends KIHPanel {
-
-	/**
-	 * Constructor
-	 */
-	constructor(id: string, parent: any, ...params: any) {
-		super(id, parent);
-				
-	}
+@injectFromBase() export class KIHWindow extends KIHPanel {
 	
 	/**
 	 * Initialises (creates) a window.
@@ -243,16 +241,9 @@ export class KIHWindow extends KIHPanel {
  * The Information window. Additionally to an ordinary window this also handles
  * tabs (tab is here a tab index).
  */
-export class InformationWindow extends KIHWindow {
+@injectFromBase() export class InformationWindow extends KIHWindow {
 	tab: number = 0;
 	tabChanged = false;
-
-	/**
-	 * Ctor.
-	 */
-	constructor(panelId: string, parent: any, ...params: any) {
-		super(panelId, parent, params);
-	}
 
 	/**
 	 * Initialises the Matrix window.
@@ -267,7 +258,7 @@ export class InformationWindow extends KIHWindow {
 	 * The update method handles tab changes. This merely sets a flag indicating
 	 * the change.
 	 */
-	override update(...params) {
+	override async update(...params) : Promise<void> {
 		let [ tab ] = params;
 		this.tabChanged = tab != this.tab;
 		this.tab = tab;
@@ -289,15 +280,9 @@ export class InformationWindow extends KIHWindow {
 /**
  * The Matrix window is a special Window with extra functionality.
  */
-export class MatrixWindow extends KIHWindow {
+@injectable() 
+@injectFromBase() export class MatrixWindow extends KIHWindow {
 	
-	/**
-	 * Ctor.
-	 */
-	constructor(panelId: string, parent: any, ...params: any) {
-		super(panelId, parent, params);
-	}
-
 	/**
 	 * Initialises the Matrix window.
 	 */
@@ -323,10 +308,13 @@ export class MatrixWindow extends KIHWindow {
 		});
 		
 	}
-	
-	override update(...params) {
+
+	/**
+	 * Updates a Panel with new data. Here used to set rows and columns.
+	 */	
+	override async update(...params) {
 		let [ rows, cols ] = params;	
-		this.updateMatrixWindow(rows, cols);
+		await this.updateMatrixWindow(rows, cols);
 	}
 
 	/**
@@ -355,7 +343,7 @@ export class MatrixWindow extends KIHWindow {
 		}
 		html += "</table>"; 
 		$("#showMATRIX").html(html); 
-		await this.parent.parser.parseAsync('#wMATRIX');										// after dynamically set the content
+		await this.parser.parseAsync('#wMATRIX');										// after dynamically set the content
 		$('#wMATRIX').dialog('open');
 		
 		// adapt the size of this wMATRIX window to fit the content
@@ -366,7 +354,7 @@ export class MatrixWindow extends KIHWindow {
 		
 		let options = $('#wMATRIX').dialog('options');
 		$('#wMATRIX').dialog({ 
-			title: vme.parent.localizer.getLocalText("MATRIX"), 
+			title: vme.localizer.getLocalText("MATRIX"), 
 			width: width, 
 			height: height,
 			left: options.left,									// HAS NO EFFECT !!
@@ -387,7 +375,7 @@ export class MatrixWindow extends KIHWindow {
 		let right = document.formMATRIX.rightbracketMATRIX.value; 
 		
 		if ((left == '{:') != (right == ':}')) {
-			this.parent.messager.show('KATEX', 'ONE_BRACKET_MISSING');
+			this.messager.show('KATEX', 'ONE_BRACKET_MISSING');
 			return false;
 		}
 		
@@ -458,15 +446,10 @@ export class MatrixWindow extends KIHWindow {
 /**
  * Represents the Unicode window.
  */
-export class UnicodeWindow extends KIHWindow {
+@injectFromBase() export class UnicodeWindow extends KIHWindow {
 
 	uniCodesListLoaded = false;
 	initialiseSymbolContent: any = null;
-		
-	constructor(panelId: string, parent: any, ...params: any) {
-		super(panelId, parent, params);
-		this.uniCodesListLoaded = false;
-	}
 
 	/**
 	 * Initialises the Unicode List.
@@ -538,7 +521,7 @@ export class UnicodeWindow extends KIHWindow {
 	 * 
 	 * @param i1 - start number
 	 * @param i2  - end number (inclusive)
-	 * @param breakFFFF - breaks rendering, TODO: default added, correct?
+	 * @param breakFFFF - breaks rendering above 0xFFFF
 	 */
 	private async setUniCodesValues(i1: number, i2: number, breakFFFF = false) {
 		/**
@@ -549,9 +532,9 @@ export class UnicodeWindow extends KIHWindow {
 		let html = ("<table border='1' cellspacing='0' style='border-spacing:0px;border-collapse:collapse;'>"); 
 		html += `
 			<tr>
-				<th><span locate='UNICODES_INPUT'>${this.parent.localizer.getLocalText("UNICODES_INPUT")}</span></th>
+				<th><span locate='UNICODES_INPUT'>${this.localizer.getLocalText("UNICODES_INPUT")}</span></th>
 				<th>HEXA</th>
-				<th><span locate='OUTPUT'>${this.parent.localizer.getLocalText("OUTPUT")}</span></th>
+				<th><span locate='OUTPUT'>${this.localizer.getLocalText("OUTPUT")}</span></th>
 			</tr>
 		`;
 		for (let i = i1; i <= i2; i++) { 
@@ -579,39 +562,29 @@ export class UnicodeWindow extends KIHWindow {
 /**
  * This class is solely responsible for the Dynamic Panel for Custom Equations.
  */
-export class DynamicPanel extends KIHPanel {
-	parent = null;
-	messager = null;
-	utilities = null;
-	panelId = "";
+@injectFromBase({extendProperties: false}) export class DynamicPanel extends KIHPanel {
+	
+	@inject(utilitiesId) utilities: IUtilities;
+	@inject(categoriesTreeId) categoriesTree: ICategoriesTree;
 	gridSelector = "";
 	gridSelectorOfCopy = "";
 	treeSelector = "";
 	initialised = false;
 	renderComplete = false;
 	sortOrderAsc = 'desc';
-	categoriesTree = null;
 	
 	/**
 	 * Constructor.
 	 */
-	constructor(panelId: string, parent: any, ...params: any) {
-		let [ math, ...rest ] = params;
-		console.debug(`Params math parameter: %O`, math);
-		super(panelId, parent);
-		this.panelId = panelId;
-		this.parent = math;
-		this.messager = new Messager(this.parent.localizer);
-		this.utilities = new Utilities(this.parent.localizer);
-		this.categoriesTree = new CategoriesTree();
-		this.gridSelector = `#${panelId} .easyui-datagrid`;
-		this.gridSelectorOfCopy = `#${panelId} table:not(.easyui-datagrid)`;
+	constructor(
+		@inject(dynamicParametersId)params: any
+	) {
+		super(params);
+		this.gridSelector = `#${this.id} .easyui-datagrid`;
+		this.gridSelectorOfCopy = `#${this.id} table:not(.easyui-datagrid)`;
 		this.treeSelector = `#categories`;
 		
-		this.parent.localizer.subscribe(this.onLocaleChanged.bind(this));
-		this.categoriesTree.nodeSelected.subscribe(this.onNodeSelected.bind(this));
-		this.categoriesTree.treeChanged.subscribe(this.onTreeChanged.bind(this));
-		this.categoriesTree.equationMoved.subscribe(this.onEquationMoved.bind(this));
+		this.localizer.subscribe(this.onLocaleChanged.bind(this));
 	}
 	
 	/**
@@ -660,6 +633,11 @@ export class DynamicPanel extends KIHPanel {
 	override async initialise(dummy: any = null) {
 		let inst = this;
 		
+		// subscribe to Tree observables here because in ctor property injection is done
+		this.categoriesTree.nodeSelected.subscribe(this.onNodeSelected.bind(this));
+		this.categoriesTree.treeChanged.subscribe(this.onTreeChanged.bind(this));
+		this.categoriesTree.equationMoved.subscribe(this.onEquationMoved.bind(this));
+		
 		await super.initialise();
 		await inst.initialiseDatagrid(`${inst.gridSelector}`);
 		await inst.customEquationsFromParameters();
@@ -672,11 +650,11 @@ export class DynamicPanel extends KIHPanel {
 		.click(async function(event) { 
 			event.preventDefault();
 			
-			let selectedText = inst.parent.codeMirror.getSelection();
+			let selectedText = inst.math.codeMirror.getSelection();
 			if (selectedText != "") {
 				inst.addEquation('Placeholder', selectedText);
 				inst.onAfterRender();
-				inst.editCell();														// TODO: attention! order reversed
+				inst.editCell();														// attention! order reversed
 			} else {
 				
 				inst.messager.show('FORMULA_EDITOR', 'NO_SELECTION_TEXT');
@@ -725,9 +703,9 @@ export class DynamicPanel extends KIHPanel {
 	 * Show override of the base class for localization.
 	 */
 	async show() {
-		// TODO: order changed to initialize span[locate]? -> changes nothing in appearance
+		// Order changed to initialize span[locate]? -> changes nothing in appearance
 		await super.show();
-		await this.onLocaleChanged(this.parent.localizer);			// TODO: does not help for pagination
+		await this.onLocaleChanged(this.localizer);			// Does not help for pagination
 	}
 	
 	/**
@@ -776,7 +754,7 @@ export class DynamicPanel extends KIHPanel {
 	 */
 	async customEquationsFromParameters() {
 		try {
-			await this.categoriesTree.setCustomEquations(this.parent.parameters.equationCollection);
+			await this.categoriesTree.setCustomEquations(this.parameters.equationCollection);
 			this.fromJson(this.categoriesTree.currentEquations);
 			$(this.gridSelector).datagrid('doFilter');
 		} catch(e) {
@@ -789,9 +767,9 @@ export class DynamicPanel extends KIHPanel {
 	 */	
 	customEquationsToParameters() {
 		this.categoriesTree.currentEquations = this.toJson();
-		this.parent.parameters.equationCollection = this.categoriesTree.customEquationsProxy;		
+		this.parameters.equationCollection = this.categoriesTree.customEquationsProxy;		
 		// Writing to parameters DOES initiate writeParameters !!
-		// this.parent.parameters.writeParameters();
+		// this.parameters.writeParameters();
 	}
 	
 	/**
@@ -912,7 +890,7 @@ export class DynamicPanel extends KIHPanel {
 	 */
 	onAfterRender(withParametersUpdate = true) {
 		let anchor = $(`${this.gridSelectorOfCopy} a`);
-		this.parent.inplaceUpdate(anchor, true);
+		this.math.inplaceUpdate(anchor, true);
 		$(this.gridSelector).datagrid('fixRowHeight');
 		if (withParametersUpdate) this.customEquationsToParameters();
 	}
@@ -969,7 +947,7 @@ export class DynamicPanel extends KIHPanel {
 	 */
 	async initialiseDatagrid(selector) {
 		let inst = this;
-		let filterPrompt = inst.parent.localizer.getLocalText('FILTER_PROMPT');
+		let filterPrompt = inst.localizer.getLocalText('FILTER_PROMPT');
 		$(selector)
 		.datagrid({
 			//singleSelect: true,
@@ -1015,7 +993,7 @@ export class DynamicPanel extends KIHPanel {
 					deltaY: 70,
 					proxy: function(source) {
 						console.dir(source);
-						let p = $('<div class="datagrid-div tree-node-proxy droppable" style="border: 2px solid red; z-index: 100;"></div>').appendTo(`#${inst.panelId}`);
+						let p = $('<div class="datagrid-div tree-node-proxy droppable" style="border: 2px solid red; z-index: 100;"></div>').appendTo(`#${inst.id}`);
 						let row = $('<div style="width: 400px; display: flex; flex-direction: row; justify-content: center;"></div>');
 						$(source).find('td')
 						.first()
@@ -1114,11 +1092,11 @@ export class DynamicPanel extends KIHPanel {
 				let a = $(event.target);
 				let latex = a.attr("latex");
 				if (latex != undefined) { 
-					inst.parent.insert(latex); 
+					inst.insert(latex); 
 				} else { 
 					$.messager.show({ 
-						title: "<span class='rtl-title-withicon'>" + inst.parent.localizer.getLocalText("INFORMATION") + "</span>", 
-						msg: inst.parent.localizer.getLocalText("NO_LATEX") 
+						title: "<span class='rtl-title-withicon'>" + inst.localizer.getLocalText("INFORMATION") + "</span>", 
+						msg: inst.localizer.getLocalText("NO_LATEX") 
 					}); 
 				}
 			});
@@ -1135,54 +1113,40 @@ export class DynamicPanel extends KIHPanel {
  * This method performs an initialisation lazily and one time and can show the Panel repeatedly.
  * Client is the central *Katex Input Helper* instance.
  */
-@injectable()
-export class KIHPanels {
-	parameters = null;
-	localizer = null;
-	parser = null;
-	math = null;
-	messager = null;
+@injectable() export class KIHPanels {
 	panels = { };
+	panelFactory: any;
 	
 	/**
 	 * Constructor
 	 */
 	constructor(
-		@inject(parametersId) parameters: any, 
-		@inject(localizerId) localizer: ILocalizer, 
-		@inject(parserId) parser: IParser,
-		@inject(mathId) math: IMath
+		@inject(panelFactoryId) panelFactory: any
 	) {
-		this.parameters = parameters;
-		this.localizer = localizer;
-		this.parser = parser;
-		this.math = math;
-		this.messager = new Messager(localizer);
+		this.panelFactory = panelFactory;
 	}
 	
-	async showWindowGeneric<T extends KIHPanel>(ctor: new(id: string, ...params: any[]) => T, id: string, ...params: any) {
-		
+	/**
+	 * A generic method to instantiate Panels based on the di framework.
+	 */
+	async showWindowDI(wndId: any, id: string, ...params: any) {
 		if (!(id in this.panels)) {
-			this.panels[id] = new ctor(id, this, ...params);
+			this.panels[id] = this.panelFactory(wndId, id, this, ...params);
 			await this.initialise(id, ...params);
 		}
-		this.update(id, ...params);
+		await this.update(id, ...params);
 		await this.toggle(id);
 	}
 	
 	async initialise(id: string, initialiseSymbolContent = null) {
 		await this.panels[id].initialise(initialiseSymbolContent);
 	}
-	
-	async show(id: string) {
-		await this.panels[id].show();
-	}
 
 	async toggle(id: string) {
 		await this.panels[id].toggle();
 	}
 	
-	update(id: string, ...params) {
+	async update(id: string, ...params) {
 		this.panels[id].update(...params);
 	}
 }

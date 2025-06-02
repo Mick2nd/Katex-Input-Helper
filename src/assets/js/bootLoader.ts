@@ -21,9 +21,8 @@ import { FileHandler } from './fileHandling';
 import { CategoriesTree } from './categoriesTree';
 import { DynamicPanel } from './panels';
 
-import { injectable } from 'inversify';
-import { container } from './container';
-import { IBootLoader, IKatexInputHelper, katexInputHelperId } from './interfaces';
+import { injectable, inject, Factory } from 'inversify';
+import { IBootLoader, IKatexInputHelper, katexInputHelperFactoryId } from './interfaces';
 
 /**
  * The boot loader of the Katex Input Helper.
@@ -34,12 +33,18 @@ import { IBootLoader, IKatexInputHelper, katexInputHelperId } from './interfaces
 export class BootLoader implements IBootLoader {
 	
 	baseLocation = null;
+	factory: Factory<IKatexInputHelper> = null;
 	vme: IKatexInputHelper = null;
 	katex = null;
 	
 	/**
 	 * Constructor.
 	 */
+	constructor(
+		@inject(katexInputHelperFactoryId) factory
+	) {
+		this.factory = factory;
+	}
 
 	/**
 	 * Converts a method with given signature and callback to a Promise returning method.
@@ -119,7 +124,7 @@ export class BootLoader implements IBootLoader {
 	 */
 	async initApp() {
 		try {
-			this.vme = container.get(katexInputHelperId);
+			this.vme = this.factory();
 			window.vme = this.vme;											// prevents garbage collection?
 			await this.vme.initialise();
 			$('#myContainer').layout({fit: true});

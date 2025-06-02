@@ -1,10 +1,6 @@
 import './dialog.css' assert { type: 'css' };
 
-const CodeMirror = (await import('codemirror')).default;
-await import('codemirror/mode/stex/stex');						// manual recommendation
-
 import { VKI_init } from './keyboard/keyboard';
-import { DynamicPanel, KIHMoreDialog, KIHWindow, UnicodeWindow, MatrixWindow, InformationWindow } from "./panels";
 import { FileHandler } from "./fileHandling";
 
 import { inject } from 'inversify';
@@ -17,8 +13,8 @@ import {
 	parametersId, 
 	IThemes, themesId, 
 	IParser, parserId, 
-	IMath, mathId,
-	IPanels, panelsId } from './interfaces';
+	IMath, mathId, ICodeMirror,
+	IPanels, panelsId, matrixWindowId, unicodeWindowId, informationWindowId, moreDialogId, windowId, dynamicPanelId } from './interfaces';
 
 let console: any; 
 if (window.console) console = window.console; else console = { log: function(msg) { }, error: function(msg) { } }; 
@@ -134,7 +130,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	windowIsOpenning = false; 
 	textareaIgnore = false; 
 	textareaID = null; 
-	codeMirrorEditor = null;
+	codeMirrorEditor: ICodeMirror = null;
 	codeMirrorTheme = '';
 	platformInfo = null;
 	symbolPanelsLoaded = []; 
@@ -157,16 +153,16 @@ export class KatexInputHelper implements IKatexInputHelper {
 	location = "";
 	documentations = null;
 	localizer: ILocalizer = null;
-	themes = null;
-	math = null;
+	themes: IThemes = null;
+	math: IMath = null;
 	parameters = null;
-	utilities = null;
-	messager = null;
+	utilities: IUtilities = null;
+	messager: IMessager = null;
 	panels: IPanels = null;
 	useEasyLoader = true;
 	baseLocation = "";
 	fromContextMenu = false;
-	parser: any = null;
+	parser: IParser = null;
 	mathTextInput: any = null;
 	mathVisualOutput: any = null;
 	VKI_show: any = null;
@@ -221,7 +217,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 		this.utilities = utilities;
 		this.themes = themes;
 		this.parser = parser;
-		this.math = math;					// code mirror per method injection
+		this.math = math;
+		this.codeMirrorEditor = math.codeMirror;
 		this.panels = panels;
 		this.documentations = new Documentations(false, this.baseLocation);
 
@@ -406,27 +403,12 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * - change handler -> auto update of formula
 	 * - context menu binding
 	 */
-	async initialiseCodeMirror() { 
+	initialiseCodeMirror() { 
 		let vme = this; 
-		vme.codeMirrorEditor = CodeMirror.fromTextArea($("#mathTextInput")[0] as HTMLTextAreaElement, { 
-			mode: vme.encloseAllFormula ? "text/html" : "text/x-latex", 
-			autofocus: true, 
-			showCursorWhenSelecting: true, 
-			lineNumbers: true, 
-			lineWrapping: true, 
-			// Unknown property
-			//styleActiveLine: true, 
-			//matchBrackets: true, 
-			//autoCloseBrackets: true, 
-			//autoCloseTags: vme.encloseAllFormula ? true : false, 
-			//tabMode: "indent", 
-			tabSize: 4, 
-			indentUnit: 4, 
-			indentWithTabs: true, 
-			theme: "default",
-			inputStyle: vme.platformInfo.isMobile ? 'contenteditable' : 'textarea'
-		}); 
-		vme.codeMirrorEditor.on("change", function() { vme.autoUpdateOutput(); }); 
+		const codeMirrorEditor = this.codeMirrorEditor;
+		const option = vme.platformInfo.isMobile ? 'contenteditable' : 'textarea';
+		codeMirrorEditor.setOption('inputStyle', option);
+		codeMirrorEditor.on("change", function() { vme.autoUpdateOutput(); }); 
 		
 		if(!vme.platformInfo.isMobile) {
 			/*	The context menu appears but throws on click or mouse move afterwards:
@@ -436,16 +418,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 		} else {
 			$('.CodeMirror').css('fontSize', '1.3em');
 		}
-		
-		this.math.setEditorInstance(this.codeMirrorEditor);
-		
-		let panelOptions = $('#divMathTextInput').panel('options');
-		panelOptions.onResize = function(width: string|number, height: string|number) {
-			try {
-				vme.codeMirrorEditor.setSize(width, height);
-				vme.codeMirrorEditor.refresh();
-			} catch(e) { }
-		};
 	}
 
 	/**
@@ -539,7 +511,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 					case "mEDITOR_PARAMETERS": await vme.openWindow('wEDITOR_PARAMETERS'); break; 
 					case "mSTYLE_CHOISE": await vme.openWindow('wSTYLE_CHOISE'); break; 
 					case "mLANGUAGE_CHOISE": await vme.openWindow('wLANGUAGE_CHOISE'); break; 
-					case "mMATRIX": vme.panels.showWindowGeneric(MatrixWindow, 'wMATRIX', 3, 3); break; 
+					case "mMATRIX": vme.showMatrixWindow(3, 3);  break; 
 					case "mCOMMUTATIVE_DIAGRAM": await vme.initialiseUImoreDialogs("f_COMMUTATIVE_DIAGRAM"); break; 
 					case "mCHEMICAL_FORMULAE": await vme.initialiseUImoreDialogs("f_CHEMICAL_FORMULAE"); break; 
 					case "mSAVE_EQUATION": vme.saveEquationFile(); break; 
@@ -548,7 +520,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 					// No longer functional
 					//case "mMATH_ML": vme.viewMathML(vme.mathVisualOutput.id); break; 
 					// TODO: complete transfer of functionality to Panels
-					case "mUNICODES_LIST": await vme.panels.showWindowGeneric(UnicodeWindow, 'wUNICODES_LIST', vme.initialiseSymbolContent.bind(vme)); break; 
+					case "mUNICODES_LIST": await vme.panels.showWindowDI(unicodeWindowId, 'wUNICODES_LIST', vme.initialiseSymbolContent.bind(vme)); break; 
 					case "mLATEX_CODES_LIST": await vme.openWindow('wLATEX_CODES_LIST'); await vme.initialiseLatexMathjaxCodesList(); break; 
 					case "mLANG_RESSOURCE_LIST": await vme.openWindow('wLANGUAGE_LIST'); await vme.initialiseLangRessourcesList(); break; 
 					case "mLATEX_DOCUMENTATION": vme.documentations.showLatexDocumentation(); break;
@@ -565,7 +537,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 					case "f_FR_CHAR": 
 					case "f_BBB_CHAR": await vme.initialiseUImoreDialogs(item.target.id); break; 
 					case "mEQUATION": await vme.initialiseUImoreDialogs("f_EQUATION"); break; 
-					case "mCUSTOM_EQUATIONS": await vme.panels.showWindowGeneric(DynamicPanel, 'wf_CUSTOM_EQUATIONS_MORE', vme.math); break;
+					case "mCUSTOM_EQUATIONS": await vme.panels.showWindowDI(dynamicPanelId, 'wf_CUSTOM_EQUATIONS_MORE', vme.math); break;
 					case "mHORIZONTAL_SPACING": await vme.initialiseUImoreDialogs("f_HORIZONTAL_SPACING"); break; 
 					case "mVERTICAL_SPACING": await vme.initialiseUImoreDialogs("f_VERTICAL_SPACING"); break; 
 					case "mSPECIAL_CHARACTER": await vme.initialiseUImoreDialogs("f_SPECIAL_CHARACTER"); break; 
@@ -667,7 +639,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * @param numTab - number (index) of the tab (0..3)
 	 */
 	async openInformationTab(numTab: number) { 
-		this.panels.showWindowGeneric(InformationWindow, 'wINFORMATIONS', numTab); 
+		this.panels.showWindowDI(informationWindowId, 'wINFORMATIONS', numTab); 
 	}
 	
 	/**
@@ -678,7 +650,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	async initialiseUImoreDialogs(fPanelID: string) {
 		let vme = this;
 		let fPanelMoreID = 'w' + fPanelID + '_MORE';
-		await vme.panels.showWindowGeneric(KIHMoreDialog, fPanelMoreID, vme.initialiseSymbolContent.bind(vme));
+		await vme.panels.showWindowDI(moreDialogId, fPanelMoreID, vme.initialiseSymbolContent.bind(vme));
 	}
 	
 	/**
@@ -689,7 +661,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * @param id - the HTML id of the window
 	 */
 	async openWindow(id: string) {
-		await this.panels.showWindowGeneric(KIHWindow, id);
+		await this.panels.showWindowDI(windowId, id);
 	}
 	
 	/**
@@ -858,7 +830,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * @param cols - the number of matrix columns
 	 */
 	showMatrixWindow(rows: number, cols: number) {
-		this.panels.showWindowGeneric(MatrixWindow, 'wMATRIX', rows, cols); 
+		this.panels.showWindowDI(matrixWindowId, 'wMATRIX', rows, cols); 
 	}
 
 	/**
@@ -1227,7 +1199,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		}); 
 		let p = $(accordionID).accordion('getSelected'); 
 		if (p) { p.panel('collapse', false); }
-		this.math.updateHeaders();
+		this.math.updateHeaders("");
 	}
 	
 	/**
@@ -1332,7 +1304,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 				<table class="inline-table">
 					<tr><td><b> ${vme.versions.version} </b></td><td><b>Katex Input Helper / Visual Math Editor</b>, (This software)</td></tr>
 					<tr><td> ${vme.versions.katexVersion} </td><td>Katex</td></tr>
-					<tr><td> ${CodeMirror.version} </td><td>Code Mirror</td></tr>
+					<tr><td> ${vme.codeMirrorEditor.version} </td><td>Code Mirror</td></tr>
 					<tr><td> ${vme.versions.VKI_version} </td><td>Virtual Keyboard</td></tr>
 					<tr><td> ${$.fn.jquery} </td><td>Jquery</td></tr>
 					<tr><td> ${vme.versions.easyuiVersion} </td><td>Jquery Easyui</td></tr>

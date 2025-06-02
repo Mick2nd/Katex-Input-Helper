@@ -1,4 +1,6 @@
 import { Observable } from "./patterns/observable";
+import { injectable } from 'inversify';
+import { ICategoriesTree } from './interfaces';
 
 /**
  * Manages the Categories Tree.
@@ -6,7 +8,7 @@ import { Observable } from "./patterns/observable";
  * The Leafs of the tree refer to a set of equations and constitute the categories.
  * The Folders constitute super categories.
  */
-export class CategoriesTree {
+@injectable() export class CategoriesTree implements ICategoriesTree {
 	
 	data = null;
 	treeSelector = "";
