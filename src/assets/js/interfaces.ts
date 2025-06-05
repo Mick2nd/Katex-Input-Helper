@@ -1,4 +1,3 @@
-import { KIHPanel } from './panels';
 
 export interface IBootLoader {
 	init1() : Promise<void>;
@@ -47,7 +46,7 @@ export interface IMath {
 	equipWithTooltip(selector: any, text: string, javascript: boolean);
 	inplaceUpdate(selector: any, javascript: boolean);
 	insert(b: any);
-	insertMath(text: string, element: any, multiple: boolean, displayMode: boolean);
+	insertMath(text: string, element: any, multiple?: boolean, displayMode?: boolean);
 	codeMirror: any;
 	setFocus();
 	updateAnchor(a: any);
@@ -73,6 +72,19 @@ export interface ICodeMirror {
 
 export interface IPanels {
 	showWindowDI(wndId: any, id: string, ...params: any);
+}
+
+export interface IPanel {
+	onMove(left: number, top: number);
+	onResize(width: number, height: number);
+	onClose();
+	get handlers() : any;
+	initialise(dummy?: any) : Promise<void>;
+	update(...params) : Promise<void>;
+	show() : Promise<void>;
+	resize();
+	open();
+	toggle();
 }
 
 export interface ICategoriesTree {

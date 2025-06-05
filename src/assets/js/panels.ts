@@ -3,12 +3,12 @@ import { FileHandler } from './fileHandling';
 
 import { inject, injectable, injectFromBase } from 'inversify';
 import { ILocalizer, IParser, IMath, utilitiesId, IUtilities, categoriesTreeId, ICategoriesTree,
-	IMessager, dynamicParametersId, panelFactoryId } from './interfaces';
+	IMessager, dynamicParametersId, panelFactoryId, IPanel } from './interfaces';
 
 /**
  * The base class of all Panels, Dialogs, Windows.
  */
-export class KIHPanel {
+export class KIHPanel implements IPanel {
 	id = "";
 	parent = null;
 	initialised = false;

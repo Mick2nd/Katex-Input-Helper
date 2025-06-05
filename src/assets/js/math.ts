@@ -1,4 +1,5 @@
-const katex = await import('katex/dist/katex');			// This version of import is essential for mhchem
+import './jquery-easyui/jquery.easyui.min';						// ADDED for unit test
+const katex = await import('katex/dist/katex');					// This version of import is essential for mhchem
 await import('katex/dist/contrib/mhchem');
 const CodeMirror = (await import('codemirror')).default;
 await import('codemirror/mode/stex/stex');						// manual recommendation
@@ -30,10 +31,10 @@ export class MathFormulae implements IMath {
 	 * Constructor.
 	 */
 	constructor(
-		@inject(localizerId) localizer: ILocalizer, 
-		@inject(parametersId) parameters: any, 
-		@inject(parserId) parser: IParser,
-		@inject(messagerId) messager: IMessager
+		@inject(localizerId) localizer: ILocalizer|null, 
+		@inject(parametersId) parameters: any|null, 
+		@inject(parserId) parser: IParser|null,
+		@inject(messagerId) messager: IMessager|null
 	) {
 		this.mathTextInput = document.getElementById('mathTextInput'); 
 		this.mathVisualOutput = document.getElementById('mathVisualOutput');
@@ -62,13 +63,16 @@ export class MathFormulae implements IMath {
 		}); 
 		
 		(codeMirrorEditor as ICodeMirror).version = CodeMirror.version;
-		let panelOptions = $('#divMathTextInput').panel('options');
-		panelOptions.onResize = function(width: string|number, height: string|number) {
-			try {
-				codeMirrorEditor.setSize(width, height);
-				codeMirrorEditor.refresh();
-			} catch(e) { }
-		};
+		// PURPOSE of this clause is to overcome the exception in unit test. Mocking did not help.
+		try {
+			let panelOptions = $('#divMathTextInput').panel('options');
+			panelOptions.onResize = function(width: string|number, height: string|number) {
+				try {
+					codeMirrorEditor.setSize(width, height);
+					codeMirrorEditor.refresh();
+				} catch(e) { }
+			};
+		} catch(e) { console.warn(`Could not apply 'panel' : ${typeof $('#divMathTextInput').panel} : ${e}`); }
 		
 		return codeMirrorEditor as ICodeMirror;
 	}

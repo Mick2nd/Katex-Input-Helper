@@ -45,7 +45,7 @@ export class Localizer implements ILocalizer {
 			return json;
 		} catch(e) {
 			console.error(`Could not load language file - ${e}`);
-			return { };
+			throw(e);
 		}
 	}
 	
