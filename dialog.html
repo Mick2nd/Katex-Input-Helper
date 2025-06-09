@@ -110,10 +110,6 @@
 					</div>
 				</div>
 				<div id="mTOOLS" class="menus">
-					<div iconcls="icon-html_off" id="mHTML_MODE" disabled="true">
-						<span class='rtl-menu-item' locate="HTML_MODE"></span>
-					</div>
-					<div class="menu-sep"></div>
 					<div iconcls="icon-keyboard" id="mKEYBOARD">
 						<span class='rtl-menu-item' locate="KEYBOARD"></span>
 					</div>
@@ -208,32 +204,6 @@
 				<input value="" class="keyboardInput" id="tKEYBOARD" />
 
 				<div id="innerLayout" data-options="fit:true" class="easyui-layout">
-					
-					<div id="HTML_TAG" class="north easyui-panel" data-options="region:'north',split:false,noheader:true" disabled="true">
-						<a href="#" title="Latex" class="easyui-linkbutton easyui-tooltip" id="btHTML_Latex" disabled="true"><strong>$</strong></a>
-						<a href="#" title="AsciiMath" class="easyui-linkbutton easyui-tooltip" id="btHTML_AsciiMath" disabled="true"><strong>`</strong></a> | 
-						<a href="#" title="span color" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_color" id="btHTML_TEXTCOLOR"></a> 
-						<a href="#" title="span background-color" class="easyui-linkbutton easyui-tooltip" iconcls="icon-fore_color" id="btHTML_FORECOLOR"></a> | 
-						<a href="#" title="h1" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_heading_1" id="btHTML_H1"></a> 
-						<a href="#" title="h2" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_heading_2" id="btHTML_H2"></a> 
-						<a href="#" title="h3" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_heading_3" id="btHTML_H3"></a> | 
-						<a href="#" title="strong" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_bold" id="btHTML_STRONG"></a> 
-						<a href="#" title="em" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_italic" id="btHTML_EM"></a> 
-						<a href="#" title="s" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_strikethrough" id="btHTML_S"></a>
-						<a href="#" title="u" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_underline" id="btHTML_U"></a> | 
-						<a href="#" title="br" class="easyui-linkbutton easyui-tooltip" iconcls="icon-break_line" id="btHTML_BR"></a> 
-						<a href="#" title="p" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_paragraph" id="btHTML_P"></a> 
-						<a href="#" title="hr" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_horizontalrule" id="btHTML_HR"></a> 
-						<a href="#" title="p margin-left" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_indent" id="btHTML_INDENT"></a> | 
-						<a href="#" title="p left" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_align_left" id="btHTML_LEFT"></a> 
-						<a href="#" title="p center" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_align_center" id="btHTML_CENTER"></a> 
-						<a href="#" title="p right" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_align_right" id="btHTML_RIGHT"></a> 
-						<a href="#" title="p justify" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_align_justify" id="btHTML_JUSTIFY"></a> | 
-						<a href="#" title="ul" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_list_bullets" id="btHTML_UL"></a> 
-						<a href="#" title="ol" class="easyui-linkbutton easyui-tooltip" iconcls="icon-text_list_numbers" id="btHTML_OL"></a> | 
-						<a href="#" title="a" class="easyui-linkbutton easyui-tooltip" iconcls="icon-link" id="btHTML_A"></a> 
-						<a href="#" title="img" class="easyui-linkbutton easyui-tooltip" iconcls="icon-picture" id="btHTML_IMG"></a>
-					</div>
 					<div id="divMathTextInput" class="center easyui-panel" data-options="region:'center',split:false,noheader:true">
 						<form action="#" method="post" id="formMathTextInput">
 							<fieldset>
@@ -260,15 +230,18 @@
 					
 					<!-- THIS MAY CAUSE FILE NOT FOUND : replacement see below
 					<div title="<span information='MATRIX_SYMBOLS' class='rtl-title-withicon'>
-						<img class='symbol_btn icon-matrix_13_black' src='./icons/blank.gif' width='15' height='20' />  &nbsp;&nbsp; 
-						<img class='symbol_btn icon-matrix_33_black' src='./icons/blank.gif' width='15' height='20' /></span>"
+						<img class='symbol_btn icon-matrix_13_black' src='icons/blank.gif' width='15' height='20' />  &nbsp;&nbsp; 
+						<img class='symbol_btn icon-matrix_33_black' src='icons/blank.gif' width='15' height='20' /></span>"
 						id="f_MATRIX_SYMBOLS">
 					</div>
 					 -->
 					
-					<div title="<span information='MATRIX_SYMBOLS' class='rtl-title-withicon'><img class='symbol_btn icon-matrix_13_black' width='15' height='20' />  &nbsp;&nbsp; <img class='symbol_btn icon-matrix_33_black' width='15' height='20' /></span>"
+					<div title="<span information='MATRIX_SYMBOLS' class='rtl-title-withicon'>
+						<img class='symbol_btn icon-matrix_13_black' width='15' height='20' />  &nbsp;&nbsp; 
+						<img class='symbol_btn icon-matrix_33_black' width='15' height='20' /></span>"
 						id="f_MATRIX_SYMBOLS">
 					</div>
+					
 					<div title="<span information='BRACKET_SYMBOLS' class='rtl-title-withicon'>$(\ )$ &nbsp;&nbsp; $[\ \ ]$ &nbsp;&nbsp; $\|\ \|$ </span>"
 						id="f_BRACKET_SYMBOLS">
 					</div>
@@ -296,14 +269,6 @@
 				<hr />
 				<fieldset>
 					<legend>
-						<span locate='SYNTAX'></span>
-					</legend>
-					<input type="checkbox" name="encloseType" id="encloseType" disabled /> 
-					<label for="encloseType"><span locate='ENCLOSE_ALL_FORMULAS'></span></label>
-				</fieldset>
-				<hr />
-				<fieldset>
-					<legend>
 						<span locate='UPDATE'></span>
 					</legend>
 					<input type="checkbox" name="menuupdateType" id="menuupdateType" />
@@ -314,12 +279,6 @@
 					<br />
 					<input name="autoUpdateTime" id="autoUpdateTime" size="4" maxlength="4" /> 
 					<label for="autoUpdateTime"><span locate='UPDATE_INTERVAL'></span></label>
-				</fieldset>
-				<hr />
-				<fieldset>
-					<legend>MathJax</legend>
-					<input type="checkbox" name="menuMathjaxType" id="menuMathjaxType" disabled />
-					<label for="menuMathjaxType"><span locate='MATHJAX_MENU'></span></label>
 				</fieldset>
 				<hr />
 				<fieldset>
