@@ -1,11 +1,10 @@
 import './jquery-easyui/jquery.easyui.min';						// ADDED for unit test
 const katex = await import('katex/dist/katex');					// This version of import is essential for mhchem
 await import('katex/dist/contrib/mhchem');
-const CodeMirror = (await import('codemirror')).default;
-await import('codemirror/mode/stex/stex');						// manual recommendation
 
 import { inject, injectable } from 'inversify';
-import { IMath, localizerId, ILocalizer, parametersId, parserId, IParser, ICodeMirror, messagerId, IMessager } from './interfaces';
+import { IMath, localizerId, ILocalizer, parametersId, parserId, IParser, 
+	codeMirrorId, ICodeMirror, messagerId, IMessager } from './interfaces';
 
 /**
  * Class responsible for Math Formula handling.
@@ -16,8 +15,6 @@ import { IMath, localizerId, ILocalizer, parametersId, parserId, IParser, ICodeM
 export class MathFormulae implements IMath {
 	
 	mathVisualOutput = null;
-	mathTextInput = null;
-	runNotKatex = false;
 	encloseAllFormula = false; 
 	menuupdateType = true;
 	localizer = null;
@@ -34,47 +31,15 @@ export class MathFormulae implements IMath {
 		@inject(localizerId) localizer: ILocalizer|null, 
 		@inject(parametersId) parameters: any|null, 
 		@inject(parserId) parser: IParser|null,
-		@inject(messagerId) messager: IMessager|null
+		@inject(messagerId) messager: IMessager|null,
+		@inject(codeMirrorId) codeMirror: ICodeMirror|null
 	) {
-		this.mathTextInput = document.getElementById('mathTextInput'); 
-		this.mathVisualOutput = document.getElementById('mathVisualOutput');
+		this.mathVisualOutput = $('#mathVisualOutput')[0];
 		this.localizer = localizer;
 		this.parameters = parameters;
 		this.parser = parser;
 		this.messager = messager;
-		this.codeMirror = this.codeMirrorEditor;
-	}
-
-	/**
-	 * Instantiates the Code Mirror editor. Initialization is postponed.
-	 */
-	get codeMirrorEditor() : ICodeMirror {
-		const codeMirrorEditor = CodeMirror.fromTextArea($("#mathTextInput")[0] as HTMLTextAreaElement, { 
-			mode: "text/x-latex", 
-			autofocus: true, 
-			showCursorWhenSelecting: true, 
-			lineNumbers: true, 
-			lineWrapping: true, 
-			tabSize: 4,
-			indentUnit: 4, 
-			indentWithTabs: true, 
-			theme: "default",
-			inputStyle: "textarea"
-		}); 
-		
-		(codeMirrorEditor as ICodeMirror).version = CodeMirror.version;
-		// PURPOSE of this clause is to overcome the exception in unit test. Mocking did not help.
-		try {
-			let panelOptions = $('#divMathTextInput').panel('options');
-			panelOptions.onResize = function(width: string|number, height: string|number) {
-				try {
-					codeMirrorEditor.setSize(width, height);
-					codeMirrorEditor.refresh();
-				} catch(e) { }
-			};
-		} catch(e) { console.warn(`Could not apply 'panel' : ${typeof $('#divMathTextInput').panel} : ${e}`); }
-		
-		return codeMirrorEditor as ICodeMirror;
+		this.codeMirror = codeMirror;
 	}
 	
 	/**
@@ -94,26 +59,23 @@ export class MathFormulae implements IMath {
 			let target = element;
 			if (target == null) {
 				console.debug(`Attention : writing to output area : ${displayMode}`);
-				console.trace(`Trace : `);
 				target = this.mathVisualOutput;
 			}
 			
-			if (!this.runNotKatex) {
-				if (text.startsWith('$')) {
-					text = text.replace(/&lt;/g, '<');							// TODO: check!
-					text = text.replace(/&amp;/g, '&');
-					if (! multiple) {
-						text = text.substring(1, text.length - 1);
-					} else {
-						text = text.replace(/&nbsp;&nbsp;/g, '\\quad');
-						text = text.replace(/\$/g, '');
-					}
+			text = text.replace(/&lt;/g, '<');							// TODO: this block moved outside if block, observe!
+			text = text.replace(/&gt;/g, '>'); 
+			text = text.replace(/&amp;/g, '&');
+			
+			if (text.startsWith('$')) {
+				if (! multiple) {
+					text = text.substring(1, text.length - 1);
+				} else {
+					text = text.replace(/&nbsp;&nbsp;/g, '\\quad');
+					text = text.replace(/\$/g, '');
 				}
-				
-				katex.render(text, target, { throwOnError: true, strict: false, displayMode: displayMode, macros: { '\\box': '□' } });
-			} else {
-				target.innerTEXT = text;
 			}
+			
+			katex.render(text, target, { throwOnError: true, strict: false, displayMode: displayMode, macros: { '\\box': '□' } });
 		} catch(e) {
 			console.warn(`Katex: insertMath : ${e}`);
 			this.messager.show('KATEX', 'KATEX_NOT_RENDERED', e)
@@ -131,54 +93,58 @@ export class MathFormulae implements IMath {
 			let selector = '.panel-body table tbody tr td a.easyui-tooltip, .easyui-dialog div a.s';
 			let entries = $(selector);
 			console.debug(`Katex: ${entries.length} td or div items`);
-			let im1 = 0;
 			entries.each(function(idx: number, a) {
 				
 				if (a && $(this).find('.katex').length == 0) {								// check : no katex embedded
-					try {
-						let html = a.innerHTML;
-						let count = html.split('$').length - 1;
-						let text = a.innerText;
-						let dm = (text.startsWith('$$') || text.includes('{equation}'));	// $$ triggers display mode
-						if (count == 2 || text == '$\\$$' || text.includes('\\ce')) {		// normal case: math
-							text = text.replace(/□/g, '\\square');
-							inst.insertMath(text, a);
-						} else if (count > 2 && !dm) {										// image with surrounding characters
-							let text1 = a.firstChild.textContent;
-							text1 = text1.substring(1, text1.length - 1);
-	
-							let text2 = a.lastChild.textContent;
-							text2 = text2.substring(1, text2.length - 1);
-	
-							let img = a.children[0];
-							
-							inst.insertMath(text2, a);
-							let ch = a.children[0];
-							inst.insertMath(text1, a);
-							a.appendChild(img);
-							a.appendChild(ch);
-						} else if (dm) {
-							inst.updateAnchor(a);
-						} else {															// direct image case
-							let img = a.firstChild as Element;
-							if (img && img.nodeType != Node.TEXT_NODE && img.hasAttribute('src')) {
-								// TODO: handling required?
-							}
-						}
-					} catch(e) {
-						console.warn(`Katex: updateTables : ${a.innerText} : ${e}`);
-					}
+					inst.updateTableAnchor(a);
 				}
 			})
-			if (im1 > 0) {
-				console.debug(`Images detected: ${im1}`)
-			}				
 
 			// TODO: TEST: changes must be updated so that easyui knows them
 			await this.parser.parseAsync(selector);
 
 		} catch(e) {
 			console.error(`Katex: updateTables : ${e}`);
+		}
+	}
+
+	/**
+	 * Updates a single anchor in a table (panel or dialog).
+	 */	
+	updateTableAnchor(a: any) {
+		let inst = this;
+		try {
+			let html = a.innerHTML;												// TODO: what was the reason for this?
+			let count = html.split('$').length - 1;
+			let text = a.innerText ?? a.innerHTML;								// poor implementation of vitest
+			let dm = (/^\n?\$\$/.test(text) || text.includes('{equation}'));	// $$ triggers display mode
+			if (count == 2 || text == '$\\$$' || text.includes('\\ce')) {		// normal case: math
+				text = text.replace(/□/g, '\\square');
+				inst.insertMath(text, a);
+			} else if (count > 2 && !dm) {										// image with surrounding characters
+				let text1 = a.firstChild.textContent;
+				text1 = text1.substring(1, text1.length - 1);
+
+				let text2 = a.lastChild.textContent;
+				text2 = text2.substring(1, text2.length - 1);
+
+				let img = a.children[0];
+				
+				inst.insertMath(text2, a);
+				let ch = a.children[0];
+				inst.insertMath(text1, a);
+				a.appendChild(img);
+				a.appendChild(ch);
+			} else if (dm) {
+				inst.updateAnchor(a);
+			} else {															// direct image case
+				let img = a.firstChild as Element;
+				if (img && img.nodeType != Node.TEXT_NODE && img.hasAttribute('src')) {
+					// TODO: handling required?
+				}
+			}
+		} catch(e) {
+			console.warn(`Katex: updateTables : ${a.innerText ?? a.innerHTML} : ${e}`);
 		}
 	}
 	
@@ -235,7 +201,7 @@ export class MathFormulae implements IMath {
 			let entries = $(selector);
 			console.debug(`Katex: ${entries.length} in-place items for selector ${selector}`);
 			entries.each(function(idx: number, a) {
-				if (a && !inst.runNotKatex) {
+				if (a) {
 					inst.updateAnchor(a);
 					if (typeof selector !== 'string' || !selector.startsWith('#mLaTeX_TEXT')) {
 						inst.equipWithInteractivity($(this), javascript);					// the latex menu command will not get tooltip...
@@ -269,21 +235,17 @@ export class MathFormulae implements IMath {
 			return;
 		}
 		
-		console.debug(`equipWithInteractivity ${a.attr('latex')}`);
 		let text = getSymbol(a);
 		this.equipWithTooltip(a, text, javascript);
 		
-		a.click(function(event: any) { 
+		$(a).on('click', function(event: any) {								// TODO: seems to be functionless
 			event.preventDefault(); 
-			let latex = a.attr("latex");
-			console.debug(`Click on equation: ${latex}`);
+			let latex = $(a).attr("latex");
+			console.info(`Click on equation: ${latex}`);
 			if (latex != undefined) { 
 				vme.insert(latex); 
-			} else { 
-				$.messager.show({ 
-					title: "<span class='rtl-title-withicon'>" + vme.localizer.getLocalText("INFORMATION") + "</span>", 
-					msg: vme.localizer.getLocalText("NO_LATEX") 
-				}); 
+			} else {
+				vme.messager.show('INFORMATION', 'NO_LATEX'); 
 			} 
 		}); 
 	}
@@ -294,9 +256,9 @@ export class MathFormulae implements IMath {
 	 * Additionally prepares the same info for the status line.
 	 * This is the central place for doing that.
 	 * 
-	 * @param selector - ui item to be equipped
+	 * @param selector - ui item to be equipped, must be a jquery object
 	 * @param text - the tooltip text 
-	 * @param javascript 
+	 * @param javascript - how to equip. if true, javascript is used.
 	 */
 	equipWithTooltip(selector: any, text: string, javascript: boolean) {
 
@@ -324,23 +286,26 @@ export class MathFormulae implements IMath {
 
 	/**
 	 * Updates an anchor (or other tag) with a formula. Takes the text from original anchor content.
+	 * 
+	 * @param a - An anchor or other html element serving as source and target of the operation
 	 */	
 	updateAnchor(a: any) {
-		let text = a.innerText;
+		let text = a.innerText ?? a.innerHTML;									// poor implementation of vitest / jsdom
 		if (text.includes('Rightarrow')) {
 			console.debug(`Found-arrow-text: ${text}`);
 		}
 		let mathText = text.includes('$');
-		let dm = (text.includes('$$') || text.includes('{equation}'));
-		text = text.replace(/^\s{0,5}"?\${1,2}(.*?)\${1,2}"?\s{0,5}$/s, '$1');
-		console.debug(`Processed text: ${text.substring(0, 20)}`);
+		let dm = text.includes('$$') || this.enforceDm(text);
+		text = text.replace(/^\s{0,5}"?\${1,2}(.*?)\${1,2}"?\s{0,5}$/s, '$1');	// what does this mean?
 		if (mathText) this.insertMath(text, a, false, dm);
 	}
 	
 	/**
 	 * Inserts given text into Code Mirror Editor and updates the formula in the output.
+	 * 
+	 * @param b - replacement for the selection in editor
 	 */
-	insert(b: any) {
+	insert(b: string) {
 		this.codeMirror.replaceSelection(b);
 		this.updateOutput();
 	}
@@ -352,15 +317,12 @@ export class MathFormulae implements IMath {
 	updateOutput() {
 		let vme = this; 
 		let encloseChar = "$"; 
-		let content = ""; 
-		content = this.codeMirror.getValue(); 
-		let dm = content.includes('\\begin{CD}');
+		let content = this.codeMirror.getValue(); 
 		if (content == "") content = " "; 
-		if (!vme.encloseAllFormula) { 
-			content = content.replace(/</gi, "&lt;"); 
-			content = encloseChar + content + encloseChar; 
-		}
+		content = content.replace(/</gi, "&lt;"); 
+		content = encloseChar + content + encloseChar; 
 		
+		let dm = this.enforceDm(content);
 		dm = dm || vme.parameters.displayMode;						// displayMode from invocation context enforces dm
 		vme.insertMath(content, null, false, dm); 
 		vme.setFocus();
@@ -372,6 +334,23 @@ export class MathFormulae implements IMath {
 	 */
 	setFocus() { 
 		this.codeMirror.focus(); 
+	}
+	
+	/**
+	 * Determines if Display mode shall be enforced for given text.
+	 * 
+	 * @param text - Given text to be checked
+	 * @returns A boolean indicating a required display mode for given formula
+	 */
+	enforceDm(text: string) : boolean {
+		let dmEnforcing = [
+			'\\begin{CD}',
+			'{equation}',
+			'{gathered}',
+			'{aligned}',
+			'{alignedat}',
+		];
+		return dmEnforcing.some(item => text.includes(item));			// TODO: includes?
 	}
 }
 

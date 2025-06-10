@@ -1,9 +1,12 @@
 import { Container, ResolutionContext, Factory } from 'inversify';
+
 import { IBootLoader, bootLoaderId, katexInputHelperId, IKatexInputHelper, katexInputHelperFactoryId, 
 	ILocalizer, localizerId, IMessager, messagerId, platformInfoId, 
 	IUtilities, utilitiesId, parametersId, IThemes, themesId, IParser, parserId, IMath, mathId, 
 	IPanels, panelsId, dynamicPanelId, informationWindowId, moreDialogId, windowId, matrixWindowId, 
-	dynamicParametersId, panelFactoryId, unicodeWindowId, categoriesTreeId, ICategoriesTree } from './interfaces';
+	dynamicParametersId, panelFactoryId, unicodeWindowId, categoriesTreeId, ICategoriesTree, asyncId,
+	codeMirrorId, ICodeMirror } from './interfaces';
+
 import { BootLoader } from './bootloader';
 import { KatexInputHelper } from './dialog';
 import { ParametersProxy } from './parameters';
@@ -14,9 +17,11 @@ import { ParserExtension } from './parserExtension';
 import { MathFormulae } from './math';
 import { KIHPanels, KIHPanel, DynamicPanel, MatrixWindow, InformationWindow, KIHMoreDialog, KIHWindow, UnicodeWindow } from './panels';
 import { CategoriesTree } from './categoriesTree';
+import { codeMirrorProxy } from './codeMirrorProxy';
 
 const container = new Container();
 
+container.bind(asyncId).toConstantValue(true);
 container.bind<IBootLoader>(bootLoaderId).to(BootLoader).inSingletonScope();
 container.bind<IKatexInputHelper>(katexInputHelperId).to(KatexInputHelper).inSingletonScope();
 container.bind(parametersId).toDynamicValue(ParametersProxy).inSingletonScope();
@@ -32,6 +37,10 @@ container
 	.toFactory((context: ResolutionContext) : () => IKatexInputHelper => {
 		return () => context.get(katexInputHelperId);
 	});
+container
+	.bind<ICodeMirror>(codeMirrorId)
+	.toDynamicValue(codeMirrorProxy)
+	.inSingletonScope();
 	
 container.bind<KIHPanel>(dynamicPanelId).to(DynamicPanel);
 container.bind<KIHPanel>(informationWindowId).to(InformationWindow);
@@ -40,7 +49,7 @@ container.bind<KIHPanel>(windowId).to(KIHWindow);
 container.bind<KIHPanel>(matrixWindowId).to(MatrixWindow);
 container.bind<KIHPanel>(unicodeWindowId).to(UnicodeWindow);
 
-container.bind(categoriesTreeId).to(CategoriesTree).inSingletonScope();
+container.bind<ICategoriesTree>(categoriesTreeId).to(CategoriesTree).inSingletonScope();
 
 let allParams: any[] = [ ];
 container.bind(dynamicParametersId).toDynamicValue(() => allParams);

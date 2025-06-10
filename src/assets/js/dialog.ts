@@ -125,20 +125,14 @@ export class KatexInputHelper implements IKatexInputHelper {
 
 	versions = null;
 	codeType = 'Latex'; 
-	saveOptionInCookies = false; 
-	isBuild = false; 
-	windowIsOpenning = false; 
-	textareaIgnore = false; 
-	textareaID = null; 
 	codeMirrorEditor: ICodeMirror = null;
-	codeMirrorTheme = '';
 	platformInfo = null;
-	symbolPanelsLoaded = []; 
+	symbolPanelsLoaded = []; 			// accordion only
 	latexMathjaxCodesListLoaded = false; 
-	uniCodesListLoaded = false; 
 	autoUpdateOutputTimeout = null; 
-	notAllowedKeys = [9, 16, 17, 18, 19, 20, 27, 33, 34, 35, 36, 37, 38, 39, 40, 44, 45, 91, 93, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 144, 145]; 
-	allowedCtrlKeys = [86, 88, 89, 90]
+	notAllowedKeys = [9, 16, 17, 18, 19, 20, 27, 33, 34, 35, 36, 37, 38, 39, 40, 44, 45, 91, 93, 
+		112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 144, 145]; 
+	allowedCtrlKeys = [86, 88, 89, 90];
 	notAllowedCtrlKeys = []; 
 	notAllowedAltKeys = []; 
 	
@@ -146,11 +140,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 	runNotColorPicker = true;
 	runNotVirtualKeyboard = false;
 	runNotMathJax = true;
-	runNotCodeMirror = false;
 
 	url: any = null;
 	rtlStyle = 'ltr';
-	location = "";
 	documentations = null;
 	localizer: ILocalizer = null;
 	themes: IThemes = null;
@@ -159,9 +151,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	utilities: IUtilities = null;
 	messager: IMessager = null;
 	panels: IPanels = null;
-	useEasyLoader = true;
 	baseLocation = "";
-	fromContextMenu = false;
 	parser: IParser = null;
 	mathTextInput: any = null;
 	mathVisualOutput: any = null;
@@ -343,7 +333,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		await vme.initialiseUI(); 
 		await vme.updateInfo();												// updates a few dialogs
 		vme.initialiseParameters(); 
-		vme.initialiseCodeType(); 
+		vme.initialiseCodeType(); 											// for correct display of header, no interactivity
 		await vme.initialiseVirtualKeyboard(); 
 
 		// IN QUESTION
@@ -352,7 +342,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 		await this.themes.initialiseThemeChoice(this.style, this.rtlStyle); // RTL STYLE defined after locale language
 
 		vme.endWait(); 
-		vme.isBuild = true;
 	}
 	
 	/**
@@ -541,7 +530,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 					case "mHORIZONTAL_SPACING": await vme.initialiseUImoreDialogs("f_HORIZONTAL_SPACING"); break; 
 					case "mVERTICAL_SPACING": await vme.initialiseUImoreDialogs("f_VERTICAL_SPACING"); break; 
 					case "mSPECIAL_CHARACTER": await vme.initialiseUImoreDialogs("f_SPECIAL_CHARACTER"); break; 
-					case "mHTML_MODE": $("#btENCLOSE_TYPE").trigger('click'); break; 
 					case "mKEYBOARD": if (!vme.runNotVirtualKeyboard) { vme.VKI_show(document.getElementById("tKEYBOARD")); $("#keyboardInputMaster").draggable({ handle: '#keyboardTitle' }); } break; 
 					default: $.messager.show({ title: "<span class='rtl-title-withicon'>" + vme.getLocalText("INFORMATION") + "</span>", msg: item.text }); break;
 				}
@@ -581,11 +569,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 			vme.parameters.resetWindowPositions();
 			vme.messager.show('RESTART', 'RESTART_REQUIRED');
 		}); 
-		$("input[name='codeType']").on('change', function() { 
-			vme.codeType = $("input[name='codeType']:checked").val() as string; 
-			vme.printCodeType(); 
-			vme.updateOutput(); 
-		});
 		$("#mathVisualOutput").on('contextmenu', (event) => vme.onContextMenu('#mVIEW', event)); 
 		$("[information]").on('mouseover', function(event) { 
 			$("#divInformation").html(vme.getLocalText($(this).attr("information"))); 
@@ -597,11 +580,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 		$('body').on('click', '#btCOPYRIGHT', async function(event) { 
 			event.preventDefault(); 
 			await vme.openInformationTab(0); 
-			vme.setFocus(); 
-		});
-
-		$('body').on('click', '#btTITLE_EDITION_SYNTAX,#btENCLOSE_TYPE', async function(event) { 
-			event.preventDefault(); 
 			vme.setFocus(); 
 		});
 		
@@ -630,7 +608,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 		*/
 	
 		this.math.updateLatexMenu();
-		this.htmlToolbarButtons(); 
 	}
 	
 	/**
@@ -665,12 +642,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 	}
 	
 	/**
-	 * Adapt UI to code type. (Latex or Ascii).
-	 * 
-	 * TODO: This is obsolete and can be removed in the future.
+	 * Adapt UI to code type. (Latex or Ascii). For correct display of header only.
 	 */
 	printCodeType() { 
-		$("[name='codeType']").filter("[value=" + this.codeType + "]").attr("checked", "checked"); 
 		$("#title_Edition_Current_Syntax").text(this.codeType); 
 		$("#title_Edition_Other_Syntax").text((this.codeType == "AsciiMath") ? "Latex" : "AsciiMath"); 
 	}
@@ -712,34 +686,12 @@ export class KatexInputHelper implements IKatexInputHelper {
 			}
 		}
 		
-		function onAdditionalChange(value: boolean) {
-			if (value) {
-				$("#btENCLOSE_TYPE").removeClass("unselect"); 
-				$('#HTML_TAG').show(); 
-				vme.codeMirrorEditor.setOption("mode", "text/html"); 
-				vme.codeMirrorEditor.setOption("autoCloseTags", true); 
-			} else {
-				$("#btENCLOSE_TYPE").addClass("unselect"); 
-				$('#HTML_TAG').hide(); 
-				vme.codeMirrorEditor.setOption("mode", "text/x-latex"); 
-				vme.codeMirrorEditor.setOption("autoCloseTags", false); 
-			}
-		}
-
-		onChange('#encloseType', this.encloseAllFormula);
-		onAdditionalChange(this.encloseAllFormula);
 		$("#autoUpdateTime").val(this.autoUpdateTime);
 		onChange('#menuupdateType', this.menuupdateType);
 		onChange('#autoupdateType', this.autoupdateType);
 		onChange('#persistWindowPositions', this.persistWindowPositions);
 		onChange('#persistEquations', this.persistEquations);
 		
-		$("#encloseType").on('change', function(event) {
-			vme.encloseAllFormula = !vme.encloseAllFormula;
-			onChange(event.target, vme.encloseAllFormula);
-			onAdditionalChange(vme.encloseAllFormula);
-			vme.updateOutput(); 
-		}); 
 		$("#autoUpdateTime").on('change', function(event) { 
 			vme.autoUpdateTime = $("#autoUpdateTime").val(); 
 		});
@@ -836,7 +788,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	/**
 	 * Wrapper of the Localizer routine.
 	 */	
-	getLocalText(TEXT_CODE) { 
+	getLocalText(TEXT_CODE: string) : string { 
 		try { 
 			return this.localizer.getLocalText(TEXT_CODE);
 		} catch (e) { return ""; } 
@@ -867,93 +819,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 					if (typeof (localText) != "undefined") $(this).html(localText); 
 				} 
 			});
-
-		vme.switchHtmlMode(vme.encloseAllFormula);
-		
+			
 		this.printCodeType();
-	}
-	
-	/**
-	 * Handlers for the HTML toolbar buttons.
-	 * 
-	 * This is the only place, where the ColorPicker is used. The click events
-	 * are assigned to static Html content, no need to re-invoke this in
-	 * *onLocaleChanged*.
-	 */
-	htmlToolbarButtons() {
-		let vme = this;
-		$("#btHTML_STRONG").on('click', function(event) { event.preventDefault(); vme.tag("<strong>", "</strong>"); }); 
-		$("#btHTML_EM").on('click', function(event) { event.preventDefault(); vme.tag("<em>", "</em>"); }); 
-		$("#btHTML_U").on('click', function(event) { event.preventDefault(); vme.tag("<u>", "</u>"); }); 
-		$("#btHTML_S").on('click', function(event) { event.preventDefault(); vme.tag("<s>", "</s>"); }); 
-		$("#btHTML_BR").on('click', function(event) { event.preventDefault(); vme.insert("<br/>"); }); 
-		$("#btHTML_P").on('click', function(event) { event.preventDefault(); vme.tag("<p>", "</p>"); }); 
-		$("#btHTML_H1").on('click', function(event) { event.preventDefault(); vme.tag("<h1>", "</h1>"); }); 
-		$("#btHTML_H2").on('click', function(event) { event.preventDefault(); vme.tag("<h2>", "</h2>"); }); 
-		$("#btHTML_H3").on('click', function(event) { event.preventDefault(); vme.tag("<h3>", "</h3>"); }); 
-		$("#btHTML_Latex").on('click', function(event) { event.preventDefault(); vme.tag("$", " $"); }); 
-		$("#btHTML_LatexLine").on('click', function(event) { event.preventDefault(); vme.tag("$$", " $$"); }); 
-		$("#btHTML_AsciiMath").on('click', function(event) { event.preventDefault(); vme.tag("`", " `"); }); 
-		$("#btHTML_OL").on('click', function(event) { event.preventDefault(); vme.tag("\n<ol>\n\t<li>", "</li>\n</ol>\n"); }); 
-		$("#btHTML_UL").on('click', function(event) { event.preventDefault(); vme.tag("\n<ul>\n\t<li>", "</li>\n</ul>\n"); }); 
-		$("#btHTML_A").on('click', function(event) { event.preventDefault(); vme.tag("<a href=\"http://www.equatheque.net\">", "</a>"); }); 
-		$("#btHTML_HR").on('click', function(event) { event.preventDefault(); vme.insert("<hr/>"); }); 
-		$("#btHTML_IMG").on('click', function(event) { event.preventDefault(); vme.insert("<img src=\"http://www.equatheque.net/image/EquaThEque.png\"/>"); }); 
-		$("#btHTML_CENTER").on('click', function(event) { event.preventDefault(); vme.tag("<p style=\"text-align:center\">", "</p>"); }); 
-		$("#btHTML_LEFT").on('click', function(event) { event.preventDefault(); vme.tag("<p style=\"text-align:left\">", "</p>"); }); 
-		$("#btHTML_RIGHT").on('click', function(event) { event.preventDefault(); vme.tag("<p style=\"text-align:right\">", "</p>"); }); 
-		$("#btHTML_JUSTIFY").on('click', function(event) { event.preventDefault(); vme.tag("<p style=\"text-align:justify\">", "</p>"); }); 
-		$("#btHTML_INDENT").on('click', function(event) { event.preventDefault(); vme.tag("<p style=\"margin-left:40px;text-align:justify\">", "</p>"); }); 
-		if (!vme.runNotColorPicker) { 
-			$('#btHTML_TEXTCOLOR').ColorPicker({ 
-				color: '#0000ff', 
-				flat: false, 
-				onShow: function(colpkr: any) { $(colpkr).fadeIn(500); return false; }, 
-				onHide: function(colpkr: any) { $(colpkr).fadeOut(500); return false; }, 
-				onChange: function(hsb: any, hex: any, rgb: any) { $('#btHTML_TEXTCOLOR').css('backgroundColor', '#' + hex); }, 
-				onSubmit: function(hsb: any, hex: any, rgb: any, el: any) { 
-					$(el).css('backgroundColor', '#' + hex); 
-					$(el).ColorPickerHide(); 
-					vme.tag("<span style=\"color:#" + hex + "\">", "</span>"); 
-				} 
-			}); 
-			$('#btHTML_FORECOLOR').ColorPicker({ 
-				color: '#0000ff', 
-				flat: false, 
-				onShow: function(colpkr: any) { $(colpkr).fadeIn(500); return false; }, 
-				onHide: function(colpkr: any) { $(colpkr).fadeOut(500); return false; }, 
-				onChange: function(hsb: any, hex: any, rgb: any) { $('#btHTML_FORECOLOR').css('backgroundColor', '#' + hex); }, 
-				onSubmit: function(hsb: any, hex: any, rgb: any, el: any) { 
-					$(el).css('backgroundColor', '#' + hex); 
-					$(el).ColorPickerHide(); 
-					vme.tag("<span style=\"background-color:#" + hex + "\">", "</span>"); 
-				} 
-			}); 
-		}
-	}
-	
-	/**
-	 * Switches the Html mode into a given state.
-	 * 
-	 * @param toEnclose - target state
-	 */
-	switchHtmlMode(toEnclose: boolean) {
-		
-		let vme = this; 
-		if (toEnclose) { 
-			$("#encloseType").attr("checked", "checked"); 
-			$("#btENCLOSE_TYPE").removeClass("unselect"); 
-			$('#HTML_TAG').show(); 
-			vme.codeMirrorEditor.setOption("mode", "text/html"); 
-			vme.codeMirrorEditor.setOption("autoCloseTags", true); 
-		} else { 
-			$("#encloseType").removeAttr("checked"); 
-			$("#btENCLOSE_TYPE").addClass("unselect"); 
-			$('#HTML_TAG').hide(); 
-			vme.codeMirrorEditor.setOption("mode", "text/x-latex"); 
-			vme.codeMirrorEditor.setOption("autoCloseTags", false); 
-		}
-		$('#innerLayout').layout();
 	}
 	
 	/**
@@ -1002,66 +869,19 @@ export class KatexInputHelper implements IKatexInputHelper {
 	*/
 	
 	/**
-	 * Plays a role in Html mode (obsolete).
+	 * Plays a role in Html, possibly for formulae with insertion point.
 	 */
 	tag(b: any, a: any) {
-		b = b || null; a = a || b; if (!b || !a) { return }
+		b = b || null; 
+		a = a || b; 
+		if (!b || !a) { return }
 		this.codeMirrorEditor.replaceSelection(b + this.codeMirrorEditor.getSelection() + a); 
 		let pos = this.codeMirrorEditor.getCursor(); 
-		pos.ch = pos.ch - a.length; this.codeMirrorEditor.setCursor(pos); 
+		pos.ch = pos.ch - a.length; 
+		this.codeMirrorEditor.setCursor(pos); 
 		if (this.menuupdateType) this.updateOutput(); 
 		this.setFocus();
 	}
-	
-	/**
-	 * OBSOLETE. NOT USED.
-	 *
-	encloseSelection(f, j, h) {
-		this.mathTextInput.focus(); 
-		f = f || ""; 
-		j = j || ""; 
-		let a, d, c, b, i, g; 
-		if (typeof (document.selection) != "undefined") { 
-			c = document.selection.createRange().text 
-		} else { 
-			if (typeof (this.mathTextInput.setSelectionRange) != "undefined") { 
-				a = this.mathTextInput.selectionStart; 
-				d = this.mathTextInput.selectionEnd; 
-				b = this.mathTextInput.scrollTop; 
-				c = this.mathTextInput.value.substring(a, d) 
-			} 
-		}
-		if (c.match(/ $/)) { 
-			c = c.substring(0, c.length - 1); 
-			j = j + " " 
-		}
-		if (typeof (h) == "function") { 
-			g = (c) ? h.call(this, c) : h("") 
-		} else { 
-			g = (c) ? c : "" 
-		}
-		i = f + g + j; 
-		if (typeof (document.selection) != "undefined") { 
-			let e = document.selection.createRange().text = i; 
-			this.mathTextInput.caretPos -= j.length; 
-		} else {
-			if (typeof (this.mathTextInput.setSelectionRange) != "undefined") {
-				this.mathTextInput.value = this.mathTextInput.value.substring(0, a) + i + this.mathTextInput.value.substring(d); 
-				if (c) { 
-					this.mathTextInput.setSelectionRange(a + i.length, a + i.length); 
-				} else {
-					if (j != "") { 
-						this.mathTextInput.setSelectionRange(a + f.length, a + f.length); 
-					} else { 
-						this.mathTextInput.setSelectionRange(a + i.length, a + i.length); 
-					}
-				}
-				this.mathTextInput.scrollTop = b
-			}
-		}
-		if (this.menuupdateType) this.updateOutput();
-	}
-	*/
 	
 	/**
 	 * Menu command to open a file with formula.
@@ -1119,7 +939,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 				codemirrorCSS = "zenburn"; 
 				colorpickerCSS = "black";
 			}
-			this.codeMirrorTheme = codemirrorCSS;
 			this.codeMirrorEditor.setOption("theme", codemirrorCSS); 
 			if (!this.runNotColorPicker) { 
 				$("#colorpickerCSSblack").prop('disabled', !(colorpickerCSS == "black"));
@@ -1214,7 +1033,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		let vme = this; 
 		/**
 		 * Given an anchor object, determines and returns the included
-		 * 			 LATEX code used as info for tool tip and info line.
+		 * LATEX code used as info for tool tip and info line.
 		 */
 		function getSymbol(a: any) {
 			let info: any = beginEndInfo(a);
@@ -1239,6 +1058,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		function latex(a: any) {
 			if (typeof ($(a).attr("latex")) != "undefined")
 				return $(a).attr("latex");
+			return null;
 		};
 		
 		$(`#${fPanelID} a.s`)
@@ -1259,10 +1079,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 				vme.insert(info);
 				return;
 			}
-			$.messager.show({ 
-				title: "<span class='rtl-title-withicon'>" + vme.getLocalText("INFORMATION") + "</span>", 
-				msg: vme.getLocalText("NO_LATEX") 
-			}); 
+			vme.messager.show("INFORMATION", "NO_LATEX");
 		}); 
 		
 		// this is solely for a single ...more button linking to a dialog
@@ -1344,6 +1161,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 		// let heading = $('h3').text();
 		// $('h3').text(`${heading} on ${this.mobile ? 'mobile' : 'desktop'} device`);
 
+		console.info(`Base location is : ${bundlePath}`);
+		
 		$('html > head').append($('<base />'));
 		$('html > head > base').attr('href', bundlePath);
 		

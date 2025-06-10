@@ -151,7 +151,8 @@ export class KIHParameters {
 	writeParameters(_equation = "") {
 		let parameters = JSON.stringify(this.filteredParameters);
 		$('#hidden').attr('value', parameters);
-		this.debugPrint();
+		//	Disturbes in tests
+		//this.debugPrint();
 	}
 	
 	/**
@@ -206,6 +207,7 @@ export class KIHParameters {
 	 * @param val - value to be stored
 	 */
 	storeCookie(key: string, val: any) {
+		if (!window.localStorage) { return; }
 		if (this.shouldBeStored(key, this.persistEquations, this.persistWindowPositions)) {
 			let json = null;
 			try {
@@ -228,6 +230,7 @@ export class KIHParameters {
 	 * Loads all cookies. Cookies must be defined and must not be deactivated.
 	 */
 	loadCookies() {
+		if (!window.localStorage) { return { }; }
 		try {
 			let cookies = { };
 			let persist = window.localStorage.getItem('persistEquations') != 'false';

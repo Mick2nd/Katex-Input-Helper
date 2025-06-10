@@ -56,7 +56,7 @@
 	"FORMULA": "Công thức",
 	"EQUATION": "phương trình",
 	"EQUATION_SAMPLE": "phương trình mẫu",
-	"EDITION": "<span id='PARAM_EDITION_SYNTAX'>phiên bản <span id='title_Edition_Current_Syntax'>&nbsp;</span> <a href='#' id='btTITLE_EDITION_SYNTAX' class='bt'>chuyển sang <span id='title_Edition_Other_Syntax'>&nbsp;</span></a></span><span id='PARAM_EDITION_ENCLOSE'><a id='btENCLOSE_TYPE' href='#'>HTML</a></span>",
+	"EDITION": "<span id='PARAM_EDITION_SYNTAX'>phiên bản <span id='title_Edition_Current_Syntax'>&nbsp;</span> </span>",
 	"SYNTAX": "Cú pháp",
 	"UPDATE": "phương trình cập nhật",
 	"AUTHOR": "<a id='btCOPYRIGHT' href='../information/tCOPYRIGHT.html' target='_blank' class='bt'>Copyright</a> &copy; <a href='https://github.com/Mick2nd/Katex-Input-Helper/' target='_blank' class='bt'>Katex Input Helper (Visual Math Editor)</a> <span id='VMEversionInf'></span> được tạo bởi <a href='mailto:juergen@habelt-jena.de?subject=Katex%20Input%20Helper' target='_blank' class='bt' >Jürgen Habelt</a> - dựa trên tác phẩm của David Grima.",

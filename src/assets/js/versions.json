@@ -1,8 +1,8 @@
 {
-	"version": "2.1.0",
+	"version": "2.1.1",
 	"VKI_version": "1.49",
 	"easyuiVersion": "1.11.3",
 	"katexVersion": "0.16.22",
 	"colorPickerVersion": "23/05/2009",
-	"build": 146
+	"build": 176
 }

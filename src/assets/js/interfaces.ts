@@ -12,7 +12,7 @@ export interface IKatexInputHelper {
 
 export interface ILocalizer {
 	currentLocale: string;
-	subscribe(func: any, ...args: any);
+	subscribe(func: any, ...args: any) : void;
 	load(langCode: string) : Promise<void>;
 	getLocalText(code: string) : string;
 	initialiseLanguageChoice(localType: string) : Promise<void>;
@@ -20,8 +20,8 @@ export interface ILocalizer {
 }
 
 export interface IMessager {
-	error(msgKey: string, e: any);
-	show(titleKey: string, msgKey: string, e?: any);
+	error(msgKey: string, e: any) : void;
+	show(titleKey: string, msgKey: string, e?: any) : void;
 }
 
 export interface IUtilities {
@@ -33,58 +33,59 @@ export interface IThemes {
 	initialiseThemeChoice(activeTheme: string, dir: string) : Promise<void>;
 	activateStyle(activeTheme: string) : Promise<void>;
 	setRTLstyle(dir: string) : void;
-	subscribe(func: any, ...args: any);
+	subscribe(func: any, ...args: any) : void;
 }
 
 export interface IParser {
-	initialise();
-	parseAsync(selector: string, ctx?: any, delay?: number) : Promise<void>;
+	initialise() : void;
+	parseAsync(selector: string, ctx?: any, delay?: number) : Promise<any>;
 }
 
 export interface IMath {
-	equipWithInteractivity(a: any, javascript: boolean);
-	equipWithTooltip(selector: any, text: string, javascript: boolean);
-	inplaceUpdate(selector: any, javascript: boolean);
-	insert(b: any);
-	insertMath(text: string, element: any, multiple?: boolean, displayMode?: boolean);
+	equipWithInteractivity(a: any, javascript: boolean) : void;
+	equipWithTooltip(selector: any, text: string, javascript: boolean) : void;
+	inplaceUpdate(selector: any, javascript: boolean) : void;
+	insert(b: any) : void;
+	insertMath(text: string, element: any, multiple?: boolean, displayMode?: boolean) : void;
 	codeMirror: any;
-	setFocus();
-	updateAnchor(a: any);
-	updateHeaders(selector: string);
-	updateLatexMenu();
-	updateOutput();
+	setFocus() : void;
+	updateAnchor(a: any) : void;
+	updateTableAnchor(a: any) : void;
+	updateHeaders(selector: string) : void;
+	updateLatexMenu() : void;
+	updateOutput() : void;
 	updateTables() : Promise<void>;
 }
 
 export interface ICodeMirror {
-	replaceSelection(b: string);
+	replaceSelection(b: string) : void;
 	getSelection() : string;
-	setValue(val: string|ArrayBuffer);
+	setValue(val: string|ArrayBuffer) : void;
 	getValue() : string;
-	focus();
+	focus() : void;
 	lastLine() : number;
-	setCursor(cursor: any);
+	setCursor(cursor: any) : void;
 	getCursor() : any;
-	setOption(option: string, val: any);
-	on(evt: string, handler: any);
+	setOption(option: string, val: any) : void;
+	on(evt: string, handler: any) : void;
 	version?: string;
 }
 
 export interface IPanels {
-	showWindowDI(wndId: any, id: string, ...params: any);
+	showWindowDI(wndId: any, id: string, ...params: any) : void;
 }
 
 export interface IPanel {
-	onMove(left: number, top: number);
-	onResize(width: number, height: number);
-	onClose();
+	onMove(left: number, top: number) : void;
+	onResize(width: number, height: number) : void;
+	onClose() : void;
 	get handlers() : any;
 	initialise(dummy?: any) : Promise<void>;
-	update(...params) : Promise<void>;
+	update(...params: any) : Promise<void>;
 	show() : Promise<void>;
-	resize();
-	open();
-	toggle();
+	resize() : void;
+	open() : void;
+	toggle() : void;
 }
 
 export interface ICategoriesTree {
@@ -92,7 +93,7 @@ export interface ICategoriesTree {
 	treeChanged: any;
 	equationMoved: any;
 	currentLeaf: any;
-	deleteEquations(from: any, checked: any);
+	deleteEquations(from: any, checked: any) : void;
 	set currentEquations(value: any);
 	get currentEquations() : any;
 	get customEquationsProxy() : any;
@@ -100,6 +101,7 @@ export interface ICategoriesTree {
 	getCheckedEquations() : number[];
 }
 
+export const asyncId = Symbol.for('AsyncId');
 export const bootLoaderId = Symbol.for('BootLoaderId');
 export const platformInfoId = Symbol.for('PlatFormInfoId');
 export const katexInputHelperId = Symbol.for('KatexInputHelperId');
@@ -111,6 +113,7 @@ export const utilitiesId = Symbol.for('UtilitiesId');
 export const themesId = Symbol.for('ThemesId');
 export const parserId = Symbol.for('ParserId');
 export const mathId = Symbol.for('MathId');
+export const codeMirrorId = Symbol.for('CodeMirrorId');
 export const panelsId = Symbol.for('PanelsId');
 
 export const dynamicPanelId = Symbol.for('DynamicPanelId');

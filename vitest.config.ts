@@ -9,7 +9,7 @@ export default defineConfig(() => {
 			globals: true,
 	  		environment: 'jsdom',
 			chaiConfig: {
-				includeStack: true
+				includeStack: true,
 			},
 			poolOptions: {
 				forks: {

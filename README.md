@@ -97,6 +97,12 @@ The custom equations dialog with categories tree
 
 ## Release Notes
 
+### 2.1.1
+
+- Removed function-less code.
+- Minor bug fixes.
+- Added unit tests (still under development).
+
 ### 2.1.0
 
 **New features**

@@ -6,7 +6,8 @@ import { ILocalizer, localizerId, IMessager, IUtilities } from './interfaces';
  */
 @injectable()
 export class Messager implements IMessager {
-	localizer = null;
+	
+	localizer: ILocalizer;
 	
 	/**
 	 * Constructor, localizer is injected.
@@ -52,13 +53,13 @@ export class Messager implements IMessager {
  */
 @injectable()
 export class Utilities implements IUtilities {
-	localizer = null;
+	localizer: ILocalizer;
 		
 	/**
 	 * Constructor, localizer is injected.
 	 */
 	constructor(
-		@inject(localizerId) localizer: any
+		@inject(localizerId) localizer: ILocalizer
 	) {
 		this.localizer = localizer;
 	}
@@ -90,7 +91,7 @@ export class Utilities implements IUtilities {
 	localizeOption(id: string, option: string) : string {
 		let text = $(`#${id}`).window('options')[option];								// do something to preserve the TITLE: this is an option
 		let html = $.parseHTML(text);													// parse it into html object
-		let key = $(html).attr('locate');												// extract the locate attribute
+		let key = $(html).attr('locate') as string;										// extract the locate attribute
 		let located = this.localizer.getLocalText(key);									// use it to get localized text
 		// TODO: after change due to Typescript errors all seems to be okay
 		let htmlString = (($(html).html(located)[0] as any) as Element).outerHTML;		// insert it into orginal html

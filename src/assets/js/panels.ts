@@ -290,6 +290,7 @@ export class KIHPanel implements IPanel {
 		await super.initialise();
 
 		let vme = this;
+		
 		$('#btMATRIX_CLOSE').on('click', function(event) { 
 			event.preventDefault(); 
 			vme.toggle();										// direct 'close' does not trigger onClose 

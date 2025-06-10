@@ -56,7 +56,7 @@
 	"FORMULA": "Formula",
 	"EQUATION": "Equation",
 	"EQUATION_SAMPLE": "Equations samples",
-	"EDITION": "<span id='PARAM_EDITION_SYNTAX'>Edit in <span id='title_Edition_Current_Syntax'>&nbsp;</span> <a href='#' id='btTITLE_EDITION_SYNTAX' class='bt'>switch to <span id='title_Edition_Other_Syntax'>&nbsp;</span></a></span><span id='PARAM_EDITION_ENCLOSE'><a id='btENCLOSE_TYPE' disabled href='#'>HTML</a></span>",
+	"EDITION": "<span id='PARAM_EDITION_SYNTAX'>Edit in <span id='title_Edition_Current_Syntax'>&nbsp;</span></span> ",
 	"SYNTAX": "Syntax",
 	"UPDATE": "Equation update",
 	"AUTHOR": "<a id='btCOPYRIGHT' href='./information/tCOPYRIGHT.html' target='_blank' class='bt'>Copyright</a> &copy; <a href='https://github.com/Mick2nd/Katex-Input-Helper/' target='_blank' class='bt'>Katex Input Helper (Visual Math Editor)</a> <span id='VMEversionInf'></span> created by <a href='mailto:juergen@habelt-jena.de?subject=Katex%20Input%20Helper' target='_blank' class='bt' >Jürgen Habelt</a> - based on the work of David Grima.",

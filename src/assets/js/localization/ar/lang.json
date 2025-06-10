@@ -56,7 +56,7 @@
 	"FORMULA": "صيغة",
 	"EQUATION": "معادلة",
 	"EQUATION_SAMPLE": "أمثلة معادلات",
-	"EDITION": "<span id='PARAM_EDITION_SYNTAX'>تحرير بـ <span id='title_Edition_Current_Syntax'>&nbsp;</span> <a href='#' id='btTITLE_EDITION_SYNTAX' class='bt'>الانتقال الى <span id='title_Edition_Other_Syntax'>&nbsp;</span></a></span><span id='PARAM_EDITION_ENCLOSE'><a id='btENCLOSE_TYPE' href='#'>HTML</a></span>",
+	"EDITION": "<span id='PARAM_EDITION_SYNTAX'>تحرير بـ <span id='title_Edition_Current_Syntax'>&nbsp;</span></span>",
 	"SYNTAX": "كتابة",
 	"UPDATE": "تحديث المعادلة",
 	"AUTHOR": "<a id='btCOPYRIGHT' href='../information/tCOPYRIGHT.html' target='_blank' class='bt'>حقوق النشر</a> &copy; <a href='https://github.com/Mick2nd/Katex-Input-Helper/' target='_blank' class='bt'>Katex Input Helper (Visual Math Editor)</a> <span id='VMEversionInf'></span>  تم إنشاؤها بواسطة  <a href='mailto:juergen@habelt-jena.de?subject=Katex%20Input%20Helper' target='_blank' class='bt' >Jürgen Habelt</a> - بناءً على عمل ديفيد غريما.",
