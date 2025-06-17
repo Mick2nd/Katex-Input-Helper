@@ -30,7 +30,7 @@
 	"ERROR_SET_EQUATION": "Biên tập viên đã không được gọi là một lĩnh vực bên ngoài.",
 	"MATH_ML": "MathML dịch",
 	"UNICODES_LIST": "Danh sách mã Unicode",
-	"LATEX_CODES_LIST": "Danh sách của MathJax LaTeX mã",
+	"LATEX_CODES_LIST": "Các chức năng KaTeX được hỗ trợ",
 	"ASCIIMATH_CODES_LIST": "Danh sách các mã AsciiMath",
 	"LANGUAGE_LIST": "Ngôn ngữ tài nguyên",
 	"ASCIIMATH_SYMBOLS": "AsciiMath biểu tượng!",

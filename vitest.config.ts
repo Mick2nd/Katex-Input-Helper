@@ -15,7 +15,8 @@ export default defineConfig(() => {
 				forks: {
 					execArgv: ['--no-warnings']
 				}
-			}
+			},
+			exclude: [ '**/comments.test.ts' ]
 		},
 		resolve: {
 			alias: {

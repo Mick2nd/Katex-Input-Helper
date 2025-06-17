@@ -30,7 +30,7 @@
 	"ERROR_SET_EQUATION": "El editor no ha sido llamado por un campo externo.",
 	"MATH_ML": "Traducción MathML",
 	"UNICODES_LIST": "Lista de códigos de Unicode",
-	"LATEX_CODES_LIST": "Lista de códigos de LaTeX MathJax",
+	"LATEX_CODES_LIST": "Funciones KaTeX compatibles",
 	"ASCIIMATH_CODES_LIST": "Lista de códigos de ASCIIMath",
 	"LANGUAGE_LIST": "Los recursos lingüísticos",
 	"ASCIIMATH_SYMBOLS": "Símbolos ASCIIMath!",

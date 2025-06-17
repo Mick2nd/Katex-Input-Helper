@@ -30,7 +30,7 @@
 	"ERROR_SET_EQUATION": "Редактор не был вызван внешним полем.",
 	"MATH_ML": "MathML перевод",
 	"UNICODES_LIST": "Список символов Unicode",
-	"LATEX_CODES_LIST": "Список кодов MathJax LaTeX",
+	"LATEX_CODES_LIST": "Поддерживаемые функции KaTeX",
 	"ASCIIMATH_CODES_LIST": "Список кодов AsciiMath",
 	"ASCIIMATH_SYMBOLS": "AsciiMath символов!",
 	"LANGUAGE_LIST": "Лингвистические ресурсы",

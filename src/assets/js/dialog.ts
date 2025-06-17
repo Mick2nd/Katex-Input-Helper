@@ -61,6 +61,11 @@ class Documentations {
 				file: "mathml.pdf",
 				url: "https://www.w3.org/TR/MathML2/mathml-s.pdf",
 				name: "wMATH_ML_SPECIFICATIONS"
+			},
+			KATEX: {
+				file: "",
+				url: "https://katex.org/docs/supported",
+				name: "wKATEX_FUNCTIONS"
 			}
 		};
 		
@@ -94,6 +99,10 @@ class Documentations {
 
 	showMathmlSpecifications() {
 		return this.showWindow('MATHML');
+	}
+
+	showKatexFunctions() {
+		return this.showWindow('KATEX');
 	}
 
 	getUrl(key: string) {
@@ -323,9 +332,12 @@ export class KatexInputHelper implements IKatexInputHelper {
 		await this.localizer.initialiseLanguageChoice(this.localType);		// Progress dialog uses localized text
 		
 		$.messager.progress({
-			title: "VisualMathEditor", 
+			title: "Katex Input Helper", 
 			text: vme.getLocalText("WAIT_FOR_EDITOR_DOWNLOAD"), 
-			msg: "<center>&copy; <a href='mailto:contact@equatheque.com?subject=VisualMathEditor' target='_blank' class='bt' >David Grima</a> - <a href='http://www.equatheque.net' target='_blank' class='bt' >EquaThEque</a><br/><br/></center>", 
+			msg:	"<center>&copy; " +
+						"<a href='mailto:juergen@habelt-jena.de?subject=Katex%20Input%20Helper' target='_blank' class='bt' >Jürgen Habelt</a> -" + 
+						"<a href='https://github.com/Mick2nd/Katex-Input-Helper' target='_blank' class='bt' >A Joplin plug-in</a><br/><br/>" +
+					"</center>", 
 			interval: 300 
 		}); 
 		$('#form').hide();
@@ -510,7 +522,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 					//case "mMATH_ML": vme.viewMathML(vme.mathVisualOutput.id); break; 
 					// TODO: complete transfer of functionality to Panels
 					case "mUNICODES_LIST": await vme.panels.showWindowDI(unicodeWindowId, 'wUNICODES_LIST', vme.initialiseSymbolContent.bind(vme)); break; 
-					case "mLATEX_CODES_LIST": await vme.openWindow('wLATEX_CODES_LIST'); await vme.initialiseLatexMathjaxCodesList(); break; 
+					case "mLATEX_CODES_LIST": vme.documentations.showKatexFunctions(); break; 
 					case "mLANG_RESSOURCE_LIST": await vme.openWindow('wLANGUAGE_LIST'); await vme.initialiseLangRessourcesList(); break; 
 					case "mLATEX_DOCUMENTATION": vme.documentations.showLatexDocumentation(); break;
 					case "mMHCHEM_DOCUMENTATION": vme.documentations.showMhchemDocumentation(); break;

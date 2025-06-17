@@ -93,7 +93,7 @@ The custom equations dialog with categories tree
 ## Known Problems
 
 - A minor problem is a missing update of the language of the data grid paging bar in the *Custom Equations* dialog. This only appears during language change during an actual activation of the dialog.
-- The persistence of custom equations can be damaged when an filter is active. 
+- The persistence of custom equations can be damaged when a filter is active. 
 
 ## Release Notes
 
@@ -102,6 +102,7 @@ The custom equations dialog with categories tree
 - Removed function-less code.
 - Minor bug fixes.
 - Added unit tests (still under development).
+- MathJax list replaced by a supported Katex functions link.
 
 ### 2.1.0
 

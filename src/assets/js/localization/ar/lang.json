@@ -30,7 +30,7 @@
 	"ERROR_SET_EQUATION": "لم يتم نداء المحرر بواسطة حقل خارجي.",
 	"MATH_ML": "و MathML مصدر",
 	"UNICODES_LIST": "قائمة ترميز يونيكود",
-	"LATEX_CODES_LIST": "قائمة ترميز LaTeX MathJax",
+	"LATEX_CODES_LIST": "وظائف KaTeX المدعومة",
 	"ASCIIMATH_CODES_LIST": "قائمة ترميز AsciiMath",
 	"LANGUAGE_LIST": "الموارد اللغوية",
 	"ASCIIMATH_SYMBOLS": "رموز AsciiMath!",
