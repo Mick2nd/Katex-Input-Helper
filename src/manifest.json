@@ -30,6 +30,8 @@
 			"label": "Custom Equations Dialog with Categories Tree"
 		}
 	],
-	"icons": {},
+	"icons": {
+		"48": "img/Square-root.png"
+	},
 	"platforms": ["desktop"]
 }
