@@ -30,6 +30,7 @@ interface JQuery {
 interface JQueryStatic {
 	parser: Parser;
 	messager: any;
+	mobile: any;
 }
 
 interface Parser {

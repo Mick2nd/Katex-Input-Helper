@@ -323,7 +323,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 			} };
 			await import('./jquery-easyui/themes/mobile.css', opts);
 			// Throws in matrix window
-			//let mobile = await import('./jquery-easyui/jquery.easyui.mobile');
+			let mobile = await import('./jquery-easyui/jquery.easyui.mobile');
+			$.mobile.init();
 		}
 
 		// IN QUESTION
