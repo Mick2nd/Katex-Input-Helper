@@ -7,7 +7,7 @@ import { IBootLoader, bootLoaderId, katexInputHelperId, IKatexInputHelper, katex
 	dynamicParametersId, panelFactoryId, unicodeWindowId, categoriesTreeId, ICategoriesTree, asyncId,
 	codeMirrorId, ICodeMirror } from './interfaces';
 
-import { BootLoader } from './bootloader';
+import { BootLoader } from './bootLoader';
 import { KatexInputHelper } from './dialog';
 import { ParametersProxy } from './parameters';
 import { Localizer } from './localization';

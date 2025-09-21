@@ -23,6 +23,7 @@
   "files": [
     "publish"
   ],
+  "type": "module",
   "devDependencies": {
     "@atao60/fse-cli": "^0.1.9",
     "@babel/core": "^7.27.1",
