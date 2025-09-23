@@ -409,7 +409,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		let vme = this; 
 		const codeMirrorEditor = this.codeMirrorEditor;
 		const option = vme.platformInfo.isMobile ? 'contenteditable' : 'textarea';
-		codeMirrorEditor.setOption('inputStyle', option);
+		try { codeMirrorEditor.setOption('inputStyle', option); } catch(e) {}
 		codeMirrorEditor.on("change", function() { vme.autoUpdateOutput(); }); 
 		
 		if(!vme.platformInfo.isMobile) {
