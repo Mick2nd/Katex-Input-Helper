@@ -9,6 +9,9 @@
 @import 'codemirror/theme/twilight.css';
 @import 'codemirror/theme/zenburn.css';
 
+$widthWestAccordion: 230px;
+$widthEastAccordion: 250px;
+
 body {
 	height: 100%;
 }
@@ -73,7 +76,7 @@ h3 {
 }
 
 #westRegion {
-	width: 230px;
+	width: $widthWestAccordion;
 	
 	.easyui-accordion > div {
 		overflow: hidden !important;
@@ -132,7 +135,7 @@ h3 {
 }
 
 #eastRegion {
-	width: 250px;
+	width: $widthEastAccordion;
 	
 	.easyui-accordion > div {
 		overflow: hidden !important;
@@ -366,8 +369,8 @@ h3 {
 /* THERE IS NO ACTION ON THIS
 */
 .tooltip {
-	background-color: 'lightyellow'!;
+	background-color: 'lightyellow';
 	border-color: 'red';
 	width: 500;
-	z-index: 500000!;	
+	z-index: 500000;	
 }

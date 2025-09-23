@@ -1,4 +1,4 @@
-import './dialog.css' assert { type: 'css' };
+import './dialog.scss' assert { type: 'css' };
 
 import { VKI_init } from './keyboard/keyboard';
 import { FileHandler } from "./fileHandling";

@@ -107,10 +107,10 @@ const rulesConfig = (env) => [
 		}]
 	},
 	{
-		test: /\.css$/,
+		test: /\.s?css$/,
 		include: [ path.resolve(path.dirname('.'), 'src/assets/js') ],
 		exclude: [ /node_modules/ ],
-		use: [ MiniCssExtractPlugin.loader, 'css-loader' ],
+		use: [ MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader' ],
 		sideEffects: true
 	},
 	{
