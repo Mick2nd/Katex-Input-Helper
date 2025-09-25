@@ -52,16 +52,16 @@
 					<div iconcls="icon-save" id="mSAVE_EQUATION">
 						<span class='rtl-menu-item' locate="SAVE_EQUATION"></span>
 					</div>
-					<a id="fSAVE_EQUATION" href="#" style="display: none">saveFile</a>
+					<a id="fSAVE_EQUATION" href="#" class="invisible">saveFile</a>
 					<div iconcls="icon-open" id="mOPEN_EQUATION">
 						<span class='rtl-menu-item' locate="OPEN_EQUATION"></span>
 					</div>
-					<input type="file" id="fOPEN_EQUATION" style="display: none" />
+					<input type="file" id="fOPEN_EQUATION" class="invisible" />
 				</div>
 				<div id="mINSERT" class="menus">
 					<div iconcls="icon-char" id="mCHARS">
 						<span class='rtl-menu-item' locate="CHAR"></span>
-						<div style="width: 200px;">
+						<div class="menus">
 							<div iconcls="icon-FR_CHAR" id="f_FR_CHAR">
 								<span class='rtl-menu-item' locate="FR_CHAR" information='FR_CHAR'></span>
 							</div>
@@ -211,7 +211,7 @@
 							</fieldset>
 						</form>
 					</div>
-					<div id="mathVisualOutput" class="south easyui-panel" dir="ltr" data-options="region:'south',split:true,noheader:true" style="height: 50%"></div>
+					<div id="mathVisualOutput" class="south easyui-panel" dir="ltr" data-options="region:'south',split:true,noheader:true" ></div>
 				</div>
 			</div>
 
@@ -444,7 +444,7 @@
 			title="<span id='wf_CUSTOM_EQUATIONS_MORE_TITLE' class='custom-equations' locate='CUSTOM_EQUATIONS' class='rtl-title-withicon'></span>"
 		>
 			<div id="CUSTOM_EQUATIONS_LAYOUT" class="easyui-layout">
-				<div data-options="region:'west',split:true" style="width: 25%;">
+				<div data-options="region:'west',split:true">
 					<ul id="categories" class="easyui-tree" data-options="dropAccept:'.datagrid-div'">
 					</ul>
 					<div id="treeMenu" class="easyui-menu" data-options="minWidth:160">
@@ -507,7 +507,7 @@
 					<span class="custom-equations" locate="SAVE">SAVE</span>
 				</a>
 			</div>
-			<input type="file" id="fOPEN_CUSTOM_EQUATIONS" style="display: none" />
+			<input type="file" id="fOPEN_CUSTOM_EQUATIONS" class="invisible" />
 			<a id="fSAVE_CUSTOM_EQUATIONS" href="#" ></a>
 		</div>
 		
