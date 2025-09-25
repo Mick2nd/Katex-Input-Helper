@@ -1,4 +1,4 @@
-import './dialog.scss' assert { type: 'css' };
+// import './dialog.scss' assert { type: 'css' };
 
 import { VKI_init } from './keyboard/keyboard';
 import { FileHandler } from "./fileHandling";
@@ -316,16 +316,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 		// Query string may be a better solution than detection
 		this.platformInfo = { isMobile: this.parameters.isMobile, osFamily: 'Unknown' };
 		this.addBuild();
-		
-		if (this.parameters.isMobile) {
-			let opts = { assert: { 
-				type: 'css'
-			} };
-			await import('./jquery-easyui/themes/mobile.css', opts);
-			// Throws in matrix window
-			let mobile = await import('./jquery-easyui/jquery.easyui.mobile');
-			$.mobile.init();
-		}
+
+		// As early as possible 
+		this.initialiseMobile(this.parameters.isMobile);
 
 		// IN QUESTION
 		await vme.initialiseCodeMirror();
@@ -355,6 +348,27 @@ export class KatexInputHelper implements IKatexInputHelper {
 		await this.themes.initialiseThemeChoice(this.style, this.rtlStyle); // RTL STYLE defined after locale language
 
 		vme.endWait(); 
+	}
+	
+	async initialiseMobile(mobile: boolean) {
+		let opts = { assert: { 
+			type: 'css'
+		} };
+
+		if (!mobile) {
+			$("body").addClass("desktop");
+
+			await import('./dialog.scss', opts);
+			
+		} else {
+			$("body").addClass("mobile");
+
+			await import('./dialog.scss', opts);
+			await import('./jquery-easyui/themes/mobile.css', opts);
+			let mobile = await import('./jquery-easyui/jquery.easyui.mobile');
+			$.mobile.init();
+			
+		}
 	}
 	
 	/**

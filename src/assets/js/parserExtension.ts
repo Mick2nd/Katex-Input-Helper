@@ -193,8 +193,8 @@ export async function promisify(ob: any, fnc: any, ...args: any)
 			
 		if (err)
 		{
-			console.error('Error occurred: ' + err)		
-			reject(err);
+				console.error('Error occurred: ' + err);		
+				reject(err);
 		}
 		else
 		{
@@ -203,7 +203,23 @@ export async function promisify(ob: any, fnc: any, ...args: any)
 	});
 }
 
+/**
+ * Promisifies the jquery load method
+ */
+export async function promisifyLoad(selector: string, url: string, data: any?) {
+	return new Promise((resolve, reject) =>
+	{
+		$(selector).load(url, data, (response: any, status: string, xhr: any) => {
+			if (status == "error") {
+				console.error('Error occurred: ' + xhr.statusText);		
+				reject(xhr);
+			} else {
+				resolve(response);
+			}});
+	});
+}
+
 // This helps to import symbols in test suite
 try {
-	module.exports = { ParserExtension, promisify };
+	module.exports = { ParserExtension, promisify, promisifyLoad };
 } catch(e) { }

@@ -16,6 +16,20 @@ body {
 	height: 100%;
 }
 
+.desktop {
+  #menu, .menus { font-size: 1.0em;}
+}
+
+.mobile {
+  #menu, .menus { font-size: 1.5em;}
+}
+
+/* hidden elements for file open / save
+ */
+.invisible {
+  display: none;
+}
+
 /* where applied => all tables 
  * TODO: check and improve 
  */
@@ -40,12 +54,14 @@ h3 {
 }
 
 #WaitMsg {
+  $borderColor: #95B8E7;
+  
 	margin: 0px !important; 
 	padding: 50px !important; 
 	height: 3000px; 
 	background-color: #E7F0FF !important; 
-	border: 1px dotted #95B8E7 !important; 
-	border-top: 1px solid #95B8E7 !important; 
+	border: 1px dotted $borderColor !important; 
+	border-top: 1px solid $borderColor !important; 
 	color: #0E2D5F !important;
 }
 
@@ -128,6 +144,7 @@ h3 {
 }
 
 #mathVisualOutput {
+  height: 50%;
 	margin: 0; 
 	padding: 5px; 
 	font-size: 150%; 
@@ -265,6 +282,10 @@ h3 {
 #wf_CUSTOM_EQUATIONS_MORE {
 	width: 700px; 
 	height: 500px;
+
+  :first-child {
+    width: 25%;
+  }
 
 	#customDatagrid {
 		border-spacing: 0px;
