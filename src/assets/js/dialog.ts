@@ -1,4 +1,4 @@
-// import './dialog.scss' assert { type: 'css' };
+import './dialog.scss' assert { type: 'css' };
 
 import { VKI_init } from './keyboard/keyboard';
 import { FileHandler } from "./fileHandling";
@@ -358,12 +358,12 @@ export class KatexInputHelper implements IKatexInputHelper {
 		if (!mobile) {
 			$("body").addClass("desktop");
 
-			await import('./dialog.scss', opts);
+			// await import('./dialog.scss', opts);
 			
 		} else {
 			$("body").addClass("mobile");
 
-			await import('./dialog.scss', opts);
+			// await import('./dialog.scss', opts);
 			await import('./jquery-easyui/themes/mobile.css', opts);
 			let mobile = await import('./jquery-easyui/jquery.easyui.mobile');
 			$.mobile.init();

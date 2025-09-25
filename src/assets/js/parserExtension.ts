@@ -206,7 +206,7 @@ export async function promisify(ob: any, fnc: any, ...args: any)
 /**
  * Promisifies the jquery load method
  */
-export async function promisifyLoad(selector: string, url: string, data: any?) {
+export async function promisifyLoad(selector: string, url: string, data: any) : Promise<any> {
 	return new Promise((resolve, reject) =>
 	{
 		$(selector).load(url, data, (response: any, status: string, xhr: any) => {
