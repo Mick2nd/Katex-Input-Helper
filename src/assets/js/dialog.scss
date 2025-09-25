@@ -17,11 +17,11 @@ body {
 }
 
 .desktop {
-  #menu, .menus { font-size: 1.0em !important;}
+  #menu a span, .menus div span { font-size: 100% !important;}
 }
 
 .mobile {
-  #menu, .menus { font-size: 2.0em !important;}
+  #menu a span, .menus div span { font-size: 200% !important;}
 }
 
 /* hidden elements for file open / save
