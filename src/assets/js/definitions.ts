@@ -6,6 +6,11 @@ declare module "*.css" {
 	export default content;
 };
 
+declare module "*.scss" {
+	const content: Record<string, string>;
+	export default content;
+};
+
 interface JQuery {
     panel(p1?: any, p2?: any): any;
 	window(p1?: any, p2?: any): any;

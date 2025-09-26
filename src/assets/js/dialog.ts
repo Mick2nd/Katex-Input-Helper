@@ -358,7 +358,10 @@ export class KatexInputHelper implements IKatexInputHelper {
 		if (!mobile) {
 			$("body").addClass("desktop");
 
-			// await import('./dialog.scss', opts);
+			// TODO: just a demonstration that this works 
+			// await import(
+			//  /* webpackInclude: /\.scss$/ */
+			//  './dialog.scss', opts);
 			
 		} else {
 			$("body").addClass("mobile");
