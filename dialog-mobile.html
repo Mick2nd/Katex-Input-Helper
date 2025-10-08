@@ -2,253 +2,317 @@
 <html>
 	<head>
 		<!--
+		Themes cannot be longer supported by including them in head and disabling / enabling them. 
+		<base />
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<title>Katex Input Helper</title>
+		<title>Katex Input Helper Mobile Demo</title>
 		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<link rel="copyright" href="information/tCOPYRIGHT.html" />
 		<meta name="Author" content="Jürgen Habelt" />
 		<meta name="email" content="juergen@habelt-jena.de" />
 		<meta name="copyright" content="Jürgen Habelt" />
-		<link rel="copyright" href="information/tCOPYRIGHT.html" />
-
-		Themes cannot be longer supported by including them in head and disabling / enabling them. 
-		<base />
+	    
+	    <meta charset="UTF-8" />  
+	    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 		 -->
 	</head>
 	<body id="bodyPage">
-		<div id="myContainer" class="easyui-layout">
-			<!-- 
-			 -->
-			<div id="WaitMsg" class="easyui-window" title="Katex Input Helper" 
-				data-options="modal:true,maximizable:false,minimizable:false,collapsible:false,closable:false,maximized:true">
-				Editor is downloading... <br />
-				<br />Thank you for your patience. <br />
-				<br />If the editor is not loaded properly in up to five seconds, you
-				can try to reload by closing and re-opening the dialog. This will
-				probably happen after a new installation of the plug-in.
-			</div>
-			<div id="northRegion" data-options="region:'north',split:false" >
-				<div id="introduction">
-					<h3>Katex Input Helper</h3>
-					<hr/>
+		<div id="WaitMsg" class="easyui-window" title="Katex Input Helper" 
+			data-options="modal:true,maximizable:false,minimizable:false,collapsible:false,closable:false,maximized:true">
+			Editor is downloading... <br />
+			<br />Thank you for your patience. <br />
+			<br />If the editor is not loaded properly in up to five seconds, you
+			can try to reload by closing and re-opening the dialog.
+		</div>
+		<div id="form">
+			<form id="KATEX" name="KATEX" method="post">
+				<input id="hidden" name="hidden" type="hidden" value="" />
+			</form>
+			<div id="formula"></div>
+		</div>
+
+	    <div id="myContainer" class="easyui-navpanel">
+	        <header>
+	            <div id="introduction" class="m-toolbar">
+	                <div class="m-left">
+	                    <a id="goWest" class="easyui-linkbutton" data-options="plain:true">&lt;&lt;</a>
+	                </div>
+	                <div class="m-title">Katex Input Helper</div>
+	                <div class="m-right">
+	                    <a href="javascript:void(0)" class="easyui-menubutton" data-options="iconCls:'icon-more',menu:'#menu',menuAlign:'right',hasDownArrow:false"></a>
+	                    <a id="goEast" href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true">>></a>
+	                </div>
+	            </div>
+	        </header>
+			<div id="divEquationInputOutput" data-options="title:'<span locate=EDITION></span>&nbsp;'">
+				<input value="" class="keyboardInput" id="tKEYBOARD" />
+
+				<div id="innerLayout" data-options="fit:true" class="easyui-layout">
+					<div id="divMathTextInput" class="center" data-options="region:'center',split:false,noheader:true"></div>
+					<div id="mathVisualOutput" class="south" dir="ltr" data-options="region:'south',split:true,noheader:true" ></div>
 				</div>
-				<div id="form">
-					<form id="KATEX" name="KATEX" method="post">
-						<input id="hidden" name="hidden" type="hidden" value="" />
-					</form>
-					<div id="formula"></div>
+			</div>
+	        <footer>
+				<div id="southRegion" class="m-toolbar">
+					<div id="divInformation">&nbsp;</div>
+					<div>
+						<span locate="AUTHOR"></span>
+					</div>
+				</div>
+	        </footer>
+	    </div>
+
+		<div id="westRegion" class="easyui-navpanel" data-options="fit:false" >
+	        <header>
+	            <div class="m-toolbar">
+	                <div class="m-title">
+	                	<span locate=FORMULA class=rtl-title-withicon></span>&nbsp;
+	                </div>
+	                <div class="m-left">
+	                    <a href="#" class="easyui-linkbutton m-back" data-options="plain:true,outline:true,back:true"></a>
+	                </div>
+	            </div>
+	        </header>
+			<div class="easyui-accordion" id="f_SYMBOLS" data-options="fit:true,border:false,selected:-1">
+				<div title="<span information='OPERATOR_SYMBOLS' class='rtl-title-withicon'>$\pm$ &nbsp;&nbsp; $\times$  &nbsp;&nbsp; $\div$</span>"
+					id="f_OPERATOR_SYMBOLS"></div>
+				<div title="<span information='RELATION_SYMBOLS' class='rtl-title-withicon'>$\leq$ &nbsp;&nbsp; $\cong$ &nbsp;&nbsp; $\approx$</span>"
+					id="f_RELATION_SYMBOLS"></div>
+				<div title="<span information='GROUP_LOGICAL_SYMBOLS' class='rtl-title-withicon'>$\infty$ &nbsp;&nbsp; $\subseteq$ &nbsp;&nbsp; $\in$</span>"
+					id="f_GROUP_LOGICAL_SYMBOLS"></div>
+				<div title="<span information='LOGICAL_SYMBOLS' class='rtl-title-withicon'>$\prec$ &nbsp;&nbsp; $\asymp$ &nbsp;&nbsp; $\measuredangle$</span>"
+					id="f_LOGICAL_SYMBOLS"></div>
+				<div title="<span information='ARROW_SYMBOLS' class='rtl-title-withicon'>$\Rightarrow$ &nbsp;&nbsp; $\circlearrowleft$ &nbsp;&nbsp; $\looparrowright$</span>"
+					id="f_ARROW_SYMBOLS"></div>
+				<div title="<span information='ARROW_RELATION_SYMBOLS' class='rtl-title-withicon'>$A \xrightleftharpoons{} B \xleftrightarrow{} C$</span>"
+					id="f_ARROW_RELATION_SYMBOLS"></div>
+				<div title="<span information='MATH_PHYSIC_SYMBOLS' class='rtl-title-withicon'>$\hbar$ &nbsp;&nbsp; $\mho$ &nbsp;&nbsp; $\backepsilon$</span>"
+					id="f_MATH_PHYSIC_SYMBOLS"></div>
+				<div title="<span information='L_U_GREEK_CHAR' class='rtl-title-withicon'>$\varepsilon$ &nbsp;&nbsp; $\pi$  &nbsp;&nbsp; $\Psi$ </span>"
+					id="f_L_U_GREEK_CHAR"></div>
+			</div>
+			<footer>
+			</footer>
+		</div>
+
+		<div id="eastRegion" class="easyui-navpanel">
+	        <header>
+	            <div class="m-toolbar">
+	                <div class="m-title">
+	                	<span locate=FORMULA class=rtl-title-withicon></span>&nbsp;
+	                </div>
+	                <div class="m-right">
+	                    <a href="#" class="easyui-linkbutton m-back" data-options="plain:true,outline:true,back:true"></a>
+	                </div>
+	            </div>
+	        </header>
+			<div class="easyui-accordion" id="f_SYMBOLS2" data-options="fit:true,border:false,selected:-1">
+				<div title="<span information='SUB_SUP_SYMBOLS' class='rtl-title-withicon'>$\vec{a}$ &nbsp;&nbsp; $x_b$ &nbsp;&nbsp; $\dot{y}$ </span>"
+					id="f_SUB_SUP_SYMBOLS"></div>
+				<div title="<span information='SQRT_FRAC_SYMBOLS' class='rtl-title-withicon'>$a/b$ &nbsp;&nbsp; $\sqrt{a}$ </span>"
+					id="f_SQRT_FRAC_SYMBOLS"></div>
+				<div title="<span information='DIFFERENTIAL_SYMBOLS' class='rtl-title-withicon'>$\partial$ &nbsp;&nbsp; $\nabla a$ &nbsp;&nbsp; $dx$ </span>"
+					id="f_DIFFERENTIAL_SYMBOLS"></div>
+				<div title="<span information='INTEGRAL_SYMBOLS' class='rtl-title-withicon' style='font-size:90%;'>$\int$ &nbsp;&nbsp; $\oint$</span>"
+					id="f_INTEGRAL_SYMBOLS"></div>
+				<div title="<span information='SUM_PROD_SYMBOLS' class='rtl-title-withicon' style='font-size:70%;'>$\sum$ &nbsp;&nbsp; $\prod$ </span>"
+					id="f_SUM_PROD_SYMBOLS"></div>
+				
+				<div title="<span information='MATRIX_SYMBOLS' class='rtl-title-withicon'>
+					<img class='symbol_btn icon-matrix_13_black' width='15' height='20' />  &nbsp;&nbsp; 
+					<img class='symbol_btn icon-matrix_33_black' width='15' height='20' /></span>"
+					id="f_MATRIX_SYMBOLS">
 				</div>
 				
-				<div id="menu">				
-					<a class="easyui-menubutton" data-options="iconCls:'icon-file',menu:'#mFILE'"><span locate="FILE"></span></a> 
-					<a id="mbINSERT" class="easyui-menubutton" data-options="iconCls:'icon-insert',menu:'#mINSERT'"><span locate="INSERT"></span></a> 
-					<a class="easyui-menubutton" data-options="iconCls:'icon-plugin',menu:'#mTOOLS'"><span locate="TOOLS"></span> </a>
-					<a class="easyui-menubutton" data-options="iconCls:'icon-watch',menu:'#mVIEW'"><span locate="VIEW"></span></a> 
-					<a class="easyui-menubutton" data-options="iconCls:'icon-option',menu:'#mOPTIONS'"><span locate="OPTIONS"></span></a> 
-					<a class="easyui-menubutton" data-options="iconCls:'icon-info',menu:'#mINFORMATIONS'"><span locate="INFORMATIONS"></span></a>
+				<div title="<span information='BRACKET_SYMBOLS' class='rtl-title-withicon'>$(\ )$ &nbsp;&nbsp; $[\ \ ]$ &nbsp;&nbsp; $\|\ \|$ </span>"
+					id="f_BRACKET_SYMBOLS">
 				</div>
-				 			 
+				<div title="<span information='FUNCTION_SYMBOLS' class='rtl-title-withicon'>$\ln$ &nbsp;&nbsp; $\cos$ &nbsp;&nbsp; $\lim$ </span>"
+					id="f_FUNCTION_SYMBOLS">
+				</div>
+			</div>
+		</div>
+
+	    <div id="menu" class="easyui-menu" style="width:150px;">
+			<div iconcls="icon-file">
+				<span locate="FILE"></span>
 				<div id="mFILE" class="menus">
 					<div iconcls="icon-save" id="mSAVE_EQUATION">
-						<span class='rtl-menu-item' locate="SAVE_EQUATION"></span>
+						<span class="rtl-menu-item" locate="SAVE_EQUATION"></span>
 					</div>
 					<a id="fSAVE_EQUATION" href="#" class="invisible">saveFile</a>
 					<div iconcls="icon-open" id="mOPEN_EQUATION">
-						<span class='rtl-menu-item' locate="OPEN_EQUATION"></span>
+						<span class="rtl-menu-item" locate="OPEN_EQUATION"></span>
 					</div>
-					<input type="file" id="fOPEN_EQUATION" class="invisible" />
+					<input type="file" id="fOPEN_EQUATION" class="invisible">
 				</div>
+
+			</div> 
+			
+			<div id="mbINSERT" iconcls="icon-insert">
+				<span locate="INSERT"></span>
 				<div id="mINSERT" class="menus">
 					<div iconcls="icon-char" id="mCHARS">
-						<span class='rtl-menu-item' locate="CHAR"></span>
+						<span class="rtl-menu-item" locate="CHAR"></span>
 						<div class="menus">
 							<div iconcls="icon-FR_CHAR" id="f_FR_CHAR">
-								<span class='rtl-menu-item' locate="FR_CHAR" information='FR_CHAR'></span>
+								<span class="rtl-menu-item" locate="FR_CHAR" information="FR_CHAR"></span>
 							</div>
 							<div iconcls="icon-BBB_CHAR" id="f_BBB_CHAR">
-								<span class='rtl-menu-item' locate="BBB_CHAR" information='BBB_CHAR'></span>
+								<span class="rtl-menu-item" locate="BBB_CHAR" information="BBB_CHAR"></span>
 							</div>
 							<div iconcls="icon-GREEK_CHAR" id="f_GREEK_CHAR">
-								<span class='rtl-menu-item' locate="L_U_GREEK_CHAR" information='L_U_GREEK_CHAR'></span>
+								<span class="rtl-menu-item" locate="L_U_GREEK_CHAR" information="L_U_GREEK_CHAR"></span>
 							</div>
 							<div iconcls="icon-char" id="f_ALL_CHAR">
-								<span class='rtl-menu-item' locate="CHAR" information='CHAR'></span>
+								<span class="rtl-menu-item" locate="CHAR" information="CHAR"></span>
 							</div>
 						</div>
 					</div>
 					<div id="mSPECIAL_CHARACTER" iconcls="icon-special_char">
-						<span class='rtl-menu-item' locate="SPECIAL_CHARACTER" information='SPECIAL_CHARACTER'></span>
+						<span class="rtl-menu-item" locate="SPECIAL_CHARACTER" information="SPECIAL_CHARACTER"></span>
 					</div>
 					<div id="mHORIZONTAL_SPACING" iconcls="icon-hspace">
-						<span class='rtl-menu-item' locate="HORIZONTAL_SPACING_SYMBOLS"
-							information='HORIZONTAL_SPACING_SYMBOLS'></span>
+						<span class="rtl-menu-item" locate="HORIZONTAL_SPACING_SYMBOLS" information="HORIZONTAL_SPACING_SYMBOLS"></span>
 					</div>
 					<div id="mVERTICAL_SPACING" iconcls="icon-vspace">
-						<span class='rtl-menu-item' locate="VERTICAL_SPACING_SYMBOLS"
-							information='VERTICAL_SPACING_SYMBOLS'></span>
+						<span class="rtl-menu-item" locate="VERTICAL_SPACING_SYMBOLS" information="VERTICAL_SPACING_SYMBOLS"></span>
 					</div>
 					<div class="menu-sep"></div>
 					<div id="mMATRIX" iconcls="icon-matrix">
-						<span class='rtl-menu-item' locate="MATRIX" information='MATRIX'></span>
+						<span class="rtl-menu-item" locate="MATRIX" information="MATRIX"></span>
 					</div>
 					<div class="menu-sep"></div>
 					<div id="mCHEMICAL_FORMULAE" iconcls="icon-chemical">
-						<span class='rtl-menu-item' locate="CHEMICAL_FORMULAE" information='CHEMICAL_FORMULAE'></span>
+						<span class="rtl-menu-item" locate="CHEMICAL_FORMULAE" information="CHEMICAL_FORMULAE"></span>
 					</div>
 					<div id="mCOMMUTATIVE_DIAGRAM" iconcls="icon-diagram">
-						<span class='rtl-menu-item' locate="COMMUTATIVE_DIAGRAM" information='COMMUTATIVE_DIAGRAM'></span>
+						<span class="rtl-menu-item" locate="COMMUTATIVE_DIAGRAM" information="COMMUTATIVE_DIAGRAM"></span>
 					</div>
 					<div id="mEQUATION" iconcls="icon-equation">
-						<span class='rtl-menu-item' locate="EQUATION" information='EQUATION'></span>
+						<span class="rtl-menu-item" locate="EQUATION" information="EQUATION"></span>
 					</div>
 					<div id="mCUSTOM_EQUATIONS" iconcls="icon-equation">
-						<span class='rtl-menu-item' locate="CUSTOM_EQUATIONS" information='CUSTOM_EQUATIONS'></span>
+						<span class="rtl-menu-item" locate="CUSTOM_EQUATIONS" information="CUSTOM_EQUATIONS"></span>
 					</div>
 					<div class="menu-sep"></div>
 					<div id="mLaTeX_TEXT">
-						<span class='rtl-menu-item' >$\LaTeX$</span>
+						<span class="rtl-menu-item">$\LaTeX$</span>
 					</div>
 				</div>
+			</div> 
+			<div iconcls="icon-plugin">
+				<span locate="TOOLS"></span> 
 				<div id="mTOOLS" class="menus">
 					<div iconcls="icon-keyboard" id="mKEYBOARD">
-						<span class='rtl-menu-item' locate="KEYBOARD"></span>
+						<span class="rtl-menu-item" locate="KEYBOARD"></span>
 					</div>
 				</div>
+			</div>
+			<div iconcls="icon-watch">
+				<span locate="VIEW"></span>
 				<div id="mVIEW" class="menus">
 					<div iconcls="icon-codes" id="mUNICODES_LIST">
-						<span class='rtl-menu-item' locate="UNICODES_LIST"></span>
+						<span class="rtl-menu-item" locate="UNICODES_LIST"></span>
 					</div>
 					<div iconcls="icon-symbols" id="mLATEX_CODES_LIST">
-						<span class='rtl-menu-item' locate="LATEX_CODES_LIST"></span>
+						<span class="rtl-menu-item" locate="LATEX_CODES_LIST"></span>
 					</div>
 					<div class="menu-sep"></div>
 					<div iconcls="icon-langressource" id="mLANG_RESSOURCE_LIST">
-						<span class='rtl-menu-item' locate="LANGUAGE_LIST"></span>
+						<span class="rtl-menu-item" locate="LANGUAGE_LIST"></span>
 					</div>
 					<div class="menu-sep"></div>
 					<div iconcls="icon-doclatex" id="mLATEX_DOCUMENTATION">
-						<span class='rtl-menu-item' locate="LATEX_DOCUMENTATION"></span>
+						<span class="rtl-menu-item" locate="LATEX_DOCUMENTATION"></span>
 					</div>
 					<div iconcls="icon-doclatex" id="mMHCHEM_DOCUMENTATION">
-						<span class='rtl-menu-item' locate="MHCHEM_DOCUMENTATION"></span>
+						<span class="rtl-menu-item" locate="MHCHEM_DOCUMENTATION"></span>
 					</div>
 					<div iconcls="icon-doclatex" id="mAMSCD_DOCUMENTATION">
-						<span class='rtl-menu-item' locate="AMSCD_DOCUMENTATION"></span>
+						<span class="rtl-menu-item" locate="AMSCD_DOCUMENTATION"></span>
 					</div>
 					<div class="menu-sep"></div>
 					<div iconcls="icon-docmml" id="mMATH_ML_SPECIFICATIONS">
-						<span class='rtl-menu-item' locate="MATH_ML_SPECIFICATIONS"></span>
+						<span class="rtl-menu-item" locate="MATH_ML_SPECIFICATIONS"></span>
 					</div>
 				</div>
+			</div> 
+			<div iconcls="icon-option">
+				<span locate="OPTIONS"></span>
 				<div id="mOPTIONS" class="menus">
 					<div iconcls="icon-edit" id="mEDITOR_PARAMETERS">
-						<span class='rtl-menu-item' locate="EDITOR_PARAMETERS"></span>
+						<span class="rtl-menu-item" locate="EDITOR_PARAMETERS"></span>
 					</div>
 					<div class="menu-sep"></div>
 					<div iconcls="icon-style" id="mSTYLE_CHOISE">
-						<span class='rtl-menu-item' locate="STYLE_CHOISE"></span>
+						<span class="rtl-menu-item" locate="STYLE_CHOISE"></span>
 					</div>
 					<div iconcls="icon-language" id="mLANGUAGE_CHOISE">
-						<span class='rtl-menu-item' locate="LANGUAGE_CHOISE"></span>
+						<span class="rtl-menu-item" locate="LANGUAGE_CHOISE"></span>
 					</div>
 				</div>
+			</div> 
+			<div iconcls="icon-info">
+				<span locate="INFORMATIONS"></span>
 				<div id="mINFORMATIONS" class="menus">
 					<div iconcls="icon-copyright" id="mCOPYRIGHT">
-						<span class='rtl-menu-item' locate="COPYRIGHT"></span>
+						<span class="rtl-menu-item" locate="COPYRIGHT"></span>
 					</div>
 					<div class="menu-sep"></div>
 					<div iconcls="icon-history" id="mVERSION">
-						<span class='rtl-menu-item' locate="VERSION"></span>
+						<span class="rtl-menu-item" locate="VERSION"></span>
 					</div>
 					<div class="menu-sep"></div>
 					<div iconcls="icon-bugs" id="mBUGS">
-						<span class='rtl-menu-item' locate="BUGS"></span>
+						<span class="rtl-menu-item" locate="BUGS"></span>
 					</div>
 					<div class="menu-sep"></div>
 					<div iconcls="icon-equation" id="mEQUATION_SAMPLE">
-						<span class='rtl-menu-item' locate="EQUATION_SAMPLE"></span>
+						<span class="rtl-menu-item" locate="EQUATION_SAMPLE"></span>
 					</div>
 				</div>
 			</div>
-
-			<div id="southRegion" data-options="region:'south',split:false" >
-				<div id="divInformation">&nbsp;</div>
-				<div>
-					<span locate="AUTHOR"></span>
-				</div>
+	    </div>
+		
+		<div class="easyui-dialog" iconcls="icon-language" data-options="closed:true,modal:true,buttons:'#btLANGUAGE_CHOISE',resizable:true"
+			id="wLANGUAGE_CHOISE" title="<span locate='LANGUAGE_CHOISE' class='rtl-title-withicon'></span>" >
+			<form id="formLANGUAGE_CHOISE" action="#" method="post"></form>
+			<div id="btLANGUAGE_CHOISE">
+				<a href="#" id="btLANGUAGE_CHOISE_CLOSE" class="easyui-linkbutton" iconcls="icon-cancel">
+					<span locate="CLOSE"></span>
+				</a>
 			</div>
-
-			<div id="westRegion" data-options="region:'west',title:'<span locate=FORMULA class=rtl-title-withicon></span>&nbsp;',split:false" >
-				<div class="easyui-accordion" id="f_SYMBOLS" border="false">
-					<div collapsed="true"
-						title="<span information='OPERATOR_SYMBOLS' class='rtl-title-withicon'>$\pm$ &nbsp;&nbsp; $\times$  &nbsp;&nbsp; $\div$</span>"
-						id="f_OPERATOR_SYMBOLS"></div>
-					<div title="<span information='RELATION_SYMBOLS' class='rtl-title-withicon'>$\leq$ &nbsp;&nbsp; $\cong$ &nbsp;&nbsp; $\approx$</span>"
-						id="f_RELATION_SYMBOLS"></div>
-					<div title="<span information='GROUP_LOGICAL_SYMBOLS' class='rtl-title-withicon'>$\infty$ &nbsp;&nbsp; $\subseteq$ &nbsp;&nbsp; $\in$</span>"
-						id="f_GROUP_LOGICAL_SYMBOLS"></div>
-					<div title="<span information='LOGICAL_SYMBOLS' class='rtl-title-withicon'>$\prec$ &nbsp;&nbsp; $\asymp$ &nbsp;&nbsp; $\measuredangle$</span>"
-						id="f_LOGICAL_SYMBOLS"></div>
-					<div title="<span information='ARROW_SYMBOLS' class='rtl-title-withicon'>$\Rightarrow$ &nbsp;&nbsp; $\circlearrowleft$ &nbsp;&nbsp; $\looparrowright$</span>"
-						id="f_ARROW_SYMBOLS"></div>
-					<div title="<span information='ARROW_RELATION_SYMBOLS' class='rtl-title-withicon'>$A \xrightleftharpoons{} B \xleftrightarrow{} C$</span>"
-						id="f_ARROW_RELATION_SYMBOLS"></div>
-					<div title="<span information='MATH_PHYSIC_SYMBOLS' class='rtl-title-withicon'>$\hbar$ &nbsp;&nbsp; $\mho$ &nbsp;&nbsp; $\backepsilon$</span>"
-						id="f_MATH_PHYSIC_SYMBOLS"></div>
-					<div title="<span information='L_U_GREEK_CHAR' class='rtl-title-withicon'>$\varepsilon$ &nbsp;&nbsp; $\pi$  &nbsp;&nbsp; $\Psi$ </span>"
-						id="f_L_U_GREEK_CHAR"></div>
-				</div>
-			</div>
-
-			<div id="divEquationInputOutput" data-options="region:'center',title:'<span locate=EDITION></span>&nbsp;'" class="center" >
-				<input value="" class="keyboardInput" id="tKEYBOARD" />
-
-				<div id="innerLayout" data-options="fit:true" class="easyui-layout">
-					<div id="divMathTextInput" class="center easyui-panel" data-options="region:'center',split:false,noheader:true">
-					</div>
-					<div id="mathVisualOutput" class="south easyui-panel" dir="ltr" data-options="region:'south',split:true,noheader:true" ></div>
-				</div>
-			</div>
-
-			<div data-options="region:'east',title:'<span locate=FORMULA class=rtl-title-withicon></span>&nbsp;',split:false" id="eastRegion">
-				<div class="easyui-accordion" id="f_SYMBOLS2" border="false">
-					<div title="<span information='SUB_SUP_SYMBOLS' class='rtl-title-withicon'>$\vec{a}$ &nbsp;&nbsp; $x_b$ &nbsp;&nbsp; $\dot{y}$ </span>"
-						id="f_SUB_SUP_SYMBOLS"></div>
-					<div title="<span information='SQRT_FRAC_SYMBOLS' class='rtl-title-withicon'>$a/b$ &nbsp;&nbsp; $\sqrt{a}$ </span>"
-						id="f_SQRT_FRAC_SYMBOLS"></div>
-					<div title="<span information='DIFFERENTIAL_SYMBOLS' class='rtl-title-withicon'>$\partial$ &nbsp;&nbsp; $\nabla a$ &nbsp;&nbsp; $dx$ </span>"
-						id="f_DIFFERENTIAL_SYMBOLS"></div>
-					<div title="<span information='INTEGRAL_SYMBOLS' class='rtl-title-withicon' style='font-size:90%;'>$\int$ &nbsp;&nbsp; $\oint$</span>"
-						id="f_INTEGRAL_SYMBOLS"></div>
-					<div title="<span information='SUM_PROD_SYMBOLS' class='rtl-title-withicon' style='font-size:70%;'>$\sum$ &nbsp;&nbsp; $\prod$ </span>"
-						id="f_SUM_PROD_SYMBOLS"></div>
-					
-					<!-- THIS MAY CAUSE FILE NOT FOUND : replacement see below
-					<div title="<span information='MATRIX_SYMBOLS' class='rtl-title-withicon'>
-						<img class='symbol_btn icon-matrix_13_black' src='icons/blank.gif' width='15' height='20' />  &nbsp;&nbsp; 
-						<img class='symbol_btn icon-matrix_33_black' src='icons/blank.gif' width='15' height='20' /></span>"
-						id="f_MATRIX_SYMBOLS">
-					</div>
-					 -->
-					
-					<div title="<span information='MATRIX_SYMBOLS' class='rtl-title-withicon'>
-						<img class='symbol_btn icon-matrix_13_black' width='15' height='20' />  &nbsp;&nbsp; 
-						<img class='symbol_btn icon-matrix_33_black' width='15' height='20' /></span>"
-						id="f_MATRIX_SYMBOLS">
-					</div>
-					
-					<div title="<span information='BRACKET_SYMBOLS' class='rtl-title-withicon'>$(\ )$ &nbsp;&nbsp; $[\ \ ]$ &nbsp;&nbsp; $\|\ \|$ </span>"
-						id="f_BRACKET_SYMBOLS">
-					</div>
-					<div title="<span information='FUNCTION_SYMBOLS' class='rtl-title-withicon'>$\ln$ &nbsp;&nbsp; $\cos$ &nbsp;&nbsp; $\lim$ </span>"
-						id="f_FUNCTION_SYMBOLS">
-					</div>
-				</div>
-			</div>
-
-		<!-- END OF EASYUI-LAYOUT
-		 -->
 		</div>
+		
+		<div class="easyui-dialog" iconcls="icon-style" data-options="closed:true,modal:true,buttons:'#btSTYLE_CHOISE',resizable:true"
+			id="wSTYLE_CHOISE" title="<span locate='STYLE_CHOISE' class='rtl-title-withicon'></span>" >
+			<form id="formSTYLE_CHOISE" action="#" method="post">
+				<fieldset dir='ltr'>
+					<input type="radio" name="style" id="aguas_style" value="aguas" /> 
+					<label for="aguas_style">&laquo; Aguas &raquo;</label> <br />
+					
+					<input type="radio" name="style" id="gray_style" value="gray" /> 
+					<label for="gray_style">&laquo; Gray &raquo;</label> <br />
+					
+					<input type="radio" name="style" id="black_style" value="black" /> 
+					<label for="black_style">&laquo; Black &raquo;</label> <br />
+					
+					<input type="radio" name="style" id="bootstrap_style" value="bootstrap" /> 
+					<label for="bootstrap_style">&laquo; Bootstrap &raquo;</label> <br />
+					
+					<input type="radio" name="style" id="metro_style" value="metro" /> 
+					<label for="metro_style">&laquo; Metro &raquo;</label>
+				</fieldset>
+			</form>
+			<div id="btSTYLE_CHOISE">
+				<a href="#" id="btSTYLE_CHOISE_CLOSE" class="easyui-linkbutton" iconcls="icon-cancel"><span
+						locate="CLOSE"></span></a>
+			</div>
+		</div>
+		
+		<!-- 
 		
 		<div id="wEDITOR_PARAMETERS" class="easyui-dialog" iconcls="icon-option" data-options="closed:true,modal:true,buttons:'#btEDITOR_PARAMETERS',resizable:true"
 			title="<span locate='EDITOR_PARAMETERS' class='rtl-title-withicon'></span>">
@@ -472,7 +536,6 @@
 					<table id="customDatagrid" class="easyui-datagrid">
 					    <thead>
 					        <tr>
-					        <!-- Without these entries data grid wouldn't work -->
 					            <th class="custom-equations" data-options="field:'id',hidden:true">Id</th>
 					            <th class="custom-equations" data-options="field:'title',editor:'text',width:'35%',sortable:true">Titel</th>
 					            <th class="custom-equations" data-options="field:'formula',width:'60%'">Formel</th>
@@ -565,5 +628,6 @@
 					cache="true" href=""></div>
 			</div>
 		</div>
+ 		-->
 	</body>
 </html>
