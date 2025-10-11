@@ -1,8 +1,9 @@
 {
   "name": "joplin-plugin-katex-input-helper",
-  "version": "2.1.1",
+  "version": "3.0.0",
   "scripts": {
-    "dist": "webpack --env joplin-plugin-config=buildMain && webpack --env joplin-plugin-config=buildExtraScripts && npm run build-assets-prod && npm run build-docs && webpack --env joplin-plugin-config=createArchive",
+    "dist": "webpack --env joplin-plugin-config=buildMain && webpack --env joplin-plugin-config=buildExtraScripts && npm run build-assets-prod && webpack --env joplin-plugin-config=createArchive",
+	"dist-old": "webpack --env joplin-plugin-config=buildMain && webpack --env joplin-plugin-config=buildExtraScripts && npm run build-assets-prod && npm run build-docs && webpack --env joplin-plugin-config=createArchive",
     "prepare": "npm run dist",
     "updateVersion": "webpack --env joplin-plugin-config=updateVersion",
     "update": "npm install -g generator-joplin && yo joplin --node-package-manager npm --update --force",
@@ -23,7 +24,6 @@
   "files": [
     "publish"
   ],
-  "type": "module",
   "devDependencies": {
     "@atao60/fse-cli": "^0.1.9",
     "@joplin/lib": "^2.6.3",
@@ -58,6 +58,8 @@
     "platform": "^1.3.6",
     "raw-loader": "^4.0.2",
     "reflect-metadata": "^0.2.2",
+    "sass": "^1.93.2",
+    "sass-loader": "^16.0.5",
     "style-loader": "^4.0.0",
     "tar": "^6.1.11",
     "terser-webpack-plugin": "^5.3.14",

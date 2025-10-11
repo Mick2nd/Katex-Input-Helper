@@ -47,6 +47,7 @@ export class KIHParameters {
 	transaction = null;
 	mouseState = null;
 	displayMode = true;
+	isMobilePlugin = false;
 	mode = "plugin";
 	
 	/**
@@ -99,9 +100,10 @@ export class KIHParameters {
 	
 	/**
 	 * Returns true for web variant with query string mobile=true
+	 * Returns true if plugin is running on mobile device
 	 */
 	get isMobile() : boolean {
-		if (this.mode != 'web') { return false; }
+		if (this.mode != 'web') { return this.isMobilePlugin; }
 		
 		let searchParams = new URLSearchParams(window.location.search);
 		if (searchParams.has('mobile')) {

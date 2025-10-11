@@ -19,30 +19,37 @@ export class MathContext {
 	 * Uses a regular expression search.
 	 */
 	async displayMode() : Promise<boolean | undefined> {
-			
-		const note = await this.getValue();										// the whole note text
-		const cursorIndex = await this.cursorIndex(note);						// the cursor index inside the text
 		
-		const re = /(?<![\\$])((\$\$)|\$)([^{].*?)(\1)/sg;						// regex searches for math sections (block or inline)
-		for (const match of note.matchAll(re)) {								// through all matches
-			
-			const sign = match[1];
-			const enclosed = match[3];
-			console.debug(`parse2 found : ${sign} ${enclosed} ${match[3]} `);
-			console.debug(`parse2 (whole match) : %O `, match);
-			
-			const start = match.index;
-			const end = start + match[0].length - 1;
-			console.debug(`parse2 from ${start} to ${end}`);
-			
-			// alert(`detected : regex : ${match[0]} `);
-			if (start <= cursorIndex && cursorIndex <= end) {					// is cursor inside match
-				if (sign === '$$') return true;
-				else return false;
+		try {
+			const note = await this.getValue();										// the whole note text
+			const cursorIndex = await this.cursorIndex(note);						// the cursor index inside the text
+
+			const re = /(?<![\\$])((\$\$)|\$)([^{].*?)(\1)/sg;						// regex searches for math sections (block or inline)
+			for (const match of note.matchAll(re)) {								// through all matches
+				
+				const sign = match[1];
+				const enclosed = match[3];
+				console.debug(`parse2 found : ${sign} ${enclosed} ${match[3]} `);
+				console.debug(`parse2 (whole match) : %O `, match);
+				
+				const start = match.index;
+				const end = start + match[0].length - 1;
+				console.debug(`parse2 from ${start} to ${end}`);
+				
+				// alert(`detected : regex : ${match[0]} `);
+				if (start <= cursorIndex && cursorIndex <= end) {					// is cursor inside match
+					if (sign === '$$') return true;
+					else return false;
+				}
 			}
+
+			return undefined;
+			
+		} catch(e) {
+			
+			console.warn(`displayMode could not be acquired : ${e}`);
+			return true;
 		}
-		
-		return undefined;
 	}
 	
 	/**

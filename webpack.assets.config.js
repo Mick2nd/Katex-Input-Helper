@@ -30,26 +30,6 @@ const splitChunksConfig = (env) => { return {
 	enforceSizeThreshold: 50000,
 
 	cacheGroups: {
-		/* NO IDEA WHAT THE PURPOSE IS
-		   A configuration sample?
-		   Creates a 1 MB large commons script, seems to have precedence over vendors. 
-		
-		commons: {
-			name: 'commons',
-			chunks: 'async',
-			minChunks: 2,
-		},
-		*/
-		/*	NO ACTION like easyui
-		i18n: {
-			test: /[\\/]i18n[\\/]/,
-			priority: -10,
-			reuseExistingChunk: true,
-			filename: 'js/i18n/[name].js',
-			chunks: 'async',
-		},
-		*/
-		
 		vendors: {
 			test: /[\\/](node_modules)[\\/]/,
 			priority: -10,
@@ -57,26 +37,6 @@ const splitChunksConfig = (env) => { return {
 			filename: 'js/vendors/[name].js',
 			chunks: 'async',
 		},
-		
-		/*	ACTION: API only copied, generates extra entry in index.html
-			This is deactivated, if async chunks are selected
-			
-		easyui: {
-			test: /src[\\/]assets[\\/]js[\\/]jquery-easyui/,
-			priority: -15,
-			filename: 'js/easyui/[name].js',			// no action
-			chunks: 'async',
-		},
-		*/
-		/* NO IDEA WHAT THE PURPOSE IS
-		   A configuration sample?
-		
-		default: {
-			minChunks: 2,
-	  		priority: -20,
-	  		reuseExistingChunk: true,
-		},
-		*/
 	},
 }};
 
@@ -84,18 +44,6 @@ const splitChunksConfig = (env) => { return {
  * Extracted Rules Config
  */
 const rulesConfig = (env) => [
-	/*	NO DISADVANTAGE TO DEACTIVATE BABEL
-	{
-		test: /\.js$/,
-		include: [ path.resolve(path.dirname('.'), 'src/assets/js') ],
-		exclude: [ path.resolve(path.dirname('.'), '.'), /node_modules/ ],
-		loader: 'babel-loader',
-		options: {
-		   	presets:  [
-		    	['@babel/preset-env']
-		   	],
-		}
-	},*/				
 	{
 		test: /\.tsx?$/,
 		exclude: /node_modules/,
@@ -112,6 +60,13 @@ const rulesConfig = (env) => [
 		exclude: [ /node_modules/ ],
 		use: [ MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader' ],
 		sideEffects: true
+	},
+	{
+		test: /\.html$/i,
+		exclude: /node_modules/,
+		use: [{
+			loader: 'raw-loader',
+		}]
 	},
 	{
 		test: /\.(pdf|jpg|png|svg|ico)$/,
@@ -144,15 +99,6 @@ const rulesConfig = (env) => [
  * Extracted Plugins Config
  */
 const pluginsConfig = (env) => [
-	/*	THERE CAN BE SEEN NO EFFECT ON GENERATED JS
-		Also with deactivated Babel		
-	new webpack.optimize.ModuleConcatenationPlugin(),
-	*/
-	
-	/*	Limits effectively the number of chunks, but then themes are no longer
-		working
-	new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 20 }),
-	*/
 	new webpack.ProvidePlugin({
 		$: 'jquery',
 		jQuery: 'jquery',
@@ -170,17 +116,19 @@ const pluginsConfig = (env) => [
 	new CopyPlugin({
 		patterns: [
 			{ from: 'src/assets/dialog.html', to: 'dialog.html' },
-			// NOWHERE needed
-			//{ from: 'src/assets/doc', to: 'doc' },
-			{ from: 'src/assets/formulas', to: 'formulas' },
-			{ from: 'src/assets/information', to: 'information' },
+			{ from: 'src/assets/dialog-mobile.html', to: 'dialog-mobile.html' },
 		],
 	}),
 	new HtmlWebpackPlugin({
 		title: 'My Webpack App',
 		template: './src/assets/dialog.html',
 		filename: './index.html',
-	})
+	}),
+	new HtmlWebpackPlugin({
+		title: 'My Webpack App',
+		template: './src/assets/dialog-mobile.html',
+		filename: './index-mobile.html',
+	}),
 ];
 
 /**

@@ -120,6 +120,7 @@ export const dynamicPanelId = Symbol.for('DynamicPanelId');
 export const informationWindowId = Symbol.for('InformationWindowId');
 export const moreDialogId = Symbol.for('MoreDialogId');
 export const windowId = Symbol.for('WindowId');
+export const dialogId = Symbol.for('DialogId');
 export const matrixWindowId = Symbol.for('MatrixWindowId');
 export const unicodeWindowId = Symbol.for('UnicodeWindowId');
 export const panelFactoryId = Symbol.for('PanelFactoryId');

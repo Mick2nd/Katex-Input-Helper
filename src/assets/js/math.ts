@@ -156,8 +156,8 @@ export class MathFormulae implements IMath {
 	updateHeaders(selector = "") {
 		try {
 			let inst = this;
-			let entries = $(`.panel-title span`);
-			if (selector != '') {
+			let entries = $(`.panel-title span, .accordion header span`);
+			if (selector.length > 0) {
 				let options = $(selector).panel('options');
 				let title = options.title;
 				let info = $(title).attr('information');

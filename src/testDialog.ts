@@ -1,13 +1,16 @@
 import joplin from 'api';
-import { DialogResult, ButtonSpec } from 'api/types';
-import { Settings } from './settings';
+import { DialogResult } from 'api/types';
 
-const fs = require('fs-extra');
-const os = require('os');
+let fs = null;
+try {
+	fs = require('fs-extra');
+} catch(e) {
+	
+}
 const path = require('path');
 
 
-var handle: any = null;
+let handle: any = null;
 
 /**
 	@abstract Encapsulates dialog functionality
@@ -61,9 +64,13 @@ export class TestDialog
 	
 	public load = async function(fileName: string) : Promise<string>
 	{
-		let location = await joplin.plugins.installationDir();
-		let html = await fs.readFile(path.join(location, fileName), 'utf-8');
-		return html.replace("${INSTALLDIR}", location);
+		try {
+			let location = await joplin.plugins.installationDir();
+			let html = await fs.readFile(path.join(location, fileName), 'utf-8');
+			return html.replace("${INSTALLDIR}", location);
+		} catch(e) {
+			return "";
+		}
 	}
 	
 	public loadCss = async function(handle) : Promise<void> {

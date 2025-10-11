@@ -3,7 +3,7 @@ import { Container, ResolutionContext, Factory } from 'inversify';
 import { IBootLoader, bootLoaderId, katexInputHelperId, IKatexInputHelper, katexInputHelperFactoryId, 
 	ILocalizer, localizerId, IMessager, messagerId, platformInfoId, 
 	IUtilities, utilitiesId, parametersId, IThemes, themesId, IParser, parserId, IMath, mathId, 
-	IPanels, panelsId, dynamicPanelId, informationWindowId, moreDialogId, windowId, matrixWindowId, 
+	IPanels, panelsId, dynamicPanelId, informationWindowId, moreDialogId, windowId, dialogId, matrixWindowId, 
 	dynamicParametersId, panelFactoryId, unicodeWindowId, categoriesTreeId, ICategoriesTree, asyncId,
 	codeMirrorId, ICodeMirror } from './interfaces';
 
@@ -15,7 +15,7 @@ import { Messager, Utilities } from './helpers';
 import { Themes } from './themes';
 import { ParserExtension } from './parserExtension';
 import { MathFormulae } from './math';
-import { KIHPanels, KIHPanel, DynamicPanel, MatrixWindow, InformationWindow, KIHMoreDialog, KIHWindow, UnicodeWindow } from './panels';
+import { KIHPanels, KIHPanel, DynamicPanel, MatrixWindow, InformationWindow, KIHMoreDialog, KIHWindow, KIHDialog, UnicodeWindow } from './panels';
 import { CategoriesTree } from './categoriesTree';
 import { codeMirrorProxy } from './codeMirrorProxy';
 
@@ -46,6 +46,7 @@ container.bind<KIHPanel>(dynamicPanelId).to(DynamicPanel);
 container.bind<KIHPanel>(informationWindowId).to(InformationWindow);
 container.bind<KIHPanel>(moreDialogId).to(KIHMoreDialog);
 container.bind<KIHPanel>(windowId).to(KIHWindow);
+container.bind<KIHPanel>(dialogId).to(KIHDialog);
 container.bind<KIHPanel>(matrixWindowId).to(MatrixWindow);
 container.bind<KIHPanel>(unicodeWindowId).to(UnicodeWindow);
 

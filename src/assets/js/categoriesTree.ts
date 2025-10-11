@@ -570,8 +570,10 @@ import { ICategoriesTree } from './interfaces';
 		 */
 		async function loadSamples() {
 			
-			let response = await fetch('formulas/sampleEquations.json');
-			return await response.json();
+			let json = await import(
+				/* webpackInclude: /\.json$/ */
+				`../formulas/sampleEquations.json`);
+			return json;
 		}
 		
 		if (!from.haveSamples && !getSamplesNode(from, "Samples")) {

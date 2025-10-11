@@ -14,7 +14,7 @@ import {
 	IThemes, themesId, 
 	IParser, parserId, 
 	IMath, mathId, ICodeMirror,
-	IPanels, panelsId, matrixWindowId, unicodeWindowId, informationWindowId, moreDialogId, windowId, dynamicPanelId } from './interfaces';
+	IPanels, panelsId, matrixWindowId, unicodeWindowId, informationWindowId, moreDialogId, windowId, dialogId, dynamicPanelId } from './interfaces';
 
 let console: any; 
 if (window.console) console = window.console; else console = { log: function(msg) { }, error: function(msg) { } }; 
@@ -318,7 +318,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		this.addBuild();
 
 		// As early as possible 
-		this.initialiseMobile(this.parameters.isMobile);
+		await this.initialiseMobile(this.parameters.isMobile);
 
 		// IN QUESTION
 		await vme.initialiseCodeMirror();
@@ -357,20 +357,26 @@ export class KatexInputHelper implements IKatexInputHelper {
 
 		if (!mobile) {
 			$("body").addClass("desktop");
-
-			// TODO: just a demonstration that this works 
-			// await import(
-			//  /* webpackInclude: /\.scss$/ */
-			//  './dialog.scss', opts);
 			
 		} else {
-			$("body").addClass("mobile");
-
-			// await import('./dialog.scss', opts);
+			$("body").addClass("katex-mobile");
+			
 			await import('./jquery-easyui/themes/mobile.css', opts);
-			let mobile = await import('./jquery-easyui/jquery.easyui.mobile');
+			await import('./jquery-easyui/jquery.easyui.mobile');
+			
+			await this.parser.parseAsync('body');
+			$('body').prepend($('.navpanel'));
 			$.mobile.init();
 			
+			console.warn(`${$.mobile.panels.length} elements in panels array`);
+			$("#goWest").on('click', function(event) { 
+				event.preventDefault();
+				$.mobile.go('#westRegion', 'slide', 'right');
+			});
+			$("#goEast").on('click', function(event) { 
+				event.preventDefault(); 
+				$.mobile.go('#eastRegion', 'slide', 'left');
+			});
 		}
 	}
 	
@@ -523,7 +529,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		
 		// The whole menu commands.
 		// TRY different way: use options
-		$("#mFILE, #mINSERT, #mTOOLS, #mVIEW, #mOPTIONS, #mINFORMATIONS").menu({
+		$("#mFILE, #mINSERT, #mTOOLS, #mVIEW, #mOPTIONS, #mINFORMATIONS, #mobile-menu").menu({
 			onClick: async function(item: any) {
 				console.log(`ITEM : %O`, this);
 				switch (item.target.id) {
@@ -575,9 +581,14 @@ export class KatexInputHelper implements IKatexInputHelper {
 		$("#fOPEN_EQUATION").on('change', function(event) { vme.openFile(event); }); 
 		
 		// The Symbol palettes
-		this.initialiseUIaccordion("#f_SYMBOLS"); 
-		this.initialiseUIaccordion("#f_SYMBOLS2"); 
-
+		// test mobile : throws
+		try {
+			this.initialiseUIaccordion("#f_SYMBOLS"); 
+			this.initialiseUIaccordion("#f_SYMBOLS2"); 
+		} catch(e) {
+			
+		}
+		
 		// Configures Clicks on close buttons and Key handlers, Context menus and others
 		$('#btSTYLE_CHOISE_CLOSE').on('click', function(event) { 
 			event.preventDefault(); 
@@ -669,6 +680,17 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 */
 	async openWindow(id: string) {
 		await this.panels.showWindowDI(windowId, id);
+	}
+
+	/**
+	 * Registers events for a window and opens it.
+	 * 
+	 * This whole effort is done to get the window position and size persisted.
+	 * 
+	 * @param id - the HTML id of the window
+	 */
+	async openDialog(id: string) {
+		await this.panels.showWindowDI(dialogId, id);
 	}
 	
 	/**
@@ -1017,23 +1039,26 @@ export class KatexInputHelper implements IKatexInputHelper {
 	initialiseUIaccordion(accordionID: string) {
 		let vme = this; 
 		$(accordionID).accordion({
-			onSelect: function(title: string) {
+			onSelect: async function(title: string) {
 
 				let fPanel = $(accordionID).accordion("getSelected"); 
 				if (fPanel) { 
-					let fPanelID = $(fPanel).attr("id"); 
+					let fPanelID = $(fPanel).attr("id");
 					if (vme.symbolPanelsLoaded.indexOf(fPanelID) == -1) { 
 						vme.symbolPanelsLoaded.push(fPanelID);
+						// OLD - not functional in MOBILE
 						$(fPanel).html(`<img src="icons/loading.gif" />`);
 						
-						let options = $(fPanel).panel('options');				// avoid recreation of panel (arrows lost)
-						options.onLoad = async function() { 
-							await vme.initialiseSymbolContent(fPanelID); 
-							vme.math.updateHeaders(`#${fPanelID}`);				// with panel id not working
-							await vme.themes.activateStyle(vme.style);
-						};
+						// Trial for Android 
+						let html = (await import(
+							/* webpackInclude: /\.html$/ */ 
+							`../formulas/${fPanelID}.html`)).default;
+						$(fPanel).html(html);
 						
-						$(fPanel).panel('refresh', `formulas/${fPanelID}.html`);
+						await vme.initialiseSymbolContent(fPanelID); 
+						// TODO: obsolete?
+						//vme.math.updateHeaders(`#${fPanelID}`);
+						await vme.themes.activateStyle(vme.style);
 						
 						$(`#${fPanelID}`).on('click', 'a.more', 
 							async function(event) { 
@@ -1132,15 +1157,18 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 */
 	async updateInfo() {
 		let vme = this;
-		$('div[href]')
+		$('#tINFORMATIONS div[href]')
 		.each(function( idx: number ) {
 			let href = $(this).attr('href');
 			let id = $(this).attr('id');
 			if (href.length <= 1) {													// info html !
 				console.info(`Info dialog with : id : ${id}, href : ${href}`);
-				let newHref = `information/${id}.html`;								// lazily load html info
+				
+				// Trial for Android
+				let newHref = `../information/${id}.html`;							// lazily load html info
 				$(this).attr('href', newHref);
-				$(this).load(newHref);
+				import(`../information/${id}.html`)
+				.then((mod) => { $(this).html(mod.default); });
 			}
 		});
 

@@ -12,16 +12,40 @@
 $widthWestAccordion: 230px;
 $widthEastAccordion: 250px;
 
-body {
-	height: 100%;
-}
+$heightCenterHeader: 10px;
+$heightPanelHeaderFooter: 100px;
 
-.desktop {
-  #menu a span, .menus div span { font-size: 1.0rem !important;}
-}
-
-.mobile {
-  #menu a, #menu a span, .menus div, .menus div span { font-size: 2.0rem !important;}
+/* Section for mobile styles
+ * -------------------------
+*/
+.katex-mobile {
+	$innerHeight: calc(100vh - 16px);				// margin
+	$scale: 2.0;
+	
+	height: $innerHeight;
+	
+	#westRegion, #eastRegion {
+		width: 95vw;
+		height: calc($innerHeight - 50px);			// header
+		
+		.easyui-accordion {
+			width: calc(90vw / $scale);
+			height: calc(90vh / $scale);
+			transform: scale($scale);
+			transform-origin: top left;
+			
+			.accordion-body {
+				height: fit-content;
+			}
+		}
+	} 
+	#divEquationInputOutput {
+		height: calc(100vh - $heightPanelHeaderFooter);
+		
+		#innerLayout {
+			height: calc(100vh - $heightPanelHeaderFooter - $heightCenterHeader);
+		}
+	}
 }
 
 /* hidden elements for file open / save
@@ -44,7 +68,9 @@ table, th, td {
 	}
 }
 
-/* all layouts occupy the whole parent height */
+/*  all layouts occupy the whole parent height
+ *	TODO: rework for desktop, innerLayout 
+ */
 .easyui-layout {
 	height: 100vh;
 }
@@ -58,7 +84,7 @@ h3 {
   
 	margin: 0px !important; 
 	padding: 50px !important; 
-	height: 3000px; 
+	height: 100%; 
 	background-color: #E7F0FF !important; 
 	border: 1px dotted $borderColor !important; 
 	border-top: 1px solid $borderColor !important; 
@@ -91,11 +117,16 @@ h3 {
 	overflow: hidden !important;
 }
 
-#westRegion {
-	width: $widthWestAccordion;
+body.desktop {
+	height: 100vh;
 	
-	.easyui-accordion > div {
-		overflow: hidden !important;
+	#westRegion {
+		width: $widthWestAccordion;
+		height: calc(100vh - $heightPanelHeaderFooter);
+		
+		.easyui-accordion > div {
+			overflow: hidden !important;
+		}
 	}
 }
 
@@ -128,23 +159,16 @@ h3 {
 	padding: 0; 
 	overflow: hidden;
 
-	#formMathTextInput {
-		margin: 0; 
-		padding: 0;
-		height: 100%; 
+	.CodeMirror {
+		height: 100%;
+		width: 100%;
 
-		#mathTextInput {
-			margin: 0; 
-			padding: 2px; 
-			border: none;
-			overflow: auto;
-			height: 100%; 
-		}
+		padding: 2px;
 	}
 }
 
 #mathVisualOutput {
-  height: 50%;
+	height: 50%;
 	margin: 0; 
 	padding: 5px; 
 	font-size: 150%; 
@@ -283,18 +307,19 @@ h3 {
 	width: 700px; 
 	height: 500px;
 
-  :first-child {
-    width: 25%;
-  }
+	// Layout
+	/* This rule has no effect, place it in HTML
+	div {
+		:first-child {
+			width: 25%;
+		}
+	}
+	*/
 
 	#customDatagrid {
 		border-spacing: 0px;
 		border-collapse: collapse;
 		width: 100%;
-	}
-	
-	#gridCaption {
-	  padding: 10px;
 	}
 }
 

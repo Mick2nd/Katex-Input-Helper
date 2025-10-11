@@ -1,5 +1,5 @@
 import joplin from 'api';
-import { MenuItemLocation, ImportContext, FileSystemItem, ContentScriptType } from 'api/types';
+import { MenuItemLocation, ToolbarButtonLocation, ImportContext, FileSystemItem, ContentScriptType } from 'api/types';
 import { Dialog } from './dialog';
 import { TestDialog } from './testDialog';
 import { MathContext } from './mathContext';
@@ -16,14 +16,14 @@ const dialog_command = async () =>
 	{
 		const mathContext = new MathContext();
 		const dm = await mathContext.displayMode();
-		var dlg = new Dialog(dm ? true : false);
+		let dlg = new Dialog(dm ? true : false);
 		await dlg.create();
 		let res = await dlg.open();
 		console.dir(res);
 	}
 	catch(e)
 	{
-		console.error('Exception in command: ' + e);
+		console.error('Exception in command: ' + e.stack);
 	}
 	finally
 	{
@@ -68,14 +68,22 @@ joplin.plugins.register({
 			{
 				name: scriptId,
 				label: 'Katex Dialog',
+				iconName: 'fas fa-asterisk',	// fa-square-root-variable not working
 				execute: dialog_command, 
 			});
 	
+		// Desktop only !!
 		await joplin.views.menuItems.create(
 			'mnuKatexImportHelper', 
 			scriptId,
 			MenuItemLocation.Tools,
-			{ accelerator: "CmdOrCtrl+Shift+K"}); 
+			{ accelerator: "CmdOrCtrl+Shift+K"});
+			
+		await joplin.views.toolbarButtons.create(
+			'tbbKatexImportHelper',
+			scriptId,
+			ToolbarButtonLocation.EditorToolbar
+		);
 			
 		if (withTest) {
 

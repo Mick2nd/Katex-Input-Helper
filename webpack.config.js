@@ -188,6 +188,16 @@ const baseConfig = {
 					}
 				}]
 			},
+			/*
+			 */
+			{
+				test: /\.html$/,
+				include: [ path.resolve(path.dirname('.'), 'src/assets') ],
+				exclude: /node_modules/,
+				use: [{
+					loader: 'raw-loader',
+				}]
+			},
 		],
 	},
 	...userConfig.webpackOverrides,

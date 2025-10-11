@@ -2,9 +2,6 @@ import joplin from 'api';
 import { DialogResult, ButtonSpec } from 'api/types';
 import { Settings } from './settings';
 
-const fs = joplin.require('fs-extra');
-const path = require('path');
-
 /**
  * @abstract Sleep function using Promise contract.
  */
@@ -12,7 +9,7 @@ function Sleep(milliseconds: number) {
 	return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
 
-var handle: any = null;
+let handle: any = null;
 
 /**
  * @abstract Encapsulates dialog functionality.
@@ -24,6 +21,8 @@ var handle: any = null;
  * - change invocation order
  * 
  * Nothing did help.
+ * 
+ * THE ULTIMATE SOLUTION: using WEBPACK
  */	
 export class Dialog
 {
@@ -32,6 +31,7 @@ export class Dialog
 	displayMode: boolean;
 	useEasyLoader = false;
 	installationDir = "";
+	isMobile: boolean = false;
 	
 	/**
 	 * @abstract Constructor
@@ -56,19 +56,23 @@ export class Dialog
 		}
 
 		this.installationDir = await joplin.plugins.installationDir();
+		//this.isMobile = true; // (await joplin.versionInfo()).platform == 'mobile';
+		
 		await this.loadCss(handle);
 		await this.loadJs(handle);
 
-		var inst = this;
+		let inst = this;
 		await this.settings.register();
 		await joplin.views.panels.onMessage(handle, async function(msg: any) {
 			
 			console.info(`Message from Webview: ${JSON.stringify(msg)}, setting dm to ${inst.displayMode} `);
-			var text = await joplin.commands.execute('selectedText') as string;					// the text of the selection
+			let text = await joplin.commands.execute('selectedText') as string;			// the text of the selection
+			
 			if (msg.id == 'Katex Input Helper' && msg.cmd == 'getparams') {
 				await inst.settings.readSettings(msg, text);
 				msg.equation = text;
 				msg.displayMode = inst.displayMode;
+				msg.isMobilePlugin = inst.isMobile;								// the Plugin has its own copy
 				return msg;
 			}
 
@@ -82,8 +86,8 @@ export class Dialog
 		const ok = { id: 'okay', title: 'Okay' };
 		const cancel = { id: 'cancel', title: 'Cancel' };
 		await joplin.views.dialogs.setButtons(handle, [ok, cancel]);
-		await joplin.views.dialogs.setFitToContent(handle, false);								// was false!
-		await joplin.views.dialogs.setHtml(handle, await this.load('./assets/dialog.html'));
+		await joplin.views.dialogs.setFitToContent(handle, false);				// was false!
+		await joplin.views.dialogs.setHtml(handle, this.load());
 	}
 	
 	/**
@@ -99,7 +103,7 @@ export class Dialog
 		if (res.formData == undefined) {
 			console.warn(`No formData returned on ${res.id}`);
 			// TODO: joplin does not like re-creation of handles
-			//handle = null;
+			// handle = null;
 			return res;
 		}
 		const json = res.formData.KATEX.hidden;
@@ -123,16 +127,25 @@ export class Dialog
 	}
 	
 	/**
-	 * @abstract Used to load the HTML for the dialog. Uses a file system operation.
+	 * @abstract Used to load the HTML for the dialog. Does this on behalf of WEBPACK.
+	 * 			 That's why the file name is hard coded.
 	 * 
-	 * @param fileName - the file path relative to the assets folder
 	 * @returns the HTML document
 	 */
-	public load = async function(fileName: string) : Promise<string>
+	public load = function() : string
 	{
-		let location = path.join(this.installationDir, fileName);
-		let html = await fs.readFile(location, 'utf-8');
-		return html;;
+		try {
+			if (this.isMobile) {
+				return require('./assets/dialog-mobile.html').default;
+			} else {
+				return require('./assets/dialog.html').default;
+			}
+			
+		} catch(e) {
+
+			console.warn(`Could not fetch HTML dialog : ${e}`);
+		}
+		return "";
 	}
 	
 	/**
@@ -140,17 +153,9 @@ export class Dialog
 	 * 
 	 * @param handle - the dialog handle
 	 */
-	public loadCss = async function(handle) : Promise<void> {
+	public loadCss = async function(handle: any) : Promise<void> {
 		
-		var css = [
-			/*
-				Ergebnis der Versuche soweit:
-				- alles nachladen funktioniert nicht so gut
-				- mit diesem Stand erst mal weiter arbeiten
-			*/
-			//"./assets/vendor.css",
-			"./assets/main.css"
-		];
+		let css = [ "./assets/main.css" ];
 		
 		for (const cssPath of css) {
 			await joplin.views.dialogs.addScript(handle, cssPath);
@@ -162,15 +167,11 @@ export class Dialog
 	 * 
 	 * @param handle - the dialog handle
 	 */
-	public loadJs = async function(handle) : Promise<void> {
-		var js = [
-			//"./assets/vendor.js",
-			"./assets/main.js"
-		];
+	public loadJs = async function(handle: any) : Promise<void> {
+		let js = [ "./assets/main.js" ];
 		
 		for (const jsPath of js) {
 			await joplin.views.dialogs.addScript(handle, jsPath);
-			//await Sleep(100);
 		}
 	}
 }

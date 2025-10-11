@@ -10,6 +10,7 @@ import { ILocalizer, IParser, IMath, utilitiesId, IUtilities, categoriesTreeId, 
  */
 export class KIHPanel implements IPanel {
 	id = "";
+	func: any = null;
 	parent = null;
 	initialised = false;
 	isOpen = false;
@@ -33,6 +34,7 @@ export class KIHPanel implements IPanel {
 		this.messager = messager;
 		this.parser = parser;
 		this.id = id;
+		this.func = $.fn.panel;
 		this.parent = parent;
 	}	
 	
@@ -77,8 +79,9 @@ export class KIHPanel implements IPanel {
 	/**
 	 * Initialise method, creates the *Panel* with the handlers provided.
 	 */
-	async initialise(dummy: any = null) {
-		$(`#${this.id}`).dialog(this.handlers)
+	async initialise(dummy: any = null) : Promise<void> {
+		// TODO: ever needed?
+		this.panelFunc(this.handlers);
 	}
 	
 	/**
@@ -107,7 +110,7 @@ export class KIHPanel implements IPanel {
 	 * Opens (shows) the Panel.
 	 */
 	open() {
-		$(`#${this.id}`).dialog('open');
+		this.panelFunc('open');
 		this.isOpen = true;
 	}
 	
@@ -116,8 +119,8 @@ export class KIHPanel implements IPanel {
 	 */
 	toggle() {
 		if (this.isOpen) {
-			$(`#${this.id}`).dialog('close');
-			this.isOpen = false;
+			this.panelFunc('close');
+			this.isOpen = false;						// doesn't initiate an close event
 		} else {
 			this.show();
 		}
@@ -129,14 +132,43 @@ export class KIHPanel implements IPanel {
 	 * Place this service into this base class to get access everywhere.
 	 * TODO: use Utility function.
 	 */	
-	localizeOption(option: string, id = null, func = $.fn.panel) {
+	localizeOption(option: string, id = null, func = null) {
+		func = func || this.func;
 		id = id || this.id;
 		let text = func.bind($(`#${id}`))('options')[option];							// do something to preserve the TITLE: this is an option
 		let html = $.parseHTML(text);													// parse it into html object
 		let key = $(html).attr('locate');												// extract the locate attribute
 		let located = this.localizer.getLocalText(key);									// use it to get localized text
-		let htmlString = (($(html).html(located)[0] as any) as Element).outerHTML;		// insert it into orginal html
+		$(html).html(located);
+		let htmlString = ((html[0] as any) as Element).outerHTML;						// insert it into orginal html
+		console.log(`Localized ${option} is ${htmlString}`);
 		return htmlString;
+	}
+	
+	/**
+	 * Method to get outerHTML from an element (jquery)
+	 */
+	outerHtml(selector: string) : string {
+		const htmlElement = $(selector)[0];
+		return htmlElement ? (htmlElement as any).outerHTML : undefined;
+	}
+	
+	/**
+	 * Returns the title of a panel.
+	 */
+	get title() : string {
+		const outerHtml = this.outerHtml(`#${this.id}_TITLE`);
+		if (outerHtml) return outerHtml;
+		
+		const options = this.panelFunc('options');
+		return options.title;
+	}
+	
+	/**
+	 * Returns the bound panel (one of : panel, window, dialog) function.
+	 */
+	get panelFunc() : any {
+		return this.func.bind($(`#${this.id}`));
 	}
 
 	/**
@@ -162,39 +194,6 @@ export class KIHPanel implements IPanel {
 	}	
 }
 
-/**
- * The More Dialog class.
- * 
- * This represents dialogs with Math content which is loaded on demand when the dialog is opened.
- * This content is in Katex format and will be translated to Math.
- * 
- * @extends KIHPanel
- */
-@injectFromBase() export class KIHMoreDialog extends KIHPanel {
-	
-	/**
-	 * Initialises (creates) the dialog.
-	 * 
-	 * This additionally to the *super* class method provides a translation method and a title for
-	 * Katex to Math in-place translation.
-	 * 
-	 * @param initialiseSymbolContent - method of the client to be invoked during loading
-	 */
-	override async initialise(initialiseSymbolContent: any) {
-		// id is the MORE id as in dialog.html file with 'w' and '_MORE'
-		let fPanelMoreID = this.id;
-		let fPanelMore = $('#' + fPanelMoreID);
-		let htmlFile = fPanelMoreID.substring(1); 
-		
-		$(fPanelMore).dialog({ 
-			onLoad: async function() { await initialiseSymbolContent(fPanelMoreID); }, 
-			title: $(`#${fPanelMoreID}_TITLE`).html() 
-		}); 
-		await super.initialise(fPanelMoreID);
-		$(fPanelMore).dialog('open'); 
-		$(fPanelMore).dialog('refresh', `formulas/${htmlFile}.html`);
-	}
-}
 
 /**
  * The KIHWindow class.
@@ -202,7 +201,13 @@ export class KIHPanel implements IPanel {
  * This represents windows like the Configuration Parameters window, the Language Configuration
  * window or the Theme (Style) selection window.
  */
-@injectFromBase() export class KIHWindow extends KIHPanel {
+@injectFromBase({ extendProperties: false }) export class KIHWindow extends KIHPanel {
+	
+	constructor(
+		@inject(dynamicParametersId) parameters: any) {
+		super(parameters);
+		this.func = $.fn.window;
+	}
 	
 	/**
 	 * Initialises (creates) a window.
@@ -215,27 +220,61 @@ export class KIHPanel implements IPanel {
 	override async initialise(dummy: any = null) {
 		let handlers: any = this.handlers;
 		handlers.title = this.localizeOption('title');
-		$(`#${this.id}`).window(handlers);
-	}
-	
-	/**
-	 * Shows the *Window* and resizes (Position, Size) it to stored values.
-	 * 
-	 * This is an adaptation of the KIHPanel version for KIHWindow.
-	 */
-	async show() {
-		this.resize();
-		this.open();		
-	}
-
-	/**
-	 * Opens (shows) this window.
-	 */
-	open() {
-		$(`#${this.id}`).window('open');
-		this.isOpen = true;
+		this.panelFunc(handlers);
 	}
 }
+
+/**
+ * The KIHDialog class.
+ */
+@injectFromBase() export class KIHDialog extends KIHWindow {
+
+	constructor(
+		@inject(dynamicParametersId) parameters: any) {
+		super(parameters);
+		this.func = $.fn.dialog;
+	}
+}
+
+
+/**
+ * The More Dialog class.
+ * 
+ * This represents dialogs with Math content which is loaded on demand when the dialog is opened.
+ * This content is in Katex format and will be translated to Math.
+ * 
+ * @extends KIHPanel
+ */
+@injectFromBase() export class KIHMoreDialog extends KIHDialog {
+	
+	/**
+	 * Initialises (creates) the dialog.
+	 * 
+	 * This additionally to the *super* class method provides a translation method and a title for
+	 * Katex to Math in-place translation.
+	 * 
+	 * @param initialiseSymbolContent - method of the client to be invoked during loading
+	 */
+	override async initialise(initialiseSymbolContent: any) {
+		// id is the MORE id as in dialog.html file with 'w' and '_MORE'
+		let htmlFile = this.id.substring(1); 
+		
+		let handlers: any = this.handlers;
+		let title = this.title;												// OUTER HTML
+		if (title.includes('locate')) {
+			title = this.localizeOption('title');							// OUTER html with localized text
+		}
+		handlers.title = title;
+		this.panelFunc(handlers); 
+		this.panelFunc('open'); 
+		
+		// Trial for Android
+		let html = (await import(`../formulas/${htmlFile}.html`)).default;
+		this.panelFunc('body').html(html);
+		await initialiseSymbolContent(this.id);
+	}
+}
+
 
 /**
  * The Information window. Additionally to an ordinary window this also handles
@@ -252,6 +291,12 @@ export class KIHPanel implements IPanel {
 		await super.initialise();
 		let [ tab ] = params;
 		this.tab = tab;
+		
+		let inst = this;
+		$('#tINFORMATIONS').tabs({ onSelect: (title: string, tab: number) => {
+			inst.tab = tab;
+			this.tabChanged = false;
+		} });
 	}
 	
 	/**
@@ -269,11 +314,16 @@ export class KIHPanel implements IPanel {
 	 * place. In this case the tab is switched.
 	 */
 	override async toggle() {
-		if (!this.tabChanged || !this.isOpen) {
-			await super.toggle();
+		if (!this.isOpen) {
+			await super.toggle();								// opens
+			$('#tINFORMATIONS').tabs('select', this.tab); 		// select the tab
+			this.tabChanged = false;
+		} else if (!this.tabChanged) {
+				await super.toggle();							// closes
+		} else {
+			$('#tINFORMATIONS').tabs('select', this.tab); 		// select the tab
+			this.tabChanged = false;
 		}
-		$('#tINFORMATIONS').tabs('select', this.tab); 			
-		this.tabChanged = false;
 	}
 }
 
@@ -281,7 +331,7 @@ export class KIHPanel implements IPanel {
  * The Matrix window is a special Window with extra functionality.
  */
 @injectable() 
-@injectFromBase() export class MatrixWindow extends KIHWindow {
+@injectFromBase() export class MatrixWindow extends KIHDialog {
 	
 	/**
 	 * Initialises the Matrix window.
@@ -316,6 +366,13 @@ export class KIHPanel implements IPanel {
 	override async update(...params) {
 		let [ rows, cols ] = params;	
 		await this.updateMatrixWindow(rows, cols);
+	}
+
+	/**
+	 * Override of panel does not support resize.
+	 */
+	override async show() {
+		this.open();
 	}
 
 	/**
@@ -355,7 +412,7 @@ export class KIHPanel implements IPanel {
 		
 		let options = $('#wMATRIX').dialog('options');
 		$('#wMATRIX').dialog({ 
-			title: vme.localizer.getLocalText("MATRIX"), 
+			title: vme.localizer.getLocalText("MATRIX"),
 			width: width, 
 			height: height,
 			left: options.left,									// HAS NO EFFECT !!
@@ -563,7 +620,7 @@ export class KIHPanel implements IPanel {
 /**
  * This class is solely responsible for the Dynamic Panel for Custom Equations.
  */
-@injectFromBase({extendProperties: false}) export class DynamicPanel extends KIHPanel {
+@injectFromBase({extendProperties: false}) export class DynamicPanel extends KIHDialog {
 	
 	@inject(utilitiesId) utilities: IUtilities;
 	@inject(categoriesTreeId) categoriesTree: ICategoriesTree;
@@ -1148,7 +1205,7 @@ export class KIHPanel implements IPanel {
 	}
 	
 	async update(id: string, ...params) {
-		this.panels[id].update(...params);
+		await this.panels[id].update(...params);
 	}
 }
 
