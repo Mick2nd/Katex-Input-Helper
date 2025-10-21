@@ -1,0 +1,26 @@
+@use 'variables';
+
+/* Functions */
+@function passThrough($value) {
+	@debug "Pass Through : #{$value}";
+	@return $value;
+}
+
+@function scale($isMobile: false) {
+	@if $isMobile {
+		@return 1.5;
+	}
+	@return 1.0;
+}
+
+@function fontSize($isMobile: false) {
+	@return scale($isMobile) * variables.$baseFontSize;
+}
+
+@function centerHeight($isMobile: false) {
+	@if $isMobile {
+		@return calc(100vh - variables.$heightPanelHeaderFooter - variables.$heightCenterHeader);
+	}
+	@return calc(100vh - 110px - variables.$heightCenterHeader);
+}
+

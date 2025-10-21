@@ -27,7 +27,21 @@ export function codeMirrorProxy() : ICodeMirror {
 	// const cm = CodeMirror.fromTextArea($("#mathTextInput")[0] as HTMLTextAreaElement, options);
 	const cm = CodeMirror($("#divMathTextInput")[0] as HTMLElement, options);
 	
-	(cm as ICodeMirror).version = CodeMirror.version;
+	function removeChar() {
+		const endCursor = cm.getCursor();
+		const startCursor = { line: endCursor.line, ch: endCursor.ch - 1 };
+		cm.replaceRange('', startCursor, endCursor);
+	}
+	
+	function activate() {
+		cm.replaceSelection(' ');
+		removeChar();
+	}
+	
+	activate();					// this is a workaround for the mobile version
+	((cm as any) as ICodeMirror).activateEditor = activate;
+	((cm as any) as ICodeMirror).removeCharBeforeCursor = removeChar;
+	((cm as any) as ICodeMirror).version = CodeMirror.version;
 
-	return cm;
+	return (cm as any) as ICodeMirror;
 }

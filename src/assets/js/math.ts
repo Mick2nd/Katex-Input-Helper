@@ -278,8 +278,8 @@ export class MathFormulae implements IMath {
 			.attr("title", function(index: number, attr: string) { return encoded; });
 		}		
 
-		selector.on('mouseover', function(event: any) { $("#divInformation").html(encoded); });
-		selector.mouseout(function(event: any) { $("#divInformation").html("&nbsp;"); });
+		selector.on('mouseover', function(event: any) { $(".divInformation").html(encoded); });
+		selector.mouseout(function(event: any) { $(".divInformation").html("&nbsp;"); });
 		
 		return selector;
 	}
@@ -333,7 +333,8 @@ export class MathFormulae implements IMath {
 	 * Sets the Focus to the Code Mirror Editor.
 	 */
 	setFocus() { 
-		this.codeMirror.focus(); 
+		this.codeMirror.focus();
+		this.codeMirror.refresh();					// TODO: did not help to display inserted text
 	}
 	
 	/**

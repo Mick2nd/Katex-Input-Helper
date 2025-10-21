@@ -324,6 +324,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		await vme.initialiseCodeMirror();
 		this.localizer.subscribe(this.onLocaleChanged.bind(this));
 		await this.localizer.initialiseLanguageChoice(this.localType);		// Progress dialog uses localized text
+		//await this.parser.parseAsync('#wLANGUAGE_CHOISE');				// TODO: check success - NO SUCCESS
 		
 		$.messager.progress({
 			title: "Katex Input Helper", 
@@ -349,26 +350,51 @@ export class KatexInputHelper implements IKatexInputHelper {
 
 		vme.endWait(); 
 	}
-	
+
+	/**
+	 * Initializes the differences of mobile / desktop variant.
+	 * 
+	 * @param mobile - true in the mobile variant.
+	 */	
 	async initialiseMobile(mobile: boolean) {
-		let opts = { assert: { 
-			type: 'css'
-		} };
+
+		// Intent: to restore original web page structure
+		const content = $('meta[name=viewport]').attr('content');
+		const html = `<meta name="viewport" content="${content}" ></meta>`;
+		$('meta[name=viewport]').remove();
+		$('html > head').append(html);
+
+		$('body').prepend($('#bodyPage'));
 
 		if (!mobile) {
 			$("body").addClass("desktop");
 			
+			await this.parser.parseAsync('html');
+						
 		} else {
+			let opts = { assert: { 
+				type: 'css'
+			} };
+			
+			const inst = this;
 			$("body").addClass("katex-mobile");
+			
+			if (!CSS.supports('height: 100vh')) {
+				console.warn('No support for Viewport Height units');
+			}
+			if (!CSS.supports('width: 100vw')) {
+				console.warn('No support for Viewport Width units');
+			}
 			
 			await import('./jquery-easyui/themes/mobile.css', opts);
 			await import('./jquery-easyui/jquery.easyui.mobile');
-			
-			await this.parser.parseAsync('body');
-			$('body').prepend($('.navpanel'));
+
+			await this.parser.parseAsync('html');
+
+			$('body').prepend($('div:has(.easyui-navpanel)'));
 			$.mobile.init();
-			
-			console.warn(`${$.mobile.panels.length} elements in panels array`);
+
+			// click handler for mobile			
 			$("#goWest").on('click', function(event) { 
 				event.preventDefault();
 				$.mobile.go('#westRegion', 'slide', 'right');
@@ -376,6 +402,15 @@ export class KatexInputHelper implements IKatexInputHelper {
 			$("#goEast").on('click', function(event) { 
 				event.preventDefault(); 
 				$.mobile.go('#eastRegion', 'slide', 'left');
+			});
+			$("header:has(+ #wrapperPanel) a.m-back").on('click', function(event) { 
+				event.preventDefault();
+				inst.panels.closeOpen(); 
+				$.mobile.back();
+				inst.codeMirrorEditor.activateEditor(); // workaround to re-activate the editor
+			});
+			$("header:has(+ #westRegion) a.m-back, header:has(+ #eastRegion) a.m-back").on('click', function(event) { 
+				inst.codeMirrorEditor.activateEditor(); // workaround to re-activate the editor
 			});
 		}
 	}
@@ -395,7 +430,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * Set Focus on Editor.
 	 */
 	setFocus() { 
-		$("#mathTextInput").trigger("focus"); 
+		//$("#mathTextInput").trigger("focus"); 
 		if (this.codeMirrorEditor) { this.codeMirrorEditor.focus(); } 
 	}
 	
@@ -432,7 +467,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		let vme = this; 
 		const codeMirrorEditor = this.codeMirrorEditor;
 		const option = vme.platformInfo.isMobile ? 'contenteditable' : 'textarea';
-		try { codeMirrorEditor.setOption('inputStyle', option); } catch(e) {}
+		try { codeMirrorEditor.setOption('inputStyle', 'textarea'); } catch(e) {}
 		codeMirrorEditor.on("change", function() { vme.autoUpdateOutput(); }); 
 		
 		if(!vme.platformInfo.isMobile) {
@@ -441,7 +476,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 			 */
 			$(".CodeMirror").on('contextmenu', (event) => vme.onContextMenu('#mINSERT', event)); 
 		} else {
-			$('.CodeMirror').css('fontSize', '1.3em');
+			$('.CodeMirror').css('font-size', '1.3em');
 		}
 	}
 
@@ -557,7 +592,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 					case "mBUGS": await vme.openInformationTab(2); break; 
 					case "mEQUATION_SAMPLE": await vme.openInformationTab(3); break; 
 					case "f_GREEK_CHAR": await vme.initialiseUImoreDialogs("f_L_U_GREEK_CHAR"); break; 
-					case "mCHARS": 
+					// case "mCHARS": 
 					case "f_ALL_CHAR": await vme.initialiseUImoreDialogs("f_ALL_CHAR"); break; 
 					case "f_FR_CHAR": 
 					case "f_BBB_CHAR": await vme.initialiseUImoreDialogs(item.target.id); break; 
@@ -612,10 +647,10 @@ export class KatexInputHelper implements IKatexInputHelper {
 		}); 
 		$("#mathVisualOutput").on('contextmenu', (event) => vme.onContextMenu('#mVIEW', event)); 
 		$("[information]").on('mouseover', function(event) { 
-			$("#divInformation").html(vme.getLocalText($(this).attr("information"))); 
+			$(".divInformation").html(vme.getLocalText($(this).attr("information"))); 
 		}); 
 		$("[information]").on('mouseout', function(event) { 
-			$("#divInformation").html("&nbsp;"); 
+			$(".divInformation").html("&nbsp;"); 
 		}); 
 
 		$('body').on('click', '#btCOPYRIGHT', async function(event) { 

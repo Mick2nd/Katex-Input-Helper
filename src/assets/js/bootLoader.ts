@@ -125,10 +125,11 @@ export class BootLoader implements IBootLoader {
 	async initApp() {
 		try {
 			this.vme = this.factory();
-			window.vme = this.vme;											// prevents garbage collection?
+			window.vme = this.vme;								// prevents garbage collection?
 			await this.vme.initialise();
-			$('#myContainer').layout({fit: true});
-			$('#divEquationInputOutput').layout({});
+			//$('#myContainer').layout({fit: true});			// TODO: move to initialise, can be better controlled
+			//$('#divEquationInputOutput').layout({});
+			//$('#innerLayout').layout({fit: true});
 		} finally {
 			console.info('App initialization finished');
 		}

@@ -13,6 +13,8 @@ export class KIHPanel implements IPanel {
 	func: any = null;
 	parent = null;
 	initialised = false;
+	initialResized = false;
+	initialMoved = false;
 	isOpen = false;
 	math: IMath = null;;
 	localizer: ILocalizer = null;
@@ -43,8 +45,17 @@ export class KIHPanel implements IPanel {
 	 * 
 	 * This delegates to the *Parameters* instance.
 	 */
-	onMove(left: number, top: number) { 
-		console.info(`Panel with id ${this.id} moved : ${left}, ${top}`);
+	onMove(left: number, top: number) {
+		if (!this.initialised) {
+			return;
+		}
+		if (!this.initialMoved) {
+			console.info(`Panel with id ${this.id} initial onMove : ${left}, ${top}`);
+			this.parameters.onPanelMove(this.id, left, top, true);
+			this.initialMoved = true;
+			return;
+		}
+		console.info(`Panel with id ${this.id} onMove : ${left}, ${top}`);
 		this.parameters.onPanelMove(this.id, left, top);
 	}
 	
@@ -54,7 +65,16 @@ export class KIHPanel implements IPanel {
 	 * This delegates to the *Parameters* instance.
 	 */
 	onResize(width: number, height: number) {
-		console.info(`Panel with id ${this.id} resized : ${width}, ${height}`);
+		if (!this.initialised) {
+			return;
+		}
+		if (!this.initialResized) {
+			console.info(`Panel with id ${this.id} initial onResize : ${width}, ${height}`);
+			this.parameters.onPanelResize(this.id, width, height, true);
+			this.initialResized = true;
+			return;
+		}
+		console.info(`Panel with id ${this.id} onResize : ${width}, ${height}`);
 		this.parameters.onPanelResize(this.id, width, height);
 	}
 	
@@ -63,6 +83,9 @@ export class KIHPanel implements IPanel {
 	 */
 	onClose() {
 		this.isOpen = false;
+		if (this.parameters.isMobile) {
+			$.mobile.back();
+		}
 	}
 	
 	/**
@@ -80,8 +103,7 @@ export class KIHPanel implements IPanel {
 	 * Initialise method, creates the *Panel* with the handlers provided.
 	 */
 	async initialise(dummy: any = null) : Promise<void> {
-		// TODO: ever needed?
-		this.panelFunc(this.handlers);
+		// this.initialResize();
 	}
 	
 	/**
@@ -95,25 +117,37 @@ export class KIHPanel implements IPanel {
 	 * Shows the *Panel* and resizes (Position, Size) it to stored values.
 	 */
 	async show() {
-		this.resize();
 		this.open();
+		this.resize();
 	}
 
-	/**
-	 * Resizes this panel with the values in parameters.
-	 */
-	resize() {
-		this.parameters.resizePanel(this.id);
-	}
-	
 	/**
 	 * Opens (shows) the Panel.
 	 */
 	open() {
+		if (this.parameters.isMobile) {
+			$.mobile.go('#wrapperPanel');
+			this.panelFunc('open');
+			this.panelFunc('resize', { width: 'auto', height: 'auto' });
+			this.isOpen = true;
+			this.panelFunc('move', $('#wrapperBody').position());
+			
+			// this.panelFunc('move', { left: 0, top: 0 });
+			// Does not work as expected
+			// With the dialog enclosed by a div wrapper, **prepend** works
+			// $('#wrapperPanel').prepend($(`div :has(#${this.id})`));
+			
+			this.panelFunc('refresh');
+			return;
+		}
 		this.panelFunc('open');
+		if (!this.initialised) {
+			this.initialised = true;
+			this.initialResize();
+		}
 		this.isOpen = true;
 	}
-	
+
 	/**
 	 * Toggles the dialog between open and closed
 	 */
@@ -127,12 +161,47 @@ export class KIHPanel implements IPanel {
 	}
 
 	/**
+	 * Resizes this panel with the values in parameters.
+	 */
+	resize() {
+		this.parameters.resizePanel(this.id);
+	}
+	
+	/**
+	 * This function handles the desktop use case. It initiates a resize for a
+	 * workaround to problems only taking place in this case. And it canters the
+	 * panels. 
+	 */
+	protected initialResize() {
+		if (this.parameters.isMobile) {
+			return;
+		}
+		
+		const options = this.panelFunc('options');
+		const width = options.width;
+		const height = options.height;
+		// Width from jquery does not provide correct calculated value in each case!
+		// Better use auto setting from panel.
+		const width2 = this.width;
+		const height2 = this.height;
+		const bodyWidth = $(`body`).width();
+		const bodyHeight =  $(`body`).height();
+		const left = (bodyWidth - width2) / 2;
+		const top = (bodyHeight - height2) / 2;
+		
+		console.log(`${this.id} Panel at initialResize, position: {${left}, ${top}}, dimensions: panel: {${width}, ${height}}, body: {${bodyWidth}, ${bodyHeight}}`);
+		this.panelFunc('resize', { width: width, height: height });
+		this.panelFunc('move', { left: left, top: top });
+		console.log(`${this.id} Panel at initialResize: resize executed`);
+	}
+
+	/**
 	 * Used to localize an option.
 	 * 
 	 * Place this service into this base class to get access everywhere.
 	 * TODO: use Utility function.
 	 */	
-	localizeOption(option: string, id = null, func = null) {
+	protected localizeOption(option: string, id = null, func = null) {
 		func = func || this.func;
 		id = id || this.id;
 		let text = func.bind($(`#${id}`))('options')[option];							// do something to preserve the TITLE: this is an option
@@ -148,15 +217,52 @@ export class KIHPanel implements IPanel {
 	/**
 	 * Method to get outerHTML from an element (jquery)
 	 */
-	outerHtml(selector: string) : string {
+	protected outerHtml(selector: string) : string {
 		const htmlElement = $(selector)[0];
 		return htmlElement ? (htmlElement as any).outerHTML : undefined;
+	}
+
+	protected scale(sc: number, selector: string = "") {
+		let panel: any = null;
+		if (selector !== "") {
+			panel = $(selector);
+		} else {
+			panel = $(`#${this.id}`);
+		}
+		panel.css({
+			'width': `calc(${panel.css('width')} * 2)`,
+			'height': `calc(${panel.css('height')} * 2)`
+		});
+		panel.css({
+			'transform': `scale(${sc})`,
+			'transform-origin': 'left top'
+		});
+	}
+	
+	protected get width() : any {
+		const w = $(`#${this.id}`).outerWidth();
+		console.log(`Panel with id ${this.id}: queried width: ${w}`);
+		return w;
+	}
+
+	protected get height() : any {
+		return $(`#${this.id}`).outerHeight();
+	}
+
+	protected get styles() : any {
+		const options = this.panelFunc('options');
+		return options.styles ? options.styles : { };
+	}
+
+	protected set styles(styles: any) {
+		const options = this.panelFunc('options');
+		options.styles = styles;
 	}
 	
 	/**
 	 * Returns the title of a panel.
 	 */
-	get title() : string {
+	protected get title() : string {
 		const outerHtml = this.outerHtml(`#${this.id}_TITLE`);
 		if (outerHtml) return outerHtml;
 		
@@ -167,7 +273,7 @@ export class KIHPanel implements IPanel {
 	/**
 	 * Returns the bound panel (one of : panel, window, dialog) function.
 	 */
-	get panelFunc() : any {
+	protected get panelFunc() : any {
 		return this.func.bind($(`#${this.id}`));
 	}
 
@@ -218,6 +324,8 @@ export class KIHPanel implements IPanel {
 	 * TODO: harmonize with More Dialog class.
 	 */
 	override async initialise(dummy: any = null) {
+		await super.initialise(dummy);
+		
 		let handlers: any = this.handlers;
 		handlers.title = this.localizeOption('title');
 		this.panelFunc(handlers);
@@ -233,6 +341,10 @@ export class KIHPanel implements IPanel {
 		@inject(dynamicParametersId) parameters: any) {
 		super(parameters);
 		this.func = $.fn.dialog;
+	}
+	
+	override async initialise(dummy: any) {
+		await super.initialise(dummy);
 	}
 }
 
@@ -257,6 +369,10 @@ export class KIHPanel implements IPanel {
 	 */
 	override async initialise(initialiseSymbolContent: any) {
 		// id is the MORE id as in dialog.html file with 'w' and '_MORE'
+
+		// Where to place?
+		//super.initialResize();
+		
 		let htmlFile = this.id.substring(1); 
 		
 		let handlers: any = this.handlers;
@@ -288,7 +404,7 @@ export class KIHPanel implements IPanel {
 	 * Initialises the Matrix window.
 	 */
 	override async initialise(...params) : Promise<void> {
-		await super.initialise();
+		await super.initialise(params);
 		let [ tab ] = params;
 		this.tab = tab;
 		
@@ -337,7 +453,7 @@ export class KIHPanel implements IPanel {
 	 * Initialises the Matrix window.
 	 */
 	override async initialise(...params) : Promise<void> {
-		await super.initialise();
+		await super.initialise(params);
 
 		let vme = this;
 		
@@ -513,7 +629,7 @@ export class KIHPanel implements IPanel {
 	 * Initialises the Unicode List.
 	 */
 	override async initialise(...params: any) : Promise<void> {
-		await super.initialise();
+		await super.initialise(params);
 		[ this.initialiseSymbolContent ] = params;
 		
 		let vme = this;
@@ -696,7 +812,7 @@ export class KIHPanel implements IPanel {
 		this.categoriesTree.treeChanged.subscribe(this.onTreeChanged.bind(this));
 		this.categoriesTree.equationMoved.subscribe(this.onEquationMoved.bind(this));
 		
-		await super.initialise();
+		await super.initialise(dummy);
 		await inst.initialiseDatagrid(`${inst.gridSelector}`);
 		await inst.customEquationsFromParameters();
 
@@ -1142,9 +1258,9 @@ export class KIHPanel implements IPanel {
 			grid
 			.on('mouseover', 'a', function(event) { 
 				let latex = getSymbol(event.target);
-				if (latex) $("#divInformation").html(latex); 
+				if (latex) $(".divInformation").html(latex); 
 			})
-			.on('mouseout', 'a', function(event) { $("#divInformation").html("&nbsp;"); })
+			.on('mouseout', 'a', function(event) { $(".divInformation").html("&nbsp;"); })
 			.on('click', 'a', function(event) {
 				event.preventDefault(); 
 				let a = $(event.target);
@@ -1200,12 +1316,21 @@ export class KIHPanel implements IPanel {
 		await this.panels[id].initialise(initialiseSymbolContent);
 	}
 
-	async toggle(id: string) {
-		await this.panels[id].toggle();
+	toggle(id: string) {
+		this.panels[id].toggle();
 	}
 	
 	async update(id: string, ...params) {
 		await this.panels[id].update(...params);
+	}
+	
+	closeOpen() {
+		for (const id in this.panels) {
+			const panel = this.panels[id];
+			if (panel.isOpen) {
+				panel.toggle();
+			}
+		}
 	}
 }
 

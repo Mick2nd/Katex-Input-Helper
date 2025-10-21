@@ -1,0 +1,309 @@
+@use "sass:math";
+@use 'sass:list';
+@use "variables";
+@use "functions";
+
+/* Mixins */
+@mixin moreDialogsMixin ($isMobile: false) {
+	$scale: functions.scale($isMobile);
+	$fontSize: functions.fontSize($isMobile);
+	$basePadding: math.div($fontSize, 5);
+	$maxHeight: calc(100vh - 2 * variables.$baseMargin - variables.$heightPanelHeaderFooter - 25px);	// empirical
+	
+	& {
+		padding: $basePadding;
+		height: calc-size(fit-content, min(size, $maxHeight)) !important;
+		width: fit-content !important;
+
+		font-size: $fontSize !important;
+
+		overflow-y: auto !important;
+	}
+	
+	// The problem is getting the right selector here.
+	// Attention: selector is treated as list of lists
+	$p: list.nth(list.nth(&, 1), -1);
+	@at-root .panel:has(#{functions.passThrough($p)}) {
+		display: grid;
+		grid-template-rows: repeat(2, 1fr);
+
+		.panel-header {
+			width: auto !important;
+			display: flex;
+			justify-content: flex-start;
+			&:not(:has(.panel-tool-expand)) {
+				padding: 0 0 0 10px;
+			}
+			&:has(.panel-tool-expand) {
+				padding: 0 50px 0 10px;
+			}
+		}
+	} 
+}
+
+@mixin unicodeMixin ($isMobile: false) {
+	$scale: functions.scale($isMobile);
+	$fontSize: functions.fontSize($isMobile);
+	$widthCombo: $scale * 345px;
+	
+	height: 500px * $scale !important;
+	width: 700px * $scale !important;
+	font-size: $fontSize;
+
+	& #cUNICODES_GROUP {
+		width: $widthCombo;
+		margin-top: 10px; 
+		margin-bottom: 10px; 
+		margin-left: 4px;
+		form .combo, form input {
+			font-size: $fontSize;
+			width: $widthCombo !important;
+		}
+	}
+	& #cUNICODES_LIST {
+		float: left; 
+		width: calc(95% - 170px * $scale); 
+		height: calc(100% - 60px); 
+		overflow: auto;
+	}
+	& #cUNICODES_VALUES {
+		float: right; 
+		width: 200px * $scale; 
+		height: calc(100% - 60px); 
+		overflow: auto;
+		td, th {
+			padding: 3px;
+		}
+	}
+}
+
+/* Editor Parameters Mixin */
+@mixin editorParametersMixin ($isMobile: false) {
+	$scale: functions.scale($isMobile);
+
+	width: 420px * $scale !important; 
+	height: 300px * $scale !important; 
+	font-size: 1rem * $scale;
+
+	#formEDITOR_PARAMETERS {
+		fieldset, input, a {
+			margin-top: 10px !important;
+			margin-left: 15px !important;
+		}
+		legend {
+			margin-top: 10px !important;
+			margin-left: 0px !important;
+		}
+		#autoUpdateTime {
+			margin-left: 4px; 
+			font-size: 90% 
+		}
+		a {
+			background-color: lightgray;
+		}
+	}
+}
+
+/* Style Choice dialog */
+@mixin styleChoiceMixin ($isMobile: false) {
+	$scale: functions.scale($isMobile);
+	
+	width: 170px * $scale !important; 
+	height: 120px * $scale !important;
+	font-size: 1rem * $scale;
+
+	fieldset {
+		margin-top: 10px;
+		margin-left: 15px;
+	}
+}
+
+/**
+ * It seems the calculation of width / height with calc and usage of vw / vh units
+ * is essential for correct working.
+ */
+@mixin languageChoiceMixin ($isMobile: false) {
+	$scale: functions.scale($isMobile);
+	$width: 370px;
+	@if $isMobile {
+		$width: 700px;
+	}	
+	$height: 200px * $scale;
+		
+	width: functions.passThrough($width) !important; 
+	height: $height !important;
+	font-size: 1rem * $scale;
+	
+	fieldset {
+		margin-top: 10px;
+		margin-left: 15px;
+	}
+	
+	img {
+		width: 16px * $scale;
+		height: 11px * $scale;
+	}
+	
+	position: relative;
+}
+
+/* Language Resources window */
+/* Leave font as is, because there is no interactivity */
+@mixin languageListMixin($isMobile: false) {
+	$scale: functions.scale($isMobile);
+
+	height: fit-content !important; 
+	width: calc(90vw - 90px) !important;
+	
+	#wLANGUAGE_LIST {
+		height: 450px * $scale !important; 
+		width: calc(90vw - 100px) !important;
+		padding: 10px;
+
+		/* Extracted from code */
+		table {
+			border-spacing: 0px !important;
+			border-collapse: collapse !important;
+			margin: 20px !important;
+			width: calc(100% - 40px) !important;		
+		}
+	}	
+}
+
+/* Informations window */
+@mixin informationsMixin($isMobile: false) {
+	$scale: functions.scale($isMobile);
+	
+	height: fit-content !important; 
+	width: 610px * $scale !important;
+	padding: 5px;
+
+	#wINFORMATIONS {
+		height: 450px * $scale !important; 
+		width: 600px * $scale !important;
+		font-size: 1rem * $scale;
+
+		>div >div {
+			padding: 10px;
+		}
+
+		#tableBUGS {
+			width: 100%;
+			border-collapse: collapse;
+			background-color: #FFFFCC;
+			border: 1px solid #FFCC00;
+			
+			th, td {
+				border: 1px solid #FFCC00;
+				padding: 2px;
+				border-spacing: 2px;
+			}
+		}
+	}	
+}
+
+/* Custom Equations Mixin */
+/* TODO: Optimize, consider desktop version */
+@mixin customEquationsMixin($isMobile: false) {
+	$fontSize: functions.fontSize($isMobile);
+	$width: 700px;
+	$height: 500px;
+	
+	@if $isMobile {
+		$width: 900px;
+		$height: 700px;
+	}
+	
+	width: $width !important;
+	height: $height !important;
+
+	#customDatagrid {
+		border-spacing: 0px;
+		border-collapse: collapse;
+		width: 100%;
+	}
+	.datagrid-body, .datagrid-header {
+		table td div {
+			&, input, span {
+				font-size: $fontSize;
+			}
+		} 
+	}
+	
+	#categories li div span {
+		font-size: $fontSize;
+	}
+}
+
+/* Matrix Mixin */
+@mixin matrixMixin($isMobile: false) {
+	$fontSize: functions.fontSize($isMobile);
+	
+	#tableMATRIX {
+		border-spacing: 0px; 
+		border-collapse: collapse; 
+		td, td input, td select {
+			font-size: $fontSize !important;
+			text-align: center;
+		}
+	}
+}
+
+/* Wait Msg Mixin */
+@mixin waitMsgMixin($isMobile: false) {
+	$fontSize: functions.fontSize($isMobile);	
+	$borderColor: #95B8E7;
+
+	font-size: $fontSize;
+	margin: 0px !important; 
+	padding: 50px !important; 
+	height: 100%; 
+	background-color: #E7F0FF !important; 
+	border: 1px dotted $borderColor !important; 
+	border-top: 1px solid $borderColor !important; 
+	color: #0E2D5F !important;
+}
+
+
+@mixin dialogs($isMobile: false) {
+	/**
+	 * The MORE dialogs with an unique shape
+	 */
+	.content-tailored {
+		@include moreDialogsMixin($isMobile);
+	}
+	
+	#wUNICODES_LIST {
+		@include unicodeMixin($isMobile);
+	}
+	// Belongs to Unicode but placed outside in html, working!!
+	.combobox-item {
+		font-size: functions.fontSize($isMobile);
+	}
+	
+	#wEDITOR_PARAMETERS {
+		@include editorParametersMixin($isMobile);
+	}
+	#wSTYLE_CHOISE {
+		@include styleChoiceMixin($isMobile);
+	}
+	#wLANGUAGE_CHOISE {
+		@include languageChoiceMixin($isMobile);
+	}
+	.language-list {
+		@include languageListMixin($isMobile);
+	}
+	.informations {
+		@include informationsMixin($isMobile);
+	}
+	#wf_CUSTOM_EQUATIONS_MORE {
+		@include customEquationsMixin($isMobile);
+	}
+	#wMATRIX {
+		@include matrixMixin($isMobile);
+	}
+	
+	#WaitMsg {
+		@include waitMsgMixin(isMobile)
+	}
+}

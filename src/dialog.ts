@@ -56,7 +56,7 @@ export class Dialog
 		}
 
 		this.installationDir = await joplin.plugins.installationDir();
-		//this.isMobile = true; // (await joplin.versionInfo()).platform == 'mobile';
+		this.isMobile = true; // (await joplin.versionInfo()).platform == 'mobile';
 		
 		await this.loadCss(handle);
 		await this.loadJs(handle);

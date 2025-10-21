@@ -100,7 +100,8 @@ export class Themes extends Observable implements IThemes {
 
 			await import(`./jquery-easyui-MathEditorExtend/themes/${theme}/easyui.css`, opts);
 			$('link[href$=".styles.css"]').last()
-			.attr('id', `${theme}-extend`);
+			.attr('id', `${theme}-extend`)
+			.attr('disabled', false);				// TEST
 		}
 		
 		// TEST

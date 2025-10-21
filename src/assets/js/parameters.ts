@@ -86,12 +86,12 @@ export class KIHParameters {
 					console.debug(`Parameters : queryParameters : displayMode ${val} `);
 				}
 				inst[key] = val;
+				/* ANALYSIS: this may be of no value as no panel is created at this time.
 				if (key.startsWith('w')) {
 					inst.resizePanel(key);
 				}
+				*/
 			}
-			// Window position mismatch
-			//inst.resetWindowPositions();
 			inst.transaction.end();
 		} else {
 			console.warn(`The "Katex Input Helper" plugin did not return a response to get parameters `);
@@ -115,17 +115,18 @@ export class KIHParameters {
 	/**
 	 * Resets all window positions. Defaults will be activated.
 	 * 
-	 * The defaults are taken from css file *dialog.css* (application css file).
+	 * The defaults are determined, when panel is first displayed after re-start.
 	 */	
 	resetWindowPositions() {
 		this.transaction.begin();
-		let css = new Css();
 
 		for (const [key] of Object.entries(this)) {
 			if (key.startsWith('w')) {
-				let o = css.dimensionsOf(key);
-				this[key] = o;
-				$(`#${key}`).panel('resize', o);
+				this[key].left = this[key].initialLeft;
+				this[key].top = this[key].initialTop;
+				this[key].width = this[key].initialWidth;
+				this[key].height = this[key].initialHeight;
+				this.resizePanel(key);
 			}
 		}
 
@@ -280,18 +281,26 @@ export class KIHParameters {
 	/**
 	 * onPanelMove handler for some dialogs and windows.
 	 */
-	onPanelMove(id: string, left: number|string, top: number|string) {
-		if (!(id in this)) {
+	onPanelMove(id: string, left: number|string, top: number|string, initial: boolean = false) {
+		if (!(id in this || this[id] == undefined)) {
 			this[id] = { };
 		}
-		if (id in this && (this[id].left != left || this[id].top != top)) {
+		
+		let stateChanged = false;
+		if (initial) {
+			this[id].initialLeft = left;
+			this[id].initialTop = top;
+		} else {
+			stateChanged = this[id].left != left || this[id].top != top;
 			this[id].left = left;
 			this[id].top = top;
-			this.mouseState.increment();
-			
-			this.transaction.complete();
 		}
 
+		if (stateChanged || initial) {
+			this.mouseState.increment();			
+			this.transaction.complete();
+		}
+		
 		if (this.mode == 'web') {
 			this.storeCookie(id, this[id]);
 		}
@@ -309,20 +318,30 @@ export class KIHParameters {
 	 * @param width - the width established by the user
 	 * @param height - the height established by the user
 	 */
-	onPanelResize(id: string, width: number|string, height: number|string) {
-		if (!(id in this)) {
+	onPanelResize(id: string, width: number|string, height: number|string, initial: boolean = false) {
+		if (!(id in this) || this[id] == undefined) {
 			this[id] = { };
 		}
-		if (id in this && (this[id].width != width || this[id].height != height)) {
+
+		let stateChanged = false;
+		if (initial) {
+			this[id].initialWidth = width;
+			this[id].initialHeight = height;
+		} else {
+			stateChanged = this[id].width != width || this[id].height != height;
 			this[id].width = width;
 			this[id].height = height;
-			this.mouseState.increment();								// counts the number of resize / move events
+		}
+		
+		if (stateChanged || initial) {
 			
+			this.mouseState.increment();								// counts the number of resize / move events
+			/* TODO: in question
 			let dimensions = this.getPanelDimensions(id);
 			this.check(this[id], dimensions);							// checks for discrepancy
 			this[id].left = dimensions.left;
 			this[id].top = dimensions.top;
-			
+			*/
 			this.transaction.complete();
 		}
 		
@@ -349,16 +368,23 @@ export class KIHParameters {
 	 * @param id - the panel id as in HTML
 	 */
 	resizePanel(id: any) {
-		if (id in this && this[id] != undefined) {
+		if (!this.isMobile && id in this && this[id] != undefined) {
 			try {
-				let o = this[id];
-				$(`#${id}`).panel('resize', o);
+				const o = this[id];
+				if (o.left && o.top && o.width && o.height) {
+					console.log(`${this.id} Panel at resizePanel: {${o.left}, ${o.top}}`);
+					$(`#${id}`).panel('resize', o);
+				}
 			} catch(e) {
 				console.error(`Exception resizing panel ${id} : ${e}`);
 			}
 		} else {
 			console.warn(`Missing id in parameters : ${id}`);
 		}
+	}
+	
+	resizeWithCss(id: any, dim: any) {
+		$(`#${id}`).css(dim);
 	}
 	
 	/**
@@ -547,14 +573,14 @@ class Css {
 	dimensionsOf(id: string) {
 		try {
 			for (const rule of this.sheet.cssRules) {
-				if (rule.type == rule.STYLE_RULE && rule.selectorText === ('#' + id) && rule.styleMap != null) {
+				if (rule.type == rule.STYLE_RULE && rule.selectorText.includes('#' + id) && rule.selectorText.includes('.desktop') && rule.styleMap != null) {
 					const width = rule.styleMap.get('width');
 					const height = rule.styleMap.get('height');
 					const dim = {
 						width: width.value + width.unit,
 						height: height.value + height.unit,
-						left: "50% - (width.value / 2 + width.unit)",
-						top: "50% - (height.value / 2 + height.unit)"
+						left: `calc(50vw - ${width.value / 2}${width.unit})`,		// TODO: check
+						top: `calc(50vh - ${height.value / 2}${height.unit})`
 					};
 					
 					return dim;
@@ -567,7 +593,13 @@ class Css {
 		const msg = `Style not found for ${id}`;
 		console.warn(msg);
 		
-		return { width: 'auto', height: 'auto', left: '30%', top: '30%'};
+		const left = `calc-size(fit-content, calc(50vw - size / 2))`;
+		const top = `calc-size(fit-content, calc(50vh - size / 2))`;
+		//return { width: 'fit-content', height: 'fit-content', left: left, top: top};
+		// Unclear if auto works.
+		//return { width: 'auto', height: 'auto', left: 0, top: 0};
+		// Code below is working together with resizePanel.
+		return { width: 500, height: 500, left: 0, top: 0};
 	}
 }
 

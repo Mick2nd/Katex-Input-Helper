@@ -63,16 +63,22 @@ export interface ICodeMirror {
 	setValue(val: string|ArrayBuffer) : void;
 	getValue() : string;
 	focus() : void;
+	refresh() : void;
 	lastLine() : number;
 	setCursor(cursor: any) : void;
 	getCursor() : any;
 	setOption(option: string, val: any) : void;
 	on(evt: string, handler: any) : void;
+	replaceRange(replacement: string, from: any, to: any, origin?: string) : void;
+	
+	activateEditor() : void;
+	removeCharBeforeCursor() : void;
 	version?: string;
 }
 
 export interface IPanels {
 	showWindowDI(wndId: any, id: string, ...params: any) : void;
+	closeOpen() : void;
 }
 
 export interface IPanel {

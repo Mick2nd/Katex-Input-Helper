@@ -1,0 +1,21 @@
+@use 'sass:math';
+
+/* Global Variables */
+$baseMargin: 8px;
+$baseFontSize: 0.8rem;
+$basePadding: math.div($baseFontSize, 5);
+
+$widthWestAccordion: 230px;
+$widthEastAccordion: 250px;
+
+$heightCenterHeader: 31.33px;
+$heightPanelHeaderFooter: 2 * 44.67px;
+
+$isViewportWidthDefined: false;
+@supports (width: 100vw) {
+	$isViewportWidthDefined: true !global;
+}
+$isViewportHeightDefined: false;
+@supports (height: 100vh) {
+	$isViewportHeightDefined: true !global;
+}

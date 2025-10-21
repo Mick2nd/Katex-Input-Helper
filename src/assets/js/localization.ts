@@ -137,7 +137,7 @@ export class Localizer implements ILocalizer {
 			html += 
 				`\n\t` + 
 				`<input type='radio' name='localType' id='${lang}_localType' value='${lang}' />` + 
-				`<img src='./icons/${flag}.png' width='16' height='11' alt='${langCode}' /> &nbsp; ` + 
+				`<img src='./icons/${flag}.png' alt='${langCode}' /> &nbsp; ` + 
 				`<label for='${lang}_localType' dir='${langDir}'>${langage}</label> - ${langAuthor} <br />`;
 		}
 		html += "\n</fieldset>";
@@ -155,7 +155,7 @@ export class Localizer implements ILocalizer {
 			let title = lang; 
 			let langage = json["_i18n_Langage"]; 
 			if (!$('#tLANGUAGE_LIST').tabs('exists', title)) {
-				let list = "<table border='1' cellspacing='0' style='border-spacing:0px;border-collapse:collapse;margin:20px;width:580px'>"; 
+				let list = "<table border='1' cellspacing='0' >"; 
 				let dir = json["_i18n_HTML_Dir"]; 
 				for (let ressource in json) { 
 					list += (

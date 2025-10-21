@@ -214,6 +214,9 @@ export default (env) => {
 		  	port: 9000,
 			allowedHosts: 'all',
 		},
+		stats: {
+		  loggingDebug: ["sass-loader"],
+		},
 	};
 }
 
