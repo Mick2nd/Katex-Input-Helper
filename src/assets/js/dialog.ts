@@ -1,4 +1,5 @@
 import './dialog.scss' assert { type: 'css' };
+//import './jquery-easyui/themes/mobile.css' assert { type: 'css' };
 
 import { VKI_init } from './keyboard/keyboard';
 import { FileHandler } from "./fileHandling";
@@ -162,8 +163,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 	panels: IPanels = null;
 	baseLocation = "";
 	parser: IParser = null;
-	mathTextInput: any = null;
-	mathVisualOutput: any = null;
 	VKI_show: any = null;
 	
 	/**
@@ -220,9 +219,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 		this.codeMirrorEditor = math.codeMirror;
 		this.panels = panels;
 		this.documentations = new Documentations(false, this.baseLocation);
-
-		this.mathTextInput = document.getElementById('mathTextInput'); 
-		this.mathVisualOutput = document.getElementById('mathVisualOutput'); 
 		
 		for (let i = 65; i <= 90; i++) if ($.inArray(i, this.allowedCtrlKeys) == -1) this.notAllowedCtrlKeys.push(i); 
 		for (let i = 65; i < 90; i++) this.notAllowedAltKeys.push(i);
@@ -310,7 +306,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		let vme = this;
 		this.versions = await import( /* webpackInclude: /\.json$/ */ './versions.json');
 		
-		this.parser.initialise();		
+		//this.parser.initialise();		
 		await this.parameters.queryParameters();							// from Plugin		
 
 		// Query string may be a better solution than detection
@@ -321,10 +317,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 		await this.initialiseMobile(this.parameters.isMobile);
 
 		// IN QUESTION
-		await vme.initialiseCodeMirror();
+		vme.initialiseCodeMirror();
 		this.localizer.subscribe(this.onLocaleChanged.bind(this));
 		await this.localizer.initialiseLanguageChoice(this.localType);		// Progress dialog uses localized text
-		//await this.parser.parseAsync('#wLANGUAGE_CHOISE');				// TODO: check success - NO SUCCESS
 		
 		$.messager.progress({
 			title: "Katex Input Helper", 
@@ -357,27 +352,124 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * @param mobile - true in the mobile variant.
 	 */	
 	async initialiseMobile(mobile: boolean) {
+		let opts = { assert: { 
+			type: 'css'
+		} };
 
-		// Intent: to restore original web page structure
-		const content = $('meta[name=viewport]').attr('content');
-		const html = `<meta name="viewport" content="${content}" ></meta>`;
-		$('meta[name=viewport]').remove();
-		$('html > head').append(html);
+		/**
+		 * Loads Easyui for the desktop variant
+		 */
+		async function loadEasyuiDesktop() {
+			await import('./easyui');
+			await import('./dialog.scss', opts);
+		}
+		
+		/**
+		 * Loads Easyui for the mobile variant
+		 */
+		async function loadEasyuiMobile() {
+			await loadEasyuiDesktop();
 
-		$('body').prepend($('#bodyPage'));
+			await import('./jquery-easyui/themes/mobile.css', opts);
+			await import('./jquery-easyui/jquery.easyui.mobile');
+		}
+		
+		/**
+		 * Reserved for future use. NO LONGER USED.
+		 */
+		function prepend(to: string, from: string) {
+			const elems = $(from).map(function() {
+				if ($(this).attr('data-options')) {
+					console.log(`Data-Options present`);
+				}
+				return this;
+			});
+		}
+		
+		/**
+		 * Defines the proportions of 2 regions of a layout.
+		 * 
+		 * @param selector - the selector of the layout.
+		 * @param region - the region to be sized
+		 * @param part - the percentage of the height of the layout to assign to the region
+		 */
+		function defineProportions(selector: string, region: string, part: number | string) {
+			const panel = $(selector).layout('panel', region);
+			panel.panel('resize', { height: `${part}%` });
+			$(selector).layout('resize');
+		}
+
+		/**
+		 * Initializes the size, especially the heights of the main panel as
+		 * this is not working with CSS.
+		 * OBSOLETE. Reserved.
+		 */
+		function initialResizeMobile(mobile: boolean = true) {
+			const headerSelector = mobile ? '#introduction' : '#northRegion';
+			const footerSelector = mobile ? '.katex-mobile .southRegion' : '.katex-desktop .southRegion';
+			const padding = 5;
+			const heightBody = $('body').outerHeight();
+			const heightHeader = $(headerSelector).outerHeight() + 2 * padding;
+			const heightFooter = $(footerSelector).outerHeight();
+			const heightInnerHeader = $('.panel:has(> #divEquationInputOutput) > .panel-header').outerHeight();
+			const heightCenter = heightBody - heightHeader - heightFooter;
+			const heightInnerLayout = heightCenter - heightInnerHeader;
+			const heightEditor = heightInnerLayout / 2;
+			const heightCenterVh = Math.floor(heightCenter * 100 / heightBody);
+			
+			$('#myContainer').css({ height: `${heightCenterVh}vh` });
+			$('#divEquationInputOutput').panel('resize', { height: heightCenter });
+			$('#innerLayout').panel('resize', { height: heightInnerLayout });
+			$('#divMathTextInput, #mathVisualOutput').panel('resize', { height: heightEditor });
+			//$('#myContainer').panel('doLayout'); // no action
+			//$('#myContainer').panel('refresh'); // no action
+			//$('#innerLayout').layout('resize');
+			//$('#myContainer').layout('resize');
+			
+			console.info(`Calculated Heights : %O`, {
+				body: heightBody,
+				header: heightHeader,
+				footer: heightFooter,
+				innerHeader: heightInnerHeader,
+				center: heightCenter,
+				innerLayout: heightInnerLayout,
+				editor: heightEditor,
+				vh: heightCenterVh
+			});
+		}
+
+		/**
+		 * Queries the height of the south region.
+		 */
+		function getHeight() {
+			const heightFooter = $('.katex-mobile .southRegion').first().outerHeight();
+			return heightFooter;
+		}
+		
+		// Intent: to restore original web page structure.
+		// Here: the viewport
+		const content = $("div > meta[name='viewport']").attr('content');
+		if (content) {
+			const html = `<meta name="viewport" content="${content}" ></meta>`;
+			$("meta[name='viewport']").remove();
+			$('html > head').append(html);
+		}
+
+		// Here: the body content
+		prepend('body', '#joplin-plugin-content > div');
+		$('body').prepend($('#joplin-plugin-content > div'));
 
 		if (!mobile) {
-			$("body").addClass("desktop");
+			$("body").addClass("katex-desktop");
+			$("div.katex-desktop").removeClass("katex-desktop");
 			
 			await this.parser.parseAsync('html');
+			defineProportions('#innerLayout', 'south', 50);
 						
 		} else {
-			let opts = { assert: { 
-				type: 'css'
-			} };
-			
 			const inst = this;
 			$("body").addClass("katex-mobile");
+			$("div.katex-mobile").removeClass("katex-mobile");
 			
 			if (!CSS.supports('height: 100vh')) {
 				console.warn('No support for Viewport Height units');
@@ -386,13 +478,17 @@ export class KatexInputHelper implements IKatexInputHelper {
 				console.warn('No support for Viewport Width units');
 			}
 			
+			// For the working of the mobile variant order of these statements is essential
 			await import('./jquery-easyui/themes/mobile.css', opts);
 			await import('./jquery-easyui/jquery.easyui.mobile');
-
 			await this.parser.parseAsync('html');
 
-			$('body').prepend($('div:has(.easyui-navpanel)'));
+			$('body').prepend($('div:has(> .easyui-navpanel)'));
+			// Placement of "navpanels" in body initiates buggy behavior
+			//$('body').prepend($('.easyui-navpanel'));
+			
 			$.mobile.init();
+			await this.parser.parseAsync('html'); // ?
 
 			// click handler for mobile			
 			$("#goWest").on('click', function(event) { 
@@ -403,21 +499,96 @@ export class KatexInputHelper implements IKatexInputHelper {
 				event.preventDefault(); 
 				$.mobile.go('#eastRegion', 'slide', 'left');
 			});
+			$("#goMenu").on('click', function(event) { 
+				event.preventDefault(); 
+				$.mobile.go('#wrapperPanelMenu', 'slide', 'left');
+			});
 			$("header:has(+ #wrapperPanel) a.m-back").on('click', function(event) { 
-				event.preventDefault();
 				inst.panels.closeOpen(); 
-				$.mobile.back();
 				inst.codeMirrorEditor.activateEditor(); // workaround to re-activate the editor
 			});
 			$("header:has(+ #westRegion) a.m-back, header:has(+ #eastRegion) a.m-back").on('click', function(event) { 
 				inst.codeMirrorEditor.activateEditor(); // workaround to re-activate the editor
 			});
+			
+			// RESERVED.
+			const height = getHeight();
+			const heightChanged = () => getHeight() != height;
+			let cycle = 0;
+			const timerFunc = () => {
+				cycle ++;
+				if (heightChanged() || cycle >= 10) {
+					initialResizeMobile();
+					console.info(`Changed Footer Height : ${getHeight()} after ${cycle} cycles`);
+				} else {
+					setTimeout(timerFunc, 100);
+				}
+			}
+			
+			defineProportions('#innerLayout', 'south', 50);
+			$('#myContainer').css({ height: `70vh` });			// workaround to reduce height
+			this.populateMenu();
 		}
 	}
 	
 	/**
+	 * Populates a side menu in a wrapper menu panel for reduced space.
+	 */
+	populateMenu() {
+		const inst = this;
+		
+		function parseMenu2(id: string, level: number = 0) : any {
+			const level1Submenus = [ 'mFILE', 'mINSERT', 'mTOOLS', 'mVIEW', 'mOPTIONS', 'mINFORMATIONS' ];
+			
+			console.log(`Parsing with selector #${id}`);
+			const data = $(`#${id} > div`).map(function(idx: number, dom) {
+				console.log(`Found menu item : %O`, dom);
+				if ($(this).hasClass('menu-line')) {
+					return null;
+				}
+				const span = $(this).find('span');
+				let children = undefined;
+				if (level == 0) {
+					children = parseMenu2(level1Submenus[idx - 1], level + 1);
+				}
+				if (level == 1 && id == 'mINSERT' && idx == 1) {
+					children = parseMenu2('mCHARS', level + 1);
+				}
+				const locate = span.attr('locate');
+				span.text(inst.getLocalText(locate));
+				const spanHtml = span.get(0) != undefined ? span.get(0).outerHTML : '';
+				if (spanHtml == '') {
+					return null;
+				}
+				const line: any = {
+					text: spanHtml,
+					iconCls: $(this).attr('iconcls'),
+					children: children
+				};
+				const itemId = $(this).attr('id');
+				if (itemId) {
+					line.id = itemId + '_side'
+				}
+				console.log(`Found menu data : %O`, line);
+				return line;
+			});
+			return data.get();
+		}
+		
+		const data = parseMenu2('mobile-menu');
+		$('#sm').sidemenu({
+			data: data,
+			floatMenuPosition: 'left',
+			multiple: false,
+			onSelect: this.onMenuClick.bind(this)
+		});
+		$('#sm').sidemenu('expand');
+		$('#sm').sidemenu('resize', { width: 300 });
+	}
+	
+	/**
 	 * At the end of initialization close Progress dialog and WaitMsg
-	 * 			 panel.
+	 * panel.
 	 */
 	endWait() { 
 		this.initialiseEquation(); 
@@ -430,7 +601,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * Set Focus on Editor.
 	 */
 	setFocus() { 
-		//$("#mathTextInput").trigger("focus"); 
 		if (this.codeMirrorEditor) { this.codeMirrorEditor.focus(); } 
 	}
 	
@@ -565,7 +735,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 		// The whole menu commands.
 		// TRY different way: use options
 		$("#mFILE, #mINSERT, #mTOOLS, #mVIEW, #mOPTIONS, #mINFORMATIONS, #mobile-menu").menu({
-			onClick: async function(item: any) {
+			onClick: vme.onMenuClick.bind(vme)
+			/*
+			async function(item: any) {
 				console.log(`ITEM : %O`, this);
 				switch (item.target.id) {
 					case "mEDITOR_PARAMETERS": await vme.openWindow('wEDITOR_PARAMETERS'); break; 
@@ -577,9 +749,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 					case "mSAVE_EQUATION": vme.saveEquationFile(); break; 
 					case "mOPEN_EQUATION": vme.testOpenFile(); break; 
 					case "mLaTeX_TEXT": vme.insert("\\LaTeX"); break; 
-					// No longer functional
-					//case "mMATH_ML": vme.viewMathML(vme.mathVisualOutput.id); break; 
-					// TODO: complete transfer of functionality to Panels
 					case "mUNICODES_LIST": await vme.panels.showWindowDI(unicodeWindowId, 'wUNICODES_LIST', vme.initialiseSymbolContent.bind(vme)); break; 
 					case "mLATEX_CODES_LIST": vme.documentations.showKatexFunctions(); break; 
 					case "mLANG_RESSOURCE_LIST": await vme.openWindow('wLANGUAGE_LIST'); await vme.initialiseLangRessourcesList(); break; 
@@ -592,7 +761,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 					case "mBUGS": await vme.openInformationTab(2); break; 
 					case "mEQUATION_SAMPLE": await vme.openInformationTab(3); break; 
 					case "f_GREEK_CHAR": await vme.initialiseUImoreDialogs("f_L_U_GREEK_CHAR"); break; 
-					// case "mCHARS": 
 					case "f_ALL_CHAR": await vme.initialiseUImoreDialogs("f_ALL_CHAR"); break; 
 					case "f_FR_CHAR": 
 					case "f_BBB_CHAR": await vme.initialiseUImoreDialogs(item.target.id); break; 
@@ -605,6 +773,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 					default: $.messager.show({ title: "<span class='rtl-title-withicon'>" + vme.getLocalText("INFORMATION") + "</span>", msg: item.text }); break;
 				}
 			}
+			*/
 		});
 		
 		if (!window.opener) { 
@@ -684,6 +853,56 @@ export class KatexInputHelper implements IKatexInputHelper {
 		*/
 	
 		this.math.updateLatexMenu();
+	}
+	
+	/**
+	 * Handles menu clicks of the main menu. This handler performs an additional
+	 * handling of the side menu.
+	 */
+	async onMenuClick(item: any) {
+		let vme = this;
+		console.log(`Click with id ${item.target.id} of %O`, item);
+		
+		const functions = {
+			"mEDITOR_PARAMETERS": () => vme.openWindow('wEDITOR_PARAMETERS'), 
+			"mSTYLE_CHOISE": () => vme.openWindow('wSTYLE_CHOISE'),
+			"mLANGUAGE_CHOISE": () => vme.openWindow('wLANGUAGE_CHOISE'), 
+			"mMATRIX": () => vme.showMatrixWindow(3, 3), 
+			"mCOMMUTATIVE_DIAGRAM": () => vme.initialiseUImoreDialogs("f_COMMUTATIVE_DIAGRAM"), 
+			"mCHEMICAL_FORMULAE": () => vme.initialiseUImoreDialogs("f_CHEMICAL_FORMULAE"), 
+			"mSAVE_EQUATION": () => vme.saveEquationFile(), 
+			"mOPEN_EQUATION": () => vme.testOpenFile(), 
+			"mLaTeX_TEXT": () => vme.insert("\\LaTeX"), 
+			"mUNICODES_LIST": () => vme.panels.showWindowDI(unicodeWindowId, 'wUNICODES_LIST', vme.initialiseSymbolContent.bind(vme)), 
+			"mLATEX_CODES_LIST": () => vme.documentations.showKatexFunctions(), 
+			"mLANG_RESSOURCE_LIST": async () => { await vme.openWindow('wLANGUAGE_LIST'); await vme.initialiseLangRessourcesList() }, 
+			"mLATEX_DOCUMENTATION": () => vme.documentations.showLatexDocumentation(),
+			"mMHCHEM_DOCUMENTATION": () => vme.documentations.showMhchemDocumentation(),
+			"mAMSCD_DOCUMENTATION": () => vme.documentations.showAmscdDocumentation(),
+			"mMATH_ML_SPECIFICATIONS": () => vme.documentations.showMathmlSpecifications(),
+			"mCOPYRIGHT": () => vme.openInformationTab(0), 
+			"mVERSION": () => vme.openInformationTab(1), 
+			"mBUGS": () => vme.openInformationTab(2), 
+			"mEQUATION_SAMPLE": () => vme.openInformationTab(3), 
+			"f_GREEK_CHAR": () => vme.initialiseUImoreDialogs("f_L_U_GREEK_CHAR"), 
+			"f_ALL_CHAR": () => vme.initialiseUImoreDialogs("f_ALL_CHAR"), 
+			"f_FR_CHAR": () =>  vme.initialiseUImoreDialogs("f_FR_CHAR"),
+			"f_BBB_CHAR": () => vme.initialiseUImoreDialogs("f_BBB_CHAR"), 
+			"mEQUATION": () => vme.initialiseUImoreDialogs("f_EQUATION"), 
+			"mCUSTOM_EQUATIONS": () => vme.panels.showWindowDI(dynamicPanelId, 'wf_CUSTOM_EQUATIONS_MORE', vme.math),
+			"mHORIZONTAL_SPACING": () => vme.initialiseUImoreDialogs("f_HORIZONTAL_SPACING"), 
+			"mVERTICAL_SPACING": () => vme.initialiseUImoreDialogs("f_VERTICAL_SPACING"), 
+			"mSPECIAL_CHARACTER": () => vme.initialiseUImoreDialogs("f_SPECIAL_CHARACTER"), 
+			"mKEYBOARD": () => { if (!vme.runNotVirtualKeyboard) { vme.VKI_show(document.getElementById("tKEYBOARD")); $("#keyboardInputMaster").draggable({ handle: '#keyboardTitle' }); }}
+		};
+		
+		const rawId = item.id ? item.id : item.target.id;
+		const id = rawId.endsWith('_side') ? rawId.substring(0, rawId.length - 5) : rawId;
+		if (id in functions) {
+			await functions[id]();
+		} else {
+			$.messager.show({ title: "<span class='rtl-title-withicon'>" + vme.getLocalText("INFORMATION") + "</span>", msg: item.text });
+		}
 	}
 	
 	/**
@@ -799,68 +1018,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 			onChange(event.target, vme.persistEquations);
 		}); 
 	}
-	
-	/**
-	 * Not defined for Katex. Reserved for future use.
-	 */
-	async initialiseLatexMathjaxCodesList() {
-		if (!this.latexMathjaxCodesListLoaded) {
-			function listNames(obj: any, prefix: string) {
-				let html = ""; 
-				for (let i in obj) { 
-					if (obj[i] != 'Space') html += ('<tr><td dir="ltr"><a href="#" class="s" latex="' + prefix + i + '">' + prefix + i + '</a></td><td></td></tr>'); 
-				}
-				return html;
-			}
-			function listNamesValues(obj, prefix) {
-				let html = ""; 
-				let hexa = 0; 
-				let output = ""; 
-				for (let i in obj) { 
-					if (typeof obj[i] === 'object') { 
-						hexa = parseInt(obj[i][0], 16); 
-						if (isNaN(hexa)) output = obj[i][0]; else output = "&#x" + obj[i][0] + ";"; 
-						html += ('<tr><td dir="ltr"><a href="#" class="s" latex="' + prefix + i + '">' + prefix + i + '</a><td style="font-size:150%;"><a href="#" class="s" latex="' + prefix + i + '">' + output + '</a></td></tr>'); 
-					} else { 
-						hexa = parseInt(obj[i], 16); 
-						if (isNaN(hexa)) output = obj[i]; else output = "&#x" + obj[i] + ";"; 
-						html += ('<tr><td dir="ltr"><a href="#" class="s" latex="' + prefix + i + '">' + prefix + i + '</a><td style="font-size:150%;"><a href="#" class="s" latex="' + prefix + i + '">' + output + '</a></td></tr>'); 
-					} 
-				}
-				return html;
-			}
-			if (!Object.keys) {
-				Object.keys = function(obj) {
-					let keys = [], k; 
-					for (k in obj) { 
-						if (Object.prototype.hasOwnProperty.call(obj, k)) { keys.push(k); } 
-					}
-					return keys;
-				};
-			}
-			let special = {}; 
-			let remap = {}; 
-			let mathchar0mi = {}; 
-			let mathchar0mo = {}; 
-			let mathchar7 = {}; 
-			let delimiter = {}; 
-			let macros = {}; 
-			let environment = {}; 
-			let length = (Object.keys(special).length + Object.keys(remap).length + Object.keys(mathchar0mi).length + Object.keys(mathchar0mo).length + Object.keys(mathchar7).length + Object.keys(delimiter).length + Object.keys(macros).length + Object.keys(environment).length); let html = ("<table border='1' cellspacing='0' style='margin-left:20px;border-spacing:0px;border-collapse:collapse;'><caption>" + length + " <span locate='MATHJAX_LATEX_SYMBOLS'>" + this.getLocalText("MATHJAX_LATEX_SYMBOLS") + "</span></caption>"); html += ("\n<tr><th><span locate='MATHJAX_LATEX_INPUT'>" + this.getLocalText("MATHJAX_LATEX_INPUT") + "</span></th><th><span locate='OUTPUT'>" + this.getLocalText("OUTPUT") + "</span></th></tr>"); 
-			html += listNames(special, ""); 
-			html += listNamesValues(remap, ""); 
-			html += listNamesValues(mathchar0mi, "\\"); 
-			html += listNamesValues(mathchar0mo, "\\"); 
-			html += listNamesValues(mathchar7, "\\"); 
-			html += listNamesValues(delimiter, ""); 
-			html += listNames(macros, "\\"); 
-			html += listNames(environment, ""); 
-			html += "\n</table>"; 
-			$("#cLATEX_CODES_LIST").html(html); 
-			await this.initialiseSymbolContent("cLATEX_CODES_LIST"); 
-			this.latexMathjaxCodesListLoaded = true;
-		}
-	}
 
 	/**
 	 * Opens the Matrix window with given rows and columns values.
@@ -889,7 +1046,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * - setting the RTL style
 	 * - localize all entries of the UI (using *span[locate]*)
 	 */
-	async onLocaleChanged(localizer) {
+	async onLocaleChanged(localizer: ILocalizer) {
 		this.localType = this.localizer.currentLocale;
 		console.log(`Entry into onLocaleChanged, localType is: ${this.localType}`);
 		let vme = this; 
@@ -1028,8 +1185,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 			}
 			this.codeMirrorEditor.setOption("theme", codemirrorCSS); 
 			if (!this.runNotColorPicker) { 
-				$("#colorpickerCSSblack").prop('disabled', !(colorpickerCSS == "black"));
-				$("#colorpickerCSSgray").prop('disabled', !(colorpickerCSS == "gray"));
+				$("#colorpickerCSSblack").prop('disabled', colorpickerCSS != "black");
+				$("#colorpickerCSSgray").prop('disabled', colorpickerCSS != "gray");
 			}
 			let posColor, posExt; 
 			$(".symbol_btn").each(function(index) { 

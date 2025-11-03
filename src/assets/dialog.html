@@ -14,8 +14,9 @@
 		Themes cannot be longer supported by including them in head and disabling / enabling them. 
 		<base />
 		 -->
+	    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 	</head>
-	<body id="bodyPage">
+	<body id="bodyPage" class="katex-desktop">
 		<div id="myContainer" class="easyui-layout">
 			<!-- 
 			 -->
@@ -200,13 +201,13 @@
 				</div>
 			</div>
 
-			<div id="divEquationInputOutput" data-options="region:'center',title:'<span locate=EDITION></span>&nbsp;'" class="center" >
+			<div id="divEquationInputOutput" data-options="region:'center',title:'<span locate=EDITION></span>&nbsp;'" >
 				<input value="" class="keyboardInput" id="tKEYBOARD" />
 
 				<div id="innerLayout" data-options="fit:true" class="easyui-layout">
-					<div id="divMathTextInput" class="center easyui-panel" data-options="region:'center',split:false,noheader:true">
+					<div id="divMathTextInput" data-options="region:'center',split:false,noheader:true">
 					</div>
-					<div id="mathVisualOutput" class="south easyui-panel" dir="ltr" data-options="region:'south',split:true,noheader:true" ></div>
+					<div id="mathVisualOutput" dir="ltr" data-options="region:'south',split:true,noheader:true" ></div>
 				</div>
 			</div>
 
@@ -328,7 +329,7 @@
 			</div>
 		</div>
 		
-		<div id="wMATRIX" class="easyui-dialog" iconcls="icon-matrix" data-options="closed:true,modal:true,buttons:'#btMATRIX',resizable:true"
+		<div id="wMATRIX" class="easyui-dialog" iconcls="icon-matrix" data-options="cls:'mat',closed:true,modal:true,buttons:'#btMATRIX',resizable:true"
 			title="<span locate='MATRIX' class='rtl-title-withicon'></span>" >
 			<form id="formMATRIX" name="formMATRIX" action="#" method="post">
 				<table id="tableMATRIX" dir="ltr">

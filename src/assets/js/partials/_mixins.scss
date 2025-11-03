@@ -41,6 +41,7 @@
 	} 
 }
 
+/* Unicode Mixin */
 @mixin unicodeMixin ($isMobile: false) {
 	$scale: functions.scale($isMobile);
 	$fontSize: functions.fontSize($isMobile);
@@ -238,6 +239,16 @@
 /* Matrix Mixin */
 @mixin matrixMixin($isMobile: false) {
 	$fontSize: functions.fontSize($isMobile);
+	$size: fit-content;
+	
+	& {
+		width: $size !important;
+		height: $size !important;
+	}
+	form {
+		width: auto !important;
+		height: auto !important;
+	}
 	
 	#tableMATRIX {
 		border-spacing: 0px; 
@@ -247,6 +258,13 @@
 			text-align: center;
 		}
 	}
+
+	// Shrinks the header to its content width
+	@at-root .panel:has(#wMATRIX) {
+		.panel-header {
+			width: auto !important;
+		}
+	} 	
 }
 
 /* Wait Msg Mixin */
@@ -301,9 +319,5 @@
 	}
 	#wMATRIX {
 		@include matrixMixin($isMobile);
-	}
-	
-	#WaitMsg {
-		@include waitMsgMixin(isMobile)
 	}
 }

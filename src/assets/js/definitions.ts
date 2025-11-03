@@ -26,6 +26,8 @@ interface JQuery {
 	tooltip(p1?: any, p2?: any): any;
 	datagrid: any;
 	tree: any;
+	resizable: any;
+	sidemenu: any;
 	
 	ColorPicker(p1?: any, p2?: any): any;
 	ColorPickerHide(p1?: any, p2?: any): any;

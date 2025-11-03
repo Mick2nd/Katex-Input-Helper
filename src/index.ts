@@ -68,7 +68,8 @@ joplin.plugins.register({
 			{
 				name: scriptId,
 				label: 'Katex Dialog',
-				iconName: 'fas fa-asterisk',	// fa-square-root-variable not working
+				// fa-square-root-variable not working
+				iconName: 'fa fa-calculator',
 				execute: dialog_command, 
 			});
 	

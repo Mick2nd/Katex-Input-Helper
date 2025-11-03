@@ -62,7 +62,8 @@ export class KIHParameters {
 	}
 	
 	/**
-	 * Queries the parameters from the Plugin.
+	 * Queries the parameters from the Plugin. They are persisted there as settings.
+	 * In the web variant they are stored as Cookies.
 	 */
 	async queryParameters() {
 				
@@ -100,7 +101,7 @@ export class KIHParameters {
 	
 	/**
 	 * Returns true for web variant with query string mobile=true
-	 * Returns true if plugin is running on mobile device
+	 * Returns true if plugin is running on mobile device.
 	 */
 	get isMobile() : boolean {
 		if (this.mode != 'web') { return this.isMobilePlugin; }
@@ -109,7 +110,20 @@ export class KIHParameters {
 		if (searchParams.has('mobile')) {
 			return searchParams.get('mobile') == 'true';
 		}
+		console.log(`Not Mobile`);
 		return false;
+	}
+	
+	/**
+	 * Returns the displayMode in web mode from query string.
+	 * Default is true.
+	 */
+	get isDisplayMode() : boolean {
+		let searchParams = new URLSearchParams(window.location.search);
+		if (searchParams.has('displayMode')) {
+			return searchParams.get('displayMode') == 'true';
+		}
+		return true;
 	}
 
 	/**
@@ -149,7 +163,7 @@ export class KIHParameters {
 	
 	/**
 	 * Writes parameters to the HIDDEN field as required to return some values back
-	 * 			 to the caller.
+	 * to the caller.
 	 */
 	writeParameters(_equation = "") {
 		let parameters = JSON.stringify(this.filteredParameters);
@@ -167,7 +181,7 @@ export class KIHParameters {
 	 */
 	get filteredParameters() {
 		let o = { };
-		let doNotUse = [ "transaction", "displayMode", "mouseState", "mode" ];
+		let doNotUse = [ "transaction", "displayMode", "mouseState", "mode", "isMobile" ];
 		for (const [key, val] of Object.entries(this)) {
 			if (!doNotUse.some(item => item == key)) {
 				o[key] = val;
@@ -235,7 +249,7 @@ export class KIHParameters {
 	loadCookies() {
 		if (!window.localStorage) { return { }; }
 		try {
-			let cookies = { };
+			let cookies = { displayMode: this.isDisplayMode };
 			let persist = window.localStorage.getItem('persistEquations') != 'false';
 			const persistEquations = persist;
 			persist = window.localStorage.getItem('persistWindowPositions') != 'false';
@@ -336,12 +350,6 @@ export class KIHParameters {
 		if (stateChanged || initial) {
 			
 			this.mouseState.increment();								// counts the number of resize / move events
-			/* TODO: in question
-			let dimensions = this.getPanelDimensions(id);
-			this.check(this[id], dimensions);							// checks for discrepancy
-			this[id].left = dimensions.left;
-			this[id].top = dimensions.top;
-			*/
 			this.transaction.complete();
 		}
 		
@@ -383,6 +391,12 @@ export class KIHParameters {
 		}
 	}
 	
+	/**
+	 * This can be used to change dimensions of a panel by using CSS.
+	 * 
+	 * @param id - panel id
+	 * @param dim - the dimension object
+	 */
 	resizeWithCss(id: any, dim: any) {
 		$(`#${id}`).css(dim);
 	}
@@ -447,6 +461,8 @@ export class KIHParameters {
 	
 	/**
 	 * Returns the settings configuration keys.
+	 * 
+	 * @returns the configuration keys array.
 	 */
 	get configurationKeys() {
 		return [
@@ -565,8 +581,10 @@ class Css {
 	}
 	
 	/**
-	 * Searches for and retrieves the width and height given the window id.
+	 * Searches for and retrieves the width and height given the window id. This
+	 * is no longer used as calculated expressions cannot be used by panel 'resize'.
 	 * 
+	 * @deprecated no longer to be used
 	 * @param id - the id of the window (id attribute)
 	 * @returns object with width and height entries, returns *auto* if not found
 	 */
@@ -579,7 +597,7 @@ class Css {
 					const dim = {
 						width: width.value + width.unit,
 						height: height.value + height.unit,
-						left: `calc(50vw - ${width.value / 2}${width.unit})`,		// TODO: check
+						left: `calc(50vw - ${width.value / 2}${width.unit})`,
 						top: `calc(50vh - ${height.value / 2}${height.unit})`
 					};
 					
@@ -595,17 +613,13 @@ class Css {
 		
 		const left = `calc-size(fit-content, calc(50vw - size / 2))`;
 		const top = `calc-size(fit-content, calc(50vh - size / 2))`;
-		//return { width: 'fit-content', height: 'fit-content', left: left, top: top};
-		// Unclear if auto works.
-		//return { width: 'auto', height: 'auto', left: 0, top: 0};
-		// Code below is working together with resizePanel.
 		return { width: 500, height: 500, left: 0, top: 0};
 	}
 }
 
 /**
  * Used to reduce write back to the hidden field based on the use of
- * 			 Transactions and observation of the mouse state.
+ * Transactions and observation of the mouse state.
  * 
  * The hopes has not fulfilled as there is already a reduction of mouse events during
  * a size or position change.

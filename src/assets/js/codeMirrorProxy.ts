@@ -14,7 +14,7 @@ export function codeMirrorProxy() : ICodeMirror {
 		autofocus: true, 
 		showCursorWhenSelecting: true, 
 		lineNumbers: true, 
-		lineWrapping: false,		// was: true
+		lineWrapping: true,		// was: true
 		tabSize: 4,
 		indentUnit: 4, 
 		indentWithTabs: true, 

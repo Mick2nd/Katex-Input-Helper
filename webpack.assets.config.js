@@ -6,6 +6,7 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CopyPlugin from 'copy-webpack-plugin';
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import HtmlWebpackPlugin from 'html-webpack-plugin';
+import * as sass from 'sass';
 
 const rootDir = path.resolve(path.dirname('.'));
 const srcDir = path.resolve(rootDir, 'src');
@@ -54,11 +55,37 @@ const rulesConfig = (env) => [
 			}
 		}]
 	},
+	/*
+	{
+		test: /\.css$/,
+		include: [ path.resolve(path.dirname('.'), 'src/assets/js') ],
+		exclude: [ /node_modules/ ],
+		use: [ 
+			MiniCssExtractPlugin.loader, 
+			'css-loader', 
+		],
+		sideEffects: true
+	},
+	*/
 	{
 		test: /\.s?css$/,
 		include: [ path.resolve(path.dirname('.'), 'src/assets/js') ],
 		exclude: [ /node_modules/ ],
-		use: [ MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader' ],
+		use: [
+			MiniCssExtractPlugin.loader, 
+			'css-loader', 
+			{
+				loader: 'sass-loader', 
+				options: {
+				    sourceMap: true,
+				    implementation: sass,
+				    sassOptions: {
+						minimize: false,
+				    	outputStyle: 'expanded',
+				    },
+				},
+			}
+		],
 		sideEffects: true
 	},
 	{
@@ -108,7 +135,7 @@ const pluginsConfig = (env) => [
 		KIH_VERSION: JSON.stringify('7.44'),
 		PRODUCTION: JSON.stringify(env.kihmode ? (env.kihmode == 'production') : false)
 	}),
-	new TerserPlugin(),
+	//new TerserPlugin(),
 	new MiniCssExtractPlugin({ 
 		filename: '[name].css',
 		chunkFilename: 'css/[name].styles.css' //	=> works, but name is essential

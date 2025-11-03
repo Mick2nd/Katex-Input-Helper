@@ -8,6 +8,7 @@
 @import './jquery-easyui/themes/default/easyui.css';
 @import './jquery-easyui-MathEditorExtend/themes/icon.css';
 @import './jquery-easyui-MathEditorExtend/themes/aguas/easyui.css';
+//@import './jquery-easyui/themes/mobile.css';
 @import './keyboard/keyboard.css';
 @import 'codemirror/lib/codemirror.css';
 @import 'codemirror/theme/darcula.css';
@@ -18,168 +19,184 @@
 /* Section for common styles
  * -------------------------
  */
-
-/* Succeeding code is required for the desktop version, it does not work in the
- * .desktop section!!
- */
-body {
-	height: 100vh; 
-}
-
-h3 {
-	text-align: center;
-}
-
-#northRegion {
-	height: 110px;
-}
-
-#westRegion {
-	width: variables.$widthWestAccordion;
-	
-	.easyui-accordion > div {
-		overflow: hidden !important;
-	}
-}
-
-#eastRegion {
-	width: variables.$widthEastAccordion;
-	
-	.easyui-accordion > div {
-		overflow: hidden !important;
-	}
-}
-
-.menus {
-	width: 200px;
-	overflow: hidden !important;
-}
-
-/**
- *	This seems to be essential for mobile and desktop versions, it's required
- *	to make the layouts large enough.
- */
-.easyui-layout {
-	height: 100vh;
-}
-
-#WaitMsg {
-	@include mixins.waitMsgMixin();
+* {
+	margin : 0; 
+	padding: 0; 
 }
  
-/* Hidden elements for file open / save ...
- */
-.invisible {
-  display: none;
-}
-
-/* where applied => all tables 
- */
-table, th, td {
-  border: 1px solid;
-}
-
-/* in-line = Informations table */
-.inline-table {
-	td {
-		padding: 5px;
+body {
+	/* essential: must be written at the correct moment */
+	height: 100vh;
+	
+	/* The Wait Msg */
+	#WaitMsg {
+		@include mixins.waitMsgMixin(true);
 	}
-}
-
-#menu {
-	padding: 5px;
-}
-
-/* The Latex menu item */
-#mLaTeX_TEXT span {
-	padding-top: 5px; 
-	font-size: 120%;
-}
-
-/* Suppress scroll bars */
-.easyui-menubutton {
-	overflow: hidden;
-}
-
-#divEquationInputOutput {
-	overflow: hidden !important;
-
-	.keyboardInputInitiator {
-		display: none;
+	 
+	/* Hidden elements for file open / save ... */
+	.invisible {
+	  display: none;
 	}
 
-	.keyboardInput {
-		height: 0px;
-		width: 0px;
+	/* Embedds the invisible screen keyboard */
+	#divEquationInputOutput {
+		overflow: hidden !important;
+
+		.keyboardInputInitiator {
+			display: none;
+		}
+
+		.keyboardInput {
+			height: 0px;
+			width: 0px;
+			border: none;
+			background-color: transparent;
+			color: transparent;
+			display: none;
+		}	
+	}
+
+	/* Code Mirror occupies 100% of input area */
+	#divMathTextInput {
+		margin: 0; 
+		padding: 0; 
+		overflow: hidden;
 		border: none;
-		background-color: transparent;
-		color: transparent;
-		display: none;
-	}	
-}
 
-#divMathTextInput {
-	margin: 0; 
-	padding: 0; 
-	overflow: hidden;
+		.CodeMirror {
+			height: 100%;
+			width: 100%;
 
-	.CodeMirror {
-		height: 100%;
-		width: 100%;
-
-		padding: 2px;
+			padding: 2px;
+		}
 	}
-}
 
-#mathVisualOutput {
-	height: calc(functions.centerHeight() / 2);
-	margin: 0; 
-	padding: 5px; 
-	font-size: 150%; 
-	overflow: auto !important;
-}
+	/* Without this (mainly height) Output Area disappears */
+	#mathVisualOutput {
+		margin: 0; 
+		padding: 5px; 
+		font-size: 150%; 
+		overflow: auto !important;
+		border: none;
+	}
 
-/* Status area for all panels */
-.southRegion {
-	height: 50px;
-	padding: 5px;
+	/* Status area for all panels */
+	.southRegion {
+		padding: 5px;
 
-	.divInformation {					/* info line like latex code feedback */
-		padding-top: 2px; 
-		text-align: center; 
-		height: 20px; 
-		overflow: auto;
+		.divInformation {					/* info line like latex code feedback */
+			padding-top: 2px; 
+			text-align: center; 
+			overflow: auto;
+		}
+		
+		:last-child {						/* the copyright line */
+			padding-top: 2px; 
+			text-align: center;
+		}
 	}
 	
-	:last-child {						/* the copyright line */
-		padding-top: 2px; 
-		text-align: center;
+	/* where applied => all tables 
+	 */
+	table, th, td {
+	  border: 1px solid;
+	}
+	
+	/* in-line = Informations table */
+	.inline-table {
+		td {
+			padding: 5px;
+		}
 	}
 }
 
-/* Tooltips in tables */
-.panel-body table tbody tr td a.easyui-tooltip {
-	float: bottom;
-}
+/* Section for desktop styles
+ * --------------------------
+ */
+body.katex-desktop {
+	height: 100vh;
+	 
+	/**
+	 *	This seems to be essential for mobile and desktop versions, it's required
+	 *	to make the layouts large enough.
+	 */
+	#myContainer {
+		height: 100vh !important;
+	}
+	#innerLayout {
+		height: 100% !important;
+	}
 
-/* All KATEX formulae: suppress own mouse events */
-.katex {
-	pointer-events: none;
-}
+	@include mixins.dialogs(false);
 
-/* THERE IS NO ACTION ON THIS
-*/
-.tooltip {
-	background-color: 'lightyellow';
-	border-color: 'red';
-	width: 500;
-	z-index: 500000;	
+	h3 {
+		text-align: center;
+		padding: 10px;
+	}
+	
+	#northRegion, .southRegion {
+		height: fit-content !important;
+	}
+	
+	.panel:has(> #westRegion) {
+		width: variables.$widthWestAccordion !important;
+		
+		.easyui-accordion > div {
+			overflow: hidden !important;
+		}
+	}
+	
+	.panel:has(> #eastRegion) {
+		width: variables.$widthEastAccordion !important;
+		
+		.easyui-accordion > div {
+			overflow: hidden !important;
+		}
+	}
+	
+	.menus {
+		width: 200px;
+		overflow: hidden !important;
+	}	
+	
+	#menu {
+		padding: 5px;
+	}
+	
+	/* The Latex menu item */
+	#mLaTeX_TEXT span {
+		padding-top: 5px; 
+		font-size: 120%;
+	}
+	
+	/* Suppress scroll bars */
+	.easyui-menubutton {
+		overflow: hidden;
+	}
+	
+	/* Tooltips in tables */
+	.panel-body table tbody tr td a.easyui-tooltip {
+		float: bottom;
+	}
+	
+	/* All KATEX formulae: suppress own mouse events */
+	.katex {
+		pointer-events: none;
+	}
+	
+	/* THERE IS NO ACTION ON THIS */
+	.tooltip {
+		background-color: 'lightyellow';
+		border-color: 'red';
+		width: 500;
+		z-index: 500000;	
+	}
 }
 
 /* Section for mobile styles
  * -------------------------
  */
-.katex-mobile {
+body.katex-mobile {
 	$fontSize: functions.fontSize(true);	
 	$innerHeight: calc(100vh - variables.$heightPanelHeaderFooter);
 	$innerWidth: calc(100vw);
@@ -220,13 +237,8 @@ table, th, td {
 	/**
 	 *	Main Nav Panel
 	 */
-	.mainNavPanelBody {
+	#myContainer {
 		width: $innerWidth;
-		height: functions.passThrough($innerHeight);		// header + footer subtracted
-	}
-	
-	#mathVisualOutput {
-		height: calc(functions.centerHeight(true) / 2);
 	}
 	
 	/* Mixin for all the dialogs */	
@@ -240,12 +252,4 @@ table, th, td {
 			font-size: $fontSize !important;
 		}
 	}
-}
-
-/* Section for desktop styles
- * --------------------------
- */
-.desktop {
-	/* essential: must be written at the correct moment */	 
-	@include mixins.dialogs(false);
 }

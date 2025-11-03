@@ -13,6 +13,7 @@ export class ParserExtension implements IParser {
 	async = false;
 	completeCount = 0;
 	fatalError = null;
+	initialized = false;
 	
 	/**
 	 * Constructor
@@ -29,6 +30,9 @@ export class ParserExtension implements IParser {
 	 * The inititialization method
 	 */
 	initialise() {
+		if (this.initialized) {
+			return;
+		}
 		let inst = this;
 		try {
 			if (!inst.async) {
@@ -42,6 +46,7 @@ export class ParserExtension implements IParser {
 					inst.nextAsync(ctx);
 				}
 			}
+			this.initialized = true;
 		} catch(e) {
 			console.error(`Fatal Error: jquery not loaded ${e}`);
 			this.fatalError = e;
@@ -62,6 +67,7 @@ export class ParserExtension implements IParser {
 	 */
 	async parseAsync(selector: string, ctx: any, delay = 0) : Promise<any> {
 		try {
+			this.initialise();							// lazily initialize
 			let item = {
 				ctx: ctx,
 				delay: delay,
@@ -130,6 +136,7 @@ export class ParserExtension implements IParser {
 	
 	
 	parse(selector: string, ctx: any, onComplete: any, delay = 0) {
+		this.initialise();							// lazily initialize
 		this.queue.push({
 			selector: selector,
 			onComplete: onComplete,

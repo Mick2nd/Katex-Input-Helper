@@ -1,12 +1,8 @@
 
-/*	Could not bring asynchronous version of easyui to work.
+/*	Could not bring asynchronous version of easyui to work. With little modification 
+ *	it is possible to load EASYUI asynchronously.
  *	jquery node_module working with ProvidePlugin.
  */
-import './jquery-easyui/jquery.easyui.min';
-import './jquery-easyui/datagrid-dnd';
-import './jquery-easyui/datagrid-filter';
-import './jquery-easyui/datagrid-cellediting';
-
 import MobileDetect from 'mobile-detect';
 const CodeMirror = (await import('codemirror')).default;
 
@@ -127,9 +123,8 @@ export class BootLoader implements IBootLoader {
 			this.vme = this.factory();
 			window.vme = this.vme;								// prevents garbage collection?
 			await this.vme.initialise();
-			//$('#myContainer').layout({fit: true});			// TODO: move to initialise, can be better controlled
-			//$('#divEquationInputOutput').layout({});
-			//$('#innerLayout').layout({fit: true});
+			$('#myContainer').layout({fit: true});				// TODO: move to initialise, can be better controlled
+			$('#innerLayout').layout({fit: true});
 		} finally {
 			console.info('App initialization finished');
 		}
@@ -217,10 +212,10 @@ export class BootLoader implements IBootLoader {
 		
 		let allLoaded = (
 			checkOther(typeof $, 'function', 'jquery') &&
-			checkOther(typeof $.messager, 'object', 'easyui') &&
-			checkOther(typeof $.fn.datagrid, 'function', 'datagrid') &&
-			checkOther(typeof $.fn.datagrid.defaults, 'object', 'datagrid') &&
-			checkOther(typeof $.fn.datagrid.defaults.defaultFilterOptions, 'object', 'datagrid-filter') &&
+			//checkOther(typeof $.messager, 'object', 'easyui') &&
+			//checkOther(typeof $.fn.datagrid, 'function', 'datagrid') &&
+			//checkOther(typeof $.fn.datagrid.defaults, 'object', 'datagrid') &&
+			//checkOther(typeof $.fn.datagrid.defaults.defaultFilterOptions, 'object', 'datagrid-filter') &&
 			// Can we independantly check dnd and cellediting?
 			checkOther(typeof this.katex, 'object', 'Katex') &&
 			checkOther(typeof this.katex.renderToString, 'function', 'Katex') &&

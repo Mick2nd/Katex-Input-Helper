@@ -1,4 +1,3 @@
-import { CategoriesTree } from './categoriesTree';
 import { FileHandler } from './fileHandling';
 
 import { inject, injectable, injectFromBase } from 'inversify';
@@ -79,6 +78,15 @@ export class KIHPanel implements IPanel {
 	}
 	
 	/**
+	 * Called if the window is opened.
+	 */
+	onOpen() {
+		if (this.parameters.isMobile) {
+			this.toOrigin();
+		}
+	}
+	
+	/**
 	 * Called if a window is closed.
 	 */
 	onClose() {
@@ -95,6 +103,7 @@ export class KIHPanel implements IPanel {
 		return {
 			onMove: this.onMove.bind(this),
 			onResize: this.onResize.bind(this),
+			onOpen: this.onOpen.bind(this),
 			onClose: this.onClose.bind(this)
 		};
 	}
@@ -103,7 +112,6 @@ export class KIHPanel implements IPanel {
 	 * Initialise method, creates the *Panel* with the handlers provided.
 	 */
 	async initialise(dummy: any = null) : Promise<void> {
-		// this.initialResize();
 	}
 	
 	/**
@@ -130,14 +138,7 @@ export class KIHPanel implements IPanel {
 			this.panelFunc('open');
 			this.panelFunc('resize', { width: 'auto', height: 'auto' });
 			this.isOpen = true;
-			this.panelFunc('move', $('#wrapperBody').position());
-			
-			// this.panelFunc('move', { left: 0, top: 0 });
-			// Does not work as expected
-			// With the dialog enclosed by a div wrapper, **prepend** works
-			// $('#wrapperPanel').prepend($(`div :has(#${this.id})`));
-			
-			this.panelFunc('refresh');
+			this.toOrigin();
 			return;
 		}
 		this.panelFunc('open');
@@ -165,6 +166,13 @@ export class KIHPanel implements IPanel {
 	 */
 	resize() {
 		this.parameters.resizePanel(this.id);
+	}
+
+	/**
+	 * Moves this Panel to the origin of the (mobile) wrapper Panel.
+	 */	
+	protected toOrigin() {
+		this.panelFunc('move', $('#wrapperBody').position());
 	}
 	
 	/**
@@ -222,38 +230,33 @@ export class KIHPanel implements IPanel {
 		return htmlElement ? (htmlElement as any).outerHTML : undefined;
 	}
 
-	protected scale(sc: number, selector: string = "") {
-		let panel: any = null;
-		if (selector !== "") {
-			panel = $(selector);
-		} else {
-			panel = $(`#${this.id}`);
-		}
-		panel.css({
-			'width': `calc(${panel.css('width')} * 2)`,
-			'height': `calc(${panel.css('height')} * 2)`
-		});
-		panel.css({
-			'transform': `scale(${sc})`,
-			'transform-origin': 'left top'
-		});
-	}
-	
+	/**
+	 * Queries the outer width of the panel.
+	 */	
 	protected get width() : any {
 		const w = $(`#${this.id}`).outerWidth();
 		console.log(`Panel with id ${this.id}: queried width: ${w}`);
 		return w;
 	}
 
+	/**
+	 * Queries the outer height of the panel.
+	 */	
 	protected get height() : any {
 		return $(`#${this.id}`).outerHeight();
 	}
 
+	/**
+	 * Queries the styles option of the panel.
+	 */	
 	protected get styles() : any {
 		const options = this.panelFunc('options');
 		return options.styles ? options.styles : { };
 	}
 
+	/**
+	 * Sets the styles option of the panel.
+	 */	
 	protected set styles(styles: any) {
 		const options = this.panelFunc('options');
 		options.styles = styles;
@@ -320,8 +323,6 @@ export class KIHPanel implements IPanel {
 	 * 
 	 * This is an adaptation of the KIHPanel version. It is able to provide a localized title
 	 * that would otherwise disappear.
-	 * 
-	 * TODO: harmonize with More Dialog class.
 	 */
 	override async initialise(dummy: any = null) {
 		await super.initialise(dummy);
@@ -369,10 +370,6 @@ export class KIHPanel implements IPanel {
 	 */
 	override async initialise(initialiseSymbolContent: any) {
 		// id is the MORE id as in dialog.html file with 'w' and '_MORE'
-
-		// Where to place?
-		//super.initialResize();
-		
 		let htmlFile = this.id.substring(1); 
 		
 		let handlers: any = this.handlers;
@@ -384,7 +381,7 @@ export class KIHPanel implements IPanel {
 		this.panelFunc(handlers); 
 		this.panelFunc('open'); 
 		
-		// Trial for Android
+		// New for/with Android
 		let html = (await import(`../formulas/${htmlFile}.html`)).default;
 		this.panelFunc('body').html(html);
 		await initialiseSymbolContent(this.id);
@@ -401,7 +398,7 @@ export class KIHPanel implements IPanel {
 	tabChanged = false;
 
 	/**
-	 * Initialises the Matrix window.
+	 * Initialises the Informations window.
 	 */
 	override async initialise(...params) : Promise<void> {
 		await super.initialise(params);
@@ -472,8 +469,7 @@ export class KIHPanel implements IPanel {
 		}); 
 		$('#colsMATRIX, #rowsMATRIX').on('keyup', function(event) { 
 			vme.updateMatrixWindow(); 
-		});
-		
+		});	
 	}
 
 	/**
@@ -489,6 +485,7 @@ export class KIHPanel implements IPanel {
 	 */
 	override async show() {
 		this.open();
+		this.resize();
 	}
 
 	/**
@@ -517,23 +514,11 @@ export class KIHPanel implements IPanel {
 		}
 		html += "</table>"; 
 		$("#showMATRIX").html(html); 
-		await this.parser.parseAsync('#wMATRIX');										// after dynamically set the content
+		await this.parser.parseAsync('#wMATRIX');					// after dynamically set the content
 		$('#wMATRIX').dialog('open');
-		
-		// adapt the size of this wMATRIX window to fit the content
-		let width = 20 + $("#tableMATRIX").width(); 
-		let height = 100 + $("#tableMATRIX").height(); 
-		width = Math.max(width, 280); 
-		height = Math.max(height, 160);
-		
-		let options = $('#wMATRIX').dialog('options');
-		$('#wMATRIX').dialog({ 
-			title: vme.localizer.getLocalText("MATRIX"),
-			width: width, 
-			height: height,
-			left: options.left,									// HAS NO EFFECT !!
-			top: options.top 
-		}); 
+		const handlers: any = this.handlers;
+		handlers.title = vme.localizer.getLocalText("MATRIX");
+		$('#wMATRIX').dialog(handlers);
 		$('#wMATRIX').dialog('open');
 	}
 	
