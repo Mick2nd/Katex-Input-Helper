@@ -3,7 +3,6 @@ export interface IBootLoader {
 	init1() : Promise<void>;
 	fatal(err: any) : void;
 	check() : void;
-	platformInfo() : any;
 }
 
 export interface IKatexInputHelper {

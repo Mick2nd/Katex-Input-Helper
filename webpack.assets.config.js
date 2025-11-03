@@ -70,7 +70,7 @@ const rulesConfig = (env) => [
 	{
 		test: /\.s?css$/,
 		include: [ path.resolve(path.dirname('.'), 'src/assets/js') ],
-		exclude: [ /node_modules/ ],
+		exclude: [ /node_modules/, /stylesheets/ ],
 		use: [
 			MiniCssExtractPlugin.loader, 
 			'css-loader', 

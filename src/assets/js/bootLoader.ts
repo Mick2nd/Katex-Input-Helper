@@ -3,7 +3,6 @@
  *	it is possible to load EASYUI asynchronously.
  *	jquery node_module working with ProvidePlugin.
  */
-import MobileDetect from 'mobile-detect';
 const CodeMirror = (await import('codemirror')).default;
 
 import { Observable } from './patterns/observable';
@@ -72,7 +71,7 @@ export class BootLoader implements IBootLoader {
 				}
 			} catch(err) {
 				console.error(`Error occurred: ${err} `);		
-				reject(Error(err));
+				reject(new Error(err));
 			}		
 		});
 	}
@@ -98,20 +97,6 @@ export class BootLoader implements IBootLoader {
 	}
 	
 	/**
-	 * Checks if running device is mobile device.
-	 * 
-	 * @returns - Flag indicating a Mobile device
-	 */
-	platformInfo() : any {
-		// Not reliable -> overridden in app
-		let md = new MobileDetect(navigator.userAgent);
-		let mobile = md.mobile() != null;
-		let osFamily = md.os() ?? 'desktop';
-		 
-		return { isMobile: mobile, osFamily: osFamily };
-	}
-	
-	/**
 	 * Initializes the app.
 	 * 
 	 * This is the true application logic.
@@ -121,7 +106,7 @@ export class BootLoader implements IBootLoader {
 	async initApp() {
 		try {
 			this.vme = this.factory();
-			window.vme = this.vme;								// prevents garbage collection?
+			globalThis.vme = this.vme;							// prevents garbage collection?
 			await this.vme.initialise();
 			$('#myContainer').layout({fit: true});				// TODO: move to initialise, can be better controlled
 			$('#innerLayout').layout({fit: true});
@@ -170,7 +155,7 @@ export class BootLoader implements IBootLoader {
 		 */
 		function checkTypeByName(type: any, name: string, readableName = name) {
 			lastChecked = readableName;
-			if (type === undefined || type === null || (typeof type) === 'undefined' || !type.prototype) {
+			if (!type?.prototype) {
 				console.warn(`Undefined type : ${readableName}`);
 				return false;
 			}
@@ -202,7 +187,7 @@ export class BootLoader implements IBootLoader {
 		function mhchemCheck() {
 			try {
 				lastChecked = "Mhchem";
-				this.katex.renderToString("\\ce{SO4^2- + Ba^2+ -> BaSO4 v} ", { throwOnError: true });
+				this.katex.renderToString(String.raw`\ce{SO4^2- + Ba^2+ -> BaSO4 v} `, { throwOnError: true });
 				return true;
 			} catch(e) {
 				console.warn(`Presence check failed : Mhchem`);
@@ -212,15 +197,9 @@ export class BootLoader implements IBootLoader {
 		
 		let allLoaded = (
 			checkOther(typeof $, 'function', 'jquery') &&
-			//checkOther(typeof $.messager, 'object', 'easyui') &&
-			//checkOther(typeof $.fn.datagrid, 'function', 'datagrid') &&
-			//checkOther(typeof $.fn.datagrid.defaults, 'object', 'datagrid') &&
-			//checkOther(typeof $.fn.datagrid.defaults.defaultFilterOptions, 'object', 'datagrid-filter') &&
-			// Can we independantly check dnd and cellediting?
+			
 			checkOther(typeof this.katex, 'object', 'Katex') &&
 			checkOther(typeof this.katex.renderToString, 'function', 'Katex') &&
-			// Can we do this check?
-			//mhchemCheck() &&
 			
 			checkTypeByName(CodeMirror, 'CodeMirror', 'CodeMirror') &&
 			
@@ -236,7 +215,7 @@ export class BootLoader implements IBootLoader {
 			checkTypeByName(KatexInputHelper, 'KatexInputHelper'));
 		
 		if (! allLoaded && cycle <= 0) {
-			throw Error(`${lastChecked} not loaded`);
+			throw new Error(`${lastChecked} not loaded`);
 		}
 			
 		return allLoaded;

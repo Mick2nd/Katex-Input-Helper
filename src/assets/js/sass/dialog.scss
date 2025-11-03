@@ -3,17 +3,17 @@
 @use 'partials/functions';
 @use 'partials/mixins';
 
-@import 'katex/dist/katex.css';
-@import './jquery-easyui/themes/icon.css';
-@import './jquery-easyui/themes/default/easyui.css';
-@import './jquery-easyui-MathEditorExtend/themes/icon.css';
-@import './jquery-easyui-MathEditorExtend/themes/aguas/easyui.css';
+@import '../katex/katex.min.css';
+@import '../jquery-easyui/themes/icon.css';
+@import '../jquery-easyui/themes/default/easyui.css';
+@import '../jquery-easyui-MathEditorExtend/themes/icon.css';
+@import '../jquery-easyui-MathEditorExtend/themes/aguas/easyui.css';
 //@import './jquery-easyui/themes/mobile.css';
-@import './keyboard/keyboard.css';
-@import 'codemirror/lib/codemirror.css';
-@import 'codemirror/theme/darcula.css';
-@import 'codemirror/theme/twilight.css';
-@import 'codemirror/theme/zenburn.css';
+@import '../keyboard/keyboard.css';
+@import '../codemirror/lib/codemirror.css';
+@import '../codemirror/theme/darcula.css';
+@import '../codemirror/theme/twilight.css';
+@import '../codemirror/theme/zenburn.css';
 
 
 /* Section for common styles
@@ -28,7 +28,7 @@ body {
 	/* essential: must be written at the correct moment */
 	height: 100vh;
 	
-	/* The Wait Msg */
+	// The Wait Msg
 	#WaitMsg {
 		@include mixins.waitMsgMixin(true);
 	}

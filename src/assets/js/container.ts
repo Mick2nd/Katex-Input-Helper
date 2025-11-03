@@ -72,7 +72,6 @@ container
 
 
 const bootLoader: IBootLoader = container.get(bootLoaderId);
-container.bind(platformInfoId).toDynamicValue(bootLoader.platformInfo.bind(bootLoader));
 
 try {
 	await bootLoader.init1();
