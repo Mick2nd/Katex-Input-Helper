@@ -6,7 +6,8 @@ export interface IBootLoader {
 }
 
 export interface IKatexInputHelper {
-	initialise() : Promise<void>; 
+	initialise() : Promise<void>;
+	prefetch() : Promise<boolean>;
 }
 
 export interface ILocalizer {
@@ -41,6 +42,7 @@ export interface IParser {
 }
 
 export interface IMath {
+	injectCodeMirror() : void;
 	equipWithInteractivity(a: any, javascript: boolean) : void;
 	equipWithTooltip(selector: any, text: string, javascript: boolean) : void;
 	inplaceUpdate(selector: any, javascript: boolean) : void;
@@ -119,6 +121,7 @@ export const themesId = Symbol.for('ThemesId');
 export const parserId = Symbol.for('ParserId');
 export const mathId = Symbol.for('MathId');
 export const codeMirrorId = Symbol.for('CodeMirrorId');
+export const codeMirrorFactoryId = Symbol.for('CodeMirrorFactoryId');
 export const panelsId = Symbol.for('PanelsId');
 
 export const dynamicPanelId = Symbol.for('DynamicPanelId');

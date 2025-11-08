@@ -135,11 +135,7 @@ export class Dialog
 	public load = function() : string
 	{
 		try {
-			if (this.isMobile) {
-				return require('./assets/dialog-mobile.html').default;
-			} else {
-				return require('./assets/dialog.html').default;
-			}
+			return require('./assets/start.html').default;
 			
 		} catch(e) {
 

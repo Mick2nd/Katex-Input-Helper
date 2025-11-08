@@ -6,6 +6,7 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CopyPlugin from 'copy-webpack-plugin';
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import HtmlWebpackPlugin from 'html-webpack-plugin';
+import CompressionPlugin from 'compression-webpack-plugin';
 import * as sass from 'sass';
 
 const rootDir = path.resolve(path.dirname('.'));
@@ -55,18 +56,6 @@ const rulesConfig = (env) => [
 			}
 		}]
 	},
-	/*
-	{
-		test: /\.css$/,
-		include: [ path.resolve(path.dirname('.'), 'src/assets/js') ],
-		exclude: [ /node_modules/ ],
-		use: [ 
-			MiniCssExtractPlugin.loader, 
-			'css-loader', 
-		],
-		sideEffects: true
-	},
-	*/
 	{
 		test: /\.s?css$/,
 		include: [ path.resolve(path.dirname('.'), 'src/assets/js') ],
@@ -125,38 +114,120 @@ const rulesConfig = (env) => [
 /**
  * Extracted Plugins Config
  */
-const pluginsConfig = (env) => [
-	new webpack.ProvidePlugin({
-		$: 'jquery',
-		jQuery: 'jquery',
-	}),
-	// DEFINES GLOBAL VARIABLES, but babel-loader must not be active
-	new webpack.DefinePlugin({
-		KIH_VERSION: JSON.stringify('7.44'),
-		PRODUCTION: JSON.stringify(env.kihmode ? (env.kihmode == 'production') : false)
-	}),
-	//new TerserPlugin(),
-	new MiniCssExtractPlugin({ 
-		filename: '[name].css',
-		chunkFilename: 'css/[name].styles.css' //	=> works, but name is essential
-	}),
-	new CopyPlugin({
-		patterns: [
-			{ from: 'src/assets/dialog.html', to: 'dialog.html' },
-			{ from: 'src/assets/dialog-mobile.html', to: 'dialog-mobile.html' },
-		],
-	}),
-	new HtmlWebpackPlugin({
-		title: 'My Webpack App',
-		template: './src/assets/dialog.html',
-		filename: './index.html',
-	}),
-	new HtmlWebpackPlugin({
-		title: 'My Webpack App',
-		template: './src/assets/dialog-mobile.html',
-		filename: './index-mobile.html',
-	}),
-];
+const pluginsConfig = (env) => {
+	const ZIP = env.zip ? env.zip : false;
+	const base = [
+		new webpack.ProvidePlugin({
+			$: 'jquery',
+			jQuery: 'jquery',
+		}),
+		// DEFINES GLOBAL VARIABLES, but babel-loader must not be active
+		new webpack.DefinePlugin({
+			KIH_VERSION: JSON.stringify('7.44'),
+			PRODUCTION: JSON.stringify(env.kihmode ? (env.kihmode == 'production') : false)
+		}),
+		//new TerserPlugin(),
+		new MiniCssExtractPlugin({ 
+			filename: '[name].css',
+			chunkFilename: 'css/[name].styles.css' //	=> works, but name is essential
+		}),
+		new CopyPlugin({
+			patterns: [
+				{ from: 'src/assets/dialog-desktop.html', to: 'dialog-desktop.html' },
+				{ from: 'src/assets/dialog-mobile.html', to: 'dialog-mobile.html' },
+				{ from: 'src/assets/start.html', to: 'start.html' },
+				{ from: 'src/assets/dialog.html', to: 'dialog.html' },
+				{ from: 'src/assets/favicon.ico', to: 'favicon.ico' },
+			],
+		}),
+		new HtmlWebpackPlugin({
+			title: 'My Webpack App',
+			template: './src/assets/dialog-desktop.html',
+			filename: './index-desktop.html',
+		}),
+		new HtmlWebpackPlugin({
+			title: 'My Webpack App',
+			template: './src/assets/dialog-mobile.html',
+			filename: './index-mobile.html',
+		}),
+		new HtmlWebpackPlugin({
+			title: 'My Webpack App',
+			template: './src/assets/start.html',
+			filename: './index.html',
+		}),
+	];
+	
+	if (ZIP) return base.concat([
+		new CompressionPlugin({
+			test: /\.js$|\.css$/,
+			deleteOriginalAssets: true
+		})
+	]);
+	return base;
+}
+
+/**
+ * Provides settings for the dev server.
+ */
+const devServerConfig = (env) => {
+	const ZIP = env.zip ? env.zip : false;
+	const rewrites = [		
+		{ from: /^(.*)\.css$/, to: function(context) { return context.parsedUrl.pathname + '.gz'; } },
+		{ from: /^(.*)\.js$/, to: function(context) { return context.parsedUrl.pathname + '.gz'; } },
+		{ from: /.*/, to: function(context) { return context.parsedUrl.pathname; } }
+	];
+	const headers = (context) => {
+		console.log(`Headers request : %O`, context);
+		if (context.url.endsWith('.js')) {
+			console.log(`Headers request : ${context.url}`);
+			return {
+				"Content-Encoding" : "gzip",
+				"Accept-Encoding" : "gzip",
+				"Transfer-Encoding" : "chunked",
+				"Content-Type": "application/javascript; charset=utf-8",
+			};
+		}
+		if (context.url.endsWith('.css')) {
+			console.log(`Headers request : ${context.url}`);
+			return {
+				"Content-Encoding" : "gzip",
+				"Transfer-Encoding" : "chunked",
+				"Content-Type": "text/css; charset=utf-8",
+				"vary": "Accept-Encoding"
+			};
+		}
+		if (context.url.endsWith('.json')) {
+			console.log(`Headers request : ${context.url}`);
+			return {
+				"Content-Encoding" : "identity",
+				"Content-Type": "text/json; charset=utf-8",
+			};
+		}
+		return {
+			
+		};
+	};
+	
+	const base = {						// base settings for the dev server
+		static: {
+			directory: path.resolve(path.dirname('.'), 'dist/assets'),
+		},
+	  	compress: !ZIP,
+	  	port: 9000,
+		allowedHosts: 'all',
+	};
+	
+	const zip = {						// additional settings for the ZIP case
+		headers: headers,
+		historyApiFallback: {
+			rewrites: rewrites,
+			verbose: true
+		},
+	};
+	
+	if (ZIP) return { ...base, ...zip };
+	return base;
+}
 
 /**
  * Exported config as used by Webpack
@@ -164,6 +235,7 @@ const pluginsConfig = (env) => [
 export default (env) => { 
 	const PUBLIC_PATH = (env.ghpages ? "/Katex-Input-Helper/" : "auto");
 	const MODE = (env.kihmode ? env.kihmode : "development");
+	const ZIP = (env.zip ? env.zip : false);
 	
 	return {
 		optimization: {
@@ -233,14 +305,7 @@ export default (env) => {
 				},			
 			}
 		},
-		devServer: {
-			static: {
-				directory: path.resolve(path.dirname('.'), 'dist/assets'),
-			},
-		  	compress: true,
-		  	port: 9000,
-			allowedHosts: 'all',
-		},
+		devServer: devServerConfig(env),
 		stats: {
 		  loggingDebug: ["sass-loader"],
 		},
@@ -266,7 +331,7 @@ function writeJson(jsonPath, content) {
 }
 
 /**
- * Copies the version entry from Manifest to to runtime versions.json file.
+ * Copies the version entry from Manifest to runtime versions.json file.
  * The *versions.json* file contains all versions of components not directly available.
  */
 function copyVersion() {

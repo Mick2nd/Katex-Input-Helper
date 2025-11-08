@@ -1,10 +1,8 @@
 import './jquery-easyui/jquery.easyui.min';						// ADDED for unit test
-const katex = await import('katex/dist/katex');					// This version of import is essential for mhchem
-await import('katex/dist/contrib/mhchem');
 
-import { inject, injectable } from 'inversify';
+import { inject, injectable, Factory } from 'inversify';
 import { IMath, localizerId, ILocalizer, parametersId, parserId, IParser, 
-	codeMirrorId, ICodeMirror, messagerId, IMessager } from './interfaces';
+	codeMirrorFactoryId, ICodeMirror, messagerId, IMessager } from './interfaces';
 
 /**
  * Class responsible for Math Formula handling.
@@ -19,10 +17,12 @@ export class MathFormulae implements IMath {
 	menuupdateType = true;
 	localizer = null;
 	codeMirror: ICodeMirror = null;					// per method injection
+	codeMirrorFactory: Factory<ICodeMirror> = null;
 	parameters = null;
 	parser = null;
 	dynamicPanels = [];
 	messager = null;
+	katex = null;
 	
 	/**
 	 * Constructor.
@@ -32,14 +32,23 @@ export class MathFormulae implements IMath {
 		@inject(parametersId) parameters: any|null, 
 		@inject(parserId) parser: IParser|null,
 		@inject(messagerId) messager: IMessager|null,
-		@inject(codeMirrorId) codeMirror: ICodeMirror|null
+		@inject(codeMirrorFactoryId) codeMirrorFactory: Factory<ICodeMirror>
 	) {
-		this.mathVisualOutput = $('#mathVisualOutput')[0];
 		this.localizer = localizer;
 		this.parameters = parameters;
 		this.parser = parser;
 		this.messager = messager;
-		this.codeMirror = codeMirror;
+		this.codeMirrorFactory = codeMirrorFactory;
+	}
+	
+	/**
+	 * Used for postponed injection.
+	 */
+	async injectCodeMirror() {
+		this.codeMirror = this.codeMirrorFactory();
+		this.mathVisualOutput = $('#mathVisualOutput')[0];
+		this.katex = await import('katex/dist/katex');	// This version of import is essential for mhchem
+		await import('katex/dist/contrib/mhchem');
 	}
 	
 	/**
@@ -75,7 +84,7 @@ export class MathFormulae implements IMath {
 				}
 			}
 			
-			katex.render(text, target, { throwOnError: true, strict: false, displayMode: displayMode, macros: { '\\box': '□' } });
+			this.katex.render(text, target, { throwOnError: true, strict: false, displayMode: displayMode, macros: { '\\box': '□' } });
 		} catch(e) {
 			console.warn(`Katex: insertMath : ${e}`);
 			this.messager.show('KATEX', 'KATEX_NOT_RENDERED', e)
@@ -189,7 +198,7 @@ export class MathFormulae implements IMath {
 		//let html = katex.renderToString('\\LaTeX', { thrownOnError: false });
 		//$('#mLaTeX_TEXT span').html(html);
 		
-		$('#mLaTeX_TEXT span').text('LaTeX');
+		$('#mLaTeX_TEXT span, #mLaTeX_TEXT_side span').text('LaTeX');
 	}
 	
 	/**

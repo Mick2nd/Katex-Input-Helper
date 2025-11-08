@@ -13,6 +13,7 @@ declare module "*.scss" {
 
 interface JQuery {
     panel(p1?: any, p2?: any): any;
+	navpanel(p1?: any, p2?: any): any;
 	window(p1?: any, p2?: any): any;
 	dialog(p1?: any, p2?: any): any;
 	menu(p1?: any, p2?: any): any;

@@ -24,7 +24,9 @@ export function codeMirrorProxy() : ICodeMirror {
 		// According doc default depends on mobile
 		// inputStyle: "textarea"
 	};
-	// const cm = CodeMirror.fromTextArea($("#mathTextInput")[0] as HTMLTextAreaElement, options);
+	if ($("#divMathTextInput")[0] === undefined) {
+		console.warn('Code Mirror : divMathTextInput is not available yet.');
+	}
 	const cm = CodeMirror($("#divMathTextInput")[0] as HTMLElement, options);
 	
 	function removeChar() {
@@ -34,8 +36,10 @@ export function codeMirrorProxy() : ICodeMirror {
 	}
 	
 	function activate() {
+		const history = cm.getHistory();
 		cm.replaceSelection(' ');
 		removeChar();
+		cm.setHistory(history);
 	}
 	
 	activate();					// this is a workaround for the mobile version

@@ -1,11 +1,11 @@
 import { Container, ResolutionContext, Factory } from 'inversify';
 
 import { IBootLoader, bootLoaderId, katexInputHelperId, IKatexInputHelper, katexInputHelperFactoryId, 
-	ILocalizer, localizerId, IMessager, messagerId, platformInfoId, 
+	ILocalizer, localizerId, IMessager, messagerId, 
 	IUtilities, utilitiesId, parametersId, IThemes, themesId, IParser, parserId, IMath, mathId, 
 	IPanels, panelsId, dynamicPanelId, informationWindowId, moreDialogId, windowId, dialogId, matrixWindowId, 
 	dynamicParametersId, panelFactoryId, unicodeWindowId, categoriesTreeId, ICategoriesTree, asyncId,
-	codeMirrorId, ICodeMirror } from './interfaces';
+	codeMirrorId, codeMirrorFactoryId, ICodeMirror } from './interfaces';
 
 import { BootLoader } from './bootLoader';
 import { KatexInputHelper } from './dialog';
@@ -41,6 +41,11 @@ container
 	.bind<ICodeMirror>(codeMirrorId)
 	.toDynamicValue(codeMirrorProxy)
 	.inSingletonScope();
+container
+	.bind<Factory<ICodeMirror>>(codeMirrorFactoryId)
+	.toFactory((context: ResolutionContext) : () => ICodeMirror => {
+		return () => context.get(codeMirrorId);
+	});
 	
 container.bind<KIHPanel>(dynamicPanelId).to(DynamicPanel);
 container.bind<KIHPanel>(informationWindowId).to(InformationWindow);

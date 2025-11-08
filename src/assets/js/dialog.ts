@@ -1,5 +1,5 @@
+import './easyui';
 import './sass/dialog.scss' assert { type: 'css' };
-//import './jquery-easyui/themes/mobile.css' assert { type: 'css' };
 
 import { VKI_init } from './keyboard/keyboard';
 import { FileHandler } from "./fileHandling";
@@ -163,6 +163,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	baseLocation = "";
 	parser: IParser = null;
 	VKI_show: any = null;
+	sidemenuData: any = { };
 	
 	/**
 	 * Constructor
@@ -189,6 +190,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		// Probably not needed
 		console.info(`Url: ${globalThis.location}`);
 		
+		/* OBSOLETE
 		let vme = this;
 		this.url = {
 			param: function(name: string) {
@@ -204,6 +206,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 				}
 			}
 		};
+		*/
 		
 		this.parameters = parameters;
 		this.localizer = localizer;
@@ -212,7 +215,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 		this.themes = themes;
 		this.parser = parser;
 		this.math = math;
-		this.codeMirrorEditor = math.codeMirror;
 		this.panels = panels;
 		this.documentations = new Documentations(false, this.baseLocation);
 		
@@ -293,6 +295,50 @@ export class KatexInputHelper implements IKatexInputHelper {
 		// this.parameters.writeParameters();
 	}
 
+	/**
+	 * A Prefetch cycle to load the required HTML document.
+	 * 
+	 * @returns true, if a document could be loaded
+	 */
+	async prefetch() : Promise<boolean> {
+		
+		function transfer(from: HTMLElement, to: string) {
+			$(to).html(from.innerHTML);
+			for (const attrib of from.attributes) {
+				$(to).attr(attrib.name, attrib.value);
+			}
+		}
+		
+		await this.parameters.queryParameters();							// from Plugin
+		if (this.parameters.mode == 'web' &&
+			!document.URL.includes('index.html')) {
+			return false;
+		}
+		
+		const index = this.parameters.isMobile ? 'dialog-mobile' : 'dialog';
+		const htmlString = (await import(`../${index}.html`)).default;
+		
+		// Experiments manipulating HTML
+		const root = document.createElement('html');
+		root.innerHTML = htmlString;
+		console.log(`Parsed HTML : %O`, root);					// this is a full html DOM node with head and body
+		const body = (root.lastChild as HTMLElement);
+		transfer(body, 'body');
+
+		//const menu = "menu";
+		//const menuHtml = (await import(`../${menu}.html`)).default;
+		//$('#main-menu').html(menuHtml);
+		//await this.parser.parseAsync('#main-menu');			// NO MENU LOSS
+		
+		if (this.parameters.isMobile) {
+		}
+		
+		await this.math.injectCodeMirror();
+		this.codeMirrorEditor = this.math.codeMirror;		// lazy injection
+		console.debug(`Promise check : document ready: ${document.URL}.`);
+		
+		return true;
+	}
 
 	/**
 	 * Initialize. Performs the whole initialization.
@@ -302,8 +348,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 		let vme = this;
 		this.versions = await import( /* webpackInclude: /\.json$/ */ './versions.json');
 		
+		// Initialize is done lazily
 		//this.parser.initialise();		
-		await this.parameters.queryParameters();							// from Plugin		
 
 		// Query string may be a better solution than detection
 		this.platformInfo = { isMobile: this.parameters.isMobile, osFamily: 'Unknown' };
@@ -339,7 +385,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 		this.themes.subscribe(this.onStyleChanged.bind(this));
 		await this.themes.initialiseThemeChoice(this.style, this.rtlStyle); // RTL STYLE defined after locale language
 
-		vme.endWait(); 
+		$('#myContainer').layout({fit: true});
+		$('#innerLayout').layout({fit: true});
+		vme.endWait();
 	}
 
 	/**
@@ -353,7 +401,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		} };
 
 		/**
-		 * Loads Easyui for the desktop variant
+		 * Loads Easyui for the desktop variant. OBSOLETE.
 		 */
 		async function loadEasyuiDesktop() {
 			await import('./easyui');
@@ -361,7 +409,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		}
 		
 		/**
-		 * Loads Easyui for the mobile variant.
+		 * Loads Easyui for the mobile variant. OBSOLETE.
 		 */
 		async function loadEasyuiMobile() {
 			await loadEasyuiDesktop();
@@ -384,51 +432,43 @@ export class KatexInputHelper implements IKatexInputHelper {
 		}
 
 		/**
-		 * Initializes the size, especially the heights of the main panel as
-		 * this is not working with CSS.
-		 * OBSOLETE. Reserved.
+		 * Queries the height of the south region.
 		 */
-		function initialResizeMobile(mobile: boolean = true) {
+		function getHeightFooter() {
+			const heightFooter = $('.katex-mobile .southRegion').first().outerHeight();
+			return heightFooter;
+		}
+		
+		/**
+		 * Determines the height of the center.
+		 */
+		function getHeightCenterVh(mobile: boolean = true) : string {
 			const headerSelector = mobile ? '#introduction' : '#northRegion';
 			const footerSelector = mobile ? '.katex-mobile .southRegion' : '.katex-desktop .southRegion';
 			const padding = 5;
 			const heightBody = $('body').outerHeight();
 			const heightHeader = $(headerSelector).outerHeight() + 2 * padding;
 			const heightFooter = $(footerSelector).outerHeight();
-			const heightInnerHeader = $('.panel:has(> #divEquationInputOutput) > .panel-header').outerHeight();
 			const heightCenter = heightBody - heightHeader - heightFooter;
-			const heightInnerLayout = heightCenter - heightInnerHeader;
-			const heightEditor = heightInnerLayout / 2;
 			const heightCenterVh = Math.floor(heightCenter * 100 / heightBody);
 			
-			$('#myContainer').css({ height: `${heightCenterVh}vh` });
-			$('#divEquationInputOutput').panel('resize', { height: heightCenter });
-			$('#innerLayout').panel('resize', { height: heightInnerLayout });
-			$('#divMathTextInput, #mathVisualOutput').panel('resize', { height: heightEditor });
-			
-			console.info(`Calculated Heights : %O`, {
-				body: heightBody,
-				header: heightHeader,
-				footer: heightFooter,
-				innerHeader: heightInnerHeader,
-				center: heightCenter,
-				innerLayout: heightInnerLayout,
-				editor: heightEditor,
-				vh: heightCenterVh
-			});
-		}
-
-		/**
-		 * Queries the height of the south region.
-		 */
-		function getHeight() {
-			const heightFooter = $('.katex-mobile .southRegion').first().outerHeight();
-			return heightFooter;
+			return `${heightCenterVh}vh`;
 		}
 		
-		// Intent: to restore original web page structure.
+		let inst = this;
+		async function postLoadMenu() {
+
+			const menu = "menu";
+			const menuHtml = (await import(`../${menu}.html`)).default;
+			console.log(`Menu1 : ${menuHtml}`);
+			$('#main-menu').html(menuHtml);
+			console.log(`Menu2 : ${$('#main-menu').html()}`);
+			await inst.parser.parseAsync('#main-menu');			// NO MENU LOSS
+		}
+		
+		// Intent: to restore original web page structure (required by Joplin plugin).
 		// Here: the viewport
-		const content = $("div > meta[name='viewport']").attr('content');
+		const content = $("body meta[name='viewport']").attr('content');
 		if (content) {
 			const html = `<meta name="viewport" content="${content}" ></meta>`;
 			$("meta[name='viewport']").remove();
@@ -449,12 +489,14 @@ export class KatexInputHelper implements IKatexInputHelper {
 			if (!CSS.supports('width: 100vw')) {
 				console.warn('No support for Viewport Width units');
 			}
+			console.log(`Menu3 : ${$('#main-menu').html()}`);
 			
 			// For the working of the mobile variant order of these statements is essential
 			await import('./jquery-easyui/themes/mobile.css', opts);
 			await import('./jquery-easyui/jquery.easyui.mobile');
-			await this.parser.parseAsync('html');
+			await this.parser.parseAsync('body');
 
+			console.log(`Menu4 : ${$('#main-menu').html()}`);
 			$('body').prepend($('div:has(> .easyui-navpanel)'));
 			// Placement of "navpanels" in body initiates buggy behavior
 			//$('body').prepend($('.easyui-navpanel'));
@@ -479,27 +521,65 @@ export class KatexInputHelper implements IKatexInputHelper {
 				inst.panels.closeOpen(); 
 				inst.codeMirrorEditor.activateEditor(); // workaround to re-activate the editor
 			});
-			$("header:has(+ #westRegion) a.m-back, header:has(+ #eastRegion) a.m-back").on('click', function(event) { 
+			$("header:has(+ #westRegion) a.m-back, header:has(+ #eastRegion) a.m-back, header:has(+ #wrapperPanelMenu) a.m-back").on('click', function(event) { 
 				inst.codeMirrorEditor.activateEditor(); // workaround to re-activate the editor
 			});
 			
+			// I'm struggling with getting the correct initial display, but nothing works. 
+			/* This TRIAL also does not work: switch forth and back during program start.
+			let switchForth = true;
+			let switchBack = true;
+			$('#myContainer').panel({
+				fit: true, 
+				onOpen: function() {
+					if (switchForth) {
+						switchForth = false;
+						$.mobile.go('#eastRegion');
+					}
+				}
+			});
+			$('#eastRegion').panel({
+				fit: true, 
+				onOpen: function() {
+					if (switchBack && !switchForth) {
+						switchBack = false;
+						$.mobile.go('#myContainer');
+					}
+				}
+			});
+			*/
+			
 			// RESERVED.
-			const height = getHeight();
-			const heightChanged = () => getHeight() != height;
+			let height = getHeightFooter();
+			function heightChanged() {
+				const oldHeight = height;
+				const newHeight = getHeightFooter();
+				height = newHeight; 
+				return newHeight != oldHeight;
+			}
 			let cycle = 0;
 			const timerFunc = () => {
 				cycle ++;
 				if (heightChanged() || cycle >= 10) {
-					initialResizeMobile();
-					console.info(`Changed Footer Height : ${getHeight()} after ${cycle} cycles`);
+					console.info(`Changed Footer Height : ${getHeightFooter()} after ${cycle} cycles yields ${getHeightCenterVh()}`);
+					
+					// Both solutions have no effect. Initial display does not display footer.
+					// NavPanel to large
+					//$('#myContainer').attr('style', { height: `${getHeightCenterVh()} !important` });
+					//$('#myContainer').navpanel('resize');
+					
 				} else {
 					setTimeout(timerFunc, 100);
 				}
 			}
 			
 			defineProportions('#innerLayout', 'south', 50);
-			$('#myContainer').css({ height: `70vh` });			// workaround to reduce height
-			this.populateMenu();
+			timerFunc();
+			
+			this.sidemenuData = this.getSidemenuData();
+			console.log(`Sidemenu data : %O`, this.sidemenuData);
+			this.populateSidemenu(this.sidemenuData);
+			
 		} else {
 			$("body").addClass("katex-desktop");
 			$("div.katex-desktop").removeClass("katex-desktop");
@@ -510,12 +590,12 @@ export class KatexInputHelper implements IKatexInputHelper {
 	}
 	
 	/**
-	 * Populates a side menu in a wrapper menu panel for reduced space.
+	 * Using the traditional (desktop) menu, extracts data for the side menu.
 	 */
-	populateMenu() {
+	getSidemenuData() {
 		const inst = this;
-		
-		function parseMenu2(id: string, level: number = 0) : any {
+
+		function parseMenu(id: string, level: number = 0) : any {
 			const level1Submenus = [ 'mFILE', 'mINSERT', 'mTOOLS', 'mVIEW', 'mOPTIONS', 'mINFORMATIONS' ];
 			
 			console.log(`Parsing with selector #${id}`);
@@ -527,10 +607,10 @@ export class KatexInputHelper implements IKatexInputHelper {
 				const span = $(this).find('span');
 				let children = undefined;
 				if (level == 0) {
-					children = parseMenu2(level1Submenus[idx - 1], level + 1);
+					children = parseMenu(level1Submenus[idx - 1], level + 1);
 				}
 				if (level == 1 && id == 'mINSERT' && idx == 1) {
-					children = parseMenu2('mCHARS', level + 1);
+					children = parseMenu('mCHARS', level + 1);
 				}
 				const locate = span.attr('locate');
 				span.text(inst.getLocalText(locate));
@@ -545,15 +625,22 @@ export class KatexInputHelper implements IKatexInputHelper {
 				};
 				const itemId = $(this).attr('id');
 				if (itemId) {
-					line.id = itemId + '_side'
+					line.id = itemId + '_side';
 				}
 				console.log(`Found menu data : %O`, line);
 				return line;
 			});
 			return data.get();
 		}
-		
-		const data = parseMenu2('mobile-menu');
+
+		const data = parseMenu('main-menu');
+		return data;
+	}
+	
+	/**
+	 * Populates a side menu in a wrapper menu panel for reduced space.
+	 */
+	populateSidemenu(data: any) {
 		$('#sm').sidemenu({
 			data: data,
 			floatMenuPosition: 'left',
@@ -713,46 +800,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 		
 		// The whole menu commands.
 		// TRY different way: use options
-		$("#mFILE, #mINSERT, #mTOOLS, #mVIEW, #mOPTIONS, #mINFORMATIONS, #mobile-menu").menu({
+		$("#mFILE, #mINSERT, #mTOOLS, #mVIEW, #mOPTIONS, #mINFORMATIONS, #main-menu").menu({
 			onClick: vme.onMenuClick.bind(vme)
-			/*
-			async function(item: any) {
-				console.log(`ITEM : %O`, this);
-				switch (item.target.id) {
-					case "mEDITOR_PARAMETERS": await vme.openWindow('wEDITOR_PARAMETERS'); break; 
-					case "mSTYLE_CHOISE": await vme.openWindow('wSTYLE_CHOISE'); break; 
-					case "mLANGUAGE_CHOISE": await vme.openWindow('wLANGUAGE_CHOISE'); break; 
-					case "mMATRIX": vme.showMatrixWindow(3, 3);  break; 
-					case "mCOMMUTATIVE_DIAGRAM": await vme.initialiseUImoreDialogs("f_COMMUTATIVE_DIAGRAM"); break; 
-					case "mCHEMICAL_FORMULAE": await vme.initialiseUImoreDialogs("f_CHEMICAL_FORMULAE"); break; 
-					case "mSAVE_EQUATION": vme.saveEquationFile(); break; 
-					case "mOPEN_EQUATION": vme.testOpenFile(); break; 
-					case "mLaTeX_TEXT": vme.insert("\\LaTeX"); break; 
-					case "mUNICODES_LIST": await vme.panels.showWindowDI(unicodeWindowId, 'wUNICODES_LIST', vme.initialiseSymbolContent.bind(vme)); break; 
-					case "mLATEX_CODES_LIST": vme.documentations.showKatexFunctions(); break; 
-					case "mLANG_RESSOURCE_LIST": await vme.openWindow('wLANGUAGE_LIST'); await vme.initialiseLangRessourcesList(); break; 
-					case "mLATEX_DOCUMENTATION": vme.documentations.showLatexDocumentation(); break;
-					case "mMHCHEM_DOCUMENTATION": vme.documentations.showMhchemDocumentation(); break;
-					case "mAMSCD_DOCUMENTATION": vme.documentations.showAmscdDocumentation(); break;
-					case "mMATH_ML_SPECIFICATIONS": vme.documentations.showMathmlSpecifications(); break;
-					case "mCOPYRIGHT": await vme.openInformationTab(0); break; 
-					case "mVERSION": await vme.openInformationTab(1); break; 
-					case "mBUGS": await vme.openInformationTab(2); break; 
-					case "mEQUATION_SAMPLE": await vme.openInformationTab(3); break; 
-					case "f_GREEK_CHAR": await vme.initialiseUImoreDialogs("f_L_U_GREEK_CHAR"); break; 
-					case "f_ALL_CHAR": await vme.initialiseUImoreDialogs("f_ALL_CHAR"); break; 
-					case "f_FR_CHAR": 
-					case "f_BBB_CHAR": await vme.initialiseUImoreDialogs(item.target.id); break; 
-					case "mEQUATION": await vme.initialiseUImoreDialogs("f_EQUATION"); break; 
-					case "mCUSTOM_EQUATIONS": await vme.panels.showWindowDI(dynamicPanelId, 'wf_CUSTOM_EQUATIONS_MORE', vme.math); break;
-					case "mHORIZONTAL_SPACING": await vme.initialiseUImoreDialogs("f_HORIZONTAL_SPACING"); break; 
-					case "mVERTICAL_SPACING": await vme.initialiseUImoreDialogs("f_VERTICAL_SPACING"); break; 
-					case "mSPECIAL_CHARACTER": await vme.initialiseUImoreDialogs("f_SPECIAL_CHARACTER"); break; 
-					case "mKEYBOARD": if (!vme.runNotVirtualKeyboard) { vme.VKI_show(document.getElementById("tKEYBOARD")); $("#keyboardInputMaster").draggable({ handle: '#keyboardTitle' }); } break; 
-					default: $.messager.show({ title: "<span class='rtl-title-withicon'>" + vme.getLocalText("INFORMATION") + "</span>", msg: item.text }); break;
-				}
-			}
-			*/
 		});
 		
 		if (!window.opener) { 

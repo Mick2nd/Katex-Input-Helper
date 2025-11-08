@@ -44,7 +44,7 @@
 		                <div class="m-title">Katex Input Helper</div>
 		                <div class="m-right">
 		                	<!-- 
-		                    <a href="javascript:void(0)" class="easyui-menubutton" data-options="iconCls:'icon-more',menu:'#mobile-menu',menuAlign:'right',hasDownArrow:false"></a>
+		                    <a href="javascript:void(0)" class="easyui-menubutton" data-options="iconCls:'icon-more',menu:'#main-menu',menuAlign:'right',hasDownArrow:false"></a>
 		                     -->
 		                    <a id="goMenu" href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-more'"></a>
 		                    <a id="goEast" href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true">>></a>
@@ -212,7 +212,7 @@
 		</div>
 
 		<!-- The Menu -->
-	    <div id="mobile-menu" class="easyui-menu" style="width:280px;">
+	    <div id="main-menu" class="easyui-menu" style="width:280px;">
 			<div iconcls="icon-file">
 				<span locate="FILE"></span>
 				<div id="mFILE" class="menus">
@@ -276,7 +276,7 @@
 					</div>
 					<div class="menu-sep"></div>
 					<div id="mLaTeX_TEXT">
-						<span class="rtl-menu-item">$\LaTeX$</span>
+						<span class="rtl-menu-item">LaTeX</span>
 					</div>
 				</div>
 			</div> 
@@ -402,11 +402,15 @@
 			<form id="formEDITOR_PARAMETERS" action="#" method="post">
 				<fieldset>
 					<legend><span locate='PERSISTENCE'></span></legend>
-					<input type="checkbox" name="persistWindowPositions" id="persistWindowPositions" /> 
-					<label for="persistWindowPositions"><span locate='PERSIST_WINDOW_POSITIONS'></span></label>
+					<div>
+						<input type="checkbox" name="persistWindowPositions" id="persistWindowPositions" /> 
+						<label for="persistWindowPositions"><span locate='PERSIST_WINDOW_POSITIONS'></span></label>
+					</div>
 					<br />
-					<input type="checkbox" name="persistEquations" id="persistEquations" /> 
-					<label for="persistEquations"><span locate="PERSIST_EQUATIONS"></span></label>
+					<div>
+						<input type="checkbox" name="persistEquations" id="persistEquations" /> 
+						<label for="persistEquations"><span locate="PERSIST_EQUATIONS"></span></label>
+					</div>
 				</fieldset>
 				<hr />
 				<fieldset>

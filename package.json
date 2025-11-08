@@ -3,7 +3,7 @@
   "version": "3.0.0",
   "scripts": {
     "dist": "webpack --env joplin-plugin-config=buildMain && webpack --env joplin-plugin-config=buildExtraScripts && npm run build-assets-prod && webpack --env joplin-plugin-config=createArchive",
-	"dist-old": "webpack --env joplin-plugin-config=buildMain && webpack --env joplin-plugin-config=buildExtraScripts && npm run build-assets-prod && npm run build-docs && webpack --env joplin-plugin-config=createArchive",
+    "dist-with-doc": "webpack --env joplin-plugin-config=buildMain && webpack --env joplin-plugin-config=buildExtraScripts && npm run build-assets-prod && npm run build-docs && webpack --env joplin-plugin-config=createArchive",
     "prepare": "npm run dist",
     "updateVersion": "webpack --env joplin-plugin-config=updateVersion",
     "update": "npm install -g generator-joplin && yo joplin --node-package-manager npm --update --force",
@@ -37,6 +37,7 @@
     "buffer": "^6.0.3",
     "chalk": "^4.1.0",
     "codemirror": "^5.65.19",
+    "compression-webpack-plugin": "^11.1.0",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^7.1.2",
     "css-minimizer-webpack-plugin": "^7.0.2",

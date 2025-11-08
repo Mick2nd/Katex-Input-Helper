@@ -8,7 +8,6 @@
 @import '../jquery-easyui/themes/default/easyui.css';
 @import '../jquery-easyui-MathEditorExtend/themes/icon.css';
 @import '../jquery-easyui-MathEditorExtend/themes/aguas/easyui.css';
-//@import './jquery-easyui/themes/mobile.css';
 @import '../keyboard/keyboard.css';
 @import '../codemirror/lib/codemirror.css';
 @import '../codemirror/theme/darcula.css';
@@ -239,6 +238,11 @@ body.katex-mobile {
 	 */
 	#myContainer {
 		width: $innerWidth;
+		//height: 87% !important;			// experience for a small screen, improve!
+	}
+	
+	div:has(> #myContainer) {
+		height: 100vh !important;
 	}
 	
 	/* Mixin for all the dialogs */	
@@ -251,5 +255,30 @@ body.katex-mobile {
 		span {
 			font-size: $fontSize !important;
 		}
+	}
+	
+	/* Side menu */
+	.panel-title span, span.rtl-menu-item {
+		font-size: $fontSize !important;
+	}
+	
+	/* Supress scrollbars */
+	#sm div {
+		overflow-y: hidden !important;
+	}
+	
+	/* Improves accessibility */
+	#btLANGUAGE_CHOISE, #btSTYLE_CHOISE, #btEDITOR_PARAMETERS, #btMATRIX {
+		display: flex;
+		justify-content: left;
+	}
+
+	.easyui-linkbutton span {
+		font-size: $fontSize !important;
+	}
+	
+	/* TEST */
+	input, label {
+		display: inline-block;
 	}
 }

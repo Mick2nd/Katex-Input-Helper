@@ -36,7 +36,7 @@ export class BootLoader implements IBootLoader {
 	 * Constructor.
 	 */
 	constructor(
-		@inject(katexInputHelperFactoryId) factory
+		@inject(katexInputHelperFactoryId) factory: any
 	) {
 		this.factory = factory;
 	}
@@ -107,9 +107,11 @@ export class BootLoader implements IBootLoader {
 		try {
 			this.vme = this.factory();
 			globalThis.vme = this.vme;							// prevents garbage collection?
+			const prefetched = await this.vme.prefetch();		// prefetch can load another page
+			if (prefetched) {
+				await this.readyAsync();						// in this case must wait for ready.
+			}
 			await this.vme.initialise();
-			$('#myContainer').layout({fit: true});				// TODO: move to initialise, can be better controlled
-			$('#innerLayout').layout({fit: true});
 		} finally {
 			console.info('App initialization finished');
 		}
@@ -124,6 +126,7 @@ export class BootLoader implements IBootLoader {
 		
 		this.katex = await import('katex/dist/katex');			// This version of import is essential for mhchem
 		await import('katex/dist/contrib/mhchem');
+		
 		let counter = 20;
 		while (!this.presenceCheck(counter) && --counter >= 0) {
 			await this.setTimeoutAsync(100);
@@ -131,7 +134,7 @@ export class BootLoader implements IBootLoader {
 		console.info(`jquery loaded : ${typeof $} `);
 		
 		await this.readyAsync();
-		console.debug('Promise check : document ready.');
+		console.debug(`Promise check : document ready: ${document.URL}.`);
 		
 		await this.initApp();
 		console.debug('Promise check : app started.');
@@ -178,21 +181,6 @@ export class BootLoader implements IBootLoader {
 				console.warn(`Type check failed : ${type} : ${readableName}`);
 			}
 			return equal;
-		}
-		
-		/**
-		 * Checks if katex can execute chemical formula.
-		 * Deactivated, because not reliable.
-		 */
-		function mhchemCheck() {
-			try {
-				lastChecked = "Mhchem";
-				this.katex.renderToString(String.raw`\ce{SO4^2- + Ba^2+ -> BaSO4 v} `, { throwOnError: true });
-				return true;
-			} catch(e) {
-				console.warn(`Presence check failed : Mhchem`);
-				return false;
-			}
 		}
 		
 		let allLoaded = (

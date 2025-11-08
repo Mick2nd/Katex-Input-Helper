@@ -4,19 +4,56 @@
 @use "functions";
 
 /* Mixins */
+/* Fit Content mixin */
+@mixin fit-content($horizontalMargin: 0, $verticalMargin: 0) {
+	$maxWidth: calc(100vw - $horizontalMargin);
+	$maxHeight: calc(100vh - $verticalMargin);
+	
+	height: calc-size(fit-content, min(size, $maxHeight)) !important;
+	width: calc-size(fit-content, min(size, $maxWidth)) !important;
+}
+
+/* Fit Container mixin */
+@mixin fit-container($horizontalMargin: 0, $verticalMargin: 0) {
+	$maxWidth: calc(100vw - $horizontalMargin);
+	$maxHeight: calc(100vh - $verticalMargin);
+	
+	height: $maxHeight !important;
+	width: $maxWidth !important;
+}
+
+/* Align Header mixin */
+@mixin align-header() {
+	display: grid;
+	grid-template-rows: repeat(2, 1fr);
+
+	.panel-header {
+		width: auto !important;
+		display: flex;
+		justify-content: flex-start;
+		&:not(:has(.panel-tool-expand)) {
+			padding: 0 0 0 10px;
+		}
+		&:has(.panel-tool-expand) {
+			padding: 0 50px 0 10px;
+		}
+	}
+}
+
+/* More Dialogs mixin */
 @mixin moreDialogsMixin ($isMobile: false) {
 	$scale: functions.scale($isMobile);
 	$fontSize: functions.fontSize($isMobile);
 	$basePadding: math.div($fontSize, 5);
-	$maxHeight: calc(100vh - 2 * variables.$baseMargin - variables.$heightPanelHeaderFooter - 25px);	// empirical
+	
+	$horizontalMargin: 2 * variables.$baseMargin;
+	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter + 50px;
 	
 	& {
 		padding: $basePadding;
-		height: calc-size(fit-content, min(size, $maxHeight)) !important;
-		width: fit-content !important;
+		@include fit-content($horizontalMargin, $verticalMargin);
 
 		font-size: $fontSize !important;
-
 		overflow-y: auto !important;
 	}
 	
@@ -24,20 +61,7 @@
 	// Attention: selector is treated as list of lists
 	$p: list.nth(list.nth(&, 1), -1);
 	@at-root .panel:has(#{functions.passThrough($p)}) {
-		display: grid;
-		grid-template-rows: repeat(2, 1fr);
-
-		.panel-header {
-			width: auto !important;
-			display: flex;
-			justify-content: flex-start;
-			&:not(:has(.panel-tool-expand)) {
-				padding: 0 0 0 10px;
-			}
-			&:has(.panel-tool-expand) {
-				padding: 0 50px 0 10px;
-			}
-		}
+		@include align-header();
 	} 
 }
 
@@ -45,10 +69,12 @@
 @mixin unicodeMixin ($isMobile: false) {
 	$scale: functions.scale($isMobile);
 	$fontSize: functions.fontSize($isMobile);
-	$widthCombo: $scale * 345px;
+	$widthCombo: 66%;
+
+	$horizontalMargin: 2 * variables.$baseMargin;
+	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter + 50px;
 	
-	height: 500px * $scale !important;
-	width: 700px * $scale !important;
+	@include fit-content($horizontalMargin, $verticalMargin);
 	font-size: $fontSize;
 
 	& #cUNICODES_GROUP {
@@ -58,23 +84,31 @@
 		margin-left: 4px;
 		form .combo, form input {
 			font-size: $fontSize;
-			width: $widthCombo !important;
+			width: 100% !important;
 		}
 	}
-	& #cUNICODES_LIST {
-		float: left; 
-		width: calc(95% - 170px * $scale); 
-		height: calc(100% - 60px); 
+	%block {
+		width: fit-content; 
+		height: calc(100% - 60px);	// ?
 		overflow: auto;
+		display: inline-block;
+		vertical-align: top;
+	}
+	
+	& #cUNICODES_LIST {
+		@extend %block;
+		margin-right: 10px;
 	}
 	& #cUNICODES_VALUES {
-		float: right; 
-		width: 200px * $scale; 
-		height: calc(100% - 60px); 
-		overflow: auto;
+		@extend %block;
+		margin-right: 5px;
 		td, th {
 			padding: 3px;
 		}
+	}
+	
+	.panel:has(> #wUNICODES_LIST) {
+		@include align-header();
 	}
 }
 
@@ -82,8 +116,15 @@
 @mixin editorParametersMixin ($isMobile: false) {
 	$scale: functions.scale($isMobile);
 
-	width: 420px * $scale !important; 
-	height: 300px * $scale !important; 
+	$horizontalMargin: 2 * variables.$baseMargin;
+	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter + 100px;
+
+	@if $isMobile {
+		@include fit-container($horizontalMargin, $verticalMargin);
+	} @else {
+		width: 550px * $scale !important; 
+		height: 320px * $scale !important;
+	}
 	font-size: 1rem * $scale;
 
 	#formEDITOR_PARAMETERS {
@@ -130,14 +171,27 @@
 		$width: 700px;
 	}	
 	$height: 200px * $scale;
+
+	$horizontalMargin: 2 * variables.$baseMargin;
+	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter + 100px;
 		
-	width: functions.passThrough($width) !important; 
-	height: $height !important;
+	@if $isMobile {
+		@include fit-container($horizontalMargin, $verticalMargin);
+	} @else {
+		width: functions.passThrough($width) !important; 
+		height: $height !important;
+	}
 	font-size: 1rem * $scale;
 	
 	fieldset {
 		margin-top: 10px;
 		margin-left: 15px;
+	}
+	
+	input[type='radio'] {
+		margin: {
+			right: 10px;
+		}	
 	}
 	
 	img {
@@ -152,21 +206,31 @@
 /* Leave font as is, because there is no interactivity */
 @mixin languageListMixin($isMobile: false) {
 	$scale: functions.scale($isMobile);
-
-	height: fit-content !important; 
-	width: calc(90vw - 90px) !important;
+	$horizontalMargin: 2 * variables.$baseMargin;
+	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter;
+	
+	@if $isMobile {
+		@include fit-container($horizontalMargin, $verticalMargin);
+	} @else {
+		height: fit-content !important; 
+		width: calc(90vw - 90px) !important;
+	}
 	
 	#wLANGUAGE_LIST {
-		height: 450px * $scale !important; 
-		width: calc(90vw - 100px) !important;
-		padding: 10px;
+		@if $isMobile {
+			@include fit-container($horizontalMargin, $verticalMargin + 50px);
+		} @else {
+			height: 450px * $scale !important; 
+			width: calc(90vw - 100px) !important;
+		}
 
 		/* Extracted from code */
 		table {
 			border-spacing: 0px !important;
 			border-collapse: collapse !important;
-			margin: 20px !important;
-			width: calc(100% - 40px) !important;		
+			margin: 10px !important;
+			width: fit-content !important;
+			overflow: auto !important;		
 		}
 	}	
 }
@@ -174,18 +238,41 @@
 /* Informations window */
 @mixin informationsMixin($isMobile: false) {
 	$scale: functions.scale($isMobile);
+	$horizontalMargin: 2 * variables.$baseMargin;
+	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter;
 	
-	height: fit-content !important; 
-	width: 610px * $scale !important;
-	padding: 5px;
+	@if $isMobile {
+		@include fit-container($horizontalMargin, $verticalMargin);
+	} @else {
+		height: fit-content !important; 
+		width: 610px * $scale !important;
+	}
 
 	#wINFORMATIONS {
-		height: 450px * $scale !important; 
-		width: 600px * $scale !important;
+		@if $isMobile {
+			@include fit-container($horizontalMargin, $verticalMargin + 50px);
+		} @else {
+			height: 450px * $scale !important; 
+			width: 600px * $scale !important;
+		}
+		
+		padding: 5px;
 		font-size: 1rem * $scale;
 
 		>div >div {
 			padding: 10px;
+		}
+		
+		#tCOPYRIGHT hr, #tVERSION hr {
+			margin: 10px 0px;
+		}
+		
+		#tVERSION em {
+			padding: {
+				top: 5px;
+				bottom: 3px;
+			}
+			font-weight: bold;
 		}
 
 		#tableBUGS {
@@ -239,11 +326,11 @@
 /* Matrix Mixin */
 @mixin matrixMixin($isMobile: false) {
 	$fontSize: functions.fontSize($isMobile);
-	$size: fit-content;
+	$horizontalMargin: 2 * variables.$baseMargin;
+	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter + 50px;
 	
 	& {
-		width: $size !important;
-		height: $size !important;
+		@include fit-content($horizontalMargin, $verticalMargin);
 	}
 	form {
 		width: auto !important;

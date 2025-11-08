@@ -1,10 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 	<head>
 		<!--
-			Common document for mobile and desktop.
-			Themes cannot be longer supported by including them in head and disabling / enabling them. 
-		 -->
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<title>Katex Input Helper</title>
 		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
@@ -13,7 +10,10 @@
 		<meta name="email" content="juergen@habelt-jena.de" />
 		<meta name="copyright" content="Jürgen Habelt" />
 		<link rel="copyright" href="information/tCOPYRIGHT.html" />
+
+		Themes cannot be longer supported by including them in head and disabling / enabling them. 
 		<base />
+		 -->
 	    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 	</head>
 	<body id="bodyPage" class="katex-desktop">
@@ -251,12 +251,6 @@
 		 -->
 		</div>
 		
-		
-		<!-- Dialogs and Windows
-			 This content is common to all screen sizes. 
-		-->
-		
-		<!-- The Editor Parameters dialog -->
 		<div id="wEDITOR_PARAMETERS" class="easyui-dialog" iconcls="icon-option" data-options="closed:true,modal:true,buttons:'#btEDITOR_PARAMETERS',resizable:true"
 			title="<span locate='EDITOR_PARAMETERS' class='rtl-title-withicon'></span>">
 			<form id="formEDITOR_PARAMETERS" action="#" method="post">
@@ -299,7 +293,6 @@
 			</div>
 		</div>
 		
-		<!-- The Language Choice dialog -->
 		<div class="easyui-dialog" iconcls="icon-language" data-options="closed:true,modal:true,buttons:'#btLANGUAGE_CHOISE',resizable:true"
 			id="wLANGUAGE_CHOISE" title="<span locate='LANGUAGE_CHOISE' class='rtl-title-withicon'></span>" >
 			<form id="formLANGUAGE_CHOISE" action="#" method="post"></form>
@@ -310,7 +303,6 @@
 			</div>
 		</div>
 		
-		<!-- The Style Choice dialog -->
 		<div class="easyui-dialog" iconcls="icon-style" data-options="closed:true,modal:true,buttons:'#btSTYLE_CHOISE',resizable:true"
 			id="wSTYLE_CHOISE" title="<span locate='STYLE_CHOISE' class='rtl-title-withicon'></span>" >
 			<form id="formSTYLE_CHOISE" action="#" method="post">
@@ -337,7 +329,6 @@
 			</div>
 		</div>
 		
-		<!-- The Matrix dialog -->
 		<div id="wMATRIX" class="easyui-dialog" iconcls="icon-matrix" data-options="cls:'mat',closed:true,modal:true,buttons:'#btMATRIX',resizable:true"
 			title="<span locate='MATRIX' class='rtl-title-withicon'></span>" >
 			<form id="formMATRIX" name="formMATRIX" action="#" method="post">
@@ -394,7 +385,6 @@
 			</div>
 		</div>
 
-		<!-- The More dialogs -->
 		<div id="wf_COMMUTATIVE_DIAGRAM_MORE" class="easyui-dialog content-tailored" iconcls="icon-diagram" 
 			data-options="closed:true,modal:false,shadow:false,resizable:true,collapsible:true"
 			title="<span id='wf_COMMUTATIVE_DIAGRAM_MORE_TITLE' locate='COMMUTATIVE_DIAGRAM' class='rtl-title-withicon'></span>" >
@@ -445,22 +435,6 @@
 			title="<span id='wf_EQUATION_MORE_TITLE' locate='EQUATION' class='rtl-title-withicon'></span>" >
 		</div>
 		
-		<div id="wf_HORIZONTAL_SPACING_MORE" class="easyui-dialog content-tailored" iconcls="icon-hspace" 
-			data-options="closed:true,modal:false,shadow:false,resizable:true,collapsible:true"
-			title="&nbsp;" >
-		</div>
-		
-		<div id="wf_VERTICAL_SPACING_MORE" class="easyui-dialog content-tailored" iconcls="icon-vspace" 
-			data-options="closed:true,modal:false,shadow:false,resizable:true,collapsible:true"
-			title="&nbsp;" >
-		</div>
-		
-		<div id="wf_SPECIAL_CHARACTER_MORE" class="easyui-dialog content-tailored" iconcls="icon-special_char" 
-			data-options="closed:true,modal:false,shadow:false,resizable:true,collapsible:true"
-			title="&nbsp;">
-		</div>
-		
-		<!-- The Custom Equations dialog -->
 		<div id="wf_CUSTOM_EQUATIONS_MORE" class="easyui-dialog" iconcls="icon-equation" 
 			data-options="closed:true,modal:false,shadow:false,resizable:true,collapsible:true,buttons:'#btCUSTOM_EQUATIONS_BUTTONS'"
 			title="<span id='wf_CUSTOM_EQUATIONS_MORE_TITLE' class='custom-equations' locate='CUSTOM_EQUATIONS' class='rtl-title-withicon'></span>"
@@ -532,8 +506,34 @@
 			<a id="fSAVE_CUSTOM_EQUATIONS" href="#" ></a>
 		</div>
 		
-		<!-- The Windows -->
-		<!-- The Unicodes List -->		
+		<div id="wf_HORIZONTAL_SPACING_MORE" class="easyui-dialog content-tailored" iconcls="icon-hspace" 
+			data-options="closed:true,modal:false,shadow:false,resizable:true,collapsible:true"
+			title="&nbsp;" >
+		</div>
+		
+		<div id="wf_VERTICAL_SPACING_MORE" class="easyui-dialog content-tailored" iconcls="icon-vspace" 
+			data-options="closed:true,modal:false,shadow:false,resizable:true,collapsible:true"
+			title="&nbsp;" >
+		</div>
+		
+		<div id="wf_SPECIAL_CHARACTER_MORE" class="easyui-dialog content-tailored" iconcls="icon-special_char" 
+			data-options="closed:true,modal:false,shadow:false,resizable:true,collapsible:true"
+			title="&nbsp;">
+		</div>
+		
+		<div id="wLATEX_CODES_LIST" class="easyui-window" iconcls="icon-symbols" 
+			data-options="closed:true,modal:false,collapsible:false,minimizable:false,maximizable:false,closable:true"
+			title="<span locate='LATEX_CODES_LIST' class='rtl-title-withicon'></span>" >
+			<div id="cLATEX_CODES_LIST"></div>
+		</div>
+		
+		<div id="wASCIIMATH_CODES_LIST" class="easyui-window" iconcls="icon-symbols" 
+			data-options="closed:true,modal:false,collapsible:false,minimizable:false,maximizable:false,closable:true"
+			title="<span locate='ASCIIMATH_CODES_LIST' class='rtl-title-withicon'></span>" >
+			<div id="cASCIIMATH_CODES_LIST"></div>
+			``
+		</div>
+		
 		<div id="wUNICODES_LIST" class="easyui-window" iconcls="icon-codes"
 			data-options="resizable:true,closed:true,modal:false,collapsible:false,minimizable:false,maximizable:false,closable:true"
 			title="<span locate='UNICODES_LIST' class='rtl-title-withicon'></span>" >
@@ -546,14 +546,12 @@
 			<div id="cUNICODES_VALUES" ></div>
 		</div>
 		
-		<!-- The Language Resources -->
 		<div id="wLANGUAGE_LIST" class="easyui-window" iconcls="icon-langressource" 
 			data-options="cls:'language-list',resizable:true,closed:true,modal:false,collapsible:false,minimizable:false,maximizable:false,closable:true"
 			title="<span locate='LANGUAGE_LIST' class='rtl-title-withicon'></span>" >
 			<div id="tLANGUAGE_LIST" class="easyui-tabs" border="false" fit="true" plain="false"></div>
 		</div>
 		
-		<!-- The Informations window -->
 		<div id="wINFORMATIONS" class="easyui-window" iconcls="icon-info" 
 			data-options="cls:'informations',resizable:true,closed:true,modal:false,collapsible:false,minimizable:false,maximizable:false,closable:true"
 			title="<span locate='INFORMATIONS' class='rtl-title-withicon'></span>" >
