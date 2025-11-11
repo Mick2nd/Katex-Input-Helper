@@ -126,7 +126,7 @@
 		height: 320px * $scale !important;
 	}
 	font-size: 1rem * $scale;
-
+	
 	#formEDITOR_PARAMETERS {
 		fieldset, input, a {
 			margin-top: 10px !important;
@@ -142,6 +142,14 @@
 		}
 		a {
 			background-color: lightgray;
+		}
+		
+		// TEST
+		fieldset > div {
+			display: grid;
+			grid-template-columns: (50px * $scale) auto;
+			gap: 15px;
+			align-items: center;
 		}
 	}
 }
@@ -170,7 +178,7 @@
 	@if $isMobile {
 		$width: 700px;
 	}	
-	$height: 200px * $scale;
+	$height: 300px * $scale;
 
 	$horizontalMargin: 2 * variables.$baseMargin;
 	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter + 100px;
@@ -186,12 +194,13 @@
 	fieldset {
 		margin-top: 10px;
 		margin-left: 15px;
-	}
-	
-	input[type='radio'] {
-		margin: {
-			right: 10px;
-		}	
+		// TEST
+		div {
+			display: grid;
+			grid-template-columns: (16px * $scale) (16px * $scale) auto;
+			gap: 50% 10px;
+			align-items: center;
+		}
 	}
 	
 	img {

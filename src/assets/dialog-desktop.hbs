@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		{{> head }}
+	</head>
+	<body id="bodyPage" class="katex-desktop">
+		<div id="myContainer" class="easyui-layout">
+			
+			{{> waitform }}
+			 
+			<div id="northRegion" data-options="region:'north',split:false" >
+				<div id="introduction">
+					<h3>Katex Input Helper</h3>
+					<hr/>
+				</div>
+
+				{{> menu-desktop }}
+			</div>
+
+			<div class="southRegion" data-options="region:'south',split:false" >
+				<div class="divInformation">&nbsp;</div>
+				<div>
+					<span locate="AUTHOR"></span>
+				</div>
+			</div>
+
+			<div id="westRegion" data-options="region:'west',title:'<span locate=FORMULA class=rtl-title-withicon></span>&nbsp;',split:false" >
+				{{> accordion-west }}
+			</div>
+
+			<div id="divEquationInputOutput" data-options="region:'center',title:'<span locate=EDITION></span>&nbsp;'" >
+				<input value="" class="keyboardInput" id="tKEYBOARD" />
+
+				<div id="innerLayout" data-options="fit:true" class="easyui-layout">
+					<div id="divMathTextInput" data-options="region:'center',split:false,noheader:true">
+					</div>
+					<div id="mathVisualOutput" dir="ltr" data-options="region:'south',split:true,noheader:true" ></div>
+				</div>
+			</div>
+
+			<div data-options="region:'east',title:'<span locate=FORMULA class=rtl-title-withicon></span>&nbsp;',split:false" id="eastRegion">
+				{{> accordion-east }}
+			</div>
+
+		<!-- END OF EASYUI-LAYOUT
+		 -->
+		</div>
+		
+		{{> windows }}
+		
+	</body>
+</html>

@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import fs from 'fs-extra';
 import webpack from 'webpack';
 import TerserPlugin from 'terser-webpack-plugin';
@@ -8,6 +8,8 @@ import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import CompressionPlugin from 'compression-webpack-plugin';
 import * as sass from 'sass';
+import Handlebars from 'handlebars';
+import generate from 'generate-file-webpack-plugin';
 
 const rootDir = path.resolve(path.dirname('.'));
 const srcDir = path.resolve(rootDir, 'src');
@@ -77,9 +79,23 @@ const rulesConfig = (env) => [
 		],
 		sideEffects: true
 	},
+	// TEST: handlebars as preprocessor
+	{
+		test: /dialog.*\.hbs$/i,
+		exclude: /(node_modules)|(html)/,
+		use: [
+			{
+			loader: 'html-loader',
+			options: {
+				preprocessor: preProcess({ mobile: false })
+			}
+		}]
+	},
+	/* WE USE COPY PLUGIN ... this generates additional JS file: start_html.js
+	 */
 	{
 		test: /\.html$/i,
-		exclude: /node_modules/,
+		exclude: [/node_modules/],
 		use: [{
 			loader: 'raw-loader',
 		}]
@@ -133,28 +149,24 @@ const pluginsConfig = (env) => {
 		}),
 		new CopyPlugin({
 			patterns: [
-				{ from: 'src/assets/dialog-desktop.html', to: 'dialog-desktop.html' },
-				{ from: 'src/assets/dialog-mobile.html', to: 'dialog-mobile.html' },
 				{ from: 'src/assets/start.html', to: 'start.html' },
-				{ from: 'src/assets/dialog.html', to: 'dialog.html' },
 				{ from: 'src/assets/favicon.ico', to: 'favicon.ico' },
 			],
-		}),
-		new HtmlWebpackPlugin({
-			title: 'My Webpack App',
-			template: './src/assets/dialog-desktop.html',
-			filename: './index-desktop.html',
-		}),
-		new HtmlWebpackPlugin({
-			title: 'My Webpack App',
-			template: './src/assets/dialog-mobile.html',
-			filename: './index-mobile.html',
 		}),
 		new HtmlWebpackPlugin({
 			title: 'My Webpack App',
 			template: './src/assets/start.html',
 			filename: './index.html',
 		}),
+		/* RESERVED for future use.
+		generate({
+		    file: path.resolve(rootDir, 'dist', 'assets', 'dialog_generated_desktop.html'),
+		    content: () => {
+		        return preProcessFile('src/assets/dialog.hbs', { mobile: false });
+		    },
+			debug: true
+		})
+		*/
 	];
 	
 	if (ZIP) return base.concat([
@@ -258,9 +270,10 @@ export default (env) => {
 			extensions: [".ts", ".tsx", ".js"]
 		},
 		plugins: pluginsConfig(env),
-		entry: [
-			'./src/assets/js/container.ts',
-		],
+		entry: {
+			main: './src/assets/js/container.ts',
+			//test: './src/assets/dialog-test.hbs'
+		},
 		output: {
 			clean: true,
 			filename: '[name].js',
@@ -310,6 +323,48 @@ export default (env) => {
 		  loggingDebug: ["sass-loader"],
 		},
 	};
+}
+
+/**
+ * Preprocesses a handlebars file as required by html-loader.
+ */
+function preProcess(context = { }) {
+	function registerPartial(name) {
+		const dir = path.resolve(srcDir, 'assets', 'views');
+		const file = path.resolve(dir, `${name}.partial`);
+		const text = fs.readFileSync(file).toString();
+		Handlebars.registerPartial(name.replace('+', ''), text);
+	}
+
+	return async function(content, loaderContext) {
+		let result;
+		try {
+			console.log(`About to compile handlebars content`);
+			const names = [ 
+				'windows', 'head', 'accordion-west', 'accordion-east', 'menu-desktop', 'menu-mobile', 'wait+form' 
+			];
+			for (const name of names) {
+				registerPartial(name);
+			}
+			result = Handlebars.compile(content)(context);
+		} catch(error) {
+			await loaderContext.emitError(error);
+			return content;
+		}
+		return result;
+	}
+}
+
+function preProcessFile(file, context) {
+	let text;
+	try {
+		text = fs.readFileSync(path.resolve(path.dirname('.'), file)).toString();
+		text = Handlebars.compile(text)(context);
+	} catch(error) {
+		console.error(`Handlerbars file could not be compiled : ${error}`);
+		return text;
+	}
+	return text;
 }
 
 /**

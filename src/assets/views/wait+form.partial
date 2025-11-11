@@ -1,0 +1,18 @@
+<!-- Move this to the Start page
+	 NOT NEEDED IN MAIN DOCUMENT.
+<div id="WaitMsg" class="easyui-window" title="Katex Input Helper" 
+	data-options="modal:true,maximizable:false,minimizable:false,collapsible:false,closable:false,maximized:true">
+	Editor is downloading... <br />
+	<br />Thank you for your patience. <br />
+	<br />If the editor is not loaded properly in up to five seconds, you
+	can try to reload by closing and re-opening the dialog. This will
+	probably happen after a new installation of the plug-in.
+</div>
+-->
+
+<div id="form">
+	<form id="KATEX" name="KATEX" method="post">
+		<input id="hidden" name="hidden" type="hidden" value="" />
+	</form>
+	<div id="formula" class="hidden"></div>
+</div>

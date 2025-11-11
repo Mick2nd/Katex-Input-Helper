@@ -5,7 +5,7 @@ import { IBootLoader, bootLoaderId, katexInputHelperId, IKatexInputHelper, katex
 	IUtilities, utilitiesId, parametersId, IThemes, themesId, IParser, parserId, IMath, mathId, 
 	IPanels, panelsId, dynamicPanelId, informationWindowId, moreDialogId, windowId, dialogId, matrixWindowId, 
 	dynamicParametersId, panelFactoryId, unicodeWindowId, categoriesTreeId, ICategoriesTree, asyncId,
-	codeMirrorId, codeMirrorFactoryId, ICodeMirror } from './interfaces';
+	codeMirrorId, codeMirrorFactoryId, ICodeMirror, menusId, IMenus } from './interfaces';
 
 import { BootLoader } from './bootLoader';
 import { KatexInputHelper } from './dialog';
@@ -18,6 +18,7 @@ import { MathFormulae } from './math';
 import { KIHPanels, KIHPanel, DynamicPanel, MatrixWindow, InformationWindow, KIHMoreDialog, KIHWindow, KIHDialog, UnicodeWindow } from './panels';
 import { CategoriesTree } from './categoriesTree';
 import { codeMirrorProxy } from './codeMirrorProxy';
+import { Menus } from './menus';
 
 const container = new Container();
 
@@ -32,6 +33,7 @@ container.bind<IThemes>(themesId).to(Themes).inSingletonScope();
 container.bind<IParser>(parserId).to(ParserExtension).inSingletonScope();
 container.bind<IMath>(mathId).to(MathFormulae).inSingletonScope();
 container.bind<IPanels>(panelsId).to(KIHPanels).inSingletonScope();
+container.bind<IMenus>(menusId).to(Menus).inSingletonScope();
 container
 	.bind<Factory<IKatexInputHelper>>(katexInputHelperFactoryId)
 	.toFactory((context: ResolutionContext) : () => IKatexInputHelper => {

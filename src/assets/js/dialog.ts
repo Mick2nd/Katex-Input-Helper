@@ -14,10 +14,12 @@ import {
 	IThemes, themesId, 
 	IParser, parserId, 
 	IMath, mathId, ICodeMirror,
-	IPanels, panelsId, matrixWindowId, unicodeWindowId, informationWindowId, moreDialogId, windowId, dialogId, dynamicPanelId } from './interfaces';
+	IPanels, panelsId, matrixWindowId, unicodeWindowId, informationWindowId, moreDialogId, windowId, dialogId, dynamicPanelId, 
+    IMenus,
+    menusId} from './interfaces';
 
 let console: any; 
-if (globalThis.console) console = globalThis.console; else console = { log: function(msg: string) { }, error: function(msg: string) { } }; 
+if (globalThis.console) console = globalThis.console; else console = { log: function(_: string) { }, error: function(_: string) { } }; 
 console.log(KIH_VERSION);
 
 /**
@@ -148,7 +150,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 	// The Color Picker is a fixed instance and can be used to work with colors
 	runNotColorPicker = true;
 	runNotVirtualKeyboard = false;
-	runNotMathJax = true;
 
 	url: any = null;
 	rtlStyle = 'ltr';
@@ -160,6 +161,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	utilities: IUtilities = null;
 	messager: IMessager = null;
 	panels: IPanels = null;
+	menus: IMenus = null;
 	baseLocation = "";
 	parser: IParser = null;
 	VKI_show: any = null;
@@ -177,6 +179,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		@inject(parserId) parser : IParser,
 		@inject(mathId) math : IMath,
 		@inject(panelsId) panels : IPanels,
+		@inject(menusId) menus : IMenus,
 	) {
 		globalThis.vme = this;
 	
@@ -190,24 +193,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 		// Probably not needed
 		console.info(`Url: ${globalThis.location}`);
 		
-		/* OBSOLETE
-		let vme = this;
-		this.url = {
-			param: function(name: string) {
-				let params = {
-					runLocal: true,
-					codeType: "Latex",
-				};
-				try {
-					return vme.parameters[name];				
-				} catch(e) {
-					console.warn(`Url Access could not resolve name: ${name}`);
-					return params[name];
-				}
-			}
-		};
-		*/
-		
 		this.parameters = parameters;
 		this.localizer = localizer;
 		this.messager = messager;
@@ -216,6 +201,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		this.parser = parser;
 		this.math = math;
 		this.panels = panels;
+		this.menus = menus;
 		this.documentations = new Documentations(false, this.baseLocation);
 		
 		for (let i = 65; i <= 90; i++) if ($.inArray(i, this.allowedCtrlKeys) == -1) this.notAllowedCtrlKeys.push(i); 
@@ -302,40 +288,48 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 */
 	async prefetch() : Promise<boolean> {
 		
+		/**
+		 * Transfers HTML from a second document to the original start document.
+		 * Transfers the whole innerHTML and the attributes replacing the old ones.
+		 * RESERVED.
+		 * 
+		 * @param from - body element of the new document
+		 * @param to - body selector of the old, original document
+		 */
 		function transfer(from: HTMLElement, to: string) {
 			$(to).html(from.innerHTML);
 			for (const attrib of from.attributes) {
 				$(to).attr(attrib.name, attrib.value);
 			}
 		}
-		
-		await this.parameters.queryParameters();							// from Plugin
-		if (this.parameters.mode == 'web' &&
-			!document.URL.includes('index.html')) {
-			return false;
+		/**
+		 * Transfers HTML from a second document to the original start document.
+		 * Appends the whole innerHTML replacing the old one. This is the preferred
+		 * method, because it enables a better experience of the SPLASH screen.
+		 * The SPLASH screen is loaded in the starter document and hidden if 
+		 * initialization is over.
+		 * 
+		 * @param from - body element of the new document
+		 * @param to - body selector of the old, original document
+		 */
+		function append(from: HTMLElement, to: string) {
+			$(to).append($(from.innerHTML));
 		}
 		
-		const index = this.parameters.isMobile ? 'dialog-mobile' : 'dialog';
-		const htmlString = (await import(`../${index}.html`)).default;
+		await this.parameters.queryParameters();				// from Plugin or web query parameters
+		const app = this.parameters.isMobile ? 'mobile' : 'desktop';
+		const htmlString = (await import(`../dialog-${app}.hbs`)).default;
 		
 		// Experiments manipulating HTML
 		const root = document.createElement('html');
 		root.innerHTML = htmlString;
 		console.log(`Parsed HTML : %O`, root);					// this is a full html DOM node with head and body
 		const body = (root.lastChild as HTMLElement);
-		transfer(body, 'body');
-
-		//const menu = "menu";
-		//const menuHtml = (await import(`../${menu}.html`)).default;
-		//$('#main-menu').html(menuHtml);
-		//await this.parser.parseAsync('#main-menu');			// NO MENU LOSS
+		append(body, 'body');
 		
-		if (this.parameters.isMobile) {
-		}
-		
-		await this.math.injectCodeMirror();
-		this.codeMirrorEditor = this.math.codeMirror;		// lazy injection
-		console.debug(`Promise check : document ready: ${document.URL}.`);
+		this.math.injectCodeMirror();
+		this.codeMirrorEditor = this.math.codeMirror;			// lazy injection
+		console.debug(`Document check : ${document.URL}.`);
 		
 		return true;
 	}
@@ -401,24 +395,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 		} };
 
 		/**
-		 * Loads Easyui for the desktop variant. OBSOLETE.
-		 */
-		async function loadEasyuiDesktop() {
-			await import('./easyui');
-			await import('./sass/dialog.scss', opts);
-		}
-		
-		/**
-		 * Loads Easyui for the mobile variant. OBSOLETE.
-		 */
-		async function loadEasyuiMobile() {
-			await loadEasyuiDesktop();
-
-			await import('./jquery-easyui/themes/mobile.css', opts);
-			await import('./jquery-easyui/jquery.easyui.mobile');
-		}
-		
-		/**
 		 * Defines the proportions of 2 regions of a layout.
 		 * 
 		 * @param selector - the selector of the layout.
@@ -453,17 +429,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 			const heightCenterVh = Math.floor(heightCenter * 100 / heightBody);
 			
 			return `${heightCenterVh}vh`;
-		}
-		
-		let inst = this;
-		async function postLoadMenu() {
-
-			const menu = "menu";
-			const menuHtml = (await import(`../${menu}.html`)).default;
-			console.log(`Menu1 : ${menuHtml}`);
-			$('#main-menu').html(menuHtml);
-			console.log(`Menu2 : ${$('#main-menu').html()}`);
-			await inst.parser.parseAsync('#main-menu');			// NO MENU LOSS
 		}
 		
 		// Intent: to restore original web page structure (required by Joplin plugin).
@@ -517,11 +482,11 @@ export class KatexInputHelper implements IKatexInputHelper {
 				event.preventDefault(); 
 				$.mobile.go('#wrapperPanelMenu', 'slide', 'left');
 			});
-			$("header:has(+ #wrapperPanel) a.m-back").on('click', function(event) { 
+			$("header:has(+ #wrapperPanel) a.m-back").on('click', function(_) { 
 				inst.panels.closeOpen(); 
 				inst.codeMirrorEditor.activateEditor(); // workaround to re-activate the editor
 			});
-			$("header:has(+ #westRegion) a.m-back, header:has(+ #eastRegion) a.m-back, header:has(+ #wrapperPanelMenu) a.m-back").on('click', function(event) { 
+			$("header:has(+ #westRegion) a.m-back, header:has(+ #eastRegion) a.m-back, header:has(+ #wrapperPanelMenu) a.m-back").on('click', function(_) { 
 				inst.codeMirrorEditor.activateEditor(); // workaround to re-activate the editor
 			});
 			
@@ -658,7 +623,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	endWait() { 
 		this.initialiseEquation(); 
 		$.messager.progress('close'); 
-		$("#WaitMsg").panel('close');
+		$("#WaitMsgPre,#WaitMsg").panel('close');
 		this.setFocus(); 
 	}
 	
@@ -702,7 +667,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		let vme = this; 
 		const codeMirrorEditor = this.codeMirrorEditor;
 		// Reserved.
-		const option = vme.platformInfo.isMobile ? 'contenteditable' : 'textarea';
+		const option = vme.platformInfo.isMobile ? 'contenteditable' : 'textarea';	// RESERVED
 		try { codeMirrorEditor.setOption('inputStyle', 'textarea'); } catch(e) {}
 		codeMirrorEditor.on("change", function() { vme.autoUpdateOutput(); }); 
 		
@@ -805,10 +770,10 @@ export class KatexInputHelper implements IKatexInputHelper {
 		});
 		
 		if (!window.opener) { 
-			$("#mQUIT_EDITOR").addClass("menu-item-disabled").on('click', function(event) { }); 
+			$("#mQUIT_EDITOR").addClass("menu-item-disabled").on('click', function(_) { }); 
 		}
 		if (typeof (FileReader) == "undefined") { 
-			$("#mOPEN_EQUATION").addClass("menu-item-disabled").on('click', function(event) { vme.testOpenFile(); }); 
+			$("#mOPEN_EQUATION").addClass("menu-item-disabled").on('click', function(_) { vme.testOpenFile(); }); 
 		}
 		$("#fOPEN_EQUATION").on('change', function(event) { vme.openFile(event); }); 
 		
@@ -843,10 +808,10 @@ export class KatexInputHelper implements IKatexInputHelper {
 			vme.messager.show('RESTART', 'RESTART_REQUIRED');
 		}); 
 		$("#mathVisualOutput").on('contextmenu', (event) => vme.onContextMenu('#mVIEW', event)); 
-		$("[information]").on('mouseover', function(event) { 
+		$("[information]").on('mouseover', function(_event) { 
 			$(".divInformation").html(vme.getLocalText($(this).attr("information"))); 
 		}); 
-		$("[information]").on('mouseout', function(event) { 
+		$("[information]").on('mouseout', function(_event) { 
 			$(".divInformation").html("&nbsp;"); 
 		}); 
 
@@ -858,7 +823,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		
 		// TEST: MAIL
 		$('body')
-		.on('mouseover', 'a.bt', function(event) {
+		.on('mouseover', 'a.bt', function(_event) {
 			let href = $(this).attr('href');
 			if (!$(this).hasClass('easyui-tooltip')) {
 				$(this)
@@ -1026,7 +991,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		onChange('#persistWindowPositions', this.persistWindowPositions);
 		onChange('#persistEquations', this.persistEquations);
 		
-		$("#autoUpdateTime").on('change', function(event) { 
+		$("#autoUpdateTime").on('change', function(_event) { 
 			vme.autoUpdateTime = $("#autoUpdateTime").val(); 
 		});
 		$("#menuupdateType").on('change', function(event) {
@@ -1074,7 +1039,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * - setting the RTL style
 	 * - localize all entries of the UI (using *span[locate]*)
 	 */
-	async onLocaleChanged(localizer: ILocalizer) {
+	async onLocaleChanged(_localizer: ILocalizer) {
 		this.localType = this.localizer.currentLocale;
 		console.log(`Entry into onLocaleChanged, localType is: ${this.localType}`);
 		let vme = this; 
@@ -1201,7 +1166,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	/**
 	 * The style chosen is set up for the UI.
 	 */
-	onStyleChanged(style: string, rtlStyle: string, colorType: string) {
+	onStyleChanged(style: string, _rtlStyle: string, colorType: string) {
 		this.style = style;																// necessary to persist and delegate
 		try {
 			let colorImg = "black", codemirrorCSS = "default", colorpickerCSS = "gray"; 
@@ -1217,7 +1182,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 				$("#colorpickerCSSgray").prop('disabled', colorpickerCSS != "gray");
 			}
 			let posColor: number; 
-			$(".symbol_btn").each(function(index) { 
+			$(".symbol_btn").each(function(_index) { 
 				if (this.className.includes("icon-matrix")) { 
 					posColor = this.className.lastIndexOf("_"); 
 					if (posColor) this.className = this.className.substring(0, posColor + 1) + colorImg; 
@@ -1259,7 +1224,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	initialiseUIaccordion(accordionID: string) {
 		let vme = this; 
 		$(accordionID).accordion({
-			onSelect: async function(title: string) {
+			onSelect: async function(_title: string) {
 
 				let fPanel = $(accordionID).accordion("getSelected"); 
 				if (fPanel) { 
@@ -1359,7 +1324,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		// containing more formulae.
 		$(`#${fPanelID} a.more`)
 		.addClass("easyui-tooltip")
-		.attr("title", function(index: number, attr: any) { return "Loading more formulae"; });
+		.attr("title", function(_index: number, _attr: any) { return "Loading more formulae"; });
 
 		await vme.parser.parseAsync("#" + fPanelID); 
 		await this.math.updateTables();
@@ -1376,7 +1341,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	async updateInfo() {
 		let vme = this;
 		$('#tINFORMATIONS div[href]')
-		.each(function( idx: number ) {
+		.each(function( _idx: number ) {
 			let href = $(this).attr('href');
 			let id = $(this).attr('id');
 			if (href.length <= 1) {													// info html !
@@ -1452,7 +1417,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 		const heading = $('h3').text();
 		const build = `build ${String(this.versions.build).padStart(4, '0')}`;
 		const mobile = `${this.platformInfo.isMobile ? 'mobile' : 'desktop'}`;
-		const osFamily = this.platformInfo.osFamily;
 		if (!PRODUCTION) {
 			$('h3').text(`${heading} : ${build} on ${mobile}`);
 		}

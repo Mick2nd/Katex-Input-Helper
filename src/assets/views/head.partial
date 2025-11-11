@@ -1,0 +1,15 @@
+
+		<!--
+			Common document for mobile and desktop.
+			Themes cannot be longer supported by including them in head and disabling / enabling them. 
+		 -->
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>Katex Input Helper</title>
+		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+		<link rel="icon" href="favicon.ico" type="image/x-icon" />
+		<meta name="Author" content="Jürgen Habelt" />
+		<meta name="email" content="juergen@habelt-jena.de" />
+		<meta name="copyright" content="Jürgen Habelt" />
+		<link rel="copyright" href="information/tCOPYRIGHT.html" />
+		<base />
+	    <meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />

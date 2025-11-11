@@ -108,6 +108,10 @@ export interface ICategoriesTree {
 	getCheckedEquations() : number[];
 }
 
+export interface IMenus {
+	getTabletMenu(data: any) : string;
+}
+
 export const asyncId = Symbol.for('AsyncId');
 export const bootLoaderId = Symbol.for('BootLoaderId');
 export const platformInfoId = Symbol.for('PlatFormInfoId');
@@ -123,6 +127,7 @@ export const mathId = Symbol.for('MathId');
 export const codeMirrorId = Symbol.for('CodeMirrorId');
 export const codeMirrorFactoryId = Symbol.for('CodeMirrorFactoryId');
 export const panelsId = Symbol.for('PanelsId');
+export const menusId = Symbol.for('MenusId');
 
 export const dynamicPanelId = Symbol.for('DynamicPanelId');
 export const informationWindowId = Symbol.for('InformationWindowId');

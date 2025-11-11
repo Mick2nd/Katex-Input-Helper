@@ -135,10 +135,10 @@ export class Localizer implements ILocalizer {
 			let ico = await import(`./i18n/icons/${flag}.png`);
 			
 			html += 
-				`\n\t` + 
+				`\n\t<div>` + 
 				`<input type='radio' name='localType' id='${lang}_localType' value='${lang}' />` + 
-				`<img src='./icons/${flag}.png' alt='${langCode}' /> &nbsp; ` + 
-				`<label for='${lang}_localType' dir='${langDir}'>${langage}</label> - ${langAuthor} <br />`;
+				`<img src='./icons/${flag}.png' alt='${langCode}' />` + 
+				`<label for='${lang}_localType' dir='${langDir}'>${langage} - ${langAuthor}</label> </div>`;
 		}
 		html += "\n</fieldset>";
 		return html; 
