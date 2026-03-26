@@ -15,6 +15,7 @@ export class Localizer implements ILocalizer {
 	locales = ['ar', 'de_DE', 'en_US', 'es_ES', 'fr_FR', 'ru', 'vi_VN'];
 	currentLocale = 'en_US';
 	observable = null;
+	resolvers: any[] = [];
 	
 	/**
 	 * Constructor. The script location is queried as needed to locate the language files.
@@ -28,6 +29,13 @@ export class Localizer implements ILocalizer {
 	 */
 	subscribe(func: any, ...args: any) {
 		this.observable.subscribe(func, ...args);
+	}
+	
+	/**
+	 * Notifies observers of this instance.
+	 */
+	notify() {
+		this.observable.notify(this);
 	}
 
 	/**
@@ -90,8 +98,19 @@ export class Localizer implements ILocalizer {
 			let text = this.fallback[code];
 			if (text != undefined && text != '') return text;
 		}
+		for (const resolver of this.resolvers) {
+			let text = resolver(code);
+			if (text != undefined && text != '') return text;
+		}
 		
 		return code;
+	}
+	
+	/**
+	 * Adds an additional external resolver for keys.
+	 */
+	addResolver(func: any) {
+		this.resolvers.push(func);
 	}
 	
 	/**

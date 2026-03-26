@@ -9,9 +9,7 @@ export class MathContext {
 	/**
 	 * @abstract Constructor.
 	 */
-	constructor() {
-		
-	}
+	
 	
 	/**
 	 * @abstract Determines the display mode.
@@ -21,9 +19,12 @@ export class MathContext {
 	async displayMode() : Promise<boolean | undefined> {
 		
 		try {
+			if (await this.execute('isCm6')) {
+				return await this.execute('displayMode');
+			}
+
 			const note = await this.getValue();										// the whole note text
 			const cursorIndex = await this.cursorIndex(note);						// the cursor index inside the text
-
 			const re = /(?<![\\$])((\$\$)|\$)([^{].*?)(\1)/sg;						// regex searches for math sections (block or inline)
 			for (const match of note.matchAll(re)) {								// through all matches
 				
@@ -61,12 +62,12 @@ export class MathContext {
 		
 		const cursor = await this.getCursor();
 		const line = cursor.line;
-		var ch = cursor.ch;
+		let ch = cursor.ch;
 		const last = await this.lastLine();
 		
-		for (var currentLine = line; currentLine <= last; currentLine++) {
+		for (let currentLine = line; currentLine <= last; currentLine++) {
 
-			var lineText = await this.getLine(currentLine);
+			let lineText = await this.getLine(currentLine);
 			lineText = lineText.substring(ch);
 			ch = 0;
 			if (func(lineText)) break;
@@ -136,6 +137,10 @@ export class MathContext {
 	 */
 	async getValue() : Promise<string> {
 		return await this.execute('getValue');
+	}
+	
+	async getValue6() : Promise<string> {
+		return await this.execute('cm.state.doc');
 	}
 	
 	/**

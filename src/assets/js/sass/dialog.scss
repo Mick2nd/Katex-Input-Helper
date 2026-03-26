@@ -31,6 +31,11 @@ body {
 	#WaitMsg {
 		@include mixins.waitMsgMixin(true);
 	}
+	
+	// The Progress window
+	.progress {
+		font-size: functions.fontSize(true);
+	}
 	 
 	/* Hidden elements for file open / save ... */
 	.invisible {
@@ -263,12 +268,15 @@ body.katex-mobile {
 	}
 	
 	/* Supress scrollbars */
-	#sm div {
-		overflow-y: hidden !important;
-	}
+	#sm {
+		width: 500px !important;
+		div {
+			overflow-y: hidden !important;
+		}
+	} 
 	
 	/* Improves accessibility */
-	#btLANGUAGE_CHOISE, #btSTYLE_CHOISE, #btEDITOR_PARAMETERS, #btMATRIX {
+	#btLANGUAGE_CHOISE, #btSTYLE_CHOISE, #btEDITOR_PARAMETERS, #btMATRIX, #btCUSTOM_EQUATIONS_BUTTONS {
 		display: flex;
 		justify-content: left;
 	}

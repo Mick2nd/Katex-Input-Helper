@@ -88,10 +88,11 @@ export class KIHParameters {
 				}
 				inst[key] = val;
 				/* ANALYSIS: this may be of no value as no panel is created at this time.
+				   PANELs exist in HTML !!
+				*/
 				if (key.startsWith('w')) {
 					inst.resizePanel(key);
 				}
-				*/
 			}
 			inst.transaction.end();
 		} else {
@@ -345,6 +346,7 @@ export class KIHParameters {
 			stateChanged = this[id].width != width || this[id].height != height;
 			this[id].width = width;
 			this[id].height = height;
+			console.debug(`onPanelResize id ${id} : ${JSON.stringify(this[id])}`);
 		}
 		
 		if (stateChanged || initial) {
@@ -378,8 +380,9 @@ export class KIHParameters {
 	resizePanel(id: any) {
 		if (!this.isMobile && id in this && this[id] != undefined) {
 			try {
-				const o = this[id];
+				let o = this[id];
 				if (o.left && o.top && o.width && o.height) {
+					
 					console.log(`${this.id} Panel at resizePanel: {${o.left}, ${o.top}}`);
 					$(`#${id}`).panel('resize', o);
 				}

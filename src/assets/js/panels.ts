@@ -81,6 +81,7 @@ export class KIHPanel implements IPanel {
 	 * Called if the window is opened.
 	 */
 	onOpen() {
+		$(`#${this.id}`).focus();
 		if (this.parameters.isMobile) {
 			this.toOrigin();
 		}
@@ -92,7 +93,11 @@ export class KIHPanel implements IPanel {
 	onClose() {
 		this.isOpen = false;
 		if (this.parameters.isMobile) {
-			$.mobile.back();
+			try {											// probably not required as error was caused by href="#"
+				$.mobile.back();
+			} catch(error) {
+				console.warn(`Mobile error : ${error}`);
+			}
 		}
 	}
 	
@@ -334,7 +339,12 @@ export class KIHPanel implements IPanel {
 }
 
 /**
- * The KIHDialog class.
+ * The KIHDialog class. Instances are:
+ * - Style Choice
+ * - Language Choice
+ * - Editor Parameters
+ * 
+ * and instances of derived classes.
  */
 @injectFromBase() export class KIHDialog extends KIHWindow {
 
@@ -342,6 +352,23 @@ export class KIHPanel implements IPanel {
 		@inject(dynamicParametersId) parameters: any) {
 		super(parameters);
 		this.func = $.fn.dialog;
+		
+		let closeBtnSelector = "";
+		switch(this.id) {
+			case 'wSTYLE_CHOISE': closeBtnSelector = `#btSTYLE_CHOISE_CLOSE`; break;
+			case 'wLANGUAGE_CHOISE': closeBtnSelector = `#btLANGUAGE_CHOISE_CLOSE`; break;
+			case 'wEDITOR_PARAMETERS': closeBtnSelector = `#btEDITOR_PARAMETERS_CLOSE`; break;
+		}
+		
+		let inst = this;
+		if (closeBtnSelector != "") {							// one of 3 cases of a 'pure' dialog
+			console.log(`Dialog ${this.id} : CLose Button is ${closeBtnSelector}`);
+			$(closeBtnSelector).on('click', function(event) { 
+				event.preventDefault(); 
+				$(`#${inst.id}`).dialog('close'); 
+				inst.focus(); 
+			}); 
+		}
 	}
 	
 	override async initialise(dummy: any) {
@@ -496,8 +523,8 @@ export class KIHPanel implements IPanel {
 	 */
 	async updateMatrixWindow(rows: number = undefined, cols: number = undefined) {
 		let vme = this;
-		if (typeof rows != "undefined" && rows != null) document.formMATRIX.rowsMATRIX.value = rows; 
-		if (typeof cols != "undefined" && cols != null) document.formMATRIX.colsMATRIX.value = cols; 
+		if (rows != undefined && rows != null) document.formMATRIX.rowsMATRIX.value = rows; 
+		if (cols != undefined && cols != null) document.formMATRIX.colsMATRIX.value = cols; 
 		rows = document.formMATRIX.rowsMATRIX.value; 
 		cols = document.formMATRIX.colsMATRIX.value; 
 		
@@ -517,7 +544,7 @@ export class KIHPanel implements IPanel {
 		await this.parser.parseAsync('#wMATRIX');					// after dynamically set the content
 		$('#wMATRIX').dialog('open');
 		const handlers: any = this.handlers;
-		handlers.title = vme.localizer.getLocalText("MATRIX");
+		handlers.title = vme.localizeOption("title");
 		$('#wMATRIX').dialog(handlers);
 		$('#wMATRIX').dialog('open');
 	}
@@ -563,9 +590,9 @@ export class KIHPanel implements IPanel {
 				case "{:": break;
 				case "{":
 				case "}": lbr = `\\left\\${left}`; break; 
-				case "||": lbr = "\\left\\|"; break;
-				case "(:": lbr = "\\left\\langle"; break;
-				case ":)": lbr = "\\left\\rangle"; break;
+				case "||": lbr = String.raw`\left\|`; break;
+				case "(:": lbr = String.raw`\left\langle`; break;
+				case ":)": lbr = String.raw`\left\rangle`; break;
 				default: lbr = `\\left${left}`
 			}
 			return lbr; 
@@ -580,9 +607,9 @@ export class KIHPanel implements IPanel {
 				case ":}": break;
 				case "{":
 				case "}": rbr = `\\right\\${right}`; break; 
-				case "||": rbr = "\\right\\|"; break;
-				case "(:": rbr = "\\right\\langle"; break;
-				case ":)": rbr = "\\right\\rangle"; break;
+				case "||": rbr = String.raw`\right\|`; break;
+				case "(:": rbr = String.raw`\right\langle`; break;
+				case ":)": rbr = String.raw`\right\rangle`; break;
 				default: rbr = `\\right${right}`
 			}
 			
@@ -591,9 +618,9 @@ export class KIHPanel implements IPanel {
 		
 		// build the final Matrix by adding brackets
 		let matrix = leftBracket(left);		
-		matrix += " \\begin{matrix} "; 
+		matrix += String.raw` \begin{matrix} `; 
 		matrix += matrixTable(rows, cols); 
-		matrix += " \\end{matrix} ";
+		matrix += String.raw` \end{matrix} `;
 		matrix += rightBracket(right); 
 		matrix += " "; 
 		vme.insert(matrix);
@@ -647,7 +674,7 @@ export class KIHPanel implements IPanel {
 				for (let j = i; j < i + 10; j++) { 
 					if (j > 655) break;
 					let cellDec = prependNumber(j);
-					html += `<td><a style='border:1px solid #f0f0f0;' class='s' href='#'>${cellDec}</a></td>`; 
+					html += `<td><a style='border:1px solid #f0f0f0;' class='s' href=''>${cellDec}</a></td>`; 
 				}
 				html += "</tr>";
 			}
@@ -759,7 +786,7 @@ export class KIHPanel implements IPanel {
 		.each(function() { 
 			if (typeof ($(this).attr("locate")) != "undefined") { 
 				let localText = localizer.getLocalText($(this).attr("locate")); 
-				if (typeof (localText) != "undefined") $(this).html(localText); 
+				if (localText != undefined) $(this).html(localText); 
 			} 
 		});
 		

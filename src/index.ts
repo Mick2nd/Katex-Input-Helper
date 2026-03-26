@@ -3,6 +3,7 @@ import { MenuItemLocation, ToolbarButtonLocation, ImportContext, FileSystemItem,
 import { Dialog } from './dialog';
 import { TestDialog } from './testDialog';
 import { MathContext } from './mathContext';
+import { settings } from './settings';
 
 
 const withTest = false;
@@ -63,6 +64,8 @@ joplin.plugins.register({
 		const scriptId = 'pluginCommandKatexDialog';
 		const scriptIdCm = 'pluginCmKatexDialog';
 		const scriptIdMd = 'pluginMdKatexDialog';
+		
+		await settings.register();
 	
 		await joplin.commands.register(
 			{
@@ -85,14 +88,25 @@ joplin.plugins.register({
 			scriptId,
 			ToolbarButtonLocation.EditorToolbar
 		);
+
+		await joplin.contentScripts.register(
+			ContentScriptType.CodeMirrorPlugin,
+			`${scriptIdCm}`,
+			'./plugins/codeMirror.js'
+		);
+
+		await joplin.commands.register({
+			name: 'displayMode',
+			label: 'Queries the display mode',
+			execute: async () => {
+				await joplin.commands.execute('editor.execCommand', {
+					name: 'displayMode',
+					args: [ ]
+				});
+			},
+		});
 			
 		if (withTest) {
-
-			await joplin.contentScripts.register(
-				ContentScriptType.CodeMirrorPlugin,
-				`${scriptIdCm}`,
-				'./plugins/codeMirror.js'
-			);
 
 			await joplin.contentScripts.register(
 				ContentScriptType.MarkdownItPlugin,

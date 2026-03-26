@@ -97,6 +97,13 @@ The custom equations dialog with categories tree
 
 ## Release Notes
 
+### 3.0.0
+
+- Introduced a mobile version of the plug-in (experimental)
+- One code base
+- Divided HTML code to avoid duplication, introduced Handlebars tool for support
+- Resizing of windows is more or less deactivated, Window size adapted to content.
+
 ### 2.1.1
 
 - Removed function-less code.

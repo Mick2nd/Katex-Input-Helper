@@ -9,7 +9,7 @@ import {
 	IKatexInputHelper, 
 	ILocalizer, localizerId,
 	IMessager, messagerId, 
-	IUtilities, utilitiesId, 
+	IUtilities, utilitiesId, State, 
 	parametersId, 
 	IThemes, themesId, 
 	IParser, parserId, 
@@ -166,6 +166,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 	parser: IParser = null;
 	VKI_show: any = null;
 	sidemenuData: any = { };
+	customEquationsToggler = null;
+	unicodeToggler = null;
 	
 	/**
 	 * Constructor
@@ -356,13 +358,15 @@ export class KatexInputHelper implements IKatexInputHelper {
 		vme.initialiseCodeMirror();
 		this.localizer.subscribe(this.onLocaleChanged.bind(this));
 		await this.localizer.initialiseLanguageChoice(this.localType);		// Progress dialog uses localized text
+		// NO ACTION on language choice dialog
+		// await this.parser.parseAsync('#wLANGUAGE_CHOISE');
 		
 		$.messager.progress({
 			title: "Katex Input Helper", 
 			text: vme.getLocalText("WAIT_FOR_EDITOR_DOWNLOAD"), 
 			msg:	"<center>&copy; " +
-						"<a href='mailto:juergen@habelt-jena.de?subject=Katex%20Input%20Helper' target='_blank' class='bt' >Jürgen Habelt</a> -" + 
-						"<a href='https://github.com/Mick2nd/Katex-Input-Helper' target='_blank' class='bt' >A Joplin plug-in</a><br/><br/>" +
+						"<a href='mailto:juergen@habelt-jena.de?subject=Katex%20Input%20Helper' target='_blank' class='bt progress' >Jürgen Habelt</a> -" + 
+						"<a href='https://github.com/Mick2nd/Katex-Input-Helper' target='_blank' class='bt progress' >A Joplin plug-in</a><br/><br/>" +
 					"</center>", 
 			interval: 300 
 		}); 
@@ -482,11 +486,11 @@ export class KatexInputHelper implements IKatexInputHelper {
 				event.preventDefault(); 
 				$.mobile.go('#wrapperPanelMenu', 'slide', 'left');
 			});
-			$("header:has(+ #wrapperPanel) a.m-back").on('click', function(_) { 
+			$("header:has(+ #wrapperPanel) a.back").on('click', function(_) { 
 				inst.panels.closeOpen(); 
 				inst.codeMirrorEditor.activateEditor(); // workaround to re-activate the editor
 			});
-			$("header:has(+ #westRegion) a.m-back, header:has(+ #eastRegion) a.m-back, header:has(+ #wrapperPanelMenu) a.m-back").on('click', function(_) { 
+			$("header:has(+ #westRegion) a.back, header:has(+ #eastRegion) a.back, header:has(+ #wrapperPanelMenu) a.back").on('click', function(_) { 
 				inst.codeMirrorEditor.activateEditor(); // workaround to re-activate the editor
 			});
 			
@@ -613,7 +617,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 			onSelect: this.onMenuClick.bind(this)
 		});
 		$('#sm').sidemenu('expand');
-		$('#sm').sidemenu('resize', { width: 300 });
 	}
 	
 	/**
@@ -668,7 +671,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		const codeMirrorEditor = this.codeMirrorEditor;
 		// Reserved.
 		const option = vme.platformInfo.isMobile ? 'contenteditable' : 'textarea';	// RESERVED
-		try { codeMirrorEditor.setOption('inputStyle', 'textarea'); } catch(e) {}
+		try { codeMirrorEditor.setOption('inputStyle', option); } catch(e) {}
 		codeMirrorEditor.on("change", function() { vme.autoUpdateOutput(); }); 
 		
 		if(vme.platformInfo.isMobile) {
@@ -712,8 +715,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 		};
 		
 		this.logProperties(selector);
-		// this code uses CSS to shift the context menu to the desired location (and its)
-		// shadow
+		// this code uses CSS to shift the context menu to the desired location (and its
+		// shadow)
 		try {
 			$(selector).menu('show', { left: event.pageX, top: event.pageY });
 			$(`${selector}`).css({
@@ -787,21 +790,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 		}
 		
 		// Configures Clicks on close buttons and Key handlers, Context menus and others
-		$('#btSTYLE_CHOISE_CLOSE').on('click', function(event) { 
-			event.preventDefault(); 
-			$('#wSTYLE_CHOISE').dialog('close'); 
-			vme.setFocus(); 
-		}); 
-		$('#btLANGUAGE_CHOISE_CLOSE').on('click', function(event) { 
-			event.preventDefault(); 
-			$('#wLANGUAGE_CHOISE').dialog('close'); 
-			vme.setFocus(); 
-		}); 
-		$('#btEDITOR_PARAMETERS_CLOSE').on('click', function(event) { 
-			event.preventDefault(); 
-			$('#wEDITOR_PARAMETERS').dialog('close'); 
-			vme.setFocus(); 
-		}); 
+		/* Moved to panels : Close button click handler
+		*/
+		 
 		$('#btRESET_WINDOW_POSITIONS').on('click', function(event) { 
 			event.preventDefault(); 
 			vme.parameters.resetWindowPositions();
@@ -844,6 +835,17 @@ export class KatexInputHelper implements IKatexInputHelper {
 			}
 		});
 		*/
+		
+		this.customEquationsToggler = this.utilities.regionToggler(
+			'#toggle_btn_1',
+			'#CUSTOM_EQUATIONS_LAYOUT',
+			this.platformInfo.isMobile ? State.Second : State.Both
+		);
+		this.unicodeToggler = this.utilities.containerToggler(
+			'#toggle_btn_2',
+			'#cUNICODES_LIST',
+			!this.platformInfo.isMobile								// true for desktop variant
+		);
 	
 		this.math.updateLatexMenu();
 	}
@@ -857,9 +859,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 		console.log(`Click with id ${item.target.id} of %O`, item);
 		
 		const functions = {
-			"mEDITOR_PARAMETERS": () => vme.openWindow('wEDITOR_PARAMETERS'), 
-			"mSTYLE_CHOISE": () => vme.openWindow('wSTYLE_CHOISE'),
-			"mLANGUAGE_CHOISE": () => vme.openWindow('wLANGUAGE_CHOISE'), 
+			"mEDITOR_PARAMETERS": () => vme.openDialog('wEDITOR_PARAMETERS'), 
+			"mSTYLE_CHOISE": () => vme.openDialog('wSTYLE_CHOISE'),
+			"mLANGUAGE_CHOISE": () => vme.openDialog('wLANGUAGE_CHOISE'), 
 			"mMATRIX": () => vme.showMatrixWindow(3, 3), 
 			"mCOMMUTATIVE_DIAGRAM": () => vme.initialiseUImoreDialogs("f_COMMUTATIVE_DIAGRAM"), 
 			"mCHEMICAL_FORMULAE": () => vme.initialiseUImoreDialogs("f_CHEMICAL_FORMULAE"), 

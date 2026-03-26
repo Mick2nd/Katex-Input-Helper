@@ -29,6 +29,7 @@ interface JQuery {
 	tree: any;
 	resizable: any;
 	sidemenu: any;
+	drawer: any;
 	
 	ColorPicker(p1?: any, p2?: any): any;
 	ColorPickerHide(p1?: any, p2?: any): any;

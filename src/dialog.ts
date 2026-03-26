@@ -1,6 +1,6 @@
 import joplin from 'api';
 import { DialogResult, ButtonSpec } from 'api/types';
-import { Settings } from './settings';
+import { settings, Settings } from './settings';
 
 /**
  * @abstract Sleep function using Promise contract.
@@ -39,7 +39,7 @@ export class Dialog
 	public constructor(displayMode: boolean)
 	{
 		this.displayMode = displayMode;
-		this.settings = new Settings();
+		this.settings = settings;
 	}
 	
 	/**
@@ -56,13 +56,12 @@ export class Dialog
 		}
 
 		this.installationDir = await joplin.plugins.installationDir();
-		this.isMobile = true; // (await joplin.versionInfo()).platform == 'mobile';
+		this.isMobile = (await joplin.versionInfo()).platform == 'mobile' || (await this.settings.enforceMobileMode());
 		
 		await this.loadCss(handle);
 		await this.loadJs(handle);
 
 		let inst = this;
-		await this.settings.register();
 		await joplin.views.panels.onMessage(handle, async function(msg: any) {
 			
 			console.info(`Message from Webview: ${JSON.stringify(msg)}, setting dm to ${inst.displayMode} `);

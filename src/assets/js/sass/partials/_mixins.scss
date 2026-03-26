@@ -69,10 +69,10 @@
 @mixin unicodeMixin ($isMobile: false) {
 	$scale: functions.scale($isMobile);
 	$fontSize: functions.fontSize($isMobile);
-	$widthCombo: 66%;
+	$widthCombo: 80%;
 
 	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter + 50px;
+	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter + 100px;
 	
 	@include fit-content($horizontalMargin, $verticalMargin);
 	font-size: $fontSize;
@@ -107,7 +107,7 @@
 		}
 	}
 	
-	.panel:has(> #wUNICODES_LIST) {
+	@at-root .panel:has(> #wUNICODES_LIST) {
 		@include align-header();
 	}
 }
@@ -148,9 +148,13 @@
 		fieldset > div {
 			display: grid;
 			grid-template-columns: (50px * $scale) auto;
-			gap: 15px;
+			gap: 75% 15px;
 			align-items: center;
 		}
+	}
+
+	@at-root .panel:has(> #wEDITOR_PARAMETERS) {
+		@include align-header();
 	}
 }
 
@@ -165,6 +169,10 @@
 	fieldset {
 		margin-top: 10px;
 		margin-left: 15px;
+	}
+
+	@at-root .panel:has(> #wSTYLE_CHOISE) {
+		@include align-header();
 	}
 }
 
@@ -194,13 +202,13 @@
 	fieldset {
 		margin-top: 10px;
 		margin-left: 15px;
+	}
+	fieldset > div {
 		// TEST
-		div {
-			display: grid;
-			grid-template-columns: (16px * $scale) (16px * $scale) auto;
-			gap: 50% 10px;
-			align-items: center;
-		}
+		display: grid;
+		grid-template-columns: (16px * $scale) (16px * $scale) auto;
+		gap: 100% 10px;
+		align-items: center;
 	}
 	
 	img {
@@ -209,6 +217,10 @@
 	}
 	
 	position: relative;
+
+	@at-root .panel:has(> #wLANGUAGE_CHOISE) {
+		@include align-header();
+	}
 }
 
 /* Language Resources window */
@@ -242,6 +254,10 @@
 			overflow: auto !important;		
 		}
 	}	
+
+	@at-root .panel:has(> #wLANGUAGE_LIST) {
+		@include align-header();
+	}
 }
 
 /* Informations window */
@@ -297,6 +313,10 @@
 			}
 		}
 	}	
+
+	@at-root .panel:has(> #wINFORMATIONS) {
+		@include align-header();
+	}
 }
 
 /* Custom Equations Mixin */
@@ -330,6 +350,10 @@
 	#categories li div span {
 		font-size: $fontSize;
 	}
+
+	@at-root .panel:has(> #wf_CUSTOM_EQUATIONS_MORE) {
+		@include align-header();
+	}
 }
 
 /* Matrix Mixin */
@@ -338,6 +362,7 @@
 	$horizontalMargin: 2 * variables.$baseMargin;
 	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter + 50px;
 	
+	font-size: $fontSize;
 	& {
 		@include fit-content($horizontalMargin, $verticalMargin);
 	}
@@ -356,11 +381,17 @@
 	}
 
 	// Shrinks the header to its content width
+	/* RESERVED
 	@at-root .panel:has(#wMATRIX) {
 		.panel-header {
 			width: auto !important;
 		}
-	} 	
+	}
+	*/	
+
+	@at-root .panel:has(> #wMATRIX) {
+		@include align-header();
+	}
 }
 
 /* Wait Msg Mixin */

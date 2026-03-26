@@ -9,7 +9,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import CompressionPlugin from 'compression-webpack-plugin';
 import * as sass from 'sass';
 import Handlebars from 'handlebars';
-import generate from 'generate-file-webpack-plugin';
+import generate from 'generate-file-webpack-plugin'; // RESERVED
 
 const rootDir = path.resolve(path.dirname('.'));
 const srcDir = path.resolve(rootDir, 'src');
@@ -24,7 +24,7 @@ copyVersion();
 /**
  * Extracted Split Chunks Config
  */
-const splitChunksConfig = (env) => { return {
+const splitChunksConfig = (_env) => { return {
 	chunks: 'async',
 	minSize: 20000,
 	minRemainingSize: 0,
@@ -81,13 +81,15 @@ const rulesConfig = (env) => [
 	},
 	// TEST: handlebars as preprocessor
 	{
-		test: /dialog.*\.hbs$/i,
+		test: /dialog-.*\.hbs$/i,
 		exclude: /(node_modules)|(html)/,
 		use: [
 			{
 			loader: 'html-loader',
 			options: {
-				preprocessor: preProcess({ mobile: false })
+				preprocessor: preProcess({ 
+					mobile: false
+				})
 			}
 		}]
 	},
@@ -112,7 +114,7 @@ const rulesConfig = (env) => [
 	- country flags, gifs, certain other icon
 	*/
 	{
-		test: /^.*?(\.gif|[\\\/]mini_add\.png|i18n[\\\/]icons[\\\/][a-z][a-z]\.png)$/,
+		test: /^.*?(\.gif|[\\/]mini_add\.png|i18n[\\/]icons[\\/][a-z][a-z]\.png)$/,
 		type: 'asset/resource',
 		generator: {
 			filename: 'icons/[name][ext]',
@@ -331,7 +333,7 @@ export default (env) => {
 function preProcess(context = { }) {
 	function registerPartial(name) {
 		const dir = path.resolve(srcDir, 'assets', 'views');
-		const file = path.resolve(dir, `${name}.partial`);
+		const file = path.resolve(dir, `${name}.hbs`);
 		const text = fs.readFileSync(file).toString();
 		Handlebars.registerPartial(name.replace('+', ''), text);
 	}
@@ -341,7 +343,8 @@ function preProcess(context = { }) {
 		try {
 			console.log(`About to compile handlebars content`);
 			const names = [ 
-				'windows', 'head', 'accordion-west', 'accordion-east', 'menu-desktop', 'menu-mobile', 'wait+form' 
+				'windows', 'head', 'accordion-west', 'accordion-east', 
+				'menu-desktop', 'menu-mobile', 'wait+form', 'footer', 'toggle' 
 			];
 			for (const name of names) {
 				registerPartial(name);
@@ -355,6 +358,10 @@ function preProcess(context = { }) {
 	}
 }
 
+/**
+ * Reads a file and preprocesses it with handlebars.
+ * RESERVED.
+ */
 function preProcessFile(file, context) {
 	let text;
 	try {

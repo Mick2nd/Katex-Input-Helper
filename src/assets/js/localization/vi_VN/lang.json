@@ -127,6 +127,11 @@
 	"RESET_WINDOW_POSITIONS": "Vị trí cửa sổ",
 	"RESTART": "Khởi động lại",
 	"RESTART_REQUIRED": "Để những thay đổi có hiệu lực, vui lòng khởi động lại ứng dụng",
+	"KATEX": "Katex",
+	"KATEX_NOT_RENDERED": "Biểu thức Katex không thể được hiển thị",
+	"ONE_BRACKET_MISSING": "Cả hai dấu ngoặc phải có hoặc không",
+	"SIDEMENU_PANEL": "Bảng điều khiển Sidemenu",
+	"DIALOG_PANEL": "Bảng điều khiển hộp thoại",
 	
 	"VKI_00": "bàn phím",
 	"VKI_01": "Mở bàn phím ảo",

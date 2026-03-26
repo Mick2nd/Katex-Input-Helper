@@ -90,6 +90,15 @@ export class Settings
 	async descriptions() : Promise<any>
 	{
 		var settings = {
+			'enforce_mobile_mode':
+			{
+				section: 'KatexInputHelper.settings',
+				public: true,
+				value: false,
+				type: SettingItemType.Bool,
+				label: 'Enforce Mobile Mode',
+				description: 'Used to enforce mobile mode on desktop'
+			},
 			'data_dir':												// available for Content Scripts
 			{
 				section: 'KatexInputHelper.settings',
@@ -216,6 +225,9 @@ export class Settings
 	
 	async readSettings(parameters: any, text: string) : Promise<void> {
 		parameters.equation = text;
+		
+		parameters.enforceMobileMode = await this.enforceMobileMode();
+		
 		parameters.style = await this.style();										// the style as stored in settings
 		parameters.localType = await this.localType();								// the localType
 		parameters.encloseAllFormula = await this.encloseAllFormula();
@@ -235,6 +247,9 @@ export class Settings
 	async writeSettings(parameters: any, cancel: boolean = false) : Promise<void> {
 		console.info(`writeSettings: ${JSON.stringify(parameters)}`);
 		await this.setEquation(parameters.equation);
+		
+		await this.setEnforceMobileMode(parameters.enforceMobileMode);				// CONFIGURABLE
+		
 		await this.setStyle(parameters.style);
 		await this.setLocalType(parameters.localType);
 		await this.setEncloseAllFormula(parameters.encloseAllFormula);
@@ -256,7 +271,23 @@ export class Settings
 			}			
 		}		
 	}
-	
+
+	/**
+	 * PUBLIC
+	 */
+	async enforceMobileMode() : Promise<Boolean>
+	{
+		return await joplin.settings.value('enforce_mobile_mode');
+	}
+
+	async setEnforceMobileMode(mode: Boolean) : Promise<void> {
+		await joplin.settings.setValue('enforce_mobile_mode', mode);
+	}
+
+		
+	/**
+	 * PRIVATE
+	 */
 	async style() : Promise<string> {
 		return await joplin.settings.value('style');
 	}
@@ -374,3 +405,5 @@ export class Settings
 	dialogSettingsPrefix: string;
 	dialogs: string[];
 }
+
+export const settings = new Settings();

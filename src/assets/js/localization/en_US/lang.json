@@ -122,6 +122,11 @@
 	"TTREMOVECATEGORY": "Use this menu command to <b>Remove</b> the leaf node (category) and all equations belonging to it.",
 	"TTREMOVEFOLDER": "Use this menu command to <b>Remove</b> the folder node (super category) and all equations and sub folders belonging to it.",
 	"TTCUTPASTE": "Use this menu command to <b>Cut & Paste</b> equations from one category to another. To do this, check the desired equations in the datagrid and invoke this command.",
+	"TTREGION_FIRST": "Click to switch to the View of the Categories",
+	"TTREGION_SECOND": "Click to switch to the View of the Equations",
+	"TTREGION_BOTH": "Click to switch to the View of both: the Categories and the Equations",
+	"TTCONTAINER_ACTIVATE": "Click to show the Unicode List window",
+	"TTCONTAINER_DEACTIVATE": "Click to hide the Unicode List window",
 
 	"RESET": "Reset",
 	"RESET_WINDOW_POSITIONS": "Window Positions",
@@ -130,6 +135,8 @@
 	"KATEX": "Katex",
 	"KATEX_NOT_RENDERED": "Katex expression could not be rendered",
 	"ONE_BRACKET_MISSING": "Both brackets must be present or not",
+	"SIDEMENU_PANEL": "Sidemenu Panel",
+	"DIALOG_PANEL": "Dialog Panel",
 
 	"VKI_00": "Number Pad",
 	"VKI_01": "Display virtual keyboard interface",

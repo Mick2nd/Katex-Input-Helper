@@ -11,12 +11,14 @@ export interface IKatexInputHelper {
 }
 
 export interface ILocalizer {
+	notify() : void;
 	currentLocale: string;
 	subscribe(func: any, ...args: any) : void;
 	load(langCode: string) : Promise<void>;
 	getLocalText(code: string) : string;
 	initialiseLanguageChoice(localType: string) : Promise<void>;
 	buildLocalResources() : Promise<void>;
+	addResolver(func: any) : void;
 }
 
 export interface IMessager {
@@ -24,9 +26,18 @@ export interface IMessager {
 	show(titleKey: string, msgKey: string, e?: any) : void;
 }
 
+
+export enum State {
+	First,
+	Both,
+	Second
+} 
+
 export interface IUtilities {
 	getOption(id: string, option: string) : string;
 	localizeOption(id: string, option: string) : string;
+	regionToggler(btnId: string, layout: string, state: State) : any;
+	containerToggler(btnId: string, uiId: string, startState: boolean) : any;
 }
 
 export interface IThemes {

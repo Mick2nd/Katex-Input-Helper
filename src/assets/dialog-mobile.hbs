@@ -12,7 +12,7 @@
 		        <header>
 		            <div id="introduction" class="m-toolbar">
 		                <div class="m-left">
-		                    <a id="goWest" class="easyui-linkbutton" data-options="plain:true">&lt;&lt;</a>
+		                    <a id="goWest" class="easyui-linkbutton" data-options="plain:true">&#x2770;</a>
 		                </div>
 		                <div class="m-title">Katex Input Helper</div>
 		                <div class="m-right">
@@ -20,7 +20,7 @@
 		                     -->
 		                    <a href="javascript:void(0)" class="easyui-menubutton invisible" data-options="iconCls:'',menu:'#main-menu',menuAlign:'right',hasDownArrow:false">&#9776;</a>
 		                    <a id="goMenu" href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:''">&#9776;</a>
-		                    <a id="goEast" href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true">>></a>
+		                    <a id="goEast" href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true">&#x2771;</a>
 		                </div>
 		            </div>
 		        </header>
@@ -32,14 +32,7 @@
 						<div id="mathVisualOutput" class="inner-south-mobile" dir="ltr" data-options="region:'south',split:true,noheader:true" ></div>
 					</div>
 				</div>
-		        <footer>
-					<div class="southRegion m-toolbar">
-						<div class="divInformation">&nbsp;</div>
-						<div>
-							<span locate="AUTHOR"></span>
-						</div>
-					</div>
-		        </footer>
+				{{> footer }}
 		    </div>
 		</div>
 
@@ -51,21 +44,13 @@
 		                	<span locate=FORMULA class=rtl-title-withicon></span>&nbsp;
 		                </div>
 		                <div class="m-left">
-		                    <a href="javascript:void(0)" class="easyui-linkbutton m-back" data-options="plain:true,outline:true,back:true"> </a>
+		                    <a href="javascript:void(0)" class="easyui-linkbutton back" data-options="plain:true,outline:true,back:true">&#x2770;</a>
 		                </div>
 		            </div>
 		        </header>
 		        
-		        {{> accordion-west }}
-		        
-		        <footer>
-					<div class="southRegion" class="m-toolbar">
-						<div class="divInformation">&nbsp;</div>
-						<div>
-							<span locate="AUTHOR"></span>
-						</div>
-					</div>
-		        </footer>
+		        {{> accordion-west }}		        
+				{{> footer }}
 			</div>
 		</div>
 
@@ -77,21 +62,13 @@
 		                	<span locate=FORMULA class=rtl-title-withicon></span>&nbsp;
 		                </div>
 		                <div class="m-right">
-		                    <a href="javascript:void(0)" class="easyui-linkbutton m-back" data-options="plain:true,outline:true,back:true"></a>
+		                    <a href="javascript:void(0)" class="easyui-linkbutton back" data-options="plain:true,outline:true,back:true">&#x2770;</a>
 		                </div>
 		            </div>
 		        </header>
 				
 				{{> accordion-east }}
-				
-		        <footer>
-					<div class="southRegion" class="m-toolbar">
-						<div class="divInformation">&nbsp;</div>
-						<div>
-							<span locate="AUTHOR"></span>
-						</div>
-					</div>
-		        </footer>
+				{{> footer }}
 			</div>
 		</div>
 
@@ -103,20 +80,13 @@
 		                	<span locate=DIALOG_PANEL class=rtl-title-withicon></span>&nbsp;
 		                </div>
 		                <div class="m-right">
-		                    <a href="javascript:void(0)" class="easyui-linkbutton m-back" data-options="plain:true,outline:true,back:false"></a>
+		                    <a href="javascript:void(0)" class="easyui-linkbutton back" data-options="plain:true,outline:true,back:false">&#x2770;</a>
 		                </div>
 		            </div>
 		        </header>
 		        <div id="wrapperBody">
 		        </div>
-		        <footer>
-					<div class="southRegion" class="m-toolbar">
-						<div class="divInformation">&nbsp;</div>
-						<div>
-							<span locate="AUTHOR"></span>
-						</div>
-					</div>
-		        </footer>
+				{{> footer }}
 			</div>
 		</div>
 
@@ -128,21 +98,14 @@
 		                	<span locate=SIDEMENU_PANEL class=rtl-title-withicon></span>&nbsp;
 		                </div>
 		                <div class="m-right">
-		                    <a href="javascript:void(0)" class="easyui-linkbutton m-back" data-options="plain:true,outline:true,back:true"></a>
+		                    <a href="javascript:void(0)" class="easyui-linkbutton back" data-options="plain:true,outline:true,back:true">&#x2770;</a>
 		                </div>
 		            </div>
 		        </header>
 		        <div id="wrapperBodyMenu">
 					<div id="sm" class="easyui-sidemenu" data-options="data:[{text:'TEST',state:'open'}]"></div>
 		        </div>
-		        <footer>
-					<div class="southRegion" class="m-toolbar">
-						<div class="divInformation">&nbsp;</div>
-						<div>
-							<span locate="AUTHOR"></span>
-						</div>
-					</div>
-		        </footer>
+				{{> footer }}
 			</div>
 		</div>
 

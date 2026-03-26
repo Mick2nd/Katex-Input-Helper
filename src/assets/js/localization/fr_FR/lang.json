@@ -127,6 +127,11 @@
 	"RESET_WINDOW_POSITIONS": "Positions des fenêtres",
 	"RESTART": "Redémarrage",
 	"RESTART_REQUIRED": "Pour que les modifications prennent effet, veuillez redémarrer l'application",
+	"KATEX": "Katex",
+	"KATEX_NOT_RENDERED": "L'expression Katex n'a pas pu être affichée.",
+	"ONE_BRACKET_MISSING": "Les deux parenthèses doivent être présentes ou non",
+	"SIDEMENU_PANEL": "Panneau de menu latéral",
+	"DIALOG_PANEL": "Panneau de dialogue",
 	
 	"VKI_00": "Pavé numérique",
 	"VKI_01": "Ouvrir le clavier virtuel",
