@@ -24,12 +24,19 @@
 		                </div>
 		            </div>
 		        </header>
-				<div id="divEquationInputOutput" class="easyui-panel" data-options="title:'<span locate=EDITION></span>&nbsp;',fit:true,bodyCls:'mainAreaBody'">
+				<div id="divEquationInputOutput" class="easyui-panel" data-options="fit:true,bodyCls:'mainAreaBody'">
 					<input value="" class="keyboardInput" id="tKEYBOARD" />
 	
 					<div id="innerLayout" data-options="fit:true" class="easyui-layout">
+						<!--
 						<div id="divMathTextInput" class="center" data-options="region:'center',split:false,noheader:true"></div>
 						<div id="mathVisualOutput" class="inner-south-mobile" dir="ltr" data-options="region:'south',split:true,noheader:true" ></div>
+						-->
+						<!--
+							TEST: exchange the order of INPUT and OUTPUT area, attach title to INPUT area.
+						-->
+						<div id="mathVisualOutput" class="inner-south-mobile" dir="ltr" data-options="region:'center',split:false,noheader:true" ></div>
+						<div id="divMathTextInput" class="center" data-options="title:'<span locate=EDITION></span>&nbsp;',region:'south',split:true,noheader:false"></div>
 					</div>
 				</div>
 				{{> footer }}

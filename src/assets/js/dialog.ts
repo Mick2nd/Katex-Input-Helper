@@ -137,6 +137,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	versions = null;
 	codeType = 'Latex'; 
 	codeMirrorEditor: ICodeMirror = null;
+	cmSelector = ".cm-editor";
 	platformInfo = null;
 	symbolPanelsLoaded = []; 			// accordion only
 	latexMathjaxCodesListLoaded = false; 
@@ -488,10 +489,16 @@ export class KatexInputHelper implements IKatexInputHelper {
 			});
 			$("header:has(+ #wrapperPanel) a.back").on('click', function(_) { 
 				inst.panels.closeOpen(); 
-				inst.codeMirrorEditor.activateEditor(); // workaround to re-activate the editor
 			});
 			$("header:has(+ #westRegion) a.back, header:has(+ #eastRegion) a.back, header:has(+ #wrapperPanelMenu) a.back").on('click', function(_) { 
-				inst.codeMirrorEditor.activateEditor(); // workaround to re-activate the editor
+			});
+			
+			// TEST ... WORKING
+			$('#myContainer').panel({
+				fit: true,
+				onOpen: function() {
+					inst.codeMirrorEditor.focus();
+				}
 			});
 			
 			// I'm struggling with getting the correct initial display, but nothing works. 
@@ -639,13 +646,10 @@ export class KatexInputHelper implements IKatexInputHelper {
 	
 	/**
 	 * Sets Cursor at editor end.
+	 * TODO: Probably erroneous .. getValue queries the whole content
 	 */
 	setCodeMirrorCursorAtEnd() { 
-		let pos = { 
-			line: this.codeMirrorEditor.lastLine(), 
-			ch: this.codeMirrorEditor.getValue().length 
-		}; 
-		this.codeMirrorEditor.setCursor(pos); 
+		this.codeMirrorEditor.setCursor(-1); 
 	}
 
 	/**
@@ -675,12 +679,14 @@ export class KatexInputHelper implements IKatexInputHelper {
 		codeMirrorEditor.on("change", function() { vme.autoUpdateOutput(); }); 
 		
 		if(vme.platformInfo.isMobile) {
-			$('.CodeMirror').css('font-size', '1.3em');
+			$(vme.cmSelector).css('font-size', '1.3em');
+			// NO ACTION on Android
+			// $('.cm-content').attr('inputmethod', 'none');
 		} else {
 			/*	The context menu appears but throws on click or mouse move afterwards:
 			 *	NO OWNER => special handling.
 			 */
-			$(".CodeMirror").on('contextmenu', (event) => vme.onContextMenu('#mINSERT', event)); 
+			$(vme.cmSelector).on('contextmenu', (event) => vme.onContextMenu('#mINSERT', event)); 
 		}
 	}
 
@@ -1108,7 +1114,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	*/
 	
 	/**
-	 * Plays a role in Html, possibly for formulae with insertion point.
+	 * For insertion of formulae with insertion point..
 	 */
 	tag(b: any, a: any) {
 		b = b || null; 

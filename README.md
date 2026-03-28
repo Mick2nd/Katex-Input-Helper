@@ -76,6 +76,12 @@ This software is available on the net [here](https://visualmatheditor.equatheque
 5. A **custom equations** dialog which can be used to maintain one's own formula library and with the possibility to Add, Remove, Load, Save the formula set. This set is persisted through invocations of Joplin as hidden setting.
 6. Window positions and sizes are persisted
 
+## Special Features of the Mobile Version
+
+1. The user interface is somewhat different, but functionality is the same
+1. The Latex input area and the Formula output area are reversed for a better experience with mobile screen keyboards
+1. Navigation panels are used and dialogs, the side panels and the menus are moved out from the main screen to such panels
+
 ## Some Screenshots
 
 The main dialog window
@@ -84,11 +90,15 @@ The main dialog window
 
 The custom equations dialog
 
-<img src="img/Custom-Equations.png" width="500" />
+<img src="img/Custom-Equations.png" width="400" />
 
 The custom equations dialog with categories tree
 
-<img src="img/Custom-Equations-with-Categories.png" width="700" />
+<img src="img/Custom-Equations-with-Categories.png" width="600" />
+
+The symbol bar with button for the Katex Input Helper (Calculator symbol)
+
+![Symbol Bar](./img/Symbol-Bar.png)
 
 ## Known Problems
 
@@ -103,6 +113,7 @@ The custom equations dialog with categories tree
 - One code base
 - Divided HTML code to avoid duplication, introduced Handlebars tool for support
 - Resizing of windows is more or less deactivated, Window size adapted to content.
+- Migrated this release to Code Mirror 6
 
 ### 2.1.1
 

@@ -83,8 +83,6 @@ export interface ICodeMirror {
 	on(evt: string, handler: any) : void;
 	replaceRange(replacement: string, from: any, to: any, origin?: string) : void;
 	
-	activateEditor() : void;
-	removeCharBeforeCursor() : void;
 	version?: string;
 }
 

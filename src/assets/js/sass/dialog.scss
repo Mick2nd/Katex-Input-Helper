@@ -3,16 +3,12 @@
 @use 'partials/functions';
 @use 'partials/mixins';
 
-@import '../katex/katex.min.css';
+@import 'katex/dist/katex.min.css';
 @import '../jquery-easyui/themes/icon.css';
 @import '../jquery-easyui/themes/default/easyui.css';
 @import '../jquery-easyui-MathEditorExtend/themes/icon.css';
 @import '../jquery-easyui-MathEditorExtend/themes/aguas/easyui.css';
 @import '../keyboard/keyboard.css';
-@import '../codemirror/lib/codemirror.css';
-@import '../codemirror/theme/darcula.css';
-@import '../codemirror/theme/twilight.css';
-@import '../codemirror/theme/zenburn.css';
 
 
 /* Section for common styles

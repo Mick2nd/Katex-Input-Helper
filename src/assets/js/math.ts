@@ -45,7 +45,7 @@ export class MathFormulae implements IMath {
 	 * Used for postponed injection.
 	 */
 	async injectCodeMirror() {
-		this.codeMirror = this.codeMirrorFactory();
+		this.codeMirror = this.codeMirrorFactory(this.parameters.isMobile);
 		this.mathVisualOutput = $('#mathVisualOutput')[0];
 		this.katex = await import('katex/dist/katex');	// This version of import is essential for mhchem
 		await import('katex/dist/contrib/mhchem');

@@ -3,7 +3,7 @@
  *	it is possible to load EASYUI asynchronously.
  *	jquery node_module working with ProvidePlugin.
  */
-const CodeMirror = (await import('codemirror')).default;
+import { EditorView } from "@codemirror/view";
 
 import { Observable } from './patterns/observable';
 import { Localizer } from './localization';
@@ -189,7 +189,7 @@ export class BootLoader implements IBootLoader {
 			checkOther(typeof this.katex, 'object', 'Katex') &&
 			checkOther(typeof this.katex.renderToString, 'function', 'Katex') &&
 			
-			checkTypeByName(CodeMirror, 'CodeMirror', 'CodeMirror') &&
+			checkTypeByName(EditorView, 'EditorView', 'CodeMirror') &&
 			
 			checkTypeByName(Observable, 'Observable') &&
 			checkTypeByName(Localizer, 'Localizer') &&

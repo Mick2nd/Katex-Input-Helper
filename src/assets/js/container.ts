@@ -17,7 +17,7 @@ import { ParserExtension } from './parserExtension';
 import { MathFormulae } from './math';
 import { KIHPanels, KIHPanel, DynamicPanel, MatrixWindow, InformationWindow, KIHMoreDialog, KIHWindow, KIHDialog, UnicodeWindow } from './panels';
 import { CategoriesTree } from './categoriesTree';
-import { codeMirrorProxy } from './codeMirrorProxy';
+import { CodeMirrorProxy } from './codeMirrorProxy';
 import { Menus } from './menus';
 
 const container = new Container();
@@ -39,14 +39,18 @@ container
 	.toFactory((context: ResolutionContext) : () => IKatexInputHelper => {
 		return () => context.get(katexInputHelperId);
 	});
+/*
+// Probably no longer required
 container
 	.bind<ICodeMirror>(codeMirrorId)
-	.toDynamicValue(codeMirrorProxy)
+	.to(CodeMirrorProxy)
 	.inSingletonScope();
+*/
 container
 	.bind<Factory<ICodeMirror>>(codeMirrorFactoryId)
-	.toFactory((context: ResolutionContext) : () => ICodeMirror => {
-		return () => context.get(codeMirrorId);
+	.toFactory((_context: ResolutionContext) : (isMobile: boolean) => ICodeMirror => {
+		return (isMobile: boolean) => new CodeMirrorProxy(isMobile);
+		//return () => context.get(codeMirrorId);
 	});
 	
 container.bind<KIHPanel>(dynamicPanelId).to(DynamicPanel);

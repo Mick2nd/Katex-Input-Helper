@@ -99,6 +99,7 @@ export class KIHPanel implements IPanel {
 				console.warn(`Mobile error : ${error}`);
 			}
 		}
+		this.math.setFocus();								// code mirror focus got lost
 	}
 	
 	/**
