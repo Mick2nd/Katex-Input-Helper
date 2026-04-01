@@ -28,6 +28,10 @@
 		{
 			"src": "img/Custom-Equations-with-Categories.png",
 			"label": "Custom Equations Dialog with Categories Tree"
+		},
+		{
+			"src": "img/Symbol-Bar.png",
+			"label": "Symbol bar with toolbar button icon"
 		}
 	],
 	"icons": {
