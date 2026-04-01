@@ -169,6 +169,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	sidemenuData: any = { };
 	customEquationsToggler = null;
 	unicodeToggler = null;
+	cursorAtInsertionPoint = false;
 	
 	/**
 	 * Constructor
@@ -285,7 +286,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 	}
 
 	/**
-	 * A Prefetch cycle to load the required HTML document.
+	 * A Prefetch cycle to load the required HTML document. The intent is to 
+	 * load the mobile or desktop version depending on configuration.
 	 * 
 	 * @returns true, if a document could be loaded
 	 */
@@ -333,6 +335,14 @@ export class KatexInputHelper implements IKatexInputHelper {
 		this.math.injectCodeMirror();
 		this.codeMirrorEditor = this.math.codeMirror;			// lazy injection
 		console.debug(`Document check : ${document.URL}.`);
+		
+		// TEST to set app window size
+		// This works but not on Android !!!
+		// TODO: make it work on Android and only Android
+		/*
+		const containerElement = window.frames.top.top.document.getElementsByClassName('user-webview-dialog')[0];
+		$(containerElement).css("--content-height", "80vh");
+		*/
 		
 		return true;
 	}
@@ -384,7 +394,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 		this.themes.subscribe(this.onStyleChanged.bind(this));
 		await this.themes.initialiseThemeChoice(this.style, this.rtlStyle); // RTL STYLE defined after locale language
 
-		$('#myContainer').layout({fit: true});
+		if (!this.platformInfo.isMobile) {
+			$('#myContainer').layout({fit: true});
+		}
 		$('#innerLayout').layout({fit: true});
 		vme.endWait();
 	}
@@ -438,6 +450,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		
 		// Intent: to restore original web page structure (required by Joplin plugin).
 		// Here: the viewport
+		// TODO: required?
 		const content = $("body meta[name='viewport']").attr('content');
 		if (content) {
 			const html = `<meta name="viewport" content="${content}" ></meta>`;
@@ -497,61 +510,13 @@ export class KatexInputHelper implements IKatexInputHelper {
 			$('#myContainer').panel({
 				fit: true,
 				onOpen: function() {
-					inst.codeMirrorEditor.focus();
+					inst.codeMirrorEditor.focus(!inst.cursorAtInsertionPoint);
+					inst.cursorAtInsertionPoint = false;
 				}
 			});
-			
-			// I'm struggling with getting the correct initial display, but nothing works. 
-			/* This TRIAL also does not work: switch forth and back during program start.
-			let switchForth = true;
-			let switchBack = true;
-			$('#myContainer').panel({
-				fit: true, 
-				onOpen: function() {
-					if (switchForth) {
-						switchForth = false;
-						$.mobile.go('#eastRegion');
-					}
-				}
-			});
-			$('#eastRegion').panel({
-				fit: true, 
-				onOpen: function() {
-					if (switchBack && !switchForth) {
-						switchBack = false;
-						$.mobile.go('#myContainer');
-					}
-				}
-			});
-			*/
-			
-			// RESERVED.
-			let height = getHeightFooter();
-			function heightChanged() {
-				const oldHeight = height;
-				const newHeight = getHeightFooter();
-				height = newHeight; 
-				return newHeight != oldHeight;
-			}
-			let cycle = 0;
-			const timerFunc = () => {
-				cycle ++;
-				if (heightChanged() || cycle >= 10) {
-					console.info(`Changed Footer Height : ${getHeightFooter()} after ${cycle} cycles yields ${getHeightCenterVh()}`);
-					
-					// Both solutions have no effect. Initial display does not display footer.
-					// NavPanel to large
-					//$('#myContainer').attr('style', { height: `${getHeightCenterVh()} !important` });
-					//$('#myContainer').navpanel('resize');
-					
-				} else {
-					setTimeout(timerFunc, 100);
-				}
-			}
 			
 			defineProportions('#innerLayout', 'south', 50);
-			timerFunc();
-			
+						
 			this.sidemenuData = this.getSidemenuData();
 			console.log(`Sidemenu data : %O`, this.sidemenuData);
 			this.populateSidemenu(this.sidemenuData);
@@ -1125,7 +1090,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 		pos.ch = pos.ch - a.length; 
 		this.codeMirrorEditor.setCursor(pos); 
 		if (this.menuupdateType) this.updateOutput(); 
-		this.setFocus();
+		this.setFocus();		
+		this.cursorAtInsertionPoint = true;				// used in mobile only
 	}
 	
 	/**
@@ -1405,10 +1371,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 			.join('/')
 			.replace(/ /g, '%20') + '/';			
 		}
-		// TEST CODE to check path OR mobile detection
-		// $('h3').text(bundlePath);
-		// let heading = $('h3').text();
-		// $('h3').text(`${heading} on ${this.mobile ? 'mobile' : 'desktop'} device`);
 
 		console.info(`Base location is : ${bundlePath}`);
 		

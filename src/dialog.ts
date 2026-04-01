@@ -83,7 +83,7 @@ export class Dialog
 		});
 
 		const ok = { id: 'okay', title: 'Okay' };
-		const cancel = { id: 'cancel', title: 'Cancel' };
+		const cancel = { id: 'mycancel', title: 'Cancel' };
 		await joplin.views.dialogs.setButtons(handle, [ok, cancel]);
 		await joplin.views.dialogs.setFitToContent(handle, false);				// was false!
 		await joplin.views.dialogs.setHtml(handle, this.load());

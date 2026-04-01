@@ -46,7 +46,7 @@ export class MathFormulae implements IMath {
 	 */
 	async injectCodeMirror() {
 		this.codeMirror = this.codeMirrorFactory(this.parameters.isMobile);
-		this.mathVisualOutput = $('#mathVisualOutput')[0];
+		this.mathVisualOutput = $('#mathVisualOutput div')[0];
 		this.katex = await import('katex/dist/katex');	// This version of import is essential for mhchem
 		await import('katex/dist/contrib/mhchem');
 	}
@@ -341,8 +341,8 @@ export class MathFormulae implements IMath {
 	/**
 	 * Sets the Focus to the Code Mirror Editor.
 	 */
-	setFocus() { 
-		this.codeMirror.focus();
+	setFocus(disableKeyboard: boolean = false) { 
+		this.codeMirror.focus(disableKeyboard);
 		this.codeMirror.refresh();					// TODO: did not help to display inserted text
 	}
 	

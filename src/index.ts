@@ -66,13 +66,12 @@ joplin.plugins.register({
 		const scriptIdMd = 'pluginMdKatexDialog';
 		
 		await settings.register();
-	
+
 		await joplin.commands.register(
 			{
 				name: scriptId,
 				label: 'Katex Dialog',
-				// fa-square-root-variable not working
-				iconName: 'fa fa-calculator',
+				iconName: 'fas fa-square-root-alt',
 				execute: dialog_command, 
 			});
 	

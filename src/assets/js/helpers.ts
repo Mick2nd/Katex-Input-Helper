@@ -195,7 +195,8 @@ class RegionToggler {
 		$(this.layout).layout('panel', this.firstRegion).panel('resize', { width: width });
 		$(this.layout).layout('resize');		
 
-		$(this.id).html(text);
+		text = `&nbsp;${text}&nbsp;`;
+		$(`${this.id} span`).html(text);
 		this.parent.localizer.notify();						// updates the tooltip text
 	}
 	
@@ -284,7 +285,7 @@ class ContainerToggler {
 		
 		$(this.uiId)
 		.css('display', this.active ? 'inline-block' : 'none');
-		$(this.btnId).html(this.active ? this.secondIcon : this.firstIcon);
+		$(`${this.btnId} span`).html(this.active ? this.secondIcon : this.firstIcon);
 		this.parent.localizer.notify();						// updates the tooltip text
 	}
 

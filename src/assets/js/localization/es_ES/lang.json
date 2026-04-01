@@ -122,6 +122,11 @@
 	"TTREMOVECATEGORY": "Utilice este comando de menú para <b>Eliminar</b> el nodo hoja (categoría) y todas las ecuaciones que le pertenecen.",
 	"TTREMOVEFOLDER": "Utilice este comando de menú para <b>Eliminar</b> el nodo de carpeta (supercategoría) y todas las ecuaciones y subcarpetas que le pertenecen.",
 	"TTCUTPASTE": "Utilice este comando de menú para <b>cortar y pegar</b> ecuaciones de una categoría a otra. Para hacer esto, verifique las ecuaciones deseadas en la cuadrícula de datos e invoque este comando.",
+	"TTREGION_FIRST": "Haz clic para cambiar a la vista de categorías.",
+	"TTREGION_SECOND": "Haz clic para cambiar a la vista de las ecuaciones.",
+	"TTREGION_BOTH": "Haz clic para cambiar a la vista de ambas: Categorías y Ecuaciones.",
+	"TTCONTAINER_ACTIVATE": "Haz clic para mostrar la ventana de la lista Unicode.",
+	"TTCONTAINER_DEACTIVATE": "Haz clic para ocultar la ventana de la lista Unicode.",
 
 	"RESET": "Reiniciar",
 	"RESET_WINDOW_POSITIONS": "Posiciones de ventana",

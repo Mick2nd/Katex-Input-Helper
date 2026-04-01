@@ -63,7 +63,7 @@ body {
 		overflow: hidden;
 		border: none;
 
-		.CodeMirror {
+		.cm-editor {
 			height: 100%;
 			width: 100%;
 
@@ -203,7 +203,35 @@ body.katex-mobile {
 	
 	/* essential: must be written at the correct moment */
 	height: 100vh;
-	
+
+	/* This rules to align formulae at the bottom 	
+	*/
+	#mathVisualOutput {
+		overflow: auto !important;
+		> div {
+			height: 100%;
+			span.katex-display {
+				width: 100%;
+				height: 100%;
+				margin: 0;
+				padding: 1em 0;
+				display: inline-flex;
+				align-items: flex-end;
+				justify-content: center;
+			} 
+
+			&:not(:has(.katex-display)) .katex	{
+				width: 100%;
+				height: 100%;
+				margin: 0;
+				padding: 1em;
+				display: inline-flex;
+				align-items: flex-end;
+				justify-content: left;
+			}	
+		} 
+	}
+		
 	/* The east and the west region aka formula-1 and formula-2 */
 	#westRegion, #eastRegion {		
 		width: $innerWidth;
@@ -239,10 +267,9 @@ body.katex-mobile {
 	 */
 	#myContainer {
 		width: $innerWidth;
-		//height: 87% !important;			// experience for a small screen, improve!
 	}
-	
-	div:has(> #myContainer) {
+		
+	div:has(> .easyui-navpanel) {
 		height: 100vh !important;
 	}
 	

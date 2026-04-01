@@ -47,7 +47,7 @@
 	$basePadding: math.div($fontSize, 5);
 	
 	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter + 50px;
+	$verticalMargin: functions.verticalMargin($isMobile);
 	
 	& {
 		padding: $basePadding;
@@ -72,10 +72,16 @@
 	$widthCombo: 80%;
 
 	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter + 100px;
+	$verticalMargin: functions.verticalMargin($isMobile);
 	
-	@include fit-content($horizontalMargin, $verticalMargin);
+	@if $isMobile {
+		@include fit-container($horizontalMargin, $verticalMargin);
+	} @else {
+		@include fit-content($horizontalMargin, $verticalMargin);
+	}
+	
 	font-size: $fontSize;
+	padding: variables.$basePadding;
 
 	& #cUNICODES_GROUP {
 		width: $widthCombo;
@@ -89,7 +95,7 @@
 	}
 	%block {
 		width: fit-content; 
-		height: calc(100% - 60px);	// ?
+		height: fit-content;
 		overflow: auto;
 		display: inline-block;
 		vertical-align: top;
@@ -115,17 +121,16 @@
 /* Editor Parameters Mixin */
 @mixin editorParametersMixin ($isMobile: false) {
 	$scale: functions.scale($isMobile);
-
 	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter + 100px;
+	$verticalMargin: functions.verticalMargin($isMobile, true);
 
 	@if $isMobile {
 		@include fit-container($horizontalMargin, $verticalMargin);
 	} @else {
-		width: 550px * $scale !important; 
-		height: 320px * $scale !important;
+		@include fit-content($horizontalMargin, $verticalMargin);
 	}
 	font-size: 1rem * $scale;
+	padding: variables.$basePadding;
 	
 	#formEDITOR_PARAMETERS {
 		fieldset, input, a {
@@ -161,10 +166,16 @@
 /* Style Choice dialog */
 @mixin styleChoiceMixin ($isMobile: false) {
 	$scale: functions.scale($isMobile);
-	
-	width: 170px * $scale !important; 
-	height: 120px * $scale !important;
+	$horizontalMargin: 2 * variables.$baseMargin;
+	$verticalMargin: functions.verticalMargin($isMobile, true);
+		
+	@if $isMobile {
+		@include fit-container($horizontalMargin, $verticalMargin);
+	} @else {
+		@include fit-content($horizontalMargin, $verticalMargin);
+	}	
 	font-size: 1rem * $scale;
+	padding: variables.$basePadding;
 
 	fieldset {
 		margin-top: 10px;
@@ -182,22 +193,16 @@
  */
 @mixin languageChoiceMixin ($isMobile: false) {
 	$scale: functions.scale($isMobile);
-	$width: 370px;
-	@if $isMobile {
-		$width: 700px;
-	}	
-	$height: 300px * $scale;
-
 	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter + 100px;
+	$verticalMargin: functions.verticalMargin($isMobile, true);
 		
 	@if $isMobile {
 		@include fit-container($horizontalMargin, $verticalMargin);
 	} @else {
-		width: functions.passThrough($width) !important; 
-		height: $height !important;
+		@include fit-content($horizontalMargin, $verticalMargin);
 	}
 	font-size: 1rem * $scale;
+	padding: variables.$basePadding;
 	
 	fieldset {
 		margin-top: 10px;
@@ -209,6 +214,10 @@
 		grid-template-columns: (16px * $scale) (16px * $scale) auto;
 		gap: 100% 10px;
 		align-items: center;
+		
+		label {
+			white-space: nowrap;
+		}
 	}
 	
 	img {
@@ -228,7 +237,7 @@
 @mixin languageListMixin($isMobile: false) {
 	$scale: functions.scale($isMobile);
 	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter;
+	$verticalMargin: functions.verticalMargin($isMobile);
 	
 	@if $isMobile {
 		@include fit-container($horizontalMargin, $verticalMargin);
@@ -244,17 +253,17 @@
 			height: 450px * $scale !important; 
 			width: calc(90vw - 100px) !important;
 		}
-
-		/* Extracted from code */
-		table {
-			border-spacing: 0px !important;
-			border-collapse: collapse !important;
-			margin: 10px !important;
-			width: fit-content !important;
-			overflow: auto !important;		
-		}
-	}	
-
+	}
+	
+	/* Extracted from code */
+	table {
+		border-spacing: 0px !important;
+		border-collapse: collapse !important;
+		margin: 10px !important;
+		width: fit-content !important;
+		overflow: auto !important;		
+	}
+	
 	@at-root .panel:has(> #wLANGUAGE_LIST) {
 		@include align-header();
 	}
@@ -264,21 +273,22 @@
 @mixin informationsMixin($isMobile: false) {
 	$scale: functions.scale($isMobile);
 	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter;
+	$verticalMargin: functions.verticalMargin($isMobile);
 	
 	@if $isMobile {
 		@include fit-container($horizontalMargin, $verticalMargin);
 	} @else {
 		height: fit-content !important; 
-		width: 610px * $scale !important;
+		width: fit-content !important;
 	}
 
 	#wINFORMATIONS {
 		@if $isMobile {
-			@include fit-container($horizontalMargin, $verticalMargin + 50px);
+			// Without this no content
+			@include fit-container($horizontalMargin, $verticalMargin + 30px);
 		} @else {
-			height: 450px * $scale !important; 
-			width: 600px * $scale !important;
+			height: min(500px * $scale, calc(100vh - $verticalMargin)) !important; 
+			width: min(700px * $scale, calc(100vw - $horizontalMargin)) !important;
 		}
 		
 		padding: 5px;
@@ -320,19 +330,17 @@
 }
 
 /* Custom Equations Mixin */
-/* TODO: Optimize, consider desktop version */
 @mixin customEquationsMixin($isMobile: false) {
 	$fontSize: functions.fontSize($isMobile);
-	$width: 700px;
-	$height: 500px;
-	
+	$horizontalMargin: 2 * variables.$baseMargin;
+	$verticalMargin: functions.verticalMargin($isMobile, true);	// button bar not included ?
+
 	@if $isMobile {
-		$width: 900px;
-		$height: 700px;
+		@include fit-container($horizontalMargin, $verticalMargin);
+	} @else {
+		width: 700px;
+		height: 500px;
 	}
-	
-	width: $width !important;
-	height: $height !important;
 
 	#customDatagrid {
 		border-spacing: 0px;
@@ -360,7 +368,7 @@
 @mixin matrixMixin($isMobile: false) {
 	$fontSize: functions.fontSize($isMobile);
 	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: $horizontalMargin + variables.$heightPanelHeaderFooter + 50px;
+	$verticalMargin: functions.verticalMargin($isMobile, true);
 	
 	font-size: $fontSize;
 	& {
@@ -379,15 +387,6 @@
 			text-align: center;
 		}
 	}
-
-	// Shrinks the header to its content width
-	/* RESERVED
-	@at-root .panel:has(#wMATRIX) {
-		.panel-header {
-			width: auto !important;
-		}
-	}
-	*/	
 
 	@at-root .panel:has(> #wMATRIX) {
 		@include align-header();

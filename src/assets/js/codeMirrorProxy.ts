@@ -102,16 +102,29 @@ export class CodeMirrorProxy implements ICodeMirror {
 	
 	/**
 	 * Sets the focus to the editor view.
+	 * TODO: Problem: we cannot avoid automatic screen keyboard pop-ups on Android
+	 * -> deactivate mechanism, because it does not work
+	 * 
+	 * @param [disableKeyboard = false] - true switches the screen keyboard off 
 	 */
-	focus() : void { 
+	focus(disableKeyboard: boolean = false) : void { 
 		
 		this.view.focus();
+
+		/*		
+		if (disableKeyboard) {
+			this.makeEditable(false);					// hope: this should switch the keyboard OFF
+			this.makeEditable(true);
+		}
+		*/
 	}
 	
 	/**
 	 * Not implemented.
 	 */
-	refresh() : void { }
+	refresh() : void { 
+		
+	}
 	
 	/**
 	 * Returns the number of the last line (zero based)
@@ -225,11 +238,15 @@ export class CodeMirrorProxy implements ICodeMirror {
 				event.preventDefault(); 								// Verhindert Zoom
 
 				this.editable = !this.editable;							// toggle the editable state
-				this.view.dispatch({ 
-					effects: this.editableCompartment.reconfigure(EditorView.editable.of(this.editable)) 
-				});
+				this.makeEditable(this.editable);
 			}
 		}
+	}
+	
+	makeEditable(editable: boolean) {
+		this.view.dispatch({ 
+			effects: this.editableCompartment.reconfigure(EditorView.editable.of(editable)) 
+		});
 	}
 	
 	

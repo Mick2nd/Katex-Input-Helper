@@ -96,7 +96,7 @@ The custom equations dialog with categories tree
 
 <img src="img/Custom-Equations-with-Categories.png" width="600" />
 
-The symbol bar with button for the Katex Input Helper (Calculator symbol)
+The symbol bar with button for the Katex Input Helper (Square Root symbol)
 
 ![Symbol Bar](./img/Symbol-Bar.png)
 
@@ -104,6 +104,10 @@ The symbol bar with button for the Katex Input Helper (Calculator symbol)
 
 - A minor problem is a missing update of the language of the data grid paging bar in the *Custom Equations* dialog. This only appears during language change during an actual activation of the dialog.
 - The persistence of custom equations can be damaged when a filter is active. 
+- The *web* version of this app does work bad on *Firefox* and on mobile devices in that many dialogs are sized wrong. 
+This does not appear on the *Chrome* browser on desktop.
+- The sub menu items of the mobile version do show icons with the default theme only.
+- The mobile version does regularly pop-up the screen keyboard. No mechanism is known to avoid this.
 
 ## Release Notes
 
@@ -130,7 +134,7 @@ The symbol bar with button for the Katex Input Helper (Calculator symbol)
 - A dependency injection framework was introduced.
 - The handling of the information window was improved.
 - The web version of this app now supports a mobile parameter in the query string. But this is 
-  merely an experimental feature in an early stage.
+  merely an experimental feature in an early stage. Use **?mobile=true**.
 - Extensive re-factorings of the source code to improve the code structure.
 
 ### 2.0.1

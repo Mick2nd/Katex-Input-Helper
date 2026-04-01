@@ -121,6 +121,11 @@
 	"TTREMOVECATEGORY": "Nutzen Sie dieses Menükommando, um den Blattknoten (Kategorie) zu <b>Entfernen</b> und alle Gleichungen, die zu ihm gehören.",
 	"TTREMOVEFOLDER": "Nutzen Sie dieses Menükommando, um den Ordnerknoten (Überkategorie) zu <b>Entfernen</b> und alle Unterknoten und Gleichungen, die zu ihm gehören.",
 	"TTCUTPASTE": "Nutzen Sie dieses Menükommando, um Gleichungen von einer Kategorie zur Anderen <b>Auszuschneiden & Hinzuzufügen</b>. Um dies zu tun, wählen Sie die vorgesehenen Gleichungen in der Tabelle und führen diesen Befehl aus.",
+	"TTREGION_FIRST": "Klicken, um zur Ansicht der Kategorien zu schalten",
+	"TTREGION_SECOND": "Klicken, um zur Ansicht der Gleichungen zu schalten",
+	"TTREGION_BOTH": "Klicken, um beide Ansichten einzuschalten: Kategorien und Gleichungen",
+	"TTCONTAINER_ACTIVATE": "Klicken, um das Unicode Listenfenster anzuzeigen",
+	"TTCONTAINER_DEACTIVATE": "Klicken, um das Unicode Listenfenster zu verstecken",
 
 	"RESET": "Zurücksetzen",
 	"RESET_WINDOW_POSITIONS": "Fensterpositionen",

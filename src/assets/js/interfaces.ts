@@ -60,7 +60,7 @@ export interface IMath {
 	insert(b: any) : void;
 	insertMath(text: string, element: any, multiple?: boolean, displayMode?: boolean) : void;
 	codeMirror: any;
-	setFocus() : void;
+	setFocus(disableKeyboard?: boolean) : void;
 	updateAnchor(a: any) : void;
 	updateTableAnchor(a: any) : void;
 	updateHeaders(selector: string) : void;
@@ -74,7 +74,7 @@ export interface ICodeMirror {
 	getSelection() : string;
 	setValue(val: string|ArrayBuffer) : void;
 	getValue() : string;
-	focus() : void;
+	focus(disableKeyboard?: boolean) : void;
 	refresh() : void;
 	lastLine() : number;
 	setCursor(cursor: any) : void;

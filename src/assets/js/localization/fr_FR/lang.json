@@ -122,6 +122,11 @@
 	"TTREMOVECATEGORY": "Utilisez cette commande de menu pour <b>Supprimer</b> le nœud feuille (catégorie) et toutes les équations qui lui appartiennent.",
 	"TTREMOVEFOLDER": "Utilisez cette commande de menu pour <b>Supprimer</b> le nœud de dossier (super catégorie) et toutes les équations et sous-dossiers lui appartenant.",
 	"TTCUTPASTE": "Utilisez cette commande de menu pour <b>Couper et coller</b> des équations d'une catégorie à une autre. Pour ce faire, vérifiez les équations souhaitées dans la grille de données et appelez cette commande.",
+	"TTREGION_FIRST": "Cliquez pour passer à l'affichage des catégories",
+	"TTREGION_SECOND": "Cliquez pour passer à la vue des équations",
+	"TTREGION_BOTH": "Cliquez pour passer à l'affichage combinant les catégories et les équations.",
+	"TTCONTAINER_ACTIVATE": "Cliquez pour afficher la fenêtre Liste Unicode",
+	"TTCONTAINER_DEACTIVATE": "Cliquez pour masquer la fenêtre Liste Unicode",
 
 	"RESET": "Réinitialiser",
 	"RESET_WINDOW_POSITIONS": "Positions des fenêtres",

@@ -8,7 +8,7 @@
 		{{> waitform }}
 
 		<div>
-		    <div id="myContainer" class="easyui-navpanel" data-options="fit:true,bodyCls:'mainNavPanelBody'">
+		    <div id="myContainer" class="easyui-navpanel" data-options="fit:true">
 		        <header>
 		            <div id="introduction" class="m-toolbar">
 		                <div class="m-left">
@@ -16,8 +16,6 @@
 		                </div>
 		                <div class="m-title">Katex Input Helper</div>
 		                <div class="m-right">
-		                	<!-- 
-		                     -->
 		                    <a href="javascript:void(0)" class="easyui-menubutton invisible" data-options="iconCls:'',menu:'#main-menu',menuAlign:'right',hasDownArrow:false">&#9776;</a>
 		                    <a id="goMenu" href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:''">&#9776;</a>
 		                    <a id="goEast" href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true">&#x2771;</a>
@@ -29,13 +27,14 @@
 	
 					<div id="innerLayout" data-options="fit:true" class="easyui-layout">
 						<!--
-						<div id="divMathTextInput" class="center" data-options="region:'center',split:false,noheader:true"></div>
-						<div id="mathVisualOutput" class="inner-south-mobile" dir="ltr" data-options="region:'south',split:true,noheader:true" ></div>
-						-->
-						<!--
 							TEST: exchange the order of INPUT and OUTPUT area, attach title to INPUT area.
+							This leads to better experience on mobile device.
 						-->
-						<div id="mathVisualOutput" class="inner-south-mobile" dir="ltr" data-options="region:'center',split:false,noheader:true" ></div>
+						<div id="mathVisualOutput" class="inner-south-mobile" dir="ltr" data-options="region:'center',split:false,noheader:true" >
+							<div>
+								
+							</div>
+						</div>
 						<div id="divMathTextInput" class="center" data-options="title:'<span locate=EDITION></span>&nbsp;',region:'south',split:true,noheader:false"></div>
 					</div>
 				</div>

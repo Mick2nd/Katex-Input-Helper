@@ -122,6 +122,11 @@
 	"TTREMOVECATEGORY": "Sử dụng lệnh menu này để <b>Xóa</b> nút lá (danh mục) và tất cả các phương trình thuộc về nó.",
 	"TTREMOVEFOLDER": "Sử dụng lệnh menu này để <b>Xóa</b> nút thư mục (siêu danh mục) và tất cả các phương trình cũng như thư mục con thuộc về nó.",
 	"TTCUTPASTE": "Sử dụng lệnh trình đơn này để <b>Cắt & Dán</b> các phương trình từ danh mục này sang danh mục khác. Để thực hiện việc này, hãy kiểm tra các phương trình mong muốn trong lưới dữ liệu và gọi lệnh này.",
+	"TTREGION_FIRST": "Nhấp chuột để chuyển sang chế độ xem Danh mục",
+	"TTREGION_SECOND": "Nhấp chuột để chuyển sang Chế độ xem Phương trình",
+	"TTREGION_BOTH": "Nhấp chuột để chuyển sang chế độ xem đồng thời: Danh mục và Phương trình.",
+	"TTCONTAINER_ACTIVATE": "Nhấp chuột để hiển thị cửa sổ Danh sách Unicode",
+	"TTCONTAINER_DEACTIVATE": "Nhấp chuột để ẩn cửa sổ Danh sách Unicode",
 
 	"RESET": "Cài lại",
 	"RESET_WINDOW_POSITIONS": "Vị trí cửa sổ",

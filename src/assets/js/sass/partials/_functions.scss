@@ -17,6 +17,53 @@
 	@return scale($isMobile) * variables.$baseFontSize;
 }
 
+
+@function headerHeight($isMobile: false) {
+	@if $isMobile {
+		@return 45px;
+	} @else {
+		@return 40px;
+	}
+}
+
+@function menuHeight($isMobile: false) {
+	@if $isMobile {
+		@return 0px;
+	} @else {
+		@return 40px;
+	}
+}
+
+@function footerHeight($isMobile: false) {
+	@if $isMobile {
+		@return 70px; // take into account a wrapping status line or some extra space!( 45px; )
+	} @else {
+		@return 50px;
+	}
+}
+
+@function buttonBarHeight($hasButtons: false) {
+	@if $hasButtons {
+		@return 45px;
+	} @else {
+		@return 0px;
+	}
+}
+
+
+@function panelHeaderHeight($isMobile: false) {
+	@if $isMobile {
+		@return 0px;
+	} @else {
+		@return 35px;
+	}
+}
+
+
+@function verticalMargin($isMobile: false, $hasButtons: false) {
+	@return calc(2 * variables.$baseMargin + headerHeight($isMobile) + footerHeight($isMobile) + menuHeight($isMobile) + panelHeaderHeight($isMobile) + buttonBarHeight($hasButtons) + 20px);
+}
+
 @function centerHeight($isMobile: false) {
 	@if $isMobile {
 		@return calc(100vh - variables.$heightPanelHeaderFooter - variables.$heightCenterHeader);
