@@ -110,7 +110,14 @@ export class Utilities implements IUtilities {
 	 * @param secondIcon - the text of the button
 	 */
 	regionToggler(btnId: string, layout: string, state: State) : any {
-		return new RegionToggler(btnId, layout, state, this);
+		if (this.regionTogglerInst == null) {
+			this.regionTogglerInst = new RegionToggler(btnId, layout, state, this);
+		}
+		return this.regionTogglerInst;
+	}
+	
+	refreshRegionToggler() {
+		this.regionTogglerInst.toggle();
 	}
 	
 	/**
@@ -126,6 +133,8 @@ export class Utilities implements IUtilities {
 	containerToggler(btnId: string, uiId: string, startState: boolean) : any {
 		return new ContainerToggler(btnId, uiId, startState, this);
 	}
+	
+	regionTogglerInst: any = null;
 }
 
 

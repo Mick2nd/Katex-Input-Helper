@@ -87,8 +87,9 @@
 		</fieldset>
 	</form>
 	<div id="btSTYLE_CHOISE">
-		<a href="" id="btSTYLE_CHOISE_CLOSE" class="easyui-linkbutton" iconcls="icon-cancel"><span
-				locate="CLOSE"></span></a>
+		<a href="" id="btSTYLE_CHOISE_CLOSE" class="easyui-linkbutton" iconcls="icon-cancel">
+			<span locate="CLOSE"></span>
+		</a>
 	</div>
 </div>
 
@@ -220,7 +221,7 @@
 	data-options="closed:true,modal:false,shadow:false,resizable:true,collapsible:true,buttons:'#btCUSTOM_EQUATIONS_BUTTONS'"
 	title="<span id='wf_CUSTOM_EQUATIONS_MORE_TITLE' class='custom-equations rtl-title-withicon' locate='CUSTOM_EQUATIONS'></span>"
 >
-	<div id="CUSTOM_EQUATIONS_LAYOUT" class="easyui-layout">
+	<div id="CUSTOM_EQUATIONS_LAYOUT" class="easyui-layout" data-options="fit:true">
 		<div data-options="region:'west',split:true" style="width: 25%;">
 			<ul id="categories" class="easyui-tree" data-options="dropAccept:'.datagrid-div'">
 			</ul>
@@ -257,7 +258,7 @@
 			        <tr>
 			        <!-- Without these entries data grid wouldn't work -->
 			            <th class="custom-equations" data-options="field:'id',hidden:true">Id</th>
-			            <th class="custom-equations" data-options="field:'title',editor:'text',width:'35%',sortable:true">Titel</th>
+			            <th class="custom-equations" data-options="field:'title',editor:'text',width:'40%',sortable:true">Titel</th>
 			            <th class="custom-equations" data-options="field:'formula',width:'60%'">Formel</th>
 			        </tr>
 			    </thead>

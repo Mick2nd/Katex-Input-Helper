@@ -1,4 +1,5 @@
 import { FileHandler } from './fileHandling';
+import { Versions } from "./versions";
 
 import { inject, injectable, injectFromBase } from 'inversify';
 import { ILocalizer, IParser, IMath, utilitiesId, IUtilities, categoriesTreeId, ICategoriesTree,
@@ -20,6 +21,7 @@ export class KIHPanel implements IPanel {
 	parameters: any = null;
 	messager: IMessager = null;
 	parser: IParser = null;
+	silent = false;
 	
 	/**
 	 * Constructor
@@ -81,6 +83,7 @@ export class KIHPanel implements IPanel {
 	 * Called if the window is opened.
 	 */
 	onOpen() {
+		if (this.silent) { return; }
 		$(`#${this.id}`).focus();
 		if (this.parameters.isMobile) {
 			this.toOrigin();
@@ -91,6 +94,7 @@ export class KIHPanel implements IPanel {
 	 * Called if a window is closed.
 	 */
 	onClose() {
+		if (this.silent) { return; }
 		this.isOpen = false;
 		if (this.parameters.isMobile) {
 			try {											// probably not required as error was caused by href="#"
@@ -158,13 +162,29 @@ export class KIHPanel implements IPanel {
 	/**
 	 * Toggles the dialog between open and closed
 	 */
-	toggle() {
+	async toggle() {
 		if (this.isOpen) {
 			this.panelFunc('close');
 			this.isOpen = false;						// doesn't initiate an close event
 		} else {
-			this.show();
+			await this.show();
 		}
+	}
+
+	/**
+	 * Refreshes a panel in mobile mode to handle orientation changes.
+	 */	
+	async refresh() : Promise<void> {
+		this.silent = true;
+		this.panelFunc('close');
+		this.panelFunc('open');
+		this.silent = false;
+		
+		await this.load();
+		this.panelFunc('resize', { width: 'auto', height: 'auto' });
+	}
+	
+	async load() : Promise<void> {
 	}
 
 	/**
@@ -337,6 +357,17 @@ export class KIHPanel implements IPanel {
 		handlers.title = this.localizeOption('title');
 		this.panelFunc(handlers);
 	}
+	
+	/**
+	 * Re-loads the Resources dialog. Used to perform an update after orientation 
+	 * changes.
+	 */
+	override async load() {
+		if (this.id == 'wLANGUAGE_LIST') {			
+			await this.localizer.buildLocalResources(true);				// build the resources new
+			await this.parser.parseAsync('#tLANGUAGE_LIST table', 0, 100);
+		}
+	}
 }
 
 /**
@@ -424,6 +455,7 @@ export class KIHPanel implements IPanel {
 @injectFromBase() export class InformationWindow extends KIHWindow {
 	tab: number = 0;
 	tabChanged = false;
+	versions: Versions = null;
 
 	/**
 	 * Initialises the Informations window.
@@ -432,6 +464,9 @@ export class KIHPanel implements IPanel {
 		await super.initialise(params);
 		let [ tab ] = params;
 		this.tab = tab;
+		this.versions = new Versions();
+		await this.versions.init(this.math.codeMirror.version);
+		await this.load();
 		
 		let inst = this;
 		$('#tINFORMATIONS').tabs({ onSelect: (title: string, tab: number) => {
@@ -466,6 +501,54 @@ export class KIHPanel implements IPanel {
 			this.tabChanged = false;
 		}
 	}
+	
+	/**
+	 * Refresh method needed for orientation changes.
+	 */
+	override async refresh() : Promise<void> {
+		super.refresh();
+	}
+	
+	/**
+	 * Loads the Informations dialog with info contained in separate HTML files.
+	 */
+	override async load() : Promise<void> {
+		const elements = $('#tINFORMATIONS div[href]').toArray();
+		for (const elem of elements) {
+			const element = $(elem);			
+			const href = element.attr('href');
+			const id = element.attr('id');
+			console.info(`Info dialog with : id : ${id}, href : ${href}`);
+			
+			const newHref = `../information/${id}.html`;						// lazily load html info
+			element.attr('href', newHref);
+			const content = (await import(`../information/${id}.html`)).default;
+			element.html(content);
+		}
+
+		await this.parser.parseAsync('#tINFORMATIONS div[href]', 0, 100);
+		console.info(`Parse completed for : div[href]`);
+		
+		this.assembleVersionInfo();												// injected into this.versions
+		this.math.inplaceUpdate('#tINFORMATIONS div a.s[latex]', true);	
+	}
+	
+	/**
+	 * Assembles the version info for the tVERSIONS tab.
+	 */
+	assembleVersionInfo() {
+		$("#VMEversion").html(`
+			<table class="inline-table">
+				<tr><td><b> ${this.versions.version} </b></td><td><b>Katex Input Helper / Visual Math Editor</b>, (This software)</td></tr>
+				<tr><td> ${this.versions.katexVersion} </td><td>Katex</td></tr>
+				<tr><td> ${this.versions.codemirrorEditorVersion} </td><td>Code Mirror</td></tr>
+				<tr><td> ${this.versions.VKI_version} </td><td>Virtual Keyboard</td></tr>
+				<tr><td> ${this.versions.jqueryVersion} </td><td>Jquery</td></tr>
+				<tr><td> ${this.versions.easyuiVersion} </td><td>Jquery Easyui</td></tr>
+				<tr><td> ${this.versions.colorPickerVersion} </td><td>Jquery Color Picker</td></tr>
+			<table>`); 
+		$("#VMEdate").html((new Date()).getFullYear().toString());
+	}
 }
 
 /**
@@ -482,16 +565,16 @@ export class KIHPanel implements IPanel {
 
 		let vme = this;
 		
-		$('#btMATRIX_CLOSE').on('click', function(event) { 
+		$('#btMATRIX_CLOSE').on('click', async function(event) { 
 			event.preventDefault(); 
-			vme.toggle();										// direct 'close' does not trigger onClose 
+			await vme.toggle();										// direct 'close' does not trigger onClose 
 			vme.focus(); 
 		}); 
-		$('#btMATRIX_SET').on('click', function(event) { 
+		$('#btMATRIX_SET').on('click', async function(event) { 
 			event.preventDefault(); 
 			if (vme.setLatexMatrixInEditor()) {
 				vme.updateOutput(); 
-				vme.toggle();									// direct 'close' does not trigger onClose 
+				await vme.toggle();									// direct 'close' does not trigger onClose 
 				vme.focus(); 
 			} 
 		}); 
@@ -759,6 +842,8 @@ export class KIHPanel implements IPanel {
 	initialised = false;
 	renderComplete = false;
 	sortOrderAsc = 'desc';
+	layoutWidth: number;
+	layoutHeight: number;
 	
 	/**
 	 * Constructor.
@@ -883,7 +968,7 @@ export class KIHPanel implements IPanel {
 			inst.onAfterRender();
 		});
 		
-		$('#CUSTOM_EQUATIONS_LAYOUT').layout({fit: true});
+		$('#CUSTOM_EQUATIONS_LAYOUT').layout({ fit: true });
 	}
 	
 	/**
@@ -1161,7 +1246,7 @@ export class KIHPanel implements IPanel {
 			columns: [[
 				{ field: 'id', title: 'Id', hidden: true },
 				{ field: 'check', checkbox: true },
-				{ field: 'title', title: '<span class="custom-equations" locate="TITLE">Title</span>', width: '35%', editor: 'text', sortable: true, sorter: inst.alphaSorter.bind(inst) },
+				{ field: 'title', title: '<span class="custom-equations" locate="TITLE">Title</span>', width: '37%', editor: 'text', sortable: true, sorter: inst.alphaSorter.bind(inst) },
 				{ field:'formula', title: '<span class="custom-equations" locate="FORMULA">Formula</span>', width:'60%' }
 			]],
 			idField: 'id',
@@ -1291,6 +1376,20 @@ export class KIHPanel implements IPanel {
 			console.error(`Katex: equipDatagridWithInteractivity : ${e}`);
 		}
 	}
+	
+	/**
+	 * Support for orientation changes. WORKING!
+	 */
+	override async load() {
+		const selector = '#CUSTOM_EQUATIONS_LAYOUT';
+		$(selector).layout('resize', { width: '100%', height: '100%' });
+		
+		setTimeout(() => {
+			const panel = $(selector).layout('panel', 'west');
+			panel.panel('resize', {  });
+			$(selector).layout('resize');
+		}, 20);
+	}
 }
 
 /**
@@ -1329,8 +1428,8 @@ export class KIHPanel implements IPanel {
 		await this.panels[id].initialise(initialiseSymbolContent);
 	}
 
-	toggle(id: string) {
-		this.panels[id].toggle();
+	async toggle(id: string) {
+		await this.panels[id].toggle();
 	}
 	
 	async update(id: string, ...params) {
@@ -1342,6 +1441,20 @@ export class KIHPanel implements IPanel {
 			const panel = this.panels[id];
 			if (panel.isOpen) {
 				panel.toggle();
+			}
+		}
+	}
+	
+	/**
+	 * Handles orientation changes in *Mobile* mode. This works for a change from
+	 * *portrait* to *landscape* orientation. The opposite direction can be handled
+	 * manually by reinvoking the dialog.
+	 */
+	async refresh() : Promise<void> {
+		for (const id in this.panels) {
+			const panel = this.panels[id];
+			if (panel.isOpen) {
+				await panel.refresh();
 			}
 		}
 	}

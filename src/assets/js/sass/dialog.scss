@@ -198,7 +198,6 @@ body.katex-desktop {
  */
 body.katex-mobile {
 	$fontSize: functions.fontSize(true);	
-	$innerHeight: calc(100vh - variables.$heightPanelHeaderFooter);
 	$innerWidth: calc(100vw);
 	
 	/* essential: must be written at the correct moment */
@@ -262,13 +261,6 @@ body.katex-mobile {
 		}
 	}
 	
-	/**
-	 *	Main Nav Panel
-	 */
-	#myContainer {
-		width: $innerWidth;
-	}
-		
 	div:has(> .easyui-navpanel) {
 		height: 100vh !important;
 	}
@@ -285,6 +277,22 @@ body.katex-mobile {
 		}
 	}
 	
+	/*	Menu separator
+		Use the colors of the themes !! */
+	.menu-sep {
+		width: 90%;
+		height: 0px;
+		margin-bottom: 2px !important;
+		margin-top: 2px !important;
+	}
+	div:has(> .menu-sep) {
+		height: fit-content !important;
+		padding: 0;
+		&>span.tree-icon, &>span.tree-indent {
+			height: 0px;
+		}
+	}
+	
 	/* Side menu */
 	.panel-title span, span.rtl-menu-item {
 		font-size: $fontSize !important;
@@ -298,10 +306,11 @@ body.katex-mobile {
 		}
 	} 
 	
-	/* Improves accessibility */
+	/* Improves accessibility -> can also use .dialog-button */
 	#btLANGUAGE_CHOISE, #btSTYLE_CHOISE, #btEDITOR_PARAMETERS, #btMATRIX, #btCUSTOM_EQUATIONS_BUTTONS {
 		display: flex;
 		justify-content: left;
+		width: 100% !important;
 	}
 
 	.easyui-linkbutton span {

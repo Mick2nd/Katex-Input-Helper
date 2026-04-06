@@ -17,7 +17,7 @@ export interface ILocalizer {
 	load(langCode: string) : Promise<void>;
 	getLocalText(code: string) : string;
 	initialiseLanguageChoice(localType: string) : Promise<void>;
-	buildLocalResources() : Promise<void>;
+	buildLocalResources(clear?: boolean) : Promise<void>;
 	addResolver(func: any) : void;
 }
 
@@ -37,6 +37,7 @@ export interface IUtilities {
 	getOption(id: string, option: string) : string;
 	localizeOption(id: string, option: string) : string;
 	regionToggler(btnId: string, layout: string, state: State) : any;
+	refreshRegionToggler() : any;
 	containerToggler(btnId: string, uiId: string, startState: boolean) : any;
 }
 
@@ -89,6 +90,7 @@ export interface ICodeMirror {
 export interface IPanels {
 	showWindowDI(wndId: any, id: string, ...params: any) : void;
 	closeOpen() : void;
+	refresh() : Promise<void>;
 }
 
 export interface IPanel {
@@ -101,7 +103,8 @@ export interface IPanel {
 	show() : Promise<void>;
 	resize() : void;
 	open() : void;
-	toggle() : void;
+	toggle() : Promise<void>;
+	refresh() : Promise<void>;
 }
 
 export interface ICategoriesTree {

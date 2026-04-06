@@ -1,25 +1,81 @@
-@use "sass:math";
+@use 'sass:math';
 @use 'sass:list';
+@use 'sass:selector';
 @use "variables";
 @use "functions";
 
 /* Mixins */
 /* Fit Content mixin */
-@mixin fit-content($horizontalMargin: 0, $verticalMargin: 0) {
+@mixin fit-content($horizontalMargin: 0, $unusedVerticalSpace: 0) {
 	$maxWidth: calc(100vw - $horizontalMargin);
-	$maxHeight: calc(100vh - $verticalMargin);
+	$maxHeight: calc(100vh - $unusedVerticalSpace);
 	
+	@debug "Applying fit-content to selector(s) #{&}";
 	height: calc-size(fit-content, min(size, $maxHeight)) !important;
 	width: calc-size(fit-content, min(size, $maxWidth)) !important;
 }
 
-/* Fit Container mixin */
-@mixin fit-container($horizontalMargin: 0, $verticalMargin: 0) {
+/* Fit Container mixin
+ * !! Used in mobile only !!
+ */
+@mixin fit-container($horizontalMargin: 0, $unusedVerticalSpace: 0) {
 	$maxWidth: calc(100vw - $horizontalMargin);
-	$maxHeight: calc(100vh - $verticalMargin);
+	$maxHeight: calc(100vh - $unusedVerticalSpace);
 	
 	height: $maxHeight !important;
 	width: $maxWidth !important;
+
+	// TODO: last change did work .. do this in HTML?
+	// Switches the shadow of the using window off
+	@at-root .panel:has(> #{functions.idOf(&)}) + .window-shadow {
+		display: none !important;
+	}
+}
+
+/* Sometimes simplifies usage */
+@mixin fit($isMobile: false, $horizontalMargin: 0, $unusedVerticalSpace: 0) {
+	@if $isMobile {
+		@include fit-container($horizontalMargin, $unusedVerticalSpace);
+	} @else {
+		@include fit-content($horizontalMargin, $unusedVerticalSpace);
+	}
+}
+
+/**
+ * New implementation to fit a Dialog to its container. This is desired mainly
+ * for usage in the mobile mode. It takes into account different heights the
+ * footer can have depending on line breaks.
+ */
+@mixin fit-size($isMobile: false, $hasButtons: false) {
+	$mediaQueries: (
+		1: "width >= 843px",						// pixel unit and syntax of expression are essential
+		2: "843px > width >= 435px",
+		3: "435px > width >= 299px"
+	);
+	
+	/*
+	//&::before { content: "landscape : #{&} 1"; }
+	@media (orientation: portrait) {
+		width: functions.width($isMobile, true) !important;
+	}
+	@media (orientation: landscape) {
+		width: functions.width($isMobile, false) !important;
+	}
+	*/
+	width: functions.width($isMobile, false) !important;
+	
+	@each $lines, $query in $mediaQueries {
+		$height: functions.height($isMobile, $hasButtons, $lines) !important;
+		@debug "Media query #{$query} -> #{$height}";
+		@media (#{$query}) {
+			height: $height;
+		}
+	}
+	
+	// Switches the shadow of the using window off
+	@at-root .panel:has(> #{functions.idOf(&)}) + .window-shadow {
+		display: none !important;
+	}
 }
 
 /* Align Header mixin */
@@ -44,23 +100,35 @@
 @mixin moreDialogsMixin ($isMobile: false) {
 	$scale: functions.scale($isMobile);
 	$fontSize: functions.fontSize($isMobile);
-	$basePadding: math.div($fontSize, 5);
+	$basePadding: variables.$basePadding;
 	
-	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: functions.verticalMargin($isMobile);
+	$horizontalMargin: functions.horizontalMargin($isMobile);
+	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile, false, 3);
 	
+	$id: functions.idOf(&);
 	& {
+		@debug "More dialog with id #{$id} configured for mobile #{$isMobile}";
 		padding: $basePadding;
-		@include fit-content($horizontalMargin, $verticalMargin);
+		@include fit-content($horizontalMargin, $unusedVerticalSpace);
 
 		font-size: $fontSize !important;
 		overflow-y: auto !important;
+	
+		@if ($isMobile and ($id == '#wf_COMMUTATIVE_DIAGRAM_MORE')) {
+			@media (orientation: landscape) {
+				// Working, but not nice ... RESERVED
+				// @debug "More dialog with id #{$id} for horizontal display";
+				// table tr { display: table-cell !important; }
+			}
+		}
+		
+		// RESERVED
+		// overflow-wrap: break-word;
 	}
 	
 	// The problem is getting the right selector here.
 	// Attention: selector is treated as list of lists
-	$p: list.nth(list.nth(&, 1), -1);
-	@at-root .panel:has(#{functions.passThrough($p)}) {
+	@at-root .panel:has(> #{functions.passThrough($id)}) {
 		@include align-header();
 	} 
 }
@@ -71,13 +139,13 @@
 	$fontSize: functions.fontSize($isMobile);
 	$widthCombo: 80%;
 
-	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: functions.verticalMargin($isMobile);
+	$horizontalMargin: functions.horizontalMargin($isMobile);
+	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile);
 	
 	@if $isMobile {
-		@include fit-container($horizontalMargin, $verticalMargin);
+		@include fit-size($isMobile, false);
 	} @else {
-		@include fit-content($horizontalMargin, $verticalMargin);
+		@include fit-content($horizontalMargin, $unusedVerticalSpace);
 	}
 	
 	font-size: $fontSize;
@@ -121,18 +189,20 @@
 /* Editor Parameters Mixin */
 @mixin editorParametersMixin ($isMobile: false) {
 	$scale: functions.scale($isMobile);
-	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: functions.verticalMargin($isMobile, true);
+	$horizontalMargin: functions.horizontalMargin($isMobile);
+	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile, true);
 
 	@if $isMobile {
-		@include fit-container($horizontalMargin, $verticalMargin);
+		@include fit-size($isMobile, true);
 	} @else {
-		@include fit-content($horizontalMargin, $verticalMargin);
+		@include fit-content($horizontalMargin, $unusedVerticalSpace);
 	}
 	font-size: 1rem * $scale;
 	padding: variables.$basePadding;
 	
 	#formEDITOR_PARAMETERS {
+		padding: variables.$basePadding;
+		
 		fieldset, input, a {
 			margin-top: 10px !important;
 			margin-left: 15px !important;
@@ -166,20 +236,21 @@
 /* Style Choice dialog */
 @mixin styleChoiceMixin ($isMobile: false) {
 	$scale: functions.scale($isMobile);
-	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: functions.verticalMargin($isMobile, true);
+	$horizontalMargin: functions.horizontalMargin($isMobile);
+	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile, true);
 		
 	@if $isMobile {
-		@include fit-container($horizontalMargin, $verticalMargin);
+		@include fit-size($isMobile, true);
 	} @else {
-		@include fit-content($horizontalMargin, $verticalMargin);
-	}	
+		@include fit-content($horizontalMargin, $unusedVerticalSpace);
+	}
 	font-size: 1rem * $scale;
 	padding: variables.$basePadding;
 
 	fieldset {
 		margin-top: 10px;
 		margin-left: 15px;
+		padding: variables.$basePadding;
 	}
 
 	@at-root .panel:has(> #wSTYLE_CHOISE) {
@@ -193,13 +264,13 @@
  */
 @mixin languageChoiceMixin ($isMobile: false) {
 	$scale: functions.scale($isMobile);
-	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: functions.verticalMargin($isMobile, true);
+	$horizontalMargin: functions.horizontalMargin($isMobile);
+	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile, true);
 		
 	@if $isMobile {
-		@include fit-container($horizontalMargin, $verticalMargin);
+		@include fit-size($isMobile, true);
 	} @else {
-		@include fit-content($horizontalMargin, $verticalMargin);
+		@include fit-content($horizontalMargin, $unusedVerticalSpace);
 	}
 	font-size: 1rem * $scale;
 	padding: variables.$basePadding;
@@ -207,6 +278,7 @@
 	fieldset {
 		margin-top: 10px;
 		margin-left: 15px;
+		padding: variables.$basePadding;
 	}
 	fieldset > div {
 		// TEST
@@ -236,25 +308,14 @@
 /* Leave font as is, because there is no interactivity */
 @mixin languageListMixin($isMobile: false) {
 	$scale: functions.scale($isMobile);
-	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: functions.verticalMargin($isMobile);
 	
 	@if $isMobile {
-		@include fit-container($horizontalMargin, $verticalMargin);
+		@include fit-size($isMobile, false);
 	} @else {
-		height: fit-content !important; 
-		width: calc(90vw - 90px) !important;
+		height: 50vh !important; 
+		width: 80vw !important;
 	}
-	
-	#wLANGUAGE_LIST {
-		@if $isMobile {
-			@include fit-container($horizontalMargin, $verticalMargin + 50px);
-		} @else {
-			height: 450px * $scale !important; 
-			width: calc(90vw - 100px) !important;
-		}
-	}
-	
+		
 	/* Extracted from code */
 	table {
 		border-spacing: 0px !important;
@@ -270,27 +331,21 @@
 }
 
 /* Informations window */
+/* TODO: goal: avoid px units, use relative units */
 @mixin informationsMixin($isMobile: false) {
 	$scale: functions.scale($isMobile);
-	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: functions.verticalMargin($isMobile);
+	$horizontalMargin: functions.horizontalMargin($isMobile);
+	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile);
 	
 	@if $isMobile {
-		@include fit-container($horizontalMargin, $verticalMargin);
+		// Without this no content
+		@include fit-size($isMobile, false);
 	} @else {
-		height: fit-content !important; 
-		width: fit-content !important;
+		height: min(500px * $scale, calc(100vh - $unusedVerticalSpace)) !important; 
+		width: min(700px * $scale, calc(100vw - $horizontalMargin)) !important;
 	}
 
-	#wINFORMATIONS {
-		@if $isMobile {
-			// Without this no content
-			@include fit-container($horizontalMargin, $verticalMargin + 30px);
-		} @else {
-			height: min(500px * $scale, calc(100vh - $verticalMargin)) !important; 
-			width: min(700px * $scale, calc(100vw - $horizontalMargin)) !important;
-		}
-		
+	& {
 		padding: 5px;
 		font-size: 1rem * $scale;
 
@@ -332,14 +387,17 @@
 /* Custom Equations Mixin */
 @mixin customEquationsMixin($isMobile: false) {
 	$fontSize: functions.fontSize($isMobile);
-	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: functions.verticalMargin($isMobile, true);	// button bar not included ?
 
 	@if $isMobile {
-		@include fit-container($horizontalMargin, $verticalMargin);
+		@include fit-size($isMobile, true);
 	} @else {
 		width: 700px;
 		height: 500px;
+	}
+	
+	#CUSTOM_EQUATIONS_LAYOUT {
+		width: 100% !important;
+		height: 100% !important;
 	}
 
 	#customDatagrid {
@@ -367,12 +425,12 @@
 /* Matrix Mixin */
 @mixin matrixMixin($isMobile: false) {
 	$fontSize: functions.fontSize($isMobile);
-	$horizontalMargin: 2 * variables.$baseMargin;
-	$verticalMargin: functions.verticalMargin($isMobile, true);
+	$horizontalMargin: functions.horizontalMargin($isMobile);
+	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile, true);
 	
 	font-size: $fontSize;
 	& {
-		@include fit-content($horizontalMargin, $verticalMargin);
+		@include fit-content($horizontalMargin, $unusedVerticalSpace);
 	}
 	form {
 		width: auto !important;
@@ -408,13 +466,31 @@
 	color: #0E2D5F !important;
 }
 
+/* List of 'more' dialogs. */
+$contentTailored: (
+	'wf_COMMUTATIVE_DIAGRAM_MORE',
+	'wf_CHEMICAL_FORMULAE_MORE',
+	'wf_BRACKET_SYMBOLS_MORE',
+	'wf_RELATION_SYMBOLS_MORE',
+	'wf_ARROW_SYMBOLS_MORE',
+	'wf_FR_CHAR_MORE',
+	'wf_BBB_CHAR_MORE',
+	'wf_L_U_GREEK_CHAR_MORE',
+	'wf_ALL_CHAR_MORE',
+	'wf_EQUATION_MORE',
+	'wf_HORIZONTAL_SPACING_MORE',
+	'wf_VERTICAL_SPACING_MORE',
+	'wf_SPECIAL_CHARACTER_MORE'
+);
 
 @mixin dialogs($isMobile: false) {
 	/**
 	 * The MORE dialogs with an unique shape
 	 */
-	.content-tailored {
-		@include moreDialogsMixin($isMobile);
+	@each $id in $contentTailored {
+		##{$id} {
+			@include moreDialogsMixin($isMobile);
+		}
 	}
 	
 	#wUNICODES_LIST {
@@ -434,10 +510,10 @@
 	#wLANGUAGE_CHOISE {
 		@include languageChoiceMixin($isMobile);
 	}
-	.language-list {
+	#wLANGUAGE_LIST {
 		@include languageListMixin($isMobile);
 	}
-	.informations {
+	#wINFORMATIONS {
 		@include informationsMixin($isMobile);
 	}
 	#wf_CUSTOM_EQUATIONS_MORE {

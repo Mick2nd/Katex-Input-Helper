@@ -166,9 +166,16 @@ export class Localizer implements ILocalizer {
 	/**
 	 * Assembles the content of the Language Resources dialog.
 	 */
-	async buildLocalResources() {
+	async buildLocalResources(clear: boolean = false) {
 		let inst = this;
 
+		if (clear) {
+			const tabs = $('#tLANGUAGE_LIST').tabs('tabs');			// clear existing tabs
+			for (let i = tabs.length - 1; i >= 0; i--) {
+				$('#tt').tabs('close', i);
+			}
+		}
+		
 		for (let lang of inst.locales) {
 			let json = await inst.basicLoad(lang);
 			let title = lang; 

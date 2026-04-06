@@ -1,8 +1,10 @@
+import Hammer from 'hammerjs';
 import './easyui';
 import './sass/dialog.scss' assert { type: 'css' };
 
 import { VKI_init } from './keyboard/keyboard';
 import { FileHandler } from "./fileHandling";
+import { Versions } from "./versions";
 
 import { inject } from 'inversify';
 import { 
@@ -15,8 +17,7 @@ import {
 	IParser, parserId, 
 	IMath, mathId, ICodeMirror,
 	IPanels, panelsId, matrixWindowId, unicodeWindowId, informationWindowId, moreDialogId, windowId, dialogId, dynamicPanelId, 
-    IMenus,
-    menusId} from './interfaces';
+    IMenus, menusId} from './interfaces';
 
 let console: any; 
 if (globalThis.console) console = globalThis.console; else console = { log: function(_: string) { }, error: function(_: string) { } }; 
@@ -300,6 +301,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		 * 
 		 * @param from - body element of the new document
 		 * @param to - body selector of the old, original document
+		 * 
 		 */
 		function transfer(from: HTMLElement, to: string) {
 			$(to).html(from.innerHTML);
@@ -353,7 +355,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	async initialise() { 
 
 		let vme = this;
-		this.versions = await import( /* webpackInclude: /\.json$/ */ './versions.json');
+		this.versions = new Versions();
 		
 		// Initialize is done lazily
 		//this.parser.initialise();		
@@ -366,7 +368,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		await this.initialiseMobile(this.parameters.isMobile);
 
 		// IN QUESTION
-		vme.initialiseCodeMirror();
+		await vme.initialiseCodeMirror();
 		this.localizer.subscribe(this.onLocaleChanged.bind(this));
 		await this.localizer.initialiseLanguageChoice(this.localType);		// Progress dialog uses localized text
 		// NO ACTION on language choice dialog
@@ -423,40 +425,19 @@ export class KatexInputHelper implements IKatexInputHelper {
 			panel.panel('resize', { height: `${part}%` });
 			$(selector).layout('resize');
 		}
-
-		/**
-		 * Queries the height of the south region.
-		 */
-		function getHeightFooter() {
-			const heightFooter = $('.katex-mobile .southRegion').first().outerHeight();
-			return heightFooter;
-		}
-		
-		/**
-		 * Determines the height of the center.
-		 */
-		function getHeightCenterVh(mobile: boolean = true) : string {
-			const headerSelector = mobile ? '#introduction' : '#northRegion';
-			const footerSelector = mobile ? '.katex-mobile .southRegion' : '.katex-desktop .southRegion';
-			const padding = 5;
-			const heightBody = $('body').outerHeight();
-			const heightHeader = $(headerSelector).outerHeight() + 2 * padding;
-			const heightFooter = $(footerSelector).outerHeight();
-			const heightCenter = heightBody - heightHeader - heightFooter;
-			const heightCenterVh = Math.floor(heightCenter * 100 / heightBody);
-			
-			return `${heightCenterVh}vh`;
-		}
 		
 		// Intent: to restore original web page structure (required by Joplin plugin).
 		// Here: the viewport
-		// TODO: required?
+		// TODO: required? CHECK FUNCTIONALITY WITHOUT THIS
+		// It seems the functionality is given without this !!
+		/*
 		const content = $("body meta[name='viewport']").attr('content');
 		if (content) {
 			const html = `<meta name="viewport" content="${content}" ></meta>`;
 			$("meta[name='viewport']").remove();
 			$('html > head').append(html);
 		}
+		*/
 
 		// Here: the body content
 		$('body').prepend($('#joplin-plugin-content > div'));
@@ -506,7 +487,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 			$("header:has(+ #westRegion) a.back, header:has(+ #eastRegion) a.back, header:has(+ #wrapperPanelMenu) a.back").on('click', function(_) { 
 			});
 			
-			// TEST ... WORKING
+			// Implements a handler for panel open events for the main panel.
 			$('#myContainer').panel({
 				fit: true,
 				onOpen: function() {
@@ -514,6 +495,43 @@ export class KatexInputHelper implements IKatexInputHelper {
 					inst.cursorAtInsertionPoint = false;
 				}
 			});
+			
+			// Handles orientation changes
+			screen.orientation.addEventListener('change', async function() {
+				await inst.panels.refresh();
+			});
+			
+			/**
+			 * Installs a swipe handler for certain nav panels.
+			 * 
+			 * @param from - selector of the origin window
+			 * @param dir - direction (left, right, down)
+			 * @param [to=''] - target panel, empty for switch back
+			 */
+			function navigate(from: string, dir: string, to: string = '') {
+				const wnd = $(from)[0];
+				const hammer = new Hammer(wnd);
+				hammer.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
+				if (to === '') {
+					hammer.on('swipedown', function(event: any) {
+						event.preventDefault(); 
+						$.mobile.back();
+						inst.panels.closeOpen(); 
+					});
+					return;
+				}
+				hammer.on('swipe' + dir, function(event: any) {
+					event.preventDefault(); 
+					$.mobile.go(to, 'slide', dir);
+				});
+			}
+			
+			navigate('div:has(#myContainer) header', 'left', '#eastRegion');
+			navigate('div:has(#myContainer) header', 'right', '#westRegion');
+			navigate('div:has(#eastRegion) header', 'right', '#myContainer');
+			navigate('div:has(#westRegion) header', 'left', '#myContainer');
+			navigate('div:has(#wrapperPanel) header', 'down', '');
+			navigate('div:has(#wrapperPanelMenu) header', 'down', '');
 			
 			defineProportions('#innerLayout', 'south', 50);
 						
@@ -542,8 +560,12 @@ export class KatexInputHelper implements IKatexInputHelper {
 			console.log(`Parsing with selector #${id}`);
 			const data = $(`#${id} > div`).map(function(idx: number, dom) {
 				console.log(`Found menu item : %O`, dom);
-				if ($(this).hasClass('menu-line')) {
-					return null;
+				if ($(this).hasClass('menu-sep')) {
+					return {
+						id: '',
+						text: '',
+						iconCls: ''
+					};
 				}
 				const span = $(this).find('span');
 				let children = undefined;
@@ -580,6 +602,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 	
 	/**
 	 * Populates a side menu in a wrapper menu panel for reduced space.
+	 * 
+	 * @param data - the data structure used to describe the menu
 	 */
 	populateSidemenu(data: any) {
 		$('#sm').sidemenu({
@@ -588,6 +612,13 @@ export class KatexInputHelper implements IKatexInputHelper {
 			multiple: false,
 			onSelect: this.onMenuClick.bind(this)
 		});
+		
+		$('ul.sidemenu-tree span.tree-title').each(function(idx) {		// set the css class for menu separator
+			if ($(this).text() == '') {
+				$(this).addClass('menu-sep');
+			}
+		})
+		
 		$('#sm').sidemenu('expand');
 	}
 	
@@ -635,9 +666,10 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * - change handler -> auto update of formula
 	 * - context menu binding
 	 */
-	initialiseCodeMirror() { 
+	async initialiseCodeMirror() { 
 		let vme = this; 
 		const codeMirrorEditor = this.codeMirrorEditor;
+		await this.versions.init(codeMirrorEditor.version);
 		// Reserved.
 		const option = vme.platformInfo.isMobile ? 'contenteditable' : 'textarea';	// RESERVED
 		try { codeMirrorEditor.setOption('inputStyle', option); } catch(e) {}
@@ -867,6 +899,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		if (id in functions) {
 			await functions[id]();
 		} else {
+			if (id === '' || item.text === '') { return; }			// probably menu separator
 			$.messager.show({ title: "<span class='rtl-title-withicon'>" + vme.getLocalText("INFORMATION") + "</span>", msg: item.text });
 		}
 	}
@@ -1314,36 +1347,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 */
 	async updateInfo() {
 		let vme = this;
-		$('#tINFORMATIONS div[href]')
-		.each(function( _idx: number ) {
-			let href = $(this).attr('href');
-			let id = $(this).attr('id');
-			if (href.length <= 1) {													// info html !
-				console.info(`Info dialog with : id : ${id}, href : ${href}`);
-				
-				// Trial for Android
-				let newHref = `../information/${id}.html`;							// lazily load html info
-				$(this).attr('href', newHref);
-				import(`../information/${id}.html`)
-				.then((mod) => { $(this).html(mod.default); });
-			}
-		});
-
 		await vme.parser.parseAsync('div[href]', 0, 100);
 		console.info(`Parse completed for : div[href]`);
 
-		$("#VMEversion").html(`
-				<table class="inline-table">
-					<tr><td><b> ${vme.versions.version} </b></td><td><b>Katex Input Helper / Visual Math Editor</b>, (This software)</td></tr>
-					<tr><td> ${vme.versions.katexVersion} </td><td>Katex</td></tr>
-					<tr><td> ${vme.codeMirrorEditor.version} </td><td>Code Mirror</td></tr>
-					<tr><td> ${vme.versions.VKI_version} </td><td>Virtual Keyboard</td></tr>
-					<tr><td> ${$.fn.jquery} </td><td>Jquery</td></tr>
-					<tr><td> ${vme.versions.easyuiVersion} </td><td>Jquery Easyui</td></tr>
-					<tr><td> ${vme.versions.colorPickerVersion} </td><td>Jquery Color Picker</td></tr>
-				<table>`); 
-		$("#VMEdate").html((new Date()).getFullYear().toString());
-		
 		// updates exactly 2 dialogs (see selectors)
 		// Necessary and additional ones required?
 		vme.math.inplaceUpdate('#tEQUATION div a.s[latex], #mSPECIAL_CHARACTER div a.s[latex]', true);	// where and when to do that

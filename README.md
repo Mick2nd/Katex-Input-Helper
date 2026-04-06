@@ -81,6 +81,10 @@ This software is available on the net [here](https://visualmatheditor.equatheque
 1. The user interface is somewhat different, but functionality is the same
 1. The Latex input area and the Formula output area are reversed for a better experience with mobile screen keyboards
 1. Navigation panels are used and dialogs, the side panels and the menus are moved out from the main screen to such panels
+1. Implemented swipe gestures to simplify navigation between panels: they are always processed on the title bars only
+   1. Use swipe left and swipe right on the main panel to navigate to the appropriate side panels
+   1. Use swipe left or swipe right to navigate back to the main panel
+   1. Use swipe down to dismiss the side menu or the dialog wrapper panels
 
 ## Some Screenshots
 
@@ -106,10 +110,18 @@ The symbol bar with button for the Katex Input Helper (Square Root symbol)
 - The persistence of custom equations can be damaged when a filter is active. 
 - The *web* version of this app does work bad on *Firefox* and on mobile devices in that many dialogs are sized wrong. 
 This does not appear on the *Chrome* browser on desktop.
-- The sub menu items of the mobile version do show icons with the default theme only.
 - The mobile version does regularly pop-up the screen keyboard. No mechanism is known to avoid this.
 
 ## Release Notes
+
+### 3.0.1
+
+- Bug fixing on the mobile version:
+- The icons of sub menu items are now fully visible
+- Improved the handling of themes and the start behavior, no more flickering of colors on the progress dialog
+- Implemented the menu item separators like those in the desktop version
+- Implemented swipe gestures to simplify navigation between panels
+- Improved *responsiveness* in the mobile version, especially the handling of orientation changes and the dimensions of dialogs
 
 ### 3.0.0
 
