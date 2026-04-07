@@ -389,7 +389,7 @@ export class KIHParameters {
 			} catch(e) {
 				console.error(`Exception resizing panel ${id} : ${e}`);
 			}
-		} else {
+		} else if (!this.isMobile) {
 			console.warn(`Missing id in parameters : ${id}`);
 		}
 	}

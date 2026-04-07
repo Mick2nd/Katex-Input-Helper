@@ -39,18 +39,11 @@ container
 	.toFactory((context: ResolutionContext) : () => IKatexInputHelper => {
 		return () => context.get(katexInputHelperId);
 	});
-/*
-// Probably no longer required
-container
-	.bind<ICodeMirror>(codeMirrorId)
-	.to(CodeMirrorProxy)
-	.inSingletonScope();
-*/
+
 container
 	.bind<Factory<ICodeMirror>>(codeMirrorFactoryId)
 	.toFactory((_context: ResolutionContext) : (isMobile: boolean) => ICodeMirror => {
 		return (isMobile: boolean) => new CodeMirrorProxy(isMobile);
-		//return () => context.get(codeMirrorId);
 	});
 	
 container.bind<KIHPanel>(dynamicPanelId).to(DynamicPanel);

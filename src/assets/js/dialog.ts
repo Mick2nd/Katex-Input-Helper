@@ -371,8 +371,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 		await vme.initialiseCodeMirror();
 		this.localizer.subscribe(this.onLocaleChanged.bind(this));
 		await this.localizer.initialiseLanguageChoice(this.localType);		// Progress dialog uses localized text
-		// NO ACTION on language choice dialog
-		// await this.parser.parseAsync('#wLANGUAGE_CHOISE');
 		
 		$.messager.progress({
 			title: "Katex Input Helper", 
@@ -397,7 +395,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		await this.themes.initialiseThemeChoice(this.style, this.rtlStyle); // RTL STYLE defined after locale language
 
 		if (!this.platformInfo.isMobile) {
-			$('#myContainer').layout({fit: true});
+			$('#myContainer').layout({fit: true});							// myContainer is only on desktop a layout
 		}
 		$('#innerLayout').layout({fit: true});
 		vme.endWait();
@@ -425,19 +423,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 			panel.panel('resize', { height: `${part}%` });
 			$(selector).layout('resize');
 		}
-		
-		// Intent: to restore original web page structure (required by Joplin plugin).
-		// Here: the viewport
-		// TODO: required? CHECK FUNCTIONALITY WITHOUT THIS
-		// It seems the functionality is given without this !!
-		/*
-		const content = $("body meta[name='viewport']").attr('content');
-		if (content) {
-			const html = `<meta name="viewport" content="${content}" ></meta>`;
-			$("meta[name='viewport']").remove();
-			$('html > head').append(html);
-		}
-		*/
 
 		// Here: the body content
 		$('body').prepend($('#joplin-plugin-content > div'));
@@ -462,6 +447,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 
 			console.log(`Menu4 : ${$('#main-menu').html()}`);
 			$('body').prepend($('div:has(> .easyui-navpanel)'));
+			
 			// Placement of "navpanels" in body initiates buggy behavior
 			//$('body').prepend($('.easyui-navpanel'));
 			
@@ -670,15 +656,11 @@ export class KatexInputHelper implements IKatexInputHelper {
 		let vme = this; 
 		const codeMirrorEditor = this.codeMirrorEditor;
 		await this.versions.init(codeMirrorEditor.version);
-		// Reserved.
-		const option = vme.platformInfo.isMobile ? 'contenteditable' : 'textarea';	// RESERVED
-		try { codeMirrorEditor.setOption('inputStyle', option); } catch(e) {}
+		
 		codeMirrorEditor.on("change", function() { vme.autoUpdateOutput(); }); 
 		
 		if(vme.platformInfo.isMobile) {
 			$(vme.cmSelector).css('font-size', '1.3em');
-			// NO ACTION on Android
-			// $('.cm-content').attr('inputmethod', 'none');
 		} else {
 			/*	The context menu appears but throws on click or mouse move afterwards:
 			 *	NO OWNER => special handling.
@@ -793,8 +775,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		}
 		
 		// Configures Clicks on close buttons and Key handlers, Context menus and others
-		/* Moved to panels : Close button click handler
-		*/
+		// Moved to panels : Close button click handler
 		 
 		$('#btRESET_WINDOW_POSITIONS').on('click', function(event) { 
 			event.preventDefault(); 
@@ -856,6 +837,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 	/**
 	 * Handles menu clicks of the main menu. This handler performs an additional
 	 * handling of the side menu.
+	 * 
+	 * @param item - the clicked menu item
 	 */
 	async onMenuClick(item: any) {
 		let vme = this;
@@ -926,8 +909,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 	
 	/**
 	 * Registers events for a window and opens it.
-	 * 
 	 * This whole effort is done to get the window position and size persisted.
+	 * Delegated to the panels instance.
 	 * 
 	 * @param id - the HTML id of the window
 	 */
@@ -937,7 +920,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 
 	/**
 	 * Registers events for a window and opens it.
-	 * 
 	 * This whole effort is done to get the window position and size persisted.
 	 * 
 	 * @param id - the HTML id of the window
@@ -1087,7 +1069,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	
 	/**
 	 * Wrapper of the appropriate Math routine. Updates the math in the 
-	 * 			 output window.
+	 * output window.
 	 */
 	updateOutput() {
 		this.math.updateOutput();
@@ -1103,16 +1085,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	}
 	
 	/**
-	 * OBSOLETE. NOT USED.
-	 *	
-	insertBeforeEachLine(b) { 
-		this.encloseSelection("", "", function(a) { a = a.replace(/\r/g, ""); 
-			return b + a.replace(/\n/g, "\n" + b) }) 
-		}
-	*/
-	
-	/**
-	 * For insertion of formulae with insertion point..
+	 * For insertion of formulae with insertion point.
 	 */
 	tag(b: any, a: any) {
 		b = b || null; 

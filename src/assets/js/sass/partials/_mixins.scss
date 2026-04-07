@@ -350,7 +350,15 @@
 		font-size: 1rem * $scale;
 
 		>div >div {
-			padding: 10px;
+			padding: {
+				top: 10px;
+				bottom: 10px;
+				left: 10px;
+			}
+			
+			div[id] {
+				padding-right: 2px;
+			}
 		}
 		
 		#tCOPYRIGHT hr, #tVERSION hr {
