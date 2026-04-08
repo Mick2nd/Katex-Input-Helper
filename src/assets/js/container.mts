@@ -1,32 +1,53 @@
-import { Container, ResolutionContext, Factory } from 'inversify';
+import { Container, ResolutionContext, Factory, Newable } from 'inversify';
 
 import { IBootLoader, bootLoaderId, katexInputHelperId, IKatexInputHelper, katexInputHelperFactoryId, 
 	ILocalizer, localizerId, IMessager, messagerId, 
 	IUtilities, utilitiesId, parametersId, IThemes, themesId, IParser, parserId, IMath, mathId, 
 	IPanels, panelsId, dynamicPanelId, informationWindowId, moreDialogId, windowId, dialogId, matrixWindowId, 
 	dynamicParametersId, panelFactoryId, unicodeWindowId, categoriesTreeId, ICategoriesTree, asyncId,
-	codeMirrorId, codeMirrorFactoryId, ICodeMirror, menusId, IMenus } from './interfaces';
+	codeMirrorFactoryId, ICodeMirror, menusId, IMenus } from './interfaces.mjs';
 
-import { BootLoader } from './bootLoader';
-import { KatexInputHelper } from './dialog';
-import { ParametersProxy } from './parameters';
-import { Localizer } from './localization';
-import { Messager, Utilities } from './helpers';
-import { Themes } from './themes';
-import { ParserExtension } from './parserExtension';
-import { MathFormulae } from './math';
-import { KIHPanels, KIHPanel, DynamicPanel, MatrixWindow, InformationWindow, KIHMoreDialog, KIHWindow, KIHDialog, UnicodeWindow } from './panels';
-import { CategoriesTree } from './categoriesTree';
-import { CodeMirrorProxy } from './codeMirrorProxy';
-import { Menus } from './menus';
+import { default as BootLoader } from './bootLoader.mjs';
+import { KatexInputHelper } from './dialog.mjs';
+import { Localizer } from './localization.mjs';
+import { ParametersProxy } from './parameters.mjs';
+import { Messager, Utilities } from './helpers.mjs';
+import { Themes } from './themes.mjs';
+import { ParserExtension } from './parserExtension.mjs';
+import { MathFormulae } from './math.mjs';
+import { KIHPanels, KIHPanel, DynamicPanel, MatrixWindow, InformationWindow, KIHMoreDialog, KIHWindow, KIHDialog, UnicodeWindow } from './panels.mjs';
+import { CategoriesTree } from './categoriesTree.mjs';
+import { CodeMirrorProxy } from './codeMirrorProxy.mjs';
+import { Menus } from './menus.mjs';
 
 const container = new Container();
 
 container.bind(asyncId).toConstantValue(true);
+
+/*	TODO: Intent is to provide a common method for asynchronous registration.
+ *	Code below is working. the only specific piece is the file name. Probably
+ *	this will result in file load error -> Working with the given signature.
+async function register<TIfc>(id: Symbol, file: string) {
+	const rawSymbol = Symbol.for(id.toString() + 'raw');
+	
+	container.bind<TIfc>(id.valueOf()).toDynamicValue(
+		async (context: ResolutionContext) => { 
+		const cls = ((await import(`./${file}.mjs`)).default) as Newable<TIfc, []>;
+		container.bind<TIfc>(rawSymbol).to(cls);
+		return context.get(rawSymbol);
+	}).inSingletonScope();
+}
+
+await register<IBootLoader>(bootLoaderId, 'bootLoader');
+ */
+
+//await register<IKatexInputHelper>(katexInputHelperId, 'dialog');
+//await register<ILocalizer>(localizerId, 'localization');
+
 container.bind<IBootLoader>(bootLoaderId).to(BootLoader).inSingletonScope();
 container.bind<IKatexInputHelper>(katexInputHelperId).to(KatexInputHelper).inSingletonScope();
-container.bind(parametersId).toDynamicValue(ParametersProxy).inSingletonScope();
 container.bind<ILocalizer>(localizerId).to(Localizer).inSingletonScope();
+container.bind(parametersId).toDynamicValue(ParametersProxy).inSingletonScope();
 container.bind<IMessager>(messagerId).to(Messager).inSingletonScope();
 container.bind<IUtilities>(utilitiesId).to(Utilities).inSingletonScope();
 container.bind<IThemes>(themesId).to(Themes).inSingletonScope();
@@ -74,8 +95,8 @@ container
 		};
 	});
 
-
-const bootLoader: IBootLoader = container.get(bootLoaderId);
+// await container.getAsync<IBootLoader>(bootLoaderId);
+const bootLoader: IBootLoader = container.get(bootLoaderId); 
 
 try {
 	await bootLoader.init1();

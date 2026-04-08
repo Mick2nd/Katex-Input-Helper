@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
-import { ILocalizer } from './interfaces';
-import { Observable } from "./patterns/observable";
+import { ILocalizer } from './interfaces.mjs';
+import { Observable } from './patterns/observable.mjs';
 
 /**
  * Supports the localization of this application.

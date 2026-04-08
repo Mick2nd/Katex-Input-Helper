@@ -12,7 +12,7 @@ function displayMode(cm : any) : any {
 			const state = cm.cm6.viewState.state;
 			const note = state.doc.toString();										// the whole note text
 			const cursorIndex = state.selection.ranges[0].to;						// the cursor index inside the text
-			const re = /(?<![\\$])((\$\$)|\$)([^{].*?)(\1)/sg;						// regex searches for math sections (block or inline)
+			const re = /(?<![\\$])((\$\$)|\$)([^{].*?)(\1)/g;						// regex searches for math sections (block or inline)
 			for (const match of note.matchAll(re)) {								// through all matches
 				
 				const sign = match[1];

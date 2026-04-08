@@ -49,13 +49,15 @@ const splitChunksConfig = (_env) => { return {
  */
 const rulesConfig = (env) => [
 	{
-		test: /\.tsx?$/,
+		// test: /(?!(\.d))\.m?tsx?$/,
+		test: /\.m?ts$/,
+		include: [ path.resolve(path.dirname('.'), 'src/assets/js') ],
 		exclude: /node_modules/,
 		use: [{
 			loader: 'ts-loader',
 			options: {
 				configFile: 'src/assets/tsconfig.json'
-			}
+			},
 		}]
 	},
 	{
@@ -268,16 +270,22 @@ export default (env) => {
 			alias: {
 		    	'@images': path.resolve(path.dirname('.'), 'dist/assets/images/'),
 		     	'@fonts': path.resolve(path.dirname('.'), 'fonts/'),
+				components: path.resolve(path.dirname('.'), 'src/assets/js')
 			},
-			extensions: [".ts", ".tsx", ".js"]
+			extensions: [".mts", ".ts", ".tsx", ".mjs", ".js", "jsx"],
+			extensionAlias: {
+			 ".js": [".js", ".ts"],
+			 ".cjs": [".cjs", ".cts"],
+			 ".mjs": [".mjs", ".mts"]
+			}
 		},
 		plugins: pluginsConfig(env),
 		entry: {
-			main: './src/assets/js/container.ts',
+			main: './src/assets/js/container.mts',
 			//test: './src/assets/dialog-test.hbs'
 		},
 		output: {
-			clean: true,
+			clean: false,
 			filename: '[name].js',
 			chunkFilename: 
 			/*	BELIEVE, this is more or less for different entries

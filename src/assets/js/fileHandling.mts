@@ -1,4 +1,4 @@
-import { promisify } from './parserExtension';
+import { promisify } from './parserExtension.mjs';
 
 /**
  * Supports some (asynchronous) file operations.

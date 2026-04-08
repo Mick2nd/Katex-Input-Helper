@@ -1,10 +1,11 @@
 import Hammer from 'hammerjs';
-import './easyui';
+import './easyui.mjs';
+import './definitions.mjs';
 import './sass/dialog.scss' assert { type: 'css' };
 
-import { VKI_init } from './keyboard/keyboard';
-import { FileHandler } from "./fileHandling";
-import { Versions } from "./versions";
+import { VKI_init } from './keyboard/keyboard.js';
+import { FileHandler } from './fileHandling.mjs';
+import { Versions } from './versions.mjs';
 
 import { inject } from 'inversify';
 import { 
@@ -17,7 +18,7 @@ import {
 	IParser, parserId, 
 	IMath, mathId, ICodeMirror,
 	IPanels, panelsId, matrixWindowId, unicodeWindowId, informationWindowId, moreDialogId, windowId, dialogId, dynamicPanelId, 
-    IMenus, menusId} from './interfaces';
+    IMenus, menusId} from './interfaces.mjs';
 
 let console: any; 
 if (globalThis.console) console = globalThis.console; else console = { log: function(_: string) { }, error: function(_: string) { } }; 
@@ -334,7 +335,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		const body = (root.lastChild as HTMLElement);
 		append(body, 'body');
 		
-		this.math.injectCodeMirror();
+		await this.math.injectCodeMirror();
 		this.codeMirrorEditor = this.math.codeMirror;			// lazy injection
 		console.debug(`Document check : ${document.URL}.`);
 		
@@ -442,7 +443,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 			
 			// For the working of the mobile variant order of these statements is essential
 			await import('./jquery-easyui/themes/mobile.css', opts);
-			await import('./jquery-easyui/jquery.easyui.mobile');
+			await import('./jquery-easyui/jquery.easyui.mobile.js');
 			await this.parser.parseAsync('body');
 
 			console.log(`Menu4 : ${$('#main-menu').html()}`);

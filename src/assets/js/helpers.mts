@@ -1,5 +1,5 @@
 import { inject, injectable } from 'inversify';
-import { ILocalizer, localizerId, IMessager, IUtilities, State } from './interfaces';
+import { ILocalizer, localizerId, IMessager, IUtilities, State } from './interfaces.mjs';
 
 /**
  * Encapsulates the jquery messager with frequently used options.

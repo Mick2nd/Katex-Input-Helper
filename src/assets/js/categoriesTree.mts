@@ -1,6 +1,6 @@
-import { Observable } from "./patterns/observable";
+import { Observable } from './patterns/observable.mjs';
 import { injectable } from 'inversify';
-import { ICategoriesTree } from './interfaces';
+import { ICategoriesTree } from './interfaces.mjs';
 
 /**
  * Manages the Categories Tree.

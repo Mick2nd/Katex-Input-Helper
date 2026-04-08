@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify';
-import { IParser, asyncId } from './interfaces';
+import { IParser, asyncId } from './interfaces.mjs';
 
 /**
  * A the jquery parser using parser wrapper.

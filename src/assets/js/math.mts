@@ -1,8 +1,8 @@
-import './jquery-easyui/jquery.easyui.min';						// ADDED for unit test
+import './jquery-easyui/jquery.easyui.min.js';						// ADDED for unit test
 
 import { inject, injectable, Factory } from 'inversify';
 import { IMath, localizerId, ILocalizer, parametersId, parserId, IParser, 
-	codeMirrorFactoryId, ICodeMirror, messagerId, IMessager } from './interfaces';
+	codeMirrorFactoryId, ICodeMirror, messagerId, IMessager } from './interfaces.mjs';
 
 /**
  * Class responsible for Math Formula handling.
@@ -44,11 +44,11 @@ export class MathFormulae implements IMath {
 	/**
 	 * Used for postponed injection.
 	 */
-	async injectCodeMirror() {
-		this.codeMirror = this.codeMirrorFactory(this.parameters.isMobile);
+	async injectCodeMirror() : Promise<void> {
+		this.codeMirror = await this.codeMirrorFactory(this.parameters.isMobile);
 		this.mathVisualOutput = $('#mathVisualOutput div')[0];
-		this.katex = await import('katex/dist/katex');	// This version of import is essential for mhchem
-		await import('katex/dist/contrib/mhchem');
+		this.katex = await import('katex/dist/katex.mjs');	// This version of import is essential for mhchem
+		await import('katex/dist/contrib/mhchem.mjs');
 	}
 	
 	/**

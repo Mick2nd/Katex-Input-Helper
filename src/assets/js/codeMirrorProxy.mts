@@ -1,4 +1,4 @@
-import './jquery-easyui/jquery.easyui.min';
+import './jquery-easyui/jquery.easyui.min.js';
 import { basicSetup } from "codemirror";
 import { EditorState, Compartment } from "@codemirror/state";
 import { EditorView, keymap, lineNumbers } from "@codemirror/view";
@@ -9,7 +9,7 @@ import { bbedit, darcula } from "@uiw/codemirror-themes-all";
 //import { bbedit } from "@uiw/codemirror-theme-bbedit";
 //import { darcula } from "@uiw/codemirror-theme-darcula";
 
-import { ICodeMirror } from './interfaces';
+import { ICodeMirror } from './interfaces.mjs';
 
 /**
  * Proxy class implements the ICodeMirror interface

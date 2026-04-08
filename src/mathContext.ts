@@ -25,7 +25,7 @@ export class MathContext {
 
 			const note = await this.getValue();										// the whole note text
 			const cursorIndex = await this.cursorIndex(note);						// the cursor index inside the text
-			const re = /(?<![\\$])((\$\$)|\$)([^{].*?)(\1)/sg;						// regex searches for math sections (block or inline)
+			const re = /(?<![\\$])((\$\$)|\$)([^{].*?)(\1)/g;						// regex searches for math sections (block or inline)
 			for (const match of note.matchAll(re)) {								// through all matches
 				
 				const sign = match[1];

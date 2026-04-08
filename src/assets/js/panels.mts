@@ -1,9 +1,9 @@
-import { FileHandler } from './fileHandling';
-import { Versions } from "./versions";
+import { FileHandler } from './fileHandling.mjs';
+import { Versions } from './versions.mjs';
 
 import { inject, injectable, injectFromBase } from 'inversify';
 import { ILocalizer, IParser, IMath, utilitiesId, IUtilities, categoriesTreeId, ICategoriesTree,
-	IMessager, dynamicParametersId, panelFactoryId, IPanel } from './interfaces';
+	IMessager, dynamicParametersId, panelFactoryId, IPanel } from './interfaces.mjs';
 
 /**
  * The base class of all Panels, Dialogs, Windows.

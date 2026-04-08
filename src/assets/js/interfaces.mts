@@ -1,5 +1,9 @@
 
-export interface IBootLoader {
+export interface ICommon {
+	
+}
+
+export interface IBootLoader extends ICommon {
 	init1() : Promise<void>;
 	fatal(err: any) : void;
 	check() : void;
@@ -54,7 +58,7 @@ export interface IParser {
 }
 
 export interface IMath {
-	injectCodeMirror() : void;
+	injectCodeMirror() : Promise<void>;
 	equipWithInteractivity(a: any, javascript: boolean) : void;
 	equipWithTooltip(selector: any, text: string, javascript: boolean) : void;
 	inplaceUpdate(selector: any, javascript: boolean) : void;
@@ -125,6 +129,7 @@ export interface IMenus {
 }
 
 export const asyncId = Symbol.for('AsyncId');
+export const rawBootLoaderId = Symbol.for('RawBootLoaderId');
 export const bootLoaderId = Symbol.for('BootLoaderId');
 export const platformInfoId = Symbol.for('PlatFormInfoId');
 export const katexInputHelperId = Symbol.for('KatexInputHelperId');

@@ -5,19 +5,19 @@
  */
 import { EditorView } from "@codemirror/view";
 
-import { Observable } from './patterns/observable';
-import { Localizer } from './localization';
-import { Themes } from './themes';
-import { ParserExtension } from './parserExtension';
-import { KIHParameters } from './parameters';
-import { MathFormulae } from './math';
-import { KatexInputHelper } from './dialog';
-import { FileHandler } from './fileHandling';
-import { CategoriesTree } from './categoriesTree';
-import { DynamicPanel } from './panels';
+import { Observable } from './patterns/observable.mjs';
+import { Localizer } from './localization.mjs';
+import { Themes } from './themes.mjs';
+import { ParserExtension } from './parserExtension.mjs';
+import { KIHParameters } from './parameters.mjs';
+import { MathFormulae } from './math.mjs';
+import { KatexInputHelper } from './dialog.mjs';
+import { FileHandler } from './fileHandling.mjs';
+import { CategoriesTree } from './categoriesTree.mjs';
+import { DynamicPanel } from './panels.mjs';
 
 import { injectable, inject, Factory } from 'inversify';
-import { IBootLoader, IKatexInputHelper, katexInputHelperFactoryId } from './interfaces';
+import { IBootLoader, IKatexInputHelper, katexInputHelperFactoryId } from './interfaces.mjs';
 
 /**
  * The boot loader of the Katex Input Helper.
@@ -25,7 +25,7 @@ import { IBootLoader, IKatexInputHelper, katexInputHelperFactoryId } from './int
  * It serves as entry point of the application.
  */
 @injectable()
-export class BootLoader implements IBootLoader {
+export default class BootLoader implements IBootLoader {
 	
 	baseLocation = null;
 	factory: Factory<IKatexInputHelper> = null;
@@ -105,7 +105,7 @@ export class BootLoader implements IBootLoader {
 	 */
 	async initApp() {
 		try {
-			this.vme = this.factory();
+			this.vme = await this.factory();
 			globalThis.vme = this.vme;							// prevents garbage collection?
 			const prefetched = await this.vme.prefetch();		// prefetch can load another page
 			if (prefetched) {
@@ -124,8 +124,8 @@ export class BootLoader implements IBootLoader {
 	 */
 	async init1() {
 		
-		this.katex = await import('katex/dist/katex');			// This version of import is essential for mhchem
-		await import('katex/dist/contrib/mhchem');
+		this.katex = await import('katex/dist/katex.mjs');			// This version of import is essential for mhchem
+		await import('katex/dist/contrib/mhchem.mjs');
 		
 		let counter = 20;
 		while (!this.presenceCheck(counter) && --counter >= 0) {

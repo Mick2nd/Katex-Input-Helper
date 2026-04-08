@@ -1,17 +1,22 @@
 {
 	"compilerOptions": {
-		"outDir": "./dist/",
-		"module": "ESNext",
-		"target": "ES2017",
+		"outDir": "./dist/mjs/",
+		"module": "nodenext",
+		"target": "esnext",
 		"jsx": "react",
 		"allowJs": true,
 		"baseUrl": ".",
 		"esModuleInterop": true,
-		"moduleResolution": "node",
+		"moduleResolution": "nodenext",
+		"allowArbitraryExtensions": true,
 		"resolveJsonModule": true,
 		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true
+		"emitDecoratorMetadata": true,
+		"moduleSuffixes": [".mjs", ".js", ".css", ".scss", ".json", ""],
+		"plugins": [{ "name": "typescript-plugin-css-modules" }]
 	},
-	"files": ["js/definitions.ts", "js/bootLoader.ts"],
-	"extends": "../../tsconfig.json"
+	"files": ["js/container.mts", "js/definitions.mts"],
+	"extends": "../../tsconfig.json",
+	"include": ["js/**/*"],
+	"exclude": []
 }

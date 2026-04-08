@@ -1,5 +1,5 @@
-import { Observable } from "./patterns/observable";
-import { IThemes } from './interfaces';
+import { Observable } from './patterns/observable.mjs';
+import { IThemes } from './interfaces.mjs';
 
 /**
  * Themes or Styles support. This is an Observable.

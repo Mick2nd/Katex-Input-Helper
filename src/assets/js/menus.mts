@@ -1,6 +1,6 @@
-import './easyui';
+import './easyui.mjs';
 import { injectable, inject } from 'inversify';
-import { ILocalizer, localizerId, IMenus } from './interfaces';
+import { ILocalizer, localizerId, IMenus } from './interfaces.mjs';
 
 /**
  * Supports various kinds of Menus. Part of this class is a menu description to
