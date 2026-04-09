@@ -50,6 +50,7 @@ export interface IThemes {
 	activateStyle(activeTheme: string) : Promise<void>;
 	setRTLstyle(dir: string) : void;
 	subscribe(func: any, ...args: any) : void;
+	preInitialize() : Promise<void>;
 }
 
 export interface IParser {

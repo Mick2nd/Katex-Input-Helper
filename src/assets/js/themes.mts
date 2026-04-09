@@ -1,5 +1,6 @@
 import { Observable } from './patterns/observable.mjs';
-import { IThemes } from './interfaces.mjs';
+import { IThemes, parserId, IParser } from './interfaces.mjs';
+import { inject } from 'inversify';
 
 /**
  * Themes or Styles support. This is an Observable.
@@ -11,25 +12,36 @@ export class Themes extends Observable implements IThemes {
 	cssActive = false;
 	activeTheme = "";
 	supportedThemes = [ 'aguas', 'gray', 'black', 'bootstrap', 'metro' ];
+	opts: any;
+	parser: IParser;
 	
 	/**
 	 * Constructor.
 	 */
-	constructor() {
+	constructor(
+		@inject(parserId) parser
+	) {
 		super();
+
+		this.parser = parser;
+		this.opts = { 
+			assert: { 
+				type: 'css',
+			}
+		};
 	}
 	
 	/**
-	 * Initializes the theme choice.
+	 * Initializes the theme choice, the dialog to select a theme.
 	 * 
-	 * This method must be invoked during initialization time.
+	 * This method must be invoked during initialization time. All other processing
+	 * is done internally.
 	 * 
 	 * @param activeTheme - the theme as it comes from the stored parameters
 	 * @param dir - the language direction parameter (comes from the selected language)
 	 */
 	async initialiseThemeChoice(activeTheme: string, dir = 'ltr') {
 		let inst = this;
-		await this.appendCss(activeTheme, dir);												// initialisation -> 'load' css files
 		$("[name='style']").filter(`[value=${activeTheme}]`).attr("checked", "checked"); 	// select Radio button
 
 		$("input[name='style']").on('change', function() { 									// change handler of style changes
@@ -38,6 +50,69 @@ export class Themes extends Observable implements IThemes {
 		}); 
 		
 		await this.activateStyle(activeTheme);
+		this.setRTLstyle(dir);
+	}
+
+	/**
+	 * Invoked at the beginning of the initialization phase in the client.
+	 */	
+	async preInitialize() : Promise<void> {
+
+		await import(/* webpackChunkName: 'rtl'*/ './jquery-easyui-MathEditorExtend/themes/rtl.css', this.opts);
+		$('link[href$="rtl.styles.css"]')
+		.attr('id', 'RTLstyle')
+		.attr('disabled', true);
+		
+		await import(/* webpackChunkName: 'aguas'*/ `./jquery-easyui/themes/default/easyui.css`, this.opts);
+		$('link[href$="aguas.styles.css"]')
+		.attr('id', 'aguas')
+		.attr('disabled', false)
+		.addClass('kihtheme');
+		
+		await import(/* webpackChunkName: 'aguas-extend'*/ `./jquery-easyui-MathEditorExtend/themes/aguas/easyui.css`, this.opts);
+		$('link[href$="aguas-extend.styles.css"]')
+		.attr('id', `aguas-extend`)
+		.attr('disabled', false)
+		.addClass('kihtheme');		
+	}
+	
+	/**
+	 * Initializes css for a theme. Performed on demand.
+	 */
+	async initializeTheme(theme: string) {
+
+		const themeLoaded = $(`#${theme}`).toArray().length > 0;
+		if (!themeLoaded) {
+			await import(`./jquery-easyui/themes/${theme}/easyui.css`, this.opts);
+			$('link[href$=".styles.css"]').last()
+			.attr('id', theme)
+			.addClass('kihtheme');
+
+			await import(`./jquery-easyui-MathEditorExtend/themes/${theme}/easyui.css`, this.opts);
+			$('link[href$=".styles.css"]').last()
+			.attr('id', `${theme}-extend`)
+			.addClass('kihtheme');			
+		}
+
+		const iconsLoaded = $('.kihmenuicons').toArray().length > 0;
+		if (!iconsLoaded) {
+			await import(/* webpackChunkName: 'icons' */ './jquery-easyui/themes/icon.css');
+			$('link[href$="icons.styles.css"]')
+			.attr('id', 'icons')
+			.attr('disabled', false)
+			.addClass('kihmenuicons');
+
+			await import(/* webpackChunkName: 'icons-extend' */ './jquery-easyui-MathEditorExtend/themes/icon.css');
+			$('link[href$="icons-extend.styles.css"]')
+			.attr('id', 'icons-extend')
+			.attr('disabled', false)
+			.addClass('kihmenuicons');
+		}
+		
+		// It's essential to have the icons after the active theme : best after all themes
+		if (!themeLoaded || !iconsLoaded) {
+			$('.kihmenuicons').appendTo('head');
+		}
 	}
 	
 	/**
@@ -53,75 +128,17 @@ export class Themes extends Observable implements IThemes {
 			return;
 		}
 		
+		await this.initializeTheme(activeTheme);		// action only if not loaded yet
+		
 		this.activeTheme = activeTheme;
 		let colorType = '';
 
 		if (activeTheme == 'black') { colorType = 'black'; }
-		
-		$('.theme').attr('disabled', true);
-		$(`#${activeTheme}, #${activeTheme}-extend`).attr('disabled', false);
-		
-		// Without reload icons disappear
-		await import(/* webpackChunkName: 'icons'*/ './jquery-easyui/themes/icon.css');
-		await import(/* webpackChunkName: 'icons-extend'*/ './jquery-easyui-MathEditorExtend/themes/icon.css');
 
+		$('.kihtheme').attr('disabled', true);
+		$(`#${activeTheme}, #${activeTheme}-extend`).attr('disabled', false);
 				
 		this.notify(activeTheme, this.dir, colorType);
-	}
-
-	/**
-	 * Appends a series of required CSS files to head of html.
-	 * 
-	 * The HTML itself cannot do this, because the active theme dynamically changes. This is an
-	 * initialisation time task.
-	 * 
-	 * @param activeTheme - the active theme
-	 * @param dir - direction of the active language (ltr or rtl)
-	 */
-	async appendCss(activeTheme: string, dir = 'ltr') {
-		console.info(`Active theme is ${activeTheme}`);
-		
-		let opts = { 
-			assert: { 
-				type: 'css',
-			}
-		};
-		await import(/* webpackChunkName: 'rtl'*/ './jquery-easyui-MathEditorExtend/themes/rtl.css', opts);
-		$('link[href$="rtl.styles.css"]')
-		.attr('id', 'RTLstyle')
-		.attr('disabled', true);
-		
-		/*
-		*/
-		for (const theme of this.supportedThemes) {
-			if (theme === 'aguas') { 								// no reload, order of css important
-				$('link[href$=".styles.css"]').slice(-5, -4).last() // default
-				.attr('id', theme)
-				.addClass('theme');
-				
-				$('link[href$=".styles.css"]').slice(-3, -2).last()	// extend aguas
-				.attr('id', `${theme}-extend`)
-				.addClass('theme');
-				continue; 
-			}
-				
-			const themeAlt = (theme == 'aguas') ? 'default' : theme;
-			await import(`./jquery-easyui/themes/${themeAlt}/easyui.css`, opts);
-			$('link[href$=".styles.css"]').last()
-			.attr('id', theme)
-			.attr('disabled', true)
-			.addClass('theme');
-
-			await import(`./jquery-easyui-MathEditorExtend/themes/${theme}/easyui.css`, opts);
-			$('link[href$=".styles.css"]').last()
-			.attr('id', `${theme}-extend`)
-			.attr('disabled', true)
-			.addClass('theme');
-		}
-		
-		this.activateStyle(activeTheme);
-		this.cssActive = true;
-		this.setRTLstyle(dir);
 	}
 	
 	/**
@@ -136,10 +153,8 @@ export class Themes extends Observable implements IThemes {
 			return;
 		}
 		this.dir = dir;
-		if (this.cssActive) {
-			console.info(`Html Dir is: ${dir}`);
-			$("#RTLstyle").attr('disabled', dir !== 'rtl');
-		}
+		console.info(`Html Dir is: ${dir}`);
+		$("#RTLstyle").attr('disabled', dir !== 'rtl');
 	}
 }
 

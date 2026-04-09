@@ -357,6 +357,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 
 		let vme = this;
 		this.versions = new Versions();
+		await this.themes.preInitialize();
 		
 		// Initialize is done lazily
 		//this.parser.initialise();		
@@ -857,7 +858,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 			"mLaTeX_TEXT": () => vme.insert(String.raw`\LaTeX`), 
 			"mUNICODES_LIST": () => vme.panels.showWindowDI(unicodeWindowId, 'wUNICODES_LIST', vme.initialiseSymbolContent.bind(vme)), 
 			"mLATEX_CODES_LIST": () => vme.documentations.showKatexFunctions(), 
-			"mLANG_RESSOURCE_LIST": async () => { await vme.openWindow('wLANGUAGE_LIST'); await vme.initialiseLangRessourcesList() }, 
+			"mLANG_RESSOURCE_LIST": async () => { await vme.openWindow('wLANGUAGE_LIST'); }, 
 			"mLATEX_DOCUMENTATION": () => vme.documentations.showLatexDocumentation(),
 			"mMHCHEM_DOCUMENTATION": () => vme.documentations.showMhchemDocumentation(),
 			"mAMSCD_DOCUMENTATION": () => vme.documentations.showAmscdDocumentation(),
@@ -1028,7 +1029,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * - setting the RTL style
 	 * - localize all entries of the UI (using *span[locate]*)
 	 */
-	async onLocaleChanged(_localizer: ILocalizer) {
+	async onLocaleChanged(localizer: ILocalizer) {
+		console.assert(localizer == this.localizer);
+		
 		this.localType = this.localizer.currentLocale;
 		console.log(`Entry into onLocaleChanged, localType is: ${this.localType}`);
 		let vme = this; 
@@ -1047,13 +1050,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 			});
 			
 		this.printCodeType();
-	}
-	
-	/**
-	 * Wrapper around Localizer routine. Builds resources dialog.
-	 */
-	async initialiseLangRessourcesList() {
-		await this.localizer.buildLocalResources();
 	}
 	
 	/**

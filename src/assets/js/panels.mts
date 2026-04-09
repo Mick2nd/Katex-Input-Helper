@@ -356,6 +356,15 @@ export class KIHPanel implements IPanel {
 		let handlers: any = this.handlers;
 		handlers.title = this.localizeOption('title');
 		this.panelFunc(handlers);
+		
+		await this.internalLoad();
+	}
+	
+	override async show() {
+		await super.show();
+		if (this.id == 'wLANGUAGE_LIST') {										// only the Language Resources
+			$('#tLANGUAGE_LIST').tabs('select', this.localizer.currentLocale);
+		}
 	}
 	
 	/**
@@ -363,9 +372,15 @@ export class KIHPanel implements IPanel {
 	 * changes.
 	 */
 	override async load() {
-		if (this.id == 'wLANGUAGE_LIST') {			
-			await this.localizer.buildLocalResources(true);				// build the resources new
-			await this.parser.parseAsync('#tLANGUAGE_LIST table', 0, 100);
+		await this.internalLoad(false);
+	}
+	
+	async internalLoad(initial: boolean = true) {
+		if (this.id == 'wLANGUAGE_LIST') {										// only the Language Resources
+			await this.localizer.buildLocalResources(!initial);					// build the resources new
+			if (!initial) {
+				await this.parser.parseAsync('#tLANGUAGE_LIST table', 0, 100);	// only for orientation changes
+			}
 		}
 	}
 }

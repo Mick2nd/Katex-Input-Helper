@@ -16,6 +16,7 @@ export class Localizer implements ILocalizer {
 	currentLocale = 'en_US';
 	observable = null;
 	resolvers: any[] = [];
+	localeData = { };
 	
 	/**
 	 * Constructor. The script location is queried as needed to locate the language files.
@@ -43,14 +44,18 @@ export class Localizer implements ILocalizer {
 	 */
 	async basicLoad(langCode: string) {
 		try {
-			let json = await import(
-				/* webpackInclude: /\.json$/ */
-				`./localization/${langCode}/lang.json`);
-			
-			if ('default' in json) {								// workaround: sometimes no json is imported
-				json = json['default'];
+			if (!(langCode in this.localeData)) {
+				let json = await import(
+					/* webpackInclude: /\.json$/ */
+					`./localization/${langCode}/lang.json`);
+
+				if ('default' in json) {								// workaround: sometimes no json is imported
+					json = json['default'];
+				}
+				
+				this.localeData[langCode] = json;
 			}
-			return json;
+			return this.localeData[langCode];
 		} catch(e) {
 			console.error(`Could not load language file - ${e}`);
 			throw(e);
@@ -66,9 +71,7 @@ export class Localizer implements ILocalizer {
 	async load(langCode: string) {
 		let inst = this;
 		
-		if (inst.fallback == null) {
-			inst.fallback = await inst.basicLoad('en_US');
-		}
+		inst.fallback ??= await inst.basicLoad('en_US');
 		
 		inst.current = await inst.basicLoad(langCode);
 		inst.currentLocale = langCode;
@@ -77,11 +80,15 @@ export class Localizer implements ILocalizer {
 		let shortCode = "";
 		try {
 			shortCode = inst.current._i18n_HTML_Lang;
+			if (shortCode == 'vi') {
+				shortCode = 'en';				// fallback for Vietnam
+			}
 			await import(`./jquery-easyui/locale/easyui-lang-${shortCode}.js`);
 		} catch(e) {
 			console.warn(`${shortCode} : no corresponding easyui locale`);
 		}
 		
+		$('#tLANGUAGE_LIST').tabs('select', langCode);
 		await inst.observable.notifyAsync(inst);
 		console.info(`Read language file for ${langCode}`);
 	}
@@ -192,6 +199,7 @@ export class Localizer implements ILocalizer {
 				$('#tLANGUAGE_LIST').tabs('add', { title: title, content: list, closable: false });
 			}			
 		}
+		console.info(`Language Resources loaded, locale is : ${inst.currentLocale}`);
 		$('#tLANGUAGE_LIST').tabs('select', inst.currentLocale);
 	}
 }

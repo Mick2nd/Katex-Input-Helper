@@ -65,8 +65,13 @@ const rulesConfig = (env) => [
 		include: [ path.resolve(path.dirname('.'), 'src/assets/js') ],
 		exclude: [ /node_modules/, /stylesheets/ ],
 		use: [
-			MiniCssExtractPlugin.loader, 
-			'css-loader', 
+			MiniCssExtractPlugin.loader,
+			{
+				loader: 'css-loader', 
+				options: {
+					modules : false
+				}
+			},
 			{
 				loader: 'sass-loader', 
 				options: {
@@ -270,7 +275,7 @@ export default (env) => {
 			alias: {
 		    	'@images': path.resolve(path.dirname('.'), 'dist/assets/images/'),
 		     	'@fonts': path.resolve(path.dirname('.'), 'fonts/'),
-				components: path.resolve(path.dirname('.'), 'src/assets/js')
+				'@components': path.resolve(path.dirname('.'), 'src/assets/js')
 			},
 			extensions: [".mts", ".ts", ".tsx", ".mjs", ".js", "jsx"],
 			extensionAlias: {
@@ -285,20 +290,26 @@ export default (env) => {
 			//test: './src/assets/dialog-test.hbs'
 		},
 		output: {
-			clean: false,
+			clean: true,
 			filename: '[name].js',
-			chunkFilename: 
-			/*	BELIEVE, this is more or less for different entries
-				Sample code not working. 
-				'js/[name].js',
-			*/
-			(pathData) => {
+			chunkFilename: (pathData) => { 
+				/*	Each extra (chunk) component has its own file. We can name them
+				 *	according to development version and origin.
+				 */
 				let name = pathData.chunk.name;
 				if (!name) { name = pathData.chunk.id; }
 				
 				if (typeof name !== 'string') {
 					return 'js/[name].js';
 				}
+				const ext = getExtension(name);
+				
+				/* TODO: Test
+				if (ext != "" && ext != 'css' && ext != 'png') {
+					return `${ext}/[name].${ext}`;
+				}
+				*/
+				
 				if (name.includes('i18n')) {
 					return 'js/i18n/[name].js';
 				}
@@ -309,7 +320,7 @@ export default (env) => {
 					return 'js/easyui/[name].js';
 				}
 				if (name.includes('localization')) {
-					return 'js/localization/[name].js';
+					return `js/localization/[name].${ext}`;
 				}
 				return 'js/[name].js';
 			},
@@ -332,6 +343,9 @@ export default (env) => {
 		stats: {
 		  loggingDebug: ["sass-loader"],
 		},
+		node: {
+			__filename: true
+		}
 	};
 }
 
@@ -364,6 +378,11 @@ function preProcess(context = { }) {
 		}
 		return result;
 	}
+}
+
+function getExtension(name) {
+	const pos = name.lastIndexOf('_');
+	return pos >= 0 ? name.substring(pos + 1) : "";
 }
 
 /**

@@ -4,12 +4,11 @@
 @use 'partials/mixins';
 
 @import 'katex/dist/katex.min.css';
-@import '../jquery-easyui/themes/icon.css';
-@import '../jquery-easyui/themes/default/easyui.css';
-@import '../jquery-easyui-MathEditorExtend/themes/icon.css';
-@import '../jquery-easyui-MathEditorExtend/themes/aguas/easyui.css';
 @import '../keyboard/keyboard.css';
 
+// although all styles are loaded dynamically, these imports are essential for proper display
+@import '../jquery-easyui/themes/default/easyui.css';
+@import '../jquery-easyui-MathEditorExtend/themes/aguas/easyui.css';
 
 /* Section for common styles
  * -------------------------
