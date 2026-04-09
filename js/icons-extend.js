@@ -1,1 +1,1 @@
-(self.webpackChunkjoplin_plugin_katex_input_helper=self.webpackChunkjoplin_plugin_katex_input_helper||[]).push([[316],{7679:(p,e,l)=>{l.r(e)}}]);
+(self.webpackChunkjoplin_plugin_katex_input_helper=self.webpackChunkjoplin_plugin_katex_input_helper||[]).push([[316],{6826:(p,e,l)=>{l.r(e)}}]);
