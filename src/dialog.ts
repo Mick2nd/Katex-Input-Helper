@@ -163,7 +163,7 @@ export class Dialog
 	 * @param handle - the dialog handle
 	 */
 	public loadJs = async function(handle: any) : Promise<void> {
-		let js = [ "./assets/main.js" ];
+		let js = [ "./assets/main.js", "./assets/libs.js" ];
 		
 		for (const jsPath of js) {
 			await joplin.views.dialogs.addScript(handle, jsPath);

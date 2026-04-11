@@ -10,6 +10,7 @@ import CompressionPlugin from 'compression-webpack-plugin';
 import * as sass from 'sass';
 import Handlebars from 'handlebars';
 import generate from 'generate-file-webpack-plugin'; // RESERVED
+import test from 'node:test';
 
 const rootDir = path.resolve(path.dirname('.'));
 const srcDir = path.resolve(rootDir, 'src');
@@ -22,10 +23,10 @@ const versionPath = path.resolve(srcDir, 'assets', 'js', 'versions.json');
 copyVersion();
 
 /**
- * Extracted Split Chunks Config
+ * Extracted Split Chunks Config. This only works with async code.
  */
 const splitChunksConfig = (_env) => { return {
-	chunks: 'async',
+	chunks: 'async', 
 	minSize: 20000,
 	minRemainingSize: 0,
 	minChunks: 1,
@@ -41,17 +42,43 @@ const splitChunksConfig = (_env) => { return {
 			filename: 'js/vendors/[name].js',
 			chunks: 'async',
 		},
+		/* TODO: experiments. Have been of little use.
+		categories: {
+			test: /[\\/]src[\\/]assets[\\/]js[\\/]categoriesTree\.mjs$/,
+			reuseExistingChunk: true,
+			name: 'categoriesTree',
+			chunks: 'initial',
+			enforce: true
+		},
+		internals: {
+			test: /[\\/]src[\\/]assets[\\/]js[\\/]/,
+			priority: -10,
+			reuseExistingChunk: true,
+			filename: 'js/internals/[name].js',
+			chunks(chunk: any) {
+				if (chunk && chunk.name) {
+					console.log(`Internal Chunkname is ${chunk.name}`);
+				} 
+				return false; // chunk && chunk.name && chunk.name == 'categoriesTree'; 
+			},
+		},
+		default: {
+		  minChunks: 2,
+		  priority: -20,
+		  reuseExistingChunk: true,
+		  chunks: 'all'
+		}
+		*/
 	},
 }};
 
 /**
- * Extracted Rules Config
+ * Extracted Rules Config.
  */
 const rulesConfig = (env) => [
 	{
-		// test: /(?!(\.d))\.m?tsx?$/,
 		test: /\.m?ts$/,
-		include: [ path.resolve(path.dirname('.'), 'src/assets/js') ],
+		include: [ path.resolve(rootDir, 'src/assets/js') ],
 		exclude: /node_modules/,
 		use: [{
 			loader: 'ts-loader',
@@ -62,7 +89,7 @@ const rulesConfig = (env) => [
 	},
 	{
 		test: /\.s?css$/,
-		include: [ path.resolve(path.dirname('.'), 'src/assets/js') ],
+		include: [ path.resolve(rootDir, 'src/assets/js') ],
 		exclude: [ /node_modules/, /stylesheets/ ],
 		use: [
 			MiniCssExtractPlugin.loader,
@@ -127,6 +154,9 @@ const rulesConfig = (env) => [
 			filename: 'icons/[name][ext]',
 		}
 	},
+	/* TEST -> with outcommenting fonts move to misc, controlled by 'output'
+	 * where ever they are placed by webpack, they are necessary
+	 */
 	{
 		test: /\.(woff|woff2|eot|ttf|otf)$/i,
 		type: 'asset/resource',
@@ -167,23 +197,21 @@ const pluginsConfig = (env) => {
 			template: './src/assets/start.html',
 			filename: './index.html',
 		}),
-		/* RESERVED for future use.
-		generate({
-		    file: path.resolve(rootDir, 'dist', 'assets', 'dialog_generated_desktop.html'),
-		    content: () => {
-		        return preProcessFile('src/assets/dialog.hbs', { mobile: false });
-		    },
-			debug: true
-		})
-		*/
+		// NO ACTION resp. ERRORS
+		new webpack.IgnorePlugin({
+			resourceRegExp: /\/post-load\//,
+			//contextRegExp: /jquery-easyui/,
+		}),
 	];
 	
-	if (ZIP) return base.concat([
+	if (ZIP) return [
+		...base,
 		new CompressionPlugin({
 			test: /\.js$|\.css$/,
 			deleteOriginalAssets: true
 		})
-	]);
+	];
+	
 	return base;
 }
 
@@ -231,7 +259,7 @@ const devServerConfig = (env) => {
 	
 	const base = {						// base settings for the dev server
 		static: {
-			directory: path.resolve(path.dirname('.'), 'dist/assets'),
+			directory: path.resolve(rootDir, 'dist/assets'),
 		},
 	  	compress: !ZIP,
 	  	port: 9000,
@@ -266,16 +294,15 @@ export default (env) => {
 		    	new CssMinimizerPlugin(),
 			],
 			minimize: true,
-			/**/
-			splitChunks: splitChunksConfig(env)
+			chunkIds: 'named',
+			splitChunks: splitChunksConfig(env),
+			//runtimeChunk: 'single',
 		},
 		cache: false,
-		context: path.resolve(path.dirname('.'), '.'),
+		context: path.resolve(rootDir, '.'),
 		resolve: {
 			alias: {
-		    	'@images': path.resolve(path.dirname('.'), 'dist/assets/images/'),
-		     	'@fonts': path.resolve(path.dirname('.'), 'fonts/'),
-				'@components': path.resolve(path.dirname('.'), 'src/assets/js')
+				'@components': path.resolve(srcDir, 'assets/js'),
 			},
 			extensions: [".mts", ".ts", ".tsx", ".mjs", ".js", "jsx"],
 			extensionAlias: {
@@ -286,18 +313,31 @@ export default (env) => {
 		},
 		plugins: pluginsConfig(env),
 		entry: {
-			main: './src/assets/js/container.mts',
-			//test: './src/assets/dialog-test.hbs'
+			main: {
+				import: './src/assets/js/container.mts',
+				dependOn: ['libs'],
+			},
+			/*
+			*/
+			categoriesTree: {
+				import: './src/assets/js/post-load/categoriesTree.mts',
+				filename: './post-load/[name].mjs',
+				dependOn: ['libs'],
+			},
+			libs: [
+				'jquery', 'inversify', 'buffer', 
+				'./src/assets/js/interfaces.mts', './src/assets/js/patterns/observable.mts'
+			],
 		},
 		output: {
 			clean: true,
 			filename: '[name].js',
-			chunkFilename: (pathData) => { 
+			chunkFilename: (pathData: webpack.PathData) => { 
 				/*	Each extra (chunk) component has its own file. We can name them
 				 *	according to development version and origin.
 				 */
-				let name = pathData.chunk.name;
-				if (!name) { name = pathData.chunk.id; }
+				let name: any = pathData.chunk?.name;
+				if (!name) { name = pathData.chunk?.id; }
 				
 				if (typeof name !== 'string') {
 					return 'js/[name].js';
@@ -305,10 +345,10 @@ export default (env) => {
 				const ext = getExtension(name);
 				
 				/* TODO: Test
-				if (ext != "" && ext != 'css' && ext != 'png') {
+				 */
+				if (ext == 'html' || ext == 'hbs' || ext == 'json') {
 					return `${ext}/[name].${ext}`;
 				}
-				*/
 				
 				if (name.includes('i18n')) {
 					return 'js/i18n/[name].js';
@@ -324,7 +364,7 @@ export default (env) => {
 				}
 				return 'js/[name].js';
 			},
-			path: path.resolve(path.dirname('.'), 'dist/assets'),
+			path: path.resolve(rootDir, 'dist/assets'),
 			assetModuleFilename: 'misc/[name]-[hash][ext]',
 			publicPath: PUBLIC_PATH,
 		},
@@ -392,7 +432,7 @@ function getExtension(name) {
 function preProcessFile(file, context) {
 	let text;
 	try {
-		text = fs.readFileSync(path.resolve(path.dirname('.'), file)).toString();
+		text = fs.readFileSync(path.resolve(rootDir, file)).toString();
 		text = Handlebars.compile(text)(context);
 	} catch(error) {
 		console.error(`Handlerbars file could not be compiled : ${error}`);

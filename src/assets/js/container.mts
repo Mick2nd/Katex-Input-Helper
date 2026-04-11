@@ -16,9 +16,9 @@ import { Themes } from './themes.mjs';
 import { ParserExtension } from './parserExtension.mjs';
 import { MathFormulae } from './math.mjs';
 import { KIHPanels, KIHPanel, DynamicPanel, MatrixWindow, InformationWindow, KIHMoreDialog, KIHWindow, KIHDialog, UnicodeWindow } from './panels.mjs';
-import { CategoriesTree } from './categoriesTree.mjs';
 import { CodeMirrorProxy } from './codeMirrorProxy.mjs';
 import { Menus } from './menus.mjs';
+//import { CategoriesTree } from './categoriesTree.mjs';
 
 const container = new Container();
 
@@ -27,20 +27,30 @@ container.bind(asyncId).toConstantValue(true);
 /*	TODO: Intent is to provide a common method for asynchronous registration.
  *	Code below is working. the only specific piece is the file name. Probably
  *	this will result in file load error -> Working with the given signature.
+ */
 async function register<TIfc>(id: Symbol, file: string) {
 	const rawSymbol = Symbol.for(id.toString() + 'raw');
 	
 	container.bind<TIfc>(id.valueOf()).toDynamicValue(
-		async (context: ResolutionContext) => { 
-		const cls = ((await import(`./${file}.mjs`)).default) as Newable<TIfc, []>;
-		container.bind<TIfc>(rawSymbol).to(cls);
-		return context.get(rawSymbol);
-	}).inSingletonScope();
+		async function () : Promise<TIfc> { 
+			try {
+				const cls = ((await import(`./post-load/categoriesTree.mjs`)).default) as Newable<TIfc, []>;
+				container.bind<TIfc>(rawSymbol).to(cls);
+				const service : TIfc = container.get(rawSymbol);
+				console.debug(`CategoriesTree instantiated.`);
+				return service;
+			} catch(e) {
+				console.error(`Error in toDynamicValue : ${e}`);
+				//throw e;
+				//return new Promise<TIfc>((error, resolve) => { });
+			}
+			/*
+			*/
+		}).inSingletonScope();
 }
 
-await register<IBootLoader>(bootLoaderId, 'bootLoader');
- */
 
+//await register<IBootLoader>(bootLoaderId, 'bootLoader');
 //await register<IKatexInputHelper>(katexInputHelperId, 'dialog');
 //await register<ILocalizer>(localizerId, 'localization');
 
@@ -75,7 +85,8 @@ container.bind<KIHPanel>(dialogId).to(KIHDialog);
 container.bind<KIHPanel>(matrixWindowId).to(MatrixWindow);
 container.bind<KIHPanel>(unicodeWindowId).to(UnicodeWindow);
 
-container.bind<ICategoriesTree>(categoriesTreeId).to(CategoriesTree).inSingletonScope();
+// container.bind<ICategoriesTree>(categoriesTreeId).to(CategoriesTree).inSingletonScope();
+await register<ICategoriesTree>(categoriesTreeId, 'categoriesTree');
 
 let allParams: any[] = [ ];
 container.bind(dynamicParametersId).toDynamicValue(() => allParams);

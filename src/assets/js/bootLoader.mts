@@ -3,7 +3,8 @@
  *	it is possible to load EASYUI asynchronously.
  *	jquery node_module working with ProvidePlugin.
  */
-import { EditorView } from "@codemirror/view";
+ import { injectable, inject, Factory } from 'inversify';
+//import { EditorView } from "@codemirror/view";
 
 import { Observable } from './patterns/observable.mjs';
 import { Localizer } from './localization.mjs';
@@ -13,10 +14,9 @@ import { KIHParameters } from './parameters.mjs';
 import { MathFormulae } from './math.mjs';
 import { KatexInputHelper } from './dialog.mjs';
 import { FileHandler } from './fileHandling.mjs';
-import { CategoriesTree } from './categoriesTree.mjs';
+//import { default as CategoriesTree } from './categoriesTree.mjs';
 import { DynamicPanel } from './panels.mjs';
 
-import { injectable, inject, Factory } from 'inversify';
 import { IBootLoader, IKatexInputHelper, katexInputHelperFactoryId } from './interfaces.mjs';
 
 /**
@@ -189,7 +189,7 @@ export default class BootLoader implements IBootLoader {
 			checkOther(typeof this.katex, 'object', 'Katex') &&
 			checkOther(typeof this.katex.renderToString, 'function', 'Katex') &&
 			
-			checkTypeByName(EditorView, 'EditorView', 'CodeMirror') &&
+			//checkTypeByName(EditorView, 'EditorView', 'CodeMirror') &&
 			
 			checkTypeByName(Observable, 'Observable') &&
 			checkTypeByName(Localizer, 'Localizer') &&
@@ -198,7 +198,7 @@ export default class BootLoader implements IBootLoader {
 			checkTypeByName(KIHParameters, 'KIHParameters') &&
 			checkTypeByName(FileHandler, 'FileHandler') &&
 			checkTypeByName(MathFormulae, 'MathFormulae') &&
-			checkTypeByName(CategoriesTree, 'CategoriesTree') &&
+			//checkTypeByName(CategoriesTree, 'CategoriesTree') &&
 			checkTypeByName(DynamicPanel, 'DynamicPanel') &&
 			checkTypeByName(KatexInputHelper, 'KatexInputHelper'));
 		

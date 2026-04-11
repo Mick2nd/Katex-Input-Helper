@@ -1,6 +1,6 @@
-import { Observable } from './patterns/observable.mjs';
+import { Observable } from '../patterns/observable.mjs';
 import { injectable } from 'inversify';
-import { ICategoriesTree } from './interfaces.mjs';
+import { ICategoriesTree } from '../interfaces.mjs';
 
 /**
  * Manages the Categories Tree.
@@ -8,7 +8,7 @@ import { ICategoriesTree } from './interfaces.mjs';
  * The Leafs of the tree refer to a set of equations and constitute the categories.
  * The Folders constitute super categories.
  */
-@injectable() export class CategoriesTree implements ICategoriesTree {
+@injectable() export default class CategoriesTree implements ICategoriesTree {
 	
 	data = null;
 	treeSelector = "";
@@ -572,7 +572,7 @@ import { ICategoriesTree } from './interfaces.mjs';
 			
 			let json = await import(
 				/* webpackInclude: /\.json$/ */
-				`../formulas/sampleEquations.json`);
+				`../../formulas/sampleEquations.json`);
 			return json;
 		}
 		

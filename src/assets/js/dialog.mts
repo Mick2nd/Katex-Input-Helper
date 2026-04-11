@@ -1,6 +1,5 @@
 import Hammer from 'hammerjs';
 import './easyui.mjs';
-import './definitions.mjs';
 import './sass/dialog.scss' assert { type: 'css' };
 
 import { VKI_init } from './keyboard/keyboard.js';

@@ -850,7 +850,8 @@ export class KIHPanel implements IPanel {
 @injectFromBase({extendProperties: false}) export class DynamicPanel extends KIHDialog {
 	
 	@inject(utilitiesId) utilities: IUtilities;
-	@inject(categoriesTreeId) categoriesTree: ICategoriesTree;
+	@inject(categoriesTreeId) categoriesTree: ICategoriesTree
+	//categoriesTree: ICategoriesTree;
 	gridSelector = "";
 	gridSelectorOfCopy = "";
 	treeSelector = "";
@@ -864,7 +865,7 @@ export class KIHPanel implements IPanel {
 	 * Constructor.
 	 */
 	constructor(
-		@inject(dynamicParametersId)params: any
+		@inject(dynamicParametersId)params: any,
 	) {
 		super(params);
 		this.gridSelector = `#${this.id} .easyui-datagrid`;
@@ -919,6 +920,8 @@ export class KIHPanel implements IPanel {
 	 */
 	override async initialise(dummy: any = null) {
 		let inst = this;
+		
+		//this.categoriesTree = await this.categoriesTreeAsync;
 		
 		// subscribe to Tree observables here because in ctor property injection is done
 		this.categoriesTree.nodeSelected.subscribe(this.onNodeSelected.bind(this));

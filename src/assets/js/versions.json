@@ -1,10 +1,10 @@
 {
-	"version": "3.0.1",
+	"version": "3.0.2",
 	"VKI_version": "1.49",
 	"easyuiVersion": "1.11.3",
 	"katexVersion": "0.16.22",
 	"colorPickerVersion": "23/05/2009",
-	"build": 3088,
+	"build": 3254,
 	"jqueryVersion": "",
 	"codemirrorEditorVersion": ""
 }
