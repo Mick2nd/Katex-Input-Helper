@@ -363,13 +363,13 @@ export class KatexInputHelper implements IKatexInputHelper {
 
 		// Query string may be a better solution than detection
 		this.platformInfo = { isMobile: this.parameters.isMobile, osFamily: 'Unknown' };
-		this.addBuild();
 
 		// As early as possible 
 		await this.initialiseMobile(this.parameters.isMobile);
 
 		// IN QUESTION
-		await vme.initialiseCodeMirror();
+		await vme.initialiseCodeMirror();			// reads the version info
+		this.addBuild();
 		this.localizer.subscribe(this.onLocaleChanged.bind(this));
 		await this.localizer.initialiseLanguageChoice(this.localType);		// Progress dialog uses localized text
 		
@@ -1359,11 +1359,11 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * Adds a build number to the developer version.
 	 */
 	addBuild() {
-		const heading = $('h3').text();
+		const heading = $('#title').text();
 		const build = `build ${String(this.versions.build).padStart(4, '0')}`;
 		const mobile = `${this.platformInfo.isMobile ? 'mobile' : 'desktop'}`;
 		if (!PRODUCTION) {
-			$('h3').text(`${heading} : ${build} on ${mobile}`);
+			$('#title').text(`${heading} : ${build} on ${mobile}`);
 		}
 	}
 }

@@ -14,6 +14,7 @@ export class ParserExtension implements IParser {
 	completeCount = 0;
 	fatalError = null;
 	initialized = false;
+	nativeOnComplete: any;
 	
 	/**
 	 * Constructor
@@ -34,16 +35,17 @@ export class ParserExtension implements IParser {
 			return;
 		}
 		let inst = this;
+		this.nativeOnComplete = $.parser.onComplete;
 		try {
-			if (!inst.async) {
-				$.parser.onComplete = function(ctx) {
-					inst.onComplete(ctx);
-					inst.next(ctx);
-				}
-			} else {
+			if (inst.async) {
 				$.parser.onComplete = function(ctx) {
 					inst.onCompleteAsync(ctx);
 					inst.nextAsync(ctx);
+				}
+			} else {
+				$.parser.onComplete = function(ctx) {
+					inst.onComplete(ctx);
+					inst.next(ctx);
 				}
 			}
 			this.initialized = true;
@@ -112,7 +114,10 @@ export class ParserExtension implements IParser {
 	onCompleteAsync(ctx: any) {
 		this.completeCount ++;
 		if (typeof ctx != "string") {
-			console.warn(`onCompleteAsync for external source - not handled.`);
+			console.info(`onCompleteAsync for external source - handling delegated.`);
+			if (this.nativeOnComplete) {
+				this.nativeOnComplete(ctx);
+			}
 			return;
 		}
 		let item = this.item;

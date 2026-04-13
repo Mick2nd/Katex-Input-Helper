@@ -1,7 +1,7 @@
 import { FileHandler } from './fileHandling.mjs';
 import { Versions } from './versions.mjs';
 
-import { inject, injectable, injectFromBase } from 'inversify';
+import { inject, injectable, injectFromBase, Factory } from 'inversify';
 import { ILocalizer, IParser, IMath, utilitiesId, IUtilities, categoriesTreeId, ICategoriesTree,
 	IMessager, dynamicParametersId, panelFactoryId, IPanel } from './interfaces.mjs';
 
@@ -16,7 +16,7 @@ export class KIHPanel implements IPanel {
 	initialResized = false;
 	initialMoved = false;
 	isOpen = false;
-	math: IMath = null;;
+	math: IMath = null;
 	localizer: ILocalizer = null;
 	parameters: any = null;
 	messager: IMessager = null;
@@ -850,8 +850,8 @@ export class KIHPanel implements IPanel {
 @injectFromBase({extendProperties: false}) export class DynamicPanel extends KIHDialog {
 	
 	@inject(utilitiesId) utilities: IUtilities;
-	@inject(categoriesTreeId) categoriesTree: ICategoriesTree
-	//categoriesTree: ICategoriesTree;
+	@inject(categoriesTreeId) categoriesTreeFactory: Promise<Factory<ICategoriesTree>> = null;
+	categoriesTree: ICategoriesTree;
 	gridSelector = "";
 	gridSelectorOfCopy = "";
 	treeSelector = "";
@@ -921,7 +921,7 @@ export class KIHPanel implements IPanel {
 	override async initialise(dummy: any = null) {
 		let inst = this;
 		
-		//this.categoriesTree = await this.categoriesTreeAsync;
+		this.categoriesTree = await (await this.categoriesTreeFactory)();
 		
 		// subscribe to Tree observables here because in ctor property injection is done
 		this.categoriesTree.nodeSelected.subscribe(this.onNodeSelected.bind(this));
@@ -1435,7 +1435,20 @@ export class KIHPanel implements IPanel {
 	 */
 	async showWindowDI(wndId: any, id: string, ...params: any) {
 		if (!(id in this.panels)) {
-			this.panels[id] = this.panelFactory(wndId, id, this, ...params);
+			try {
+				this.panels[id] = await this.panelFactory(wndId, id, this, ...params);
+			} catch(e) {
+				/**
+				 * This is a workaround for an exception due to asynchronous 
+				 * dependency injection in Dynamic Panel.
+				 */
+				console.warn(`Problem instantiating panel ${id} : ${e}`);
+				const inst = this;
+				globalThis.setTimeout(async () => {
+					await inst.showWindowDI(wndId, id, ...params);
+				}, 20);
+				return;
+			}
 			await this.initialise(id, ...params);
 		}
 		await this.update(id, ...params);

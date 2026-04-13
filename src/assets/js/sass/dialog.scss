@@ -23,7 +23,7 @@ body {
 	height: 100vh;
 	
 	// The Wait Msg
-	#WaitMsg {
+	#WaitMsg, #waitMsgPre {
 		@include mixins.waitMsgMixin(true);
 	}
 	

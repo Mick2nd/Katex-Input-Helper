@@ -18,7 +18,18 @@ import { MathFormulae } from './math.mjs';
 import { KIHPanels, KIHPanel, DynamicPanel, MatrixWindow, InformationWindow, KIHMoreDialog, KIHWindow, KIHDialog, UnicodeWindow } from './panels.mjs';
 import { CodeMirrorProxy } from './codeMirrorProxy.mjs';
 import { Menus } from './menus.mjs';
-//import { CategoriesTree } from './categoriesTree.mjs';
+
+/**
+ * TODO: Intent was to dynamically load 'inversify' as this could establish an
+ * asynchronous chunk
+ * 
+const inversify = (require('inversify'));
+const Container = inversify.Container;
+const ResolutionContext = inversify.ResolutionContext;
+const Factory = inversify.Factory;
+const Newable = inversify.Newable;
+//const { Container, ResolutionContext, Factory, Newable } = module;
+ */
 
 const container = new Container();
 
@@ -28,31 +39,24 @@ container.bind(asyncId).toConstantValue(true);
  *	Code below is working. the only specific piece is the file name. Probably
  *	this will result in file load error -> Working with the given signature.
  */
+
 async function register<TIfc>(id: Symbol, file: string) {
 	const rawSymbol = Symbol.for(id.toString() + 'raw');
 	
-	container.bind<TIfc>(id.valueOf()).toDynamicValue(
-		async function () : Promise<TIfc> { 
+	container.bind<Factory<TIfc>>(id.valueOf()).toFactory(
+		async function (context: any) : Promise<Factory<TIfc>> { 
 			try {
-				const cls = ((await import(`./post-load/categoriesTree.mjs`)).default) as Newable<TIfc, []>;
+				const cls = ((await import(/* webpackChunkname: 'categoriesTree' */ `./post-load/categoriesTree.mjs`)).default) as Newable<TIfc, []>;
 				container.bind<TIfc>(rawSymbol).to(cls);
-				const service : TIfc = container.get(rawSymbol);
+				const service : Factory<TIfc> = () => context.get(rawSymbol);
 				console.debug(`CategoriesTree instantiated.`);
 				return service;
 			} catch(e) {
 				console.error(`Error in toDynamicValue : ${e}`);
-				//throw e;
-				//return new Promise<TIfc>((error, resolve) => { });
+				throw e;
 			}
-			/*
-			*/
-		}).inSingletonScope();
+		});
 }
-
-
-//await register<IBootLoader>(bootLoaderId, 'bootLoader');
-//await register<IKatexInputHelper>(katexInputHelperId, 'dialog');
-//await register<ILocalizer>(localizerId, 'localization');
 
 container.bind<IBootLoader>(bootLoaderId).to(BootLoader).inSingletonScope();
 container.bind<IKatexInputHelper>(katexInputHelperId).to(KatexInputHelper).inSingletonScope();
@@ -85,7 +89,6 @@ container.bind<KIHPanel>(dialogId).to(KIHDialog);
 container.bind<KIHPanel>(matrixWindowId).to(MatrixWindow);
 container.bind<KIHPanel>(unicodeWindowId).to(UnicodeWindow);
 
-// container.bind<ICategoriesTree>(categoriesTreeId).to(CategoriesTree).inSingletonScope();
 await register<ICategoriesTree>(categoriesTreeId, 'categoriesTree');
 
 let allParams: any[] = [ ];
@@ -106,9 +109,7 @@ container
 		};
 	});
 
-// await container.getAsync<IBootLoader>(bootLoaderId);
 const bootLoader: IBootLoader = container.get(bootLoaderId); 
-
 try {
 	await bootLoader.init1();
 	bootLoader.check();
