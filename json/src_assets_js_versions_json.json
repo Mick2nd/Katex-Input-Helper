@@ -4,7 +4,7 @@
 /***/ 2358
 (module) {
 
-module.exports = /*#__PURE__*/JSON.parse('{"version":"3.0.2","VKI_version":"1.49","easyuiVersion":"1.11.3","katexVersion":"0.16.22","colorPickerVersion":"23/05/2009","build":3492,"jqueryVersion":"","codemirrorEditorVersion":""}');
+module.exports = /*#__PURE__*/JSON.parse('{"version":"3.0.2","VKI_version":"1.49","easyuiVersion":"1.11.3","katexVersion":"0.16.22","colorPickerVersion":"23/05/2009","build":3494,"jqueryVersion":"","codemirrorEditorVersion":""}');
 
 /***/ }
 
