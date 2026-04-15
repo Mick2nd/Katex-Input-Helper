@@ -180,23 +180,8 @@ const baseConfig = {
 		rules: [
 			{
 				test: /\.tsx?$/,
+				use: 'ts-loader',
 				exclude: /node_modules/,
-				use: [{
-					loader: 'ts-loader',
-					options: {
-						configFile: 'tsconfig.json'
-					}
-				}]
-			},
-			/*
-			 */
-			{
-				test: /\.html$/,
-				include: [ path.resolve(path.dirname('.'), 'src/assets') ],
-				exclude: /node_modules/,
-				use: [{
-					loader: 'raw-loader',
-				}]
 			},
 		],
 	},
@@ -221,7 +206,7 @@ const pluginConfig = { ...baseConfig, entry: './src/index.ts',
 		new CopyPlugin({
 			patterns: [
 				{
-					from: '*',
+					from: '**/*',
 					context: path.resolve(__dirname, 'src'),
 					to: path.resolve(__dirname, 'dist'),
 					globOptions: {
@@ -230,7 +215,6 @@ const pluginConfig = { ...baseConfig, entry: './src/index.ts',
 							// already copied into /dist so we don't copy them.
 							'**/*.ts',
 							'**/*.tsx',
-							'assets/**/*'
 						],
 					},
 				},
@@ -354,6 +338,8 @@ const updateVersion = () => {
 
 	if (packageJson.version !== manifest.version) {
 		console.warn(chalk.yellow(`Version numbers have been updated but they do not match: package.json (${packageJson.version}), manifest.json (${manifest.version}). Set them to the required values to get them in sync.`));
+	} else {
+		console.info(packageJson.version);
 	}
 };
 
