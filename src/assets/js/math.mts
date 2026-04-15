@@ -1,4 +1,4 @@
-import './jquery-easyui/jquery.easyui.min.js';						// ADDED for unit test
+//import './jquery-easyui/jquery.easyui.min.js';						// ADDED for unit test
 
 import { inject, injectable, Factory } from 'inversify';
 import { IMath, localizerId, ILocalizer, parametersId, parserId, IParser, 

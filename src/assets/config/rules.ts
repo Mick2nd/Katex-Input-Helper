@@ -25,10 +25,20 @@ export default function rulesConfig(env: any) : any {
 						},
 					}]
 				},
+				/**
+				 * Try to process 'easyloader' files although they are not dependencies.
+				 * DID NOT WORK.
+				{
+					test: /\.js$/,
+					include: [ path.resolve(rootDir, 'src/assets/js/jquery-easyui/plugins') ],
+					exclude: /node_modules/,
+					use: "js-loader"
+				},
+				*/
 				{
 					test: /\.s?css$/,
 					include: [ path.resolve(rootDir, 'src/assets/js') ],
-					exclude: [ /node_modules/, /stylesheets/ ],
+					exclude: cssExcludes(),
 					use: [
 						MiniCssExtractPlugin.loader,
 						{
@@ -152,4 +162,11 @@ function preProcessFile(file: string, context: any) {
 		return text;
 	}
 	return text;
+}
+
+function cssExcludes() {
+	return [
+		/node_modules/, 
+		/stylesheets/ 
+	];
 }

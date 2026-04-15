@@ -12,17 +12,14 @@ export default function inputOutputConfig(env: any) : any {
 		entry: {
 			main: {
 				import: './src/assets/js/container.mts',
-				dependOn: ['libs', 'categoriesTree'],
-			},
-			categoriesTree: {
-				import: './src/assets/js/post-load/categoriesTree.mts',
-				filename: './post-load/[name].js',
 				dependOn: ['libs'],
 			},
-			libs: [
-				'jquery', 'inversify', 'buffer', 
-				'./src/assets/js/interfaces.mts', './src/assets/js/patterns/observable.mts'
-			],
+			libs: {
+				import: [
+					'inversify', 'buffer', 
+					'./src/assets/js/interfaces.mts', './src/assets/js/patterns/observable.mts'
+				],
+			},
 		},
 		output: {
 			clean: true,
@@ -38,13 +35,9 @@ export default function inputOutputConfig(env: any) : any {
 				if (typeof name !== 'string') {
 					return 'js/[name].js';
 				}
-				const ext = getExtension(name);
-				
-				/** 
-				 * TODO: Test
-				 */
+				const ext = getExtension(name);				
 				if (ext == 'html' || ext == 'hbs' || ext == 'json') {
-					return `${ext}/[name].${ext}`;
+					return `${ext}/[name].js`;
 				}
 				
 				if (name.includes('i18n')) {
@@ -57,7 +50,7 @@ export default function inputOutputConfig(env: any) : any {
 					return 'js/easyui/[name].js';
 				}
 				if (name.includes('localization')) {
-					return `js/localization/[name].${ext}`;
+					return `js/localization/[name].js`;
 				}
 				return 'js/[name].js';
 			},
@@ -68,7 +61,12 @@ export default function inputOutputConfig(env: any) : any {
 	};
 }
 
-
+/**
+ * The extension determined here is the original file type.
+ * 
+ * @param name - the chunk file name
+ * @returns the original file type
+ */
 function getExtension(name: string) {
 	const pos = name.lastIndexOf('_');
 	return pos >= 0 ? name.substring(pos + 1) : "";

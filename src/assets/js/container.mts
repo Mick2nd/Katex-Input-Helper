@@ -36,7 +36,7 @@ const container = new Container();
 container.bind(asyncId).toConstantValue(true);
 
 /*	TODO: Intent is to provide a common method for asynchronous registration.
- *	Code below is working. the only specific piece is the file name. Probably
+ *	Code below is working. The only specific piece is the file name. Probably
  *	this will result in file load error -> Working with the given signature.
  */
 

@@ -34,37 +34,39 @@ export default function webpackConfig (env: { kihmode: any; }) {
 		inputOutputConfig(env),
 		rulesConfig(env),
 		{
-		cache: false,
-		context: path.resolve(rootDir, '.'),
-		resolve: {
-			alias: {
-				'@components': path.resolve(srcDir, 'assets/js'),
+			cache: false,
+			context: path.resolve(rootDir, '.'),
+			resolve: {
+				alias: {
+					'@components': path.resolve(srcDir, 'assets/js'),
+				},
+				extensions: [".mts", ".ts", ".tsx", ".mjs", ".js", "jsx"],
+				extensionAlias: {
+				 ".js": [".js", ".ts"],
+				 ".cjs": [".cjs", ".cts"],
+				 ".mjs": [".mjs", ".mts"]
+				}
 			},
-			extensions: [".mts", ".ts", ".tsx", ".mjs", ".js", "jsx"],
-			extensionAlias: {
-			 ".js": [".js", ".ts"],
-			 //".cjs": [".cjs", ".cts"],
-			 ".mjs": [".mjs", ".mts"]
+			mode: MODE,
+			target: 'web',
+			module: {
+				parser: {
+					javascript: {
+					  // Set the module to `'strict'` or `'non-strict'` mode. This can affect the module's behavior, as some behaviors differ between strict and non-strict modes.
+					  overrideStrict: 'non-strict',
+					},			
+				}
+			},
+			stats: {
+				preset: MODE === 'production' ? 'normal' : 'detailed',
+				loggingDebug: (MODE === 'production' ? [ ] : ["sass-loader"]),
+			},
+			node: {
+				__filename: true
 			}
 		},
-		mode: MODE,
-		target: 'web',
-		module: {
-			parser: {
-				javascript: {
-				  // Set the module to `'strict'` or `'non-strict'` mode. This can affect the module's behavior, as some behaviors differ between strict and non-strict modes.
-				  overrideStrict: 'non-strict',
-				},			
-			}
-		},
-		stats: {
-		  loggingDebug: ["sass-loader"],
-		},
-		node: {
-			__filename: true
+		{	// TODO: doubled entry?
+			mode: MODE
 		}
-	},
-	{
-		mode: MODE
-	});
+	);
 }

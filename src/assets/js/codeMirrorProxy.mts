@@ -1,13 +1,15 @@
-import './jquery-easyui/jquery.easyui.min.js';
+//import './jquery-easyui/jquery.easyui.min.js';
+// @codemirror/basic-setup can be installed but leads to extra overhead in final package !!
 import { basicSetup } from "codemirror";
 import { EditorState, Compartment } from "@codemirror/state";
 import { EditorView, keymap, lineNumbers } from "@codemirror/view";
 import { defaultKeymap } from "@codemirror/commands";
 import { StreamLanguage, syntaxHighlighting, HighlightStyle } from "@codemirror/language";
 import { stexMath } from "@codemirror/legacy-modes/mode/stex";
-import { bbedit, darcula } from "@uiw/codemirror-themes-all";
-//import { bbedit } from "@uiw/codemirror-theme-bbedit";
-//import { darcula } from "@uiw/codemirror-theme-darcula";
+import { bbedit } from "@uiw/codemirror-theme-bbedit";
+import { darcula } from "@uiw/codemirror-theme-darcula";
+// the above selection saves about 600kB unzipped
+//import { bbedit, darcula } from "@uiw/codemirror-themes-all";
 
 import { ICodeMirror } from './interfaces.mjs';
 

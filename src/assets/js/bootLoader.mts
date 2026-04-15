@@ -1,10 +1,13 @@
 
-/*	Could not bring asynchronous version of easyui to work. With little modification 
+/**
+ *	TODO: Reduce functionality as most of the former functionality is now done
+ *	by WEBPACK and INVERSIFY (see container.mts).
+ *
+ *	Could not bring asynchronous version of easyui to work. With little modification 
  *	it is possible to load EASYUI asynchronously.
  *	jquery node_module working with ProvidePlugin.
  */
  import { injectable, inject, Factory } from 'inversify';
-//import { EditorView } from "@codemirror/view";
 
 import { Observable } from './patterns/observable.mjs';
 import { Localizer } from './localization.mjs';
@@ -14,7 +17,6 @@ import { KIHParameters } from './parameters.mjs';
 import { MathFormulae } from './math.mjs';
 import { KatexInputHelper } from './dialog.mjs';
 import { FileHandler } from './fileHandling.mjs';
-//import { default as CategoriesTree } from './categoriesTree.mjs';
 import { DynamicPanel } from './panels.mjs';
 
 import { IBootLoader, IKatexInputHelper, katexInputHelperFactoryId } from './interfaces.mjs';
@@ -27,7 +29,6 @@ import { IBootLoader, IKatexInputHelper, katexInputHelperFactoryId } from './int
 @injectable()
 export default class BootLoader implements IBootLoader {
 	
-	baseLocation = null;
 	factory: Factory<IKatexInputHelper> = null;
 	vme: IKatexInputHelper = null;
 	katex = null;
@@ -189,8 +190,6 @@ export default class BootLoader implements IBootLoader {
 			checkOther(typeof this.katex, 'object', 'Katex') &&
 			checkOther(typeof this.katex.renderToString, 'function', 'Katex') &&
 			
-			//checkTypeByName(EditorView, 'EditorView', 'CodeMirror') &&
-			
 			checkTypeByName(Observable, 'Observable') &&
 			checkTypeByName(Localizer, 'Localizer') &&
 			checkTypeByName(Themes, 'Themes') &&
@@ -198,7 +197,6 @@ export default class BootLoader implements IBootLoader {
 			checkTypeByName(KIHParameters, 'KIHParameters') &&
 			checkTypeByName(FileHandler, 'FileHandler') &&
 			checkTypeByName(MathFormulae, 'MathFormulae') &&
-			//checkTypeByName(CategoriesTree, 'CategoriesTree') &&
 			checkTypeByName(DynamicPanel, 'DynamicPanel') &&
 			checkTypeByName(KatexInputHelper, 'KatexInputHelper'));
 		

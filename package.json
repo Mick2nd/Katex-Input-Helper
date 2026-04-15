@@ -10,8 +10,8 @@
     "build-docs": "typedoc --options typedoc.json --tsconfig src/assets/tsconfig.json && npm exec --package=@atao60/fse-cli fse copy ./img ./docs/img",
     "test": "vitest --root './tests' --run --reporter verbose --no-cache",
     "jtest": "jest",
-    "build-assets": "webpack --config webpack.assets.config.ts",
-    "build-assets-prod": "webpack --config webpack.assets.config.ts --env kihmode=production --stats-error-details",
+    "build-assets": "webpack --config webpack.assets.config.ts --env kihmode=development",
+    "build-assets-prod": "webpack --config webpack.assets.config.ts --env kihmode=production",
     "serve": "webpack serve --config webpack.assets.config.ts",
     "serve-prod": "webpack serve --config webpack.assets.config.ts --env kihmode=production",
     "stop-serve": "npx kill-port 9000",
@@ -26,7 +26,6 @@
   ],
   "devDependencies": {
     "@atao60/fse-cli": "^0.1.9",
-    "@codemirror/basic-setup": "^0.20.0",
     "@codemirror/commands": "^6.10.3",
     "@codemirror/legacy-modes": "^6.5.2",
     "@codemirror/view": "^6.40.0",
@@ -85,6 +84,7 @@
     "unused-webpack-plugin": "^2.4.0",
     "url-loader": "^4.1.1",
     "webpack": "^5.74.0",
+    "webpack-bundle-analyzer": "^5.3.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.2.1"
   },

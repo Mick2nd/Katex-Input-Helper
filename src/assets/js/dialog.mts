@@ -1,6 +1,6 @@
 import Hammer from 'hammerjs';
 import './easyui.mjs';
-import './sass/dialog.scss' assert { type: 'css' };
+import './sass/initial.scss' assert { type: 'css' };
 
 import { VKI_init } from './keyboard/keyboard.js';
 import { FileHandler } from './fileHandling.mjs';
@@ -334,17 +334,12 @@ export class KatexInputHelper implements IKatexInputHelper {
 		const body = (root.lastChild as HTMLElement);
 		append(body, 'body');
 		
+		const opts = { assert: { type: 'css' } };
+		await import('./sass/dialog.scss', opts); 
+		
 		await this.math.injectCodeMirror();
 		this.codeMirrorEditor = this.math.codeMirror;			// lazy injection
 		console.debug(`Document check : ${document.URL}.`);
-		
-		// TEST to set app window size
-		// This works but not on Android !!!
-		// TODO: make it work on Android and only Android
-		/*
-		const containerElement = window.frames.top.top.document.getElementsByClassName('user-webview-dialog')[0];
-		$(containerElement).css("--content-height", "80vh");
-		*/
 		
 		return true;
 	}
@@ -358,9 +353,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 		this.versions = new Versions();
 		await this.themes.preInitialize();
 		
-		// Initialize is done lazily
-		//this.parser.initialise();		
-
 		// Query string may be a better solution than detection
 		this.platformInfo = { isMobile: this.parameters.isMobile, osFamily: 'Unknown' };
 

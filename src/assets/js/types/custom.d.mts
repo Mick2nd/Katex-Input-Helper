@@ -10,3 +10,4 @@ declare module "*.scss" {
 
 declare let PRODUCTION: boolean;
 declare let KIH_VERSION: string;
+declare let EASYUI_INCLUDES: string[];

@@ -41,6 +41,8 @@ declare global {
 		webviewApi?: any;
 		bootLoaderLoaded?: boolean;
 		vme?: any;
+		$?: any;
+		jQuery?: any;
 	}
 	
 	export interface Navigator {

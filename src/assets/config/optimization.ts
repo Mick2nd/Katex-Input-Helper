@@ -26,7 +26,8 @@ const splitChunksConfig = (_env: any) => { return {
 
 	cacheGroups: {
 		vendors: {
-			/* Experience with 'all':
+			/**
+			 * Experience with 'all':
 			 * - more chunks are factored out
 			 * - but application stops
 			 * - why is the code not async ?
@@ -37,7 +38,10 @@ const splitChunksConfig = (_env: any) => { return {
 			filename: 'js/vendors/[name].js',
 			chunks: 'async',
 		},
-		/* TODO: experiments. Have been of little use.
+		
+		/** 
+		 *	TODO: experiments. Have been of little use.
+		 *
 		categories: {
 			test: /[\\/]src[\\/]assets[\\/]js[\\/]categoriesTree\.mjs$/,
 			reuseExistingChunk: true,
