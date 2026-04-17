@@ -31,6 +31,13 @@ export default function pluginsConfig(env: any) : any {
 			minimize: true,
 		},
 		plugins: [
+			/**
+			 * This plugin reduces chunk count, but leads to erronous views.
+			 *
+			new webpack.optimize.LimitChunkCountPlugin({
+				maxChunks: 10
+			}),
+			 */
 			new webpack.ProvidePlugin({
 				$: 'jquery',
 				jQuery: 'jquery',

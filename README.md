@@ -114,6 +114,15 @@ This does not appear on the *Chrome* browser on desktop.
 
 ## Release Notes
 
+### 3.0.2
+
+- Migration of the *Inversify* package to version 8, project to ECMA script
+- Assets webpack configuration in *Typescript* and divided into sub configurations
+- Postponed loading of certain assets
+- Used the *easyloader* of the easyui library to improve the start experience
+- Improved the FOUC behavior
+- Joplin API updated together with node modules, reduced the number of vulnerabilities
+
 ### 3.0.1
 
 - Bug fixing on the mobile version:

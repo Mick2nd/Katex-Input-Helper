@@ -16,6 +16,7 @@
 		
 		<!-- Intent was to display a SPLASH screen during initialization.
 			 But this does not work, probably because the new content disturbs.
+			 Goal is to avoid a FOUC (Flash of un-styled content)
 		 -->
 		<style>
 			body {
@@ -33,7 +34,7 @@
 			}
 		</style>
 	</head>
-	<body id="bodyPagePre">
+	<body id="bodyPagePre" style="background-color: #E7F0FF;">
 		<div id="WaitMsgPre" class="easyui-window" title="Katex Input Helper" 
 			data-options="modal:true,maximizable:false,minimizable:false,collapsible:false,closable:false,maximized:true">
 			Editor is downloading... <br />

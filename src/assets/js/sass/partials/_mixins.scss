@@ -374,9 +374,9 @@
 		}
 
 		#tableBUGS {
+			margin-top: 10px;
 			width: 100%;
 			border-collapse: collapse;
-			background-color: #FFFFCC;
 			border: 1px solid #FFCC00;
 			
 			th, td {
@@ -529,5 +529,116 @@ $contentTailored: (
 	}
 	#wMATRIX {
 		@include matrixMixin($isMobile);
+	}
+}
+
+
+/**
+ *	This mixin for menu settings of both variants.
+ */
+@mixin commonMenuMixin() {
+	// Placeholder
+}
+
+/**
+ *	This mixin for menu settings of the Desktop variant.
+ */
+@mixin desktopMenuMixin() {
+	.menus {
+		width: 200px;
+		overflow: hidden !important;
+	}	
+
+	#menu {
+		padding: 5px;
+	}
+
+	/* The Latex menu item */
+	#mLaTeX_TEXT {
+		// TODO: Fontsize 120% has been the reason for fundamental problems -> solved
+		.katex {
+			font-size: 1.2em !important;
+		}		
+	}
+
+	/**
+	 *	I have no idea why 'noline' is active. But resetting 'none' to  'block'
+	 *	should activate the menu line between icons and text. Also menu separator
+	 *	gets truncated where the icon is.
+	 */	
+	.menu-noline .menu-line {
+		display: block !important;
+	}
+	.menu-sep {
+		margin: 3px 0px 3px 25px !important;
+	}
+}
+
+/**
+ *	This mixin for menu settings of the Mobile variant.
+ */
+@mixin mobileMenuMixin() {
+	$fontSize: functions.fontSize(true);	
+	
+	/* Sidemenu menu-line handling */
+	#sm {		
+		width: 500px !important;
+		/* Supress scrollbars */
+		div {
+			overflow-y: hidden !important;
+		}
+	}
+
+	/* The Latex menu item */
+	#sm span:has(> .katex) {
+		// TODO: Fontsize 120% has been the reason for fundamental problems -> solved
+		padding-top: 2px;
+		.katex {
+			font-size: 1.0em !important;
+		}
+	}
+
+	/* Indentation of the text */
+	.sidemenu-tree span.tree-title, .sidemenu .panel-title span {
+		margin-left: 5px;
+		padding-left: 5px;
+	}
+	
+	/* The menu line for the mobile case */
+	.menu-noline .menu-line {
+		display: inline-block;
+		position: static;
+		font-size: 1px;
+		width: 2px !important;
+		margin-left: 7px;
+		vertical-align: middle;
+		
+		height: 22px !important;
+		transform: scaleY(2.0);
+	}
+
+	/*	Menu separator
+		Use the colors of the themes !! */
+	.menu-sep {
+		flex-grow: 1;
+		margin-left: 0px !important;
+		height: 0px;
+	}
+	div:has(> .menu-sep) {
+		display: flex;
+		height: fit-content !important;
+		padding: 0;
+		& > span.tree-icon, 
+		& > span.tree-indent {
+			height: 0px;
+		}
+		& > span.tree-icon {
+			width: 16px;
+		} 
+	}
+
+	/* Side menu font-size */
+	.panel-title span, span.rtl-menu-item {
+		font-size: $fontSize !important;
 	}
 }

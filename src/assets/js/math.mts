@@ -195,10 +195,8 @@ export class MathFormulae implements IMath {
 	 */
 	updateLatexMenu() {
 		// THIS code runs in the Browser, but not as plug-in.
-		//let html = katex.renderToString('\\LaTeX', { thrownOnError: false });
-		//$('#mLaTeX_TEXT span').html(html);
-		
-		$('#mLaTeX_TEXT span, #mLaTeX_TEXT_side span').text('LaTeX');
+		let html = this.katex.renderToString(String.raw`\LaTeX`, { displayMode: false, thrownOnError: false, output: 'html' });
+		$('#mLaTeX_TEXT span, span.tree-title > span:contains("LaTeX")').html(html);
 	}
 	
 	/**

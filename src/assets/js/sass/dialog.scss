@@ -23,9 +23,13 @@ body {
 	height: 100vh;
 	
 	// The Wait Msg
+	/* NOT NECESSARY: styles left over from initial => unique style
 	#WaitMsg {
 		@include mixins.waitMsgMixin(true);
 	}
+	*/
+	
+	@include mixins.commonMenuMixin();
 	
 	// The Progress window
 	.progress {
@@ -153,20 +157,7 @@ body.katex-desktop {
 		}
 	}
 	
-	.menus {
-		width: 200px;
-		overflow: hidden !important;
-	}	
-	
-	#menu {
-		padding: 5px;
-	}
-	
-	/* The Latex menu item */
-	#mLaTeX_TEXT span {
-		padding-top: 5px; 
-		font-size: 120%;
-	}
+	@include mixins.desktopMenuMixin();
 	
 	/* Suppress scroll bars */
 	.easyui-menubutton {
@@ -197,7 +188,7 @@ body.katex-desktop {
  */
 body.katex-mobile {
 	$fontSize: functions.fontSize(true);	
-	$innerWidth: calc(100vw);
+	$innerWidth: 100vw;
 	
 	/* essential: must be written at the correct moment */
 	height: 100vh;
@@ -236,7 +227,9 @@ body.katex-mobile {
 		font-size: $fontSize;
 
 		.easyui-accordion {
-			width: $innerWidth;
+			// This avoids scrollbars, could be also overflow hidden
+			margin-left: 0.5vw;
+			width: 99vw;
 			height: fit-content;
 			
 			.accordion-body {
@@ -266,44 +259,9 @@ body.katex-mobile {
 	
 	/* Mixin for all the dialogs */	
 	@include mixins.dialogs(true);
-
-	/* Properties for all menus */
-	.menu-text, .menus {
-		width: calc-size(fit-content, calc(max(size + 20px, 300px))) !important;
-		padding-left: 30;
-		span {
-			font-size: $fontSize !important;
-		}
-	}
 	
-	/*	Menu separator
-		Use the colors of the themes !! */
-	.menu-sep {
-		width: 90%;
-		height: 0px;
-		margin-bottom: 2px !important;
-		margin-top: 2px !important;
-	}
-	div:has(> .menu-sep) {
-		height: fit-content !important;
-		padding: 0;
-		&>span.tree-icon, &>span.tree-indent {
-			height: 0px;
-		}
-	}
-	
-	/* Side menu */
-	.panel-title span, span.rtl-menu-item {
-		font-size: $fontSize !important;
-	}
-	
-	/* Supress scrollbars */
-	#sm {
-		width: 500px !important;
-		div {
-			overflow-y: hidden !important;
-		}
-	} 
+	/* All menu settings */
+	@include mixins.mobileMenuMixin();	
 	
 	/* Improves accessibility -> can also use .dialog-button */
 	#btLANGUAGE_CHOISE, #btSTYLE_CHOISE, #btEDITOR_PARAMETERS, #btMATRIX, #btCUSTOM_EQUATIONS_BUTTONS {

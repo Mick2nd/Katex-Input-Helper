@@ -385,12 +385,14 @@ export class KatexInputHelper implements IKatexInputHelper {
 		// IN QUESTION
 		await this.onLocaleChanged(this.localizer);							// repeat because too soon after initialiseLanguageChoice
 		this.themes.subscribe(this.onStyleChanged.bind(this));
-		await this.themes.initialiseThemeChoice(this.style, this.rtlStyle); // RTL STYLE defined after locale language
 
 		if (!this.platformInfo.isMobile) {
 			$('#myContainer').layout({fit: true});							// myContainer is only on desktop a layout
 		}
 		$('#innerLayout').layout({fit: true});
+		
+		// Testwise shift to latest possible location
+		await this.themes.initialiseThemeChoice(this.style, this.rtlStyle); // RTL STYLE defined after locale language
 		vme.endWait();
 	}
 
@@ -523,7 +525,10 @@ export class KatexInputHelper implements IKatexInputHelper {
 			$("div.katex-desktop").removeClass("katex-desktop");
 			
 			await this.parser.parseAsync('html');
-			defineProportions('#innerLayout', 'south', 50);						
+			defineProportions('#innerLayout', 'south', 50);
+			
+			// TODO: Test for menu line
+			$('.menu').addClass('menu-line');			
 		}
 	}
 	
@@ -596,7 +601,11 @@ export class KatexInputHelper implements IKatexInputHelper {
 			if ($(this).text() == '') {
 				$(this).addClass('menu-sep');
 			}
-		})
+		});
+		
+		// CSS classes for menu-line implementation
+		$('.tree-node').addClass('menu-noline');
+		$('<span class="menu-line" ></span>').insertBefore('#sm .tree-title');
 		
 		$('#sm').sidemenu('expand');
 	}
