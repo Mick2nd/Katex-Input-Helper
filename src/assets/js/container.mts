@@ -1,12 +1,24 @@
 import { Container, ResolutionContext, Factory, Newable } from 'inversify';
 
-import { IBootLoader, bootLoaderId, katexInputHelperId, IKatexInputHelper, katexInputHelperFactoryId, 
-	ILocalizer, localizerId, IMessager, messagerId, 
-	IUtilities, utilitiesId, parametersId, IThemes, themesId, IParser, parserId, IMath, mathId, 
+import { 
+	IEasyuiLoader, easyuiLoaderId,
+	IBootLoader, bootLoaderId, 
+	katexInputHelperId, IKatexInputHelper, katexInputHelperFactoryId, 
+	ILocalizer, localizerId, 
+	IMessager, messagerId, 
+	IUtilities, utilitiesId, 
+	parametersId, 
+	IThemes, themesId, 
+	IParser, parserId, 
+	IMath, mathId, 
 	IPanels, panelsId, dynamicPanelId, informationWindowId, moreDialogId, windowId, dialogId, matrixWindowId, 
-	dynamicParametersId, panelFactoryId, unicodeWindowId, categoriesTreeId, ICategoriesTree, asyncId,
-	codeMirrorFactoryId, ICodeMirror, menusId, IMenus } from './interfaces.mjs';
+	dynamicParametersId, panelFactoryId, unicodeWindowId, 
+	categoriesTreeId, ICategoriesTree, 
+	asyncId,
+	codeMirrorFactoryId, ICodeMirror, 
+	menusId, IMenus } from './interfaces.mjs';
 
+import { EasyuiLoader } from './easyui.mjs';
 import { default as BootLoader } from './bootLoader.mjs';
 import { KatexInputHelper } from './dialog.mjs';
 import { Localizer } from './localization.mjs';
@@ -58,6 +70,8 @@ async function register<TIfc>(id: Symbol, file: string) {
 		});
 }
 
+
+container.bind<IEasyuiLoader>(easyuiLoaderId).to(EasyuiLoader).inSingletonScope();
 container.bind<IBootLoader>(bootLoaderId).to(BootLoader).inSingletonScope();
 container.bind<IKatexInputHelper>(katexInputHelperId).to(KatexInputHelper).inSingletonScope();
 container.bind<ILocalizer>(localizerId).to(Localizer).inSingletonScope();
@@ -111,8 +125,7 @@ container
 
 const bootLoader: IBootLoader = container.get(bootLoaderId); 
 try {
-	await bootLoader.init1();
-	bootLoader.check();
+	await bootLoader.initApp();
 	
 } catch(err) {
 	console.error(`Error ${err} `, err);

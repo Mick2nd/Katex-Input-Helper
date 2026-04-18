@@ -4,9 +4,14 @@ export interface ICommon {
 }
 
 export interface IBootLoader extends ICommon {
-	init1() : Promise<void>;
+	initApp() : Promise<void>;
 	fatal(err: any) : void;
 	check() : void;
+}
+
+export interface IEasyuiLoader {
+	preload() : Promise<void>;
+	load() : Promise<void>;
 }
 
 export interface IKatexInputHelper {
@@ -131,6 +136,7 @@ export interface IMenus {
 
 export const asyncId = Symbol.for('AsyncId');
 export const rawBootLoaderId = Symbol.for('RawBootLoaderId');
+export const easyuiLoaderId = Symbol.for('EasyuiLoaderId');
 export const bootLoaderId = Symbol.for('BootLoaderId');
 export const platformInfoId = Symbol.for('PlatFormInfoId');
 export const katexInputHelperId = Symbol.for('KatexInputHelperId');

@@ -9,17 +9,13 @@
  */
  import { injectable, inject, Factory } from 'inversify';
 
-import { Observable } from './patterns/observable.mjs';
-import { Localizer } from './localization.mjs';
-import { Themes } from './themes.mjs';
-import { ParserExtension } from './parserExtension.mjs';
-import { KIHParameters } from './parameters.mjs';
-import { MathFormulae } from './math.mjs';
-import { KatexInputHelper } from './dialog.mjs';
-import { FileHandler } from './fileHandling.mjs';
-import { DynamicPanel } from './panels.mjs';
-
-import { IBootLoader, IKatexInputHelper, katexInputHelperFactoryId } from './interfaces.mjs';
+import { 
+	IBootLoader, 
+	IKatexInputHelper, katexInputHelperFactoryId, 
+	IEasyuiLoader, easyuiLoaderId,
+	ILocalizer, localizerId 
+	
+} from './interfaces.mjs';
 
 /**
  * The boot loader of the Katex Input Helper.
@@ -31,14 +27,19 @@ export default class BootLoader implements IBootLoader {
 	
 	factory: Factory<IKatexInputHelper> = null;
 	vme: IKatexInputHelper = null;
-	katex = null;
+	easyuiLoader: IEasyuiLoader = null;
+	localizer: ILocalizer = null;
 	
 	/**
 	 * Constructor.
 	 */
 	constructor(
+		@inject(easyuiLoaderId) easyuiLoader,
+		@inject(localizerId) localizer,
 		@inject(katexInputHelperFactoryId) factory: any
 	) {
+		this.easyuiLoader = easyuiLoader;
+		this.localizer = localizer;
 		this.factory = factory;
 	}
 
@@ -98,14 +99,25 @@ export default class BootLoader implements IBootLoader {
 	}
 	
 	/**
-	 * Initializes the app.
+	 * Initializes the app. This is the true application logic. Performs the
+	 * following steps:
 	 * 
-	 * This is the true application logic.
+	 * - start document and easyui initial load
+	 * - English language and progress dialog
+	 * - easyui final load
+	 * - KIH loading including prefetch
+	 * - KIH initialization
 	 * 
 	 * @async implements the Promise contract
 	 */
 	async initApp() {
 		try {
+			await Promise.all([ this.readyAsync(), this.easyuiLoader.preload() ]);
+			await this.localizer.load('en_US');
+			this.startProgressDialog();
+			console.debug(`Promise check : document ready: ${document.URL}.`);
+
+			await this.easyuiLoader.load();
 			this.vme = await this.factory();
 			globalThis.vme = this.vme;							// prevents garbage collection?
 			const prefetched = await this.vme.prefetch();		// prefetch can load another page
@@ -113,98 +125,27 @@ export default class BootLoader implements IBootLoader {
 				await this.readyAsync();						// in this case must wait for ready.
 			}
 			await this.vme.initialise();
+			console.debug('Promise check : app started.');
+			this.check();
+			
 		} finally {
 			console.info('App initialization finished');
 		}
 	}
 	
 	/**
-	 * Initialization scenario 1 : without easy loader.
-	 * 
-	 * @async implements the Promise contract
+	 * Starts the Progress dialog as early as the document is ready.
 	 */
-	async init1() {
-		
-		this.katex = await import('katex/dist/katex.mjs');			// This version of import is essential for mhchem
-		await import('katex/dist/contrib/mhchem.mjs');
-		
-		let counter = 20;
-		while (!this.presenceCheck(counter) && --counter >= 0) {
-			await this.setTimeoutAsync(100);
-		}
-		console.info(`jquery loaded : ${typeof $} `);
-		
-		await this.readyAsync();
-		console.debug(`Promise check : document ready: ${document.URL}.`);
-		
-		await this.initApp();
-		console.debug('Promise check : app started.');
-		this.check();
-	}
-	
-	/**
-	 * Checks the presence of the required scripts.
-	 * 
-	 * Checks until the cycle number becomes 0 (count down).
-	 * 
-	 * @param cycle - the current cycle
-	 * @returns true, if all dependencies are loaded
-	 * @throws if no cycle is left over and not all dependencies are loaded
-	 */
-	presenceCheck(cycle: number) {
-		let lastChecked = 'Test';
-		
-		/**
-		 * Checks the classname. Changed to accomodate the minification.
-		 */
-		function checkTypeByName(type: any, name: string, readableName = name) {
-			lastChecked = readableName;
-			if (!type?.prototype) {
-				console.warn(`Undefined type : ${readableName}`);
-				return false;
-			}
-			let detectedName = type.prototype["constructor"]["name"];
-			let equal = (detectedName === name);
-			if (!equal && !PRODUCTION) {
-				console.warn(`Type check failed : ${detectedName} : ${readableName}`);
-				return false;
-			}
-			return true;								// returning test result can lead to problems with minimized versions of code
-		}
-		
-		/**
-		 * Checks some type of an object like 'object' or 'function'
-		 */
-		function checkOther(type: string, name: string, readableName: string) {
-			lastChecked = readableName;
-			let equal = type === name;
-			if (!equal) {
-				console.warn(`Type check failed : ${type} : ${readableName}`);
-			}
-			return equal;
-		}
-		
-		let allLoaded = (
-			checkOther(typeof $, 'function', 'jquery') &&
-			
-			checkOther(typeof this.katex, 'object', 'Katex') &&
-			checkOther(typeof this.katex.renderToString, 'function', 'Katex') &&
-			
-			checkTypeByName(Observable, 'Observable') &&
-			checkTypeByName(Localizer, 'Localizer') &&
-			checkTypeByName(Themes, 'Themes') &&
-			checkTypeByName(ParserExtension, 'ParserExtension') &&
-			checkTypeByName(KIHParameters, 'KIHParameters') &&
-			checkTypeByName(FileHandler, 'FileHandler') &&
-			checkTypeByName(MathFormulae, 'MathFormulae') &&
-			checkTypeByName(DynamicPanel, 'DynamicPanel') &&
-			checkTypeByName(KatexInputHelper, 'KatexInputHelper'));
-		
-		if (! allLoaded && cycle <= 0) {
-			throw new Error(`${lastChecked} not loaded`);
-		}
-			
-		return allLoaded;
+	startProgressDialog() {
+		$.messager.progress({
+			title:	"Katex Input Helper", 
+			text:	this.localizer.getLocalText("WAIT_FOR_EDITOR_DOWNLOAD"), 
+			msg:	"<center>&copy; " +
+						"<a href='mailto:juergen@habelt-jena.de?subject=Katex%20Input%20Helper' target='_blank' class='bt progress' >Jürgen Habelt</a> -" + 
+						"<a href='https://github.com/Mick2nd/Katex-Input-Helper' target='_blank' class='bt progress' >A Joplin plug-in</a><br/><br/>" +
+					"</center>", 
+			interval: 300 
+		}); 
 	}
 
 	/**

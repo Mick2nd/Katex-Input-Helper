@@ -191,6 +191,7 @@ const includeList = [
 	'validatebox',
 	'window',
 	'blank',
+	'tabs_icons',
 	
 	'datagrid-cellediting',
 	'datagrid-dnd',

@@ -1,5 +1,4 @@
 import Hammer from 'hammerjs';
-import './easyui.mjs';
 import './sass/initial.scss' assert { type: 'css' };
 
 import { VKI_init } from './keyboard/keyboard.js';
@@ -364,16 +363,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 		this.addBuild();
 		this.localizer.subscribe(this.onLocaleChanged.bind(this));
 		await this.localizer.initialiseLanguageChoice(this.localType);		// Progress dialog uses localized text
-		
-		$.messager.progress({
-			title: "Katex Input Helper", 
-			text: vme.getLocalText("WAIT_FOR_EDITOR_DOWNLOAD"), 
-			msg:	"<center>&copy; " +
-						"<a href='mailto:juergen@habelt-jena.de?subject=Katex%20Input%20Helper' target='_blank' class='bt progress' >Jürgen Habelt</a> -" + 
-						"<a href='https://github.com/Mick2nd/Katex-Input-Helper' target='_blank' class='bt progress' >A Joplin plug-in</a><br/><br/>" +
-					"</center>", 
-			interval: 300 
-		}); 
 		$('#form').hide();
 		
 		await vme.initialiseUI(); 

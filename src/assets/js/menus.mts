@@ -1,4 +1,3 @@
-import './easyui.mjs';
 import { injectable, inject } from 'inversify';
 import { ILocalizer, localizerId, IMenus } from './interfaces.mjs';
 

@@ -1,4 +1,4 @@
-const withEasyLoader = true;
+import { IEasyuiLoader, easyuiLoaderId } from './interfaces.mjs';
 
 
 /**
@@ -35,82 +35,35 @@ async function promisify(fnc: any, ...args: any[]) {
 	});
 }
 
-let EL: any = null;
-
 /**
- * A using function encapsulated by a Promise.
- * 
- * @async implements the Promise contract
- * @param script - the url of the script to be loaded
- * @returns - the Promise indicating the state of the transaction
+ * Class responsible for loading the Easyui package.
  */
-async function usingAsync(modules: string[]) : Promise<any> {
-	try {
-		if (EL == null) {
-			const { easyloader } = (await import('./jquery-easyui/easyloader.js'));
-			easyloader.base = getBaseLocation();
-			EL = easyloader;
-		}
-		const ready = await promisify(/*using*/EL.load.bind(EL), modules);
-		return ready;
-	} catch(e) {
-		console.error(`Could not load 'easyui' ${e}`);
-		throw e;
+export class EasyuiLoader implements IEasyuiLoader {
+	
+	deferredList: string[];
+	primaryList: string[];
+	easyloader: any = null;
+	
+	/**
+	 * Constructor. Prepares a few data structures and access of easyui to jQuery.
+	 */
+	constructor() {
+		window.$ = window.jQuery = $;			// provides access for easyloader and easyui
+
+		this.deferredList = [
+			'datagriddnd',
+			'datagridfilter',
+			'datagridcellediting',
+		];
+		this.primaryList = EASYUI_INCLUDES.filter((elem) => !this.deferredList.includes(elem) && elem !== 'tabs_icons');
 	}
-}
-
-/**
- * Sets the base location.
- * 
- * This will be needed for relative paths of some content like css or js files.
- * Is here used only for *easyloader*.
- * 
- * @returns the location of this script, ending with a slash
- */
-function getBaseLocation() : string {
-	const location = (document.currentScript as HTMLScriptElement).src
-		.split('/')
-		.slice(0, -1)
-		.join('/')
-		.replace(/ /g, '%20')
-		.replace('file:///', 'file://')
-		.replace('file://', 'file:///') + '/';
-		
-	console.info(`Base location is : '${location}'`);
-	return location;
-}
-
-
-/**
- * Registers extensions for the EASYUI plugins, here: datagrid.
- */
-function registerExtensions(easyloader: any) {
-	$.extend(easyloader.modules, {
-		datagriddnd: {
-			js:'../datagrid-dnd.js',
-			dependencies: ['datagrid']
-		},
-		datagridfilter: {
-			js:'../datagrid-filter.js',
-			dependencies: ['datagrid']
-		},
-		datagridcellediting: {
-			js:'../datagrid-cellediting.js',
-			dependencies: ['datagrid']
-		}
-	});
-}
-
-
-if (withEasyLoader) {
-	window.$ = window.jQuery = $;			// provides access for easyloader and easyui
-
-	const deferredList: string[] = [			
-		'datagriddnd',
-		'datagridfilter',
-		'datagridcellediting',
-	];
-	const primaryList = EASYUI_INCLUDES.filter((elem) => !deferredList.includes(elem));
+	
+	/**
+	 * Preloads the messager plugin.
+	 */
+	async preload() {
+		await this.usingAsync(['tabs', 'messager']);
+	}
 	
 	/**
 	 * Essential workflow (other trials did not work):
@@ -118,17 +71,74 @@ if (withEasyLoader) {
 	 * - then register plugin-extensions
 	 * - finally load those plugin-extensions
 	 */
-	await usingAsync(primaryList);
-	registerExtensions(EL);	
-	await usingAsync(deferredList);
-	
-} else {
-	// Leave this code outcommented, because otherwise the package size would
-	// grow.
-	//await import('./jquery-easyui/jquery.easyui.min.js');
-	//await import('./jquery-easyui/datagrid-dnd.js');
-	//await import('./jquery-easyui/datagrid-filter.js');
-	//await import('./jquery-easyui/datagrid-cellediting.js');
+	async load() {
+		await this.usingAsync(this.primaryList);
+		this.registerExtensions(this.easyloader);	
+		await this.usingAsync(this.deferredList);			
+	}
+
+	/**
+	 * Registers extensions for the EASYUI plugins, here: datagrid.
+	 */
+	registerExtensions(easyloader: any) {
+		$.extend(easyloader.modules, {
+			datagriddnd: {
+				js:'../datagrid-dnd.js',
+				dependencies: ['datagrid']
+			},
+			datagridfilter: {
+				js:'../datagrid-filter.js',
+				dependencies: ['datagrid']
+			},
+			datagridcellediting: {
+				js:'../datagrid-cellediting.js',
+				dependencies: ['datagrid']
+			}
+		});
+	}
+
+	/**
+	 * A using function encapsulated by a Promise.
+	 * 
+	 * @async implements the Promise contract
+	 * @param script - the url of the script to be loaded
+	 * @returns - the Promise indicating the state of the transaction
+	 */
+	async usingAsync(modules: string[]) : Promise<any> {
+		try {
+			if (this.easyloader == null) {
+				const { easyloader } = (await import('./jquery-easyui/easyloader.js'));
+				easyloader.base = this.getBaseLocation();
+				this.easyloader = easyloader;
+			}
+			const ready = await promisify(/*using*/this.easyloader.load.bind(this.easyloader), modules);
+			return ready;
+		} catch(e) {
+			console.error(`Could not load 'easyui' ${e}`);
+			throw e;
+		}
+	}
+
+	/**
+	 * Sets the base location.
+	 * 
+	 * This will be needed for relative paths of some content like css or js files.
+	 * Is here used only for *easyloader*.
+	 * 
+	 * @returns the location of this script, ending with a slash
+	 */
+	getBaseLocation() : string {
+		const location = (document.currentScript as HTMLScriptElement).src
+			.split('/')
+			.slice(0, -1)
+			.join('/')
+			.replace(/ /g, '%20')
+			.replace('file:///', 'file://')
+			.replace('file://', 'file:///') + '/';
+			
+		console.info(`Base location (1) is : '${location}'`);
+		return location;
+	}
 }
 
 export default 1;
