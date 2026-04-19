@@ -10,15 +10,8 @@ export default function inputOutputConfig(env: any) : any {
 	const PUBLIC_PATH = (env.ghpages ? "/Katex-Input-Helper/" : "auto");
 	return {
 		entry: {
-			main: {
-				import: './src/assets/js/container.mts',
-				dependOn: ['libs'],
-			},
-			libs: {
-				import: [
-					'inversify', 'buffer', 
-					'./src/assets/js/interfaces.mts', './src/assets/js/patterns/observable.mts'
-				],
+			main: { 
+				import: './src/assets/js/bootContainer.mts'
 			},
 		},
 		output: {
@@ -29,11 +22,12 @@ export default function inputOutputConfig(env: any) : any {
 				 * 	Each extra (chunk) component has its own file. We can name them
 				 *	according to development version and origin.
 				 */
+				 
 				let name: any = pathData.chunk?.name;
-				if (!name) { name = pathData.chunk?.id; }
+				if (!name) { name = pathData.chunk?.id; }				// could be number
 				
 				if (typeof name !== 'string') {
-					return 'js/[name].js';
+					return 'js/[name].js';								// could be id
 				}
 				const ext = getExtension(name);				
 				if (ext == 'html' || ext == 'hbs' || ext == 'json') {
@@ -46,8 +40,11 @@ export default function inputOutputConfig(env: any) : any {
 				if (name.includes('codemirror')) {
 					return 'js/vendors/[name].js';
 				}
-				if (name.includes('easyui')) {
+				if (name.includes('easyui') || name.includes('easyloader')) {
 					return 'js/easyui/[name].js';
+				}
+				if (name.includes('buffer') && name.length > 40) {
+					return `js/vendors/buffer~jquery~codemirror.js`
 				}
 				if (name.includes('localization')) {
 					return `js/localization/[name].js`;

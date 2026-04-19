@@ -58,7 +58,7 @@ async function register<TIfc>(id: Symbol, file: string) {
 	container.bind<Factory<TIfc>>(id.valueOf()).toFactory(
 		async function (context: any) : Promise<Factory<TIfc>> { 
 			try {
-				const cls = ((await import(/* webpackChunkname: 'categoriesTree' */ `./post-load/categoriesTree.mjs`)).default) as Newable<TIfc, []>;
+				const cls = ((await import(/* webpackChunkName: 'categoriesTree' */ `./post-load/categoriesTree.mjs`)).default) as Newable<TIfc, []>;
 				container.bind<TIfc>(rawSymbol).to(cls);
 				const service : Factory<TIfc> = () => context.get(rawSymbol);
 				console.debug(`CategoriesTree instantiated.`);

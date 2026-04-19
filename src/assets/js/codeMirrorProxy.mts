@@ -1,5 +1,15 @@
-//import './jquery-easyui/jquery.easyui.min.js';
-// @codemirror/basic-setup can be installed but leads to extra overhead in final package !!
+import { ICodeMirror } from './interfaces.mjs';
+import { EditorState, Compartment } from "@codemirror/state";
+import { EditorView, keymap, lineNumbers } from "@codemirror/view";
+
+const { basicSetup } = await import("codemirror");
+const { defaultKeymap } = await import(/* webpackChunkName: 'codeMirror' */ "@codemirror/commands");
+const { StreamLanguage, syntaxHighlighting, HighlightStyle } = await import(/* webpackChunkName: 'codeMirror' */ "@codemirror/language");
+const { stexMath } = await import(/* webpackChunkName: 'codeMirror' */ "@codemirror/legacy-modes/mode/stex");
+const { bbedit } = await import(/* webpackChunkName: 'codeMirror' */ "@uiw/codemirror-theme-bbedit");
+const { darcula } = await import(/* webpackChunkName: 'codeMirror' */ "@uiw/codemirror-theme-darcula");
+
+/*
 import { basicSetup } from "codemirror";
 import { EditorState, Compartment } from "@codemirror/state";
 import { EditorView, keymap, lineNumbers } from "@codemirror/view";
@@ -8,10 +18,7 @@ import { StreamLanguage, syntaxHighlighting, HighlightStyle } from "@codemirror/
 import { stexMath } from "@codemirror/legacy-modes/mode/stex";
 import { bbedit } from "@uiw/codemirror-theme-bbedit";
 import { darcula } from "@uiw/codemirror-theme-darcula";
-// the above selection saves about 600kB unzipped
-//import { bbedit, darcula } from "@uiw/codemirror-themes-all";
-
-import { ICodeMirror } from './interfaces.mjs';
+*/
 
 /**
  * Proxy class implements the ICodeMirror interface

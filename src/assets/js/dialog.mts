@@ -1,4 +1,3 @@
-import Hammer from 'hammerjs';
 import './sass/initial.scss' assert { type: 'css' };
 
 import { VKI_init } from './keyboard/keyboard.js';
@@ -470,6 +469,8 @@ export class KatexInputHelper implements IKatexInputHelper {
 			screen.orientation.addEventListener('change', async function() {
 				await inst.panels.refresh();
 			});
+			
+			const Hammer = (await import(/* webpackChunkName: 'hammer' */'hammerjs')).default;
 			
 			/**
 			 * Installs a swipe handler for certain nav panels.

@@ -5,7 +5,9 @@
 export default function optimizationConfig(env: any) : any {
 	return {
 		optimization: {
-			chunkIds: 'named',
+			// TODO: ATTENTION! named works, natural not. But names maybe too long
+			// Solved: name easyloader and move it to easyui folder
+			// chunkIds: 'natural',
 			splitChunks: splitChunksConfig(env),
 		},
 	};

@@ -107,7 +107,7 @@ export class EasyuiLoader implements IEasyuiLoader {
 	async usingAsync(modules: string[]) : Promise<any> {
 		try {
 			if (this.easyloader == null) {
-				const { easyloader } = (await import('./jquery-easyui/easyloader.js'));
+				const { easyloader } = (await import(/* webpackChunkName: 'easyloader' */ './jquery-easyui/easyloader.js'));
 				easyloader.base = this.getBaseLocation();
 				this.easyloader = easyloader;
 			}
