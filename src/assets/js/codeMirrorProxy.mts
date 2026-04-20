@@ -2,23 +2,13 @@ import { ICodeMirror } from './interfaces.mjs';
 import { EditorState, Compartment } from "@codemirror/state";
 import { EditorView, keymap, lineNumbers } from "@codemirror/view";
 
-const { basicSetup } = await import("codemirror");
+const { basicSetup } = await import(/* webpackChunkName: 'codeMirror' */ "codemirror");
 const { defaultKeymap } = await import(/* webpackChunkName: 'codeMirror' */ "@codemirror/commands");
 const { StreamLanguage, syntaxHighlighting, HighlightStyle } = await import(/* webpackChunkName: 'codeMirror' */ "@codemirror/language");
 const { stexMath } = await import(/* webpackChunkName: 'codeMirror' */ "@codemirror/legacy-modes/mode/stex");
 const { bbedit } = await import(/* webpackChunkName: 'codeMirror' */ "@uiw/codemirror-theme-bbedit");
 const { darcula } = await import(/* webpackChunkName: 'codeMirror' */ "@uiw/codemirror-theme-darcula");
 
-/*
-import { basicSetup } from "codemirror";
-import { EditorState, Compartment } from "@codemirror/state";
-import { EditorView, keymap, lineNumbers } from "@codemirror/view";
-import { defaultKeymap } from "@codemirror/commands";
-import { StreamLanguage, syntaxHighlighting, HighlightStyle } from "@codemirror/language";
-import { stexMath } from "@codemirror/legacy-modes/mode/stex";
-import { bbedit } from "@uiw/codemirror-theme-bbedit";
-import { darcula } from "@uiw/codemirror-theme-darcula";
-*/
 
 /**
  * Proxy class implements the ICodeMirror interface

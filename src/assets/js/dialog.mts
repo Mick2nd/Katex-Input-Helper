@@ -1,4 +1,4 @@
-import './sass/initial.scss' assert { type: 'css' };
+import './sass/initial.scss' with { type: 'css' }; // was: initial
 
 import { VKI_init } from './keyboard/keyboard.js';
 import { FileHandler } from './fileHandling.mjs';
@@ -332,7 +332,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		const body = (root.lastChild as HTMLElement);
 		append(body, 'body');
 		
-		const opts = { assert: { type: 'css' } };
+		const opts = { with: { type: 'css' } };
 		await import('./sass/dialog.scss', opts); 
 		
 		await this.math.injectCodeMirror();
@@ -390,7 +390,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * @param mobile - true in the mobile variant.
 	 */	
 	async initialiseMobile(mobile: boolean) {
-		let opts = { assert: { 
+		let opts = { with: { 
 			type: 'css'
 		} };
 
@@ -424,8 +424,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 			console.log(`Menu3 : ${$('#main-menu').html()}`);
 			
 			// For the working of the mobile variant order of these statements is essential
-			await import('./jquery-easyui/themes/mobile.css', opts);
-			await import('./jquery-easyui/jquery.easyui.mobile.js');
+			// TODO: TEST --- easyloader ??
+			await import(/* webpackChunkName: 'mobile' */ './jquery-easyui/themes/mobile.css', opts);
+			await import(/* webpackChunkName: 'jquery.easyui.mobile' */ './jquery-easyui/jquery.easyui.mobile.js');
 			await this.parser.parseAsync('body');
 
 			console.log(`Menu4 : ${$('#main-menu').html()}`);

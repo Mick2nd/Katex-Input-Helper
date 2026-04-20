@@ -472,6 +472,11 @@
 	border: 1px dotted $borderColor !important; 
 	border-top: 1px solid $borderColor !important; 
 	color: #0E2D5F !important;
+	
+	// The Progress window
+	@at-root .progress {
+		font-size: $fontSize;
+	}
 }
 
 /* List of 'more' dialogs. */
@@ -601,7 +606,13 @@ $contentTailored: (
 	/* Indentation of the text */
 	.sidemenu-tree span.tree-title, .sidemenu .panel-title span {
 		margin-left: 5px;
-		padding-left: 5px;
+		padding-left: 5px;		
+	}
+	
+	#sm .panel {
+		// TODO: bug in menu
+		//width: 500px !important;
+		//height: 40px !important;
 	}
 	
 	/* The menu line for the mobile case */

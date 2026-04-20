@@ -11,7 +11,7 @@ export class Versions {
 		this.codemirrorEditorVersion = codemirrorEditorVersion;
 	}
 
-	get version() { return this.versions.version; }
+	get version() { return `${this.versions.version} build ${this.build}`; }
 	get VKI_version() { return this.versions.VKI_version; }
 	get easyuiVersion() { return this.versions.easyuiVersion; }
 	get katexVersion() { return this.versions.katexVersion; }

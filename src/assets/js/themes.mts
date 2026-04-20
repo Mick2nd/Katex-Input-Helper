@@ -25,7 +25,7 @@ export class Themes extends Observable implements IThemes {
 
 		this.parser = parser;
 		this.opts = { 
-			assert: { 
+			with: { 
 				type: 'css',
 			}
 		};

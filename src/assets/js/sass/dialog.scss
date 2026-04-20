@@ -22,19 +22,7 @@ body {
 	/* essential: must be written at the correct moment */
 	height: 100vh;
 	
-	// The Wait Msg
-	/* NOT NECESSARY: styles left over from initial => unique style
-	#WaitMsg {
-		@include mixins.waitMsgMixin(true);
-	}
-	*/
-	
 	@include mixins.commonMenuMixin();
-	
-	// The Progress window
-	.progress {
-		font-size: functions.fontSize(true);
-	}
 	 
 	/* Hidden elements for file open / save ... */
 	.invisible {
