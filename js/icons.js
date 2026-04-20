@@ -1,1 +1,1 @@
-(self.webpackChunkjoplin_plugin_katex_input_helper=self.webpackChunkjoplin_plugin_katex_input_helper||[]).push([["icons"],{3694(p,e,n){n.r(e)}}]);
+(self.webpackChunkjoplin_plugin_katex_input_helper=self.webpackChunkjoplin_plugin_katex_input_helper||[]).push([[2123],{3694(p,e,l){l.r(e)}}]);
