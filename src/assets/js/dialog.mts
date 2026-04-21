@@ -1,5 +1,3 @@
-import './sass/initial.scss' with { type: 'css' }; // was: initial
-
 import { VKI_init } from './keyboard/keyboard.js';
 import { FileHandler } from './fileHandling.mjs';
 import { Versions } from './versions.mjs';
@@ -18,7 +16,7 @@ import {
     IMenus, menusId} from './interfaces.mjs';
 
 let console: any; 
-if (globalThis.console) console = globalThis.console; else console = { log: function(_: string) { }, error: function(_: string) { } }; 
+if (window.console) console = window.console; else console = { log: function(_: string) { }, error: function(_: string) { } }; 
 console.log(KIH_VERSION);
 
 /**
@@ -184,7 +182,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		@inject(panelsId) panels : IPanels,
 		@inject(menusId) menus : IMenus,
 	) {
-		globalThis.vme = this;
+		window.vme = this;
 	
 		$('body').on('error', (event) => {
 			console.error(`Error : %O`, event);
@@ -194,7 +192,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		this.baseLocation = this.setBaseLocation();
 		
 		// Probably not needed
-		console.info(`Url: ${globalThis.location}`);
+		console.info(`Url: ${window.location}`);
 		
 		this.parameters = parameters;
 		this.localizer = localizer;
@@ -321,6 +319,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 			$(to).append($(from.innerHTML));
 		}
 		
+		console.info('Starting prefetch');
 		await this.parameters.queryParameters();				// from Plugin or web query parameters
 		const app = this.parameters.isMobile ? 'mobile' : 'desktop';
 		const htmlString = (await import(`../dialog-${app}.hbs`)).default;
@@ -337,7 +336,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		
 		await this.math.injectCodeMirror();
 		this.codeMirrorEditor = this.math.codeMirror;			// lazy injection
-		console.debug(`Document check : ${document.URL}.`);
+		console.info(`Finished prefetch for ${app}`);
 		
 		return true;
 	}
@@ -347,6 +346,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 */
 	async initialise() { 
 
+		console.info('Starting initialization');
 		let vme = this;
 		this.versions = new Versions();
 		await this.themes.preInitialize();
@@ -356,15 +356,21 @@ export class KatexInputHelper implements IKatexInputHelper {
 
 		// As early as possible 
 		await this.initialiseMobile(this.parameters.isMobile);
+		console.info(`Finished initialization for desktop/mobile differences`);
 
 		// IN QUESTION
-		await vme.initialiseCodeMirror();			// reads the version info
+		await vme.initialiseCodeMirror();									// reads the version info
+		console.info(`Finished initialization for Code Mirror`);
+
 		this.addBuild();
 		this.localizer.subscribe(this.onLocaleChanged.bind(this));
 		await this.localizer.initialiseLanguageChoice(this.localType);		// Progress dialog uses localized text
+		console.info(`Finished initialization for language ${this.localType}`);
+		
 		$('#form').hide();
 		
 		await vme.initialiseUI(); 
+		console.info(`Finished initialization for UI`);
 		await vme.updateInfo();												// updates a few dialogs
 		vme.initialiseParameters(); 
 		vme.initialiseCodeType(); 											// for correct display of header, no interactivity
@@ -381,7 +387,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 		
 		// Testwise shift to latest possible location
 		await this.themes.initialiseThemeChoice(this.style, this.rtlStyle); // RTL STYLE defined after locale language
+		console.info(`Finished initialization for theme ${this.style}`);
 		vme.endWait();
+		console.info(`Finished initialization.`);
 	}
 
 	/**
@@ -390,10 +398,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * @param mobile - true in the mobile variant.
 	 */	
 	async initialiseMobile(mobile: boolean) {
-		let opts = { with: { 
-			type: 'css'
-		} };
-
 		/**
 		 * Defines the proportions of 2 regions of a layout.
 		 * 
@@ -407,7 +411,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 			$(selector).layout('resize');
 		}
 
-		// Here: the body content
+		// Here: the body content : Relict from version without prefetch?
 		$('body').prepend($('#joplin-plugin-content > div'));
 
 		if (mobile) {
@@ -421,42 +425,22 @@ export class KatexInputHelper implements IKatexInputHelper {
 			if (!CSS.supports('width: 100vw')) {
 				console.warn('No support for Viewport Width units');
 			}
-			console.log(`Menu3 : ${$('#main-menu').html()}`);
 			
+			let opts = { with: { 
+				type: 'css'
+			} };
+
 			// For the working of the mobile variant order of these statements is essential
-			// TODO: TEST --- easyloader ??
 			await import(/* webpackChunkName: 'mobile' */ './jquery-easyui/themes/mobile.css', opts);
 			await import(/* webpackChunkName: 'jquery.easyui.mobile' */ './jquery-easyui/jquery.easyui.mobile.js');
-			await this.parser.parseAsync('body');
+			await this.parser.parseAsync('html');
 
-			console.log(`Menu4 : ${$('#main-menu').html()}`);
+			// Attention! Placement of "easyui-navpanels" directly in body initiates buggy behavior
 			$('body').prepend($('div:has(> .easyui-navpanel)'));
-			
-			// Placement of "navpanels" in body initiates buggy behavior
-			//$('body').prepend($('.easyui-navpanel'));
+			await this.parser.parseAsync('html'); // ADDED
 			
 			$.mobile.init();
-			await this.parser.parseAsync('html'); // ?
 
-			// click handler for mobile			
-			$("#goWest").on('click', function(event) { 
-				event.preventDefault();
-				$.mobile.go('#westRegion', 'slide', 'right');
-			});
-			$("#goEast").on('click', function(event) { 
-				event.preventDefault(); 
-				$.mobile.go('#eastRegion', 'slide', 'left');
-			});
-			$("#goMenu").on('click', function(event) { 
-				event.preventDefault(); 
-				$.mobile.go('#wrapperPanelMenu', 'slide', 'left');
-			});
-			$("header:has(+ #wrapperPanel) a.back").on('click', function(_) { 
-				inst.panels.closeOpen(); 
-			});
-			$("header:has(+ #westRegion) a.back, header:has(+ #eastRegion) a.back, header:has(+ #wrapperPanelMenu) a.back").on('click', function(_) { 
-			});
-			
 			// Implements a handler for panel open events for the main panel.
 			$('#myContainer').panel({
 				fit: true,
@@ -466,49 +450,10 @@ export class KatexInputHelper implements IKatexInputHelper {
 				}
 			});
 			
-			// Handles orientation changes
-			screen.orientation.addEventListener('change', async function() {
-				await inst.panels.refresh();
-			});
-			
-			const Hammer = (await import(/* webpackChunkName: 'hammer' */'hammerjs')).default;
-			
-			/**
-			 * Installs a swipe handler for certain nav panels.
-			 * 
-			 * @param from - selector of the origin window
-			 * @param dir - direction (left, right, down)
-			 * @param [to=''] - target panel, empty for switch back
-			 */
-			function navigate(from: string, dir: string, to: string = '') {
-				const wnd = $(from)[0];
-				const hammer = new Hammer(wnd);
-				hammer.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
-				if (to === '') {
-					hammer.on('swipedown', function(event: any) {
-						event.preventDefault(); 
-						$.mobile.back();
-						inst.panels.closeOpen(); 
-					});
-					return;
-				}
-				hammer.on('swipe' + dir, function(event: any) {
-					event.preventDefault(); 
-					$.mobile.go(to, 'slide', dir);
-				});
-			}
-			
-			navigate('div:has(#myContainer) header', 'left', '#eastRegion');
-			navigate('div:has(#myContainer) header', 'right', '#westRegion');
-			navigate('div:has(#eastRegion) header', 'right', '#myContainer');
-			navigate('div:has(#westRegion) header', 'left', '#myContainer');
-			navigate('div:has(#wrapperPanel) header', 'down', '');
-			navigate('div:has(#wrapperPanelMenu) header', 'down', '');
-			
 			defineProportions('#innerLayout', 'south', 50);
-						
+			
+			await this.registerEventHandlers();
 			this.sidemenuData = this.getSidemenuData();
-			console.log(`Sidemenu data : %O`, this.sidemenuData);
 			this.populateSidemenu(this.sidemenuData);
 			
 		} else {
@@ -518,9 +463,73 @@ export class KatexInputHelper implements IKatexInputHelper {
 			await this.parser.parseAsync('html');
 			defineProportions('#innerLayout', 'south', 50);
 			
-			// TODO: Test for menu line
-			$('.menu').addClass('menu-line');			
+			$('.menu').addClass('menu-line');						// adds Menu line support
 		}
+	}
+	
+	/**
+	 * Registers handlers for the mobile case like click handlers and swipe handlers.
+	 */
+	async registerEventHandlers() {
+		const inst = this;
+		
+		// click handler for mobile			
+		$("#goWest").on('click', function(event) { 
+			event.preventDefault();
+			$.mobile.go('#westRegion', 'slide', 'right');
+		});
+		$("#goEast").on('click', function(event) { 
+			event.preventDefault(); 
+			$.mobile.go('#eastRegion', 'slide', 'left');
+		});
+		$("#goMenu").on('click', function(event) { 
+			event.preventDefault(); 
+			$.mobile.go('#wrapperPanelMenu', 'slide', 'left');
+		});
+		$("header:has(+ #wrapperPanel) a.back").on('click', function(_) { 
+			inst.panels.closeOpen(); 
+		});
+		$("header:has(+ #westRegion) a.back, header:has(+ #eastRegion) a.back, header:has(+ #wrapperPanelMenu) a.back").on('click', function(_) { 
+		});
+
+		// Handles orientation changes
+		screen.orientation.addEventListener('change', async function() {
+			await inst.panels.refresh();
+		});
+	
+		const Hammer = (await import(/* webpackChunkName: 'hammer' */'hammerjs')).default;
+	
+		/**
+		 * Installs a swipe handler for certain nav panels.
+		 * 
+		 * @param from - selector of the origin window
+		 * @param dir - direction (left, right, down)
+		 * @param [to=''] - target panel, empty for switch back
+		 */
+		function navigate(from: string, dir: string, to: string = '') {
+			const wnd = $(from)[0];
+			const hammer = new Hammer(wnd);
+			hammer.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
+			if (to === '') {
+				hammer.on('swipedown', function(event: any) {
+					event.preventDefault(); 
+					$.mobile.back();
+					inst.panels.closeOpen(); 
+				});
+				return;
+			}
+			hammer.on('swipe' + dir, function(event: any) {
+				event.preventDefault(); 
+				$.mobile.go(to, 'slide', dir);
+			});
+		}
+	
+		navigate('div:has(#myContainer) header', 'left', '#eastRegion');
+		navigate('div:has(#myContainer) header', 'right', '#westRegion');
+		navigate('div:has(#eastRegion) header', 'right', '#myContainer');
+		navigate('div:has(#westRegion) header', 'left', '#myContainer');
+		navigate('div:has(#wrapperPanel) header', 'down', '');
+		navigate('div:has(#wrapperPanelMenu) header', 'down', '');
 	}
 	
 	/**
@@ -532,9 +541,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		function parseMenu(id: string, level: number = 0) : any {
 			const level1Submenus = [ 'mFILE', 'mINSERT', 'mTOOLS', 'mVIEW', 'mOPTIONS', 'mINFORMATIONS' ];
 			
-			console.log(`Parsing with selector #${id}`);
 			const data = $(`#${id} > div`).map(function(idx: number, dom) {
-				console.log(`Found menu item : %O`, dom);
 				if ($(this).hasClass('menu-sep')) {
 					return {
 						id: '',
@@ -565,7 +572,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 				if (itemId) {
 					line.id = itemId + '_side';
 				}
-				console.log(`Found menu data : %O`, line);
 				return line;
 			});
 			return data.get();
@@ -581,21 +587,24 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * @param data - the data structure used to describe the menu
 	 */
 	populateSidemenu(data: any) {
+		
+		const optionsBefore = $('#sm').sidemenu('options')['data'];
 		$('#sm').sidemenu({
 			data: data,
 			floatMenuPosition: 'left',
 			multiple: false,
-			onSelect: this.onMenuClick.bind(this)
+			onSelect: this.onMenuClick.bind(this),
+			animate: true
 		});
+		const optionsAfter = $('#sm').sidemenu('options')['data'];
 		
-		$('ul.sidemenu-tree span.tree-title').each(function(idx) {		// set the css class for menu separator
+		$('ul.sidemenu-tree span.tree-title').each(function(idx) {				// set the css class for menu separator
 			if ($(this).text() == '') {
 				$(this).addClass('menu-sep');
 			}
 		});
 		
-		// CSS classes for menu-line implementation
-		$('.tree-node').addClass('menu-noline');
+		$('.tree-node').addClass('menu-noline');								// CSS classes for menu-line implementation
 		$('<span class="menu-line" ></span>').insertBefore('#sm .tree-title');
 		
 		$('#sm').sidemenu('expand');
@@ -692,7 +701,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 			return false;
 		};
 		
-		this.logProperties(selector);
+		// this.logProperties(selector); => Reserved for future use.
 		// this code uses CSS to shift the context menu to the desired location (and its
 		// shadow)
 		try {
@@ -802,7 +811,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 				});
 			}
 		});
-		/* NOT WORKING
+		/* NOT WORKING => Reserved for future use
 		.on('click', 'a.bt', function(event) {
 			let href = $(this).attr('href');
 			if (href.startsWith('mailto')) {
@@ -834,8 +843,15 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * @param item - the clicked menu item
 	 */
 	async onMenuClick(item: any) {
+		
+		function idOf(item: any) : string {
+			const rawId: string = item.id ? item.id : item.target.id;
+			const id = rawId.endsWith('_side') ? rawId.slice(0, -5) : rawId;
+			return id;
+		}
+		
 		let vme = this;
-		console.log(`Click with id ${item.target.id} of %O`, item);
+		console.log(`Click with id ${idOf(item)} of %O`, item);
 		
 		const functions = {
 			"mEDITOR_PARAMETERS": () => vme.openDialog('wEDITOR_PARAMETERS'), 
@@ -870,8 +886,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 			"mKEYBOARD": () => { if (!vme.runNotVirtualKeyboard) { vme.VKI_show(document.getElementById("tKEYBOARD")); $("#keyboardInputMaster").draggable({ handle: '#keyboardTitle' }); }}
 		};
 		
-		const rawId = item.id ? item.id : item.target.id;
-		const id = rawId.endsWith('_side') ? rawId.substring(0, rawId.length - 5) : rawId;
+		const id = idOf(item);
 		if (id in functions) {
 			await functions[id]();
 		} else {
@@ -897,7 +912,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	async initialiseUImoreDialogs(fPanelID: string) {
 		let vme = this;
 		let fPanelMoreID = 'w' + fPanelID + '_MORE';
-		vme.panels.showWindowDI(moreDialogId, fPanelMoreID, vme.initialiseSymbolContent.bind(vme));
+		await vme.panels.showWindowDI(moreDialogId, fPanelMoreID, vme.initialiseSymbolContent.bind(vme));
 	}
 	
 	/**
@@ -938,7 +953,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 
 	/**
 	 * Initializes the Equation from the parameters.
-	 * 
 	 * This includes copying it to the editor and displaying it in the output field.
 	 */
 	initialiseEquation() {
@@ -1090,7 +1104,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 	
 	/**
 	 * Menu command to open a file with formula.
-	 * 
 	 * Checks, if *FileReader* is present and if so, initiates a file open action.
 	 */
 	testOpenFile() { 
@@ -1192,7 +1205,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	initialiseUIaccordion(accordionID: string) {
 		let vme = this; 
 		$(accordionID).accordion({
-			onSelect: async function(_title: string) {
+			onSelect: async function(_title: string) : Promise<void> {
 
 				let fPanel = $(accordionID).accordion("getSelected"); 
 				if (fPanel) { 
@@ -1203,18 +1216,20 @@ export class KatexInputHelper implements IKatexInputHelper {
 						$(fPanel).html(`<img src="icons/loading.gif" />`);
 						
 						// Trial for Android 
-						let html = (await import(
-							/* webpackInclude: /\.html$/ */ 
-							`../formulas/${fPanelID}.html`)).default;
-						$(fPanel).html(html);
+						const html = await vme.utilities.loadFormula(fPanelID);
+						$(`#${fPanelID}`).html(html);
 						
 						await vme.initialiseSymbolContent(fPanelID); 
 						await vme.themes.activateStyle(vme.style);
 						
 						$(`#${fPanelID}`).on('click', 'a.more', 
-							async function(event) { 
-								event.preventDefault(); 
-								await vme.initialiseUImoreDialogs(fPanelID); 
+							async function(event) : Promise<void> {
+								try {
+									event.preventDefault();
+									await vme.initialiseUImoreDialogs(fPanelID); 
+								} catch(e) {
+									console.error(`Error invoking 'more' dialog : ${fPanelID}.`, e);
+								}
 							}
 						);
 					} 
@@ -1293,7 +1308,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		$(`#${fPanelID} a.more`)
 		.addClass("easyui-tooltip")
 		.attr("title", function(_index: number, _attr: any) { return "Loading more formulae"; });
-
+		
 		await vme.parser.parseAsync("#" + fPanelID); 
 		await this.math.updateTables();
 	}
@@ -1309,7 +1324,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	async updateInfo() {
 		let vme = this;
 		await vme.parser.parseAsync('div[href]', 0, 100);
-		console.info(`Parse completed for : div[href]`);
+		console.debug(`Parse completed for : div[href]`);
 
 		// updates exactly 2 dialogs (see selectors)
 		// Necessary and additional ones required?
@@ -1331,15 +1346,15 @@ export class KatexInputHelper implements IKatexInputHelper {
 			.join('/')
 			.replace(/ /g, '%20') + '/';
 		if (bundlePath == '/' && 
-			globalThis.location.protocol == 'file:') {		// local file system
-			bundlePath = `${globalThis.location}`
+			window.location.protocol == 'file:') {		// local file system
+			bundlePath = `${window.location}`
 			.split('/')
 			.slice(0, -1)
 			.join('/')
 			.replace(/ /g, '%20') + '/';			
 		}
 
-		console.info(`Base location is : ${bundlePath}`);
+		console.debug(`Base location is : ${bundlePath}`);
 		
 		$('html > head').append($('<base />'));
 		$('html > head > base').attr('href', bundlePath);

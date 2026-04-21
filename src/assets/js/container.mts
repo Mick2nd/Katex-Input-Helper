@@ -31,17 +31,6 @@ import { KIHPanels, KIHPanel, DynamicPanel, MatrixWindow, InformationWindow, KIH
 import { CodeMirrorProxy } from './codeMirrorProxy.mjs';
 import { Menus } from './menus.mjs';
 
-/**
- * TODO: Intent was to dynamically load 'inversify' as this could establish an
- * asynchronous chunk
- * 
-const inversify = (require('inversify'));
-const Container = inversify.Container;
-const ResolutionContext = inversify.ResolutionContext;
-const Factory = inversify.Factory;
-const Newable = inversify.Newable;
-//const { Container, ResolutionContext, Factory, Newable } = module;
- */
 
 const container = new Container();
 

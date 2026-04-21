@@ -1,5 +1,5 @@
 import { inject, injectable } from 'inversify';
-import { ILocalizer, localizerId, IMessager, IUtilities, State } from './interfaces.mjs';
+import { ILocalizer, localizerId, IMessager, messagerId, IUtilities, State } from './interfaces.mjs';
 
 /**
  * Encapsulates the jquery messager with frequently used options.
@@ -53,15 +53,41 @@ export class Messager implements IMessager {
  */
 @injectable()
 export class Utilities implements IUtilities {
+	messager: IMessager;
 	localizer: ILocalizer;
 		
 	/**
 	 * Constructor, localizer is injected.
 	 */
 	constructor(
-		@inject(localizerId) localizer: ILocalizer
+		@inject(localizerId) localizer: ILocalizer,
+		@inject(messagerId) messager: IMessager
 	) {
 		this.localizer = localizer;
+		this.messager = messager;
+	}
+	
+	/**
+	 * Loads a formula file from the 'formulas' folder.
+	 * 
+	 * @param panelId - the id of the panel
+	 * @returns the loaded HTML from the file
+	 */
+	async loadFormula(panelId: string) : Promise<string> {
+		try {
+			const html = (await import(
+				/* webpackInclude: /\.html$/ */ 
+				`../formulas/${panelId}.html`)).default;
+
+			this.messager.show('SYMBOL_PANEL_LOADED', panelId);
+			console.info(`Loaded symbol panel ${panelId}`);
+			return html;
+
+		} catch(e) {
+			this.messager.show('ERROR_LOADING_SYMBOL_PANEL', panelId, e);
+			console.error(`Error loading symbol panel ${panelId} : ${e}`);
+			return "";
+		}
 	}
 	
 	/**
@@ -110,9 +136,7 @@ export class Utilities implements IUtilities {
 	 * @param secondIcon - the text of the button
 	 */
 	regionToggler(btnId: string, layout: string, state: State) : any {
-		if (this.regionTogglerInst == null) {
-			this.regionTogglerInst = new RegionToggler(btnId, layout, state, this);
-		}
+		this.regionTogglerInst ??= new RegionToggler(btnId, layout, state, this);
 		return this.regionTogglerInst;
 	}
 	

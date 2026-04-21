@@ -15,7 +15,8 @@ async function promisify(fnc: any, ...args: any[]) {
 		try {
 			function resolveFunc() {
 				let msg = `Promise check: ${args} `;
-				console.debug(msg);
+				// Reserved.
+				// console.debug(msg);
 				resolve('Success');
 			}
 			
@@ -62,7 +63,7 @@ export class EasyuiLoader implements IEasyuiLoader {
 	 * Preloads the messager plugin.
 	 */
 	async preload() {
-		await this.usingAsync(['tabs', 'messager']);
+		await this.usingAsync(['window', 'tabs', 'messager']);
 	}
 	
 	/**
@@ -101,7 +102,7 @@ export class EasyuiLoader implements IEasyuiLoader {
 	 * A using function encapsulated by a Promise.
 	 * 
 	 * @async implements the Promise contract
-	 * @param script - the url of the script to be loaded
+	 * @param modules - the list of the modules to be loaded
 	 * @returns - the Promise indicating the state of the transaction
 	 */
 	async usingAsync(modules: string[]) : Promise<any> {
@@ -136,7 +137,7 @@ export class EasyuiLoader implements IEasyuiLoader {
 			.replace('file:///', 'file://')
 			.replace('file://', 'file:///') + '/';
 			
-		console.info(`Base location (1) is : '${location}'`);
+		console.info(`Base location (easyloader) is : '${location}'`);
 		return location;
 	}
 }

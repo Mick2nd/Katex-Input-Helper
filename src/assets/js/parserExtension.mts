@@ -122,7 +122,8 @@ export class ParserExtension implements IParser {
 		}
 		let item = this.item;
 		if (item != null) {
-			console.info(`onCompleteAsync for ${ctx}: ${this}`);
+			// Reserved.
+			// console.debug(`onCompleteAsync for ${ctx}: ${this}`);
 			this.item = null;
 			if (item.delay > 0) {
 				let timer = setInterval(
@@ -148,7 +149,8 @@ export class ParserExtension implements IParser {
 			ctx: ctx,
 			delay: delay
 		});
-		console.info(`Parse after pushing: ${this}`);
+		// Reserved.
+		// console.info(`Parse after pushing: ${this}`);
 		this.next(ctx);
 	}
 	
@@ -166,7 +168,8 @@ export class ParserExtension implements IParser {
 	onComplete(ctx: any) {
 		let item = this.item;
 		if (item != null) {
-			console.info(`onComplete: ${this}`);
+			// Reserved.
+			// console.info(`onComplete: ${this}`);
 			this.item = null;
 			if (item.delay > 0) {
 				let timer = setInterval(
@@ -205,8 +208,8 @@ export async function promisify(ob: any, fnc: any, ...args: any)
 			
 		if (err)
 		{
-				console.error('Error occurred: ' + err);		
-				reject(err);
+			console.error('Error occurred: ' + err);		
+			reject(err);
 		}
 		else
 		{

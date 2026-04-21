@@ -19,7 +19,6 @@ import {
 
 /**
  * The boot loader of the Katex Input Helper.
- * 
  * It serves as entry point of the application.
  */
 @injectable()
@@ -58,7 +57,8 @@ export default class BootLoader implements IBootLoader {
 			try {
 				function resolveFunc() {
 					let msg = `Promise check: ${args} `;
-					console.debug(msg);
+					// Reserved.
+					// console.debug(msg);
 					resolve('Success');
 				}
 				
@@ -119,7 +119,7 @@ export default class BootLoader implements IBootLoader {
 
 			await this.easyuiLoader.load();
 			this.vme = await this.factory();
-			globalThis.vme = this.vme;							// prevents garbage collection?
+			window.vme = this.vme;							// prevents garbage collection?
 			const prefetched = await this.vme.prefetch();		// prefetch can load another page
 			if (prefetched) {
 				await this.readyAsync();						// in this case must wait for ready.
@@ -166,7 +166,8 @@ export default class BootLoader implements IBootLoader {
 		for (let id of ids) {
 			$(id)
 			.each(function() {
-				console.debug(`Element check : ${$(this).prop('tagName')} : ${$(this).attr('id')} `);
+				// Reserved.
+				// console.debug(`Element check : ${$(this).prop('tagName')} : ${$(this).attr('id')} `);
 			});
 		}
 	}

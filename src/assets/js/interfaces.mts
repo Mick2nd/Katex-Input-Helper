@@ -40,14 +40,15 @@ export enum State {
 	First,
 	Both,
 	Second
-} 
+}
 
 export interface IUtilities {
+	loadFormula(panelId: string) : Promise<string>;
 	getOption(id: string, option: string) : string;
 	localizeOption(id: string, option: string) : string;
 	regionToggler(btnId: string, layout: string, state: State) : any;
 	refreshRegionToggler() : any;
-	containerToggler(btnId: string, uiId: string, startState: boolean) : any;
+	containerToggler(btnId: string, uiId: string, startState: boolean) : any;	
 }
 
 export interface IThemes {
@@ -98,7 +99,7 @@ export interface ICodeMirror {
 }
 
 export interface IPanels {
-	showWindowDI(wndId: any, id: string, ...params: any) : void;
+	showWindowDI(wndId: any, id: string, ...params: any) : Promise<void>;
 	closeOpen() : void;
 	refresh() : Promise<void>;
 }

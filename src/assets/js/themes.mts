@@ -113,6 +113,9 @@ export class Themes extends Observable implements IThemes {
 		if (!themeLoaded || !iconsLoaded) {
 			$('.kihmenuicons').appendTo('head');
 		}
+		
+		// TODO: NO EFFECT ON THIS
+		//$('link[href$="mobile.css"]').appendTo('head');
 	}
 	
 	/**

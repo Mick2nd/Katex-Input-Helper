@@ -88,9 +88,9 @@ export class Localizer implements ILocalizer {
 			console.warn(`${shortCode} : no corresponding easyui locale`);
 		}
 		
+		console.info(`Read language file for ${langCode}`);
 		$('#tLANGUAGE_LIST').tabs('select', langCode);
 		await inst.observable.notifyAsync(inst);
-		console.info(`Read language file for ${langCode}`);
 	}
 	
 	/**

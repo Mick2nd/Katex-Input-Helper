@@ -39,8 +39,8 @@ export default function pluginsConfig(env: any) : any {
 			}),
 			 */
 			new webpack.ProvidePlugin({
-				$: 'jquery',
-				jQuery: 'jquery',
+				$: "jquery",
+				jQuery: "jquery",
 			}),
 			// DEFINES GLOBAL VARIABLES, but babel-loader must not be active
 			new webpack.DefinePlugin({
@@ -50,7 +50,13 @@ export default function pluginsConfig(env: any) : any {
 			}),
 			new MiniCssExtractPlugin({ 
 				filename: '[name].css',
-				chunkFilename: 'css/[name].styles.css' //	=> works, but name is essential
+				chunkFilename: (pathData: webpack.PathData) => {
+					const name = pathData.chunk?.name;
+					if (typeof name == 'string' && name == 'mobile') {
+						return 'js/easyui/themes/[name].css';
+					}
+					return 'css/[name].styles.css';
+				}
 			}),
 			new CopyPlugin({
 				patterns: [

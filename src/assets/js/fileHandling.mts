@@ -99,7 +99,8 @@ export class FileHandler {
 		// Test: TRIAL 1 was working, most probably we do not need the remaining code.
 		try { 
 			comp.click();
-			console.info(`File Save : TRIAL 1`);
+			// Reserved.
+			// console.info(`File Save : TRIAL 1`);
 			return; 
 		} catch (ex) { }
 
@@ -107,7 +108,8 @@ export class FileHandler {
 			if (document.createEvent) { 
 				let e = new MouseEvent('click', { bubbles: true, cancelable: true });
 				comp.dispatchEvent(e); 
-				console.info(`File Save : TRIAL 2`);
+				// Reserved.
+				// console.info(`File Save : TRIAL 2`);
 				return; 
 			} 
 		} catch (ex) { }
@@ -116,18 +118,21 @@ export class FileHandler {
 			if (document.createEventObject) { 
 				let evObj = document.createEventObject(); 
 				comp.fireEvent("onclick", evObj); 
-				console.info(`File Save : TRIAL 3`);
+				// Reserved.
+				// console.info(`File Save : TRIAL 3`);
 				return; 
 			} 
 		} catch (ex) { }
 
 		if (bloburl) { 
 			window.location.href = bloburl; 
-			console.info(`File Save : OUTCOME 4`);
+			// Reserved.
+			// console.info(`File Save : OUTCOME 4`);
 			return; 
 		}
 
-		console.info(`File Save : OUTCOME 5`); 
+		// Reserved.
+		// console.info(`File Save : OUTCOME 5`); 
 	}
 }
 

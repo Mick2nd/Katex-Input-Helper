@@ -84,7 +84,8 @@ export class KIHParameters {
 			inst.transaction.begin();
 			for (const [key, val] of Object.entries(response)) {
 				if (key == 'displayMode') {
-					console.debug(`Parameters : queryParameters : displayMode ${val} `);
+					// Reserved.
+					// console.debug(`Parameters : queryParameters : displayMode ${val} `);
 				}
 				inst[key] = val;
 				/* ANALYSIS: this may be of no value as no panel is created at this time.
@@ -111,7 +112,8 @@ export class KIHParameters {
 		if (searchParams.has('mobile')) {
 			return searchParams.get('mobile') == 'true';
 		}
-		console.log(`Not Mobile`);
+		// Reserved.
+		// console.log(`Not Mobile`);
 		return false;
 	}
 	
@@ -214,7 +216,7 @@ export class KIHParameters {
 		return (
 			this.mode == 'web' && 
 			(doUse.some(item => item == key) || 
-			 (persistWindowPositions && key.substring(0, 1) == 'w') ||
+			 (persistWindowPositions && key.startsWith('w')) ||
 		 	 (persistEquations && key == "equationCollection")));
 	}
 	
@@ -346,7 +348,8 @@ export class KIHParameters {
 			stateChanged = this[id].width != width || this[id].height != height;
 			this[id].width = width;
 			this[id].height = height;
-			console.debug(`onPanelResize id ${id} : ${JSON.stringify(this[id])}`);
+			// Reserved.
+			// console.debug(`onPanelResize id ${id} : ${JSON.stringify(this[id])}`);
 		}
 		
 		if (stateChanged || initial) {
@@ -382,8 +385,8 @@ export class KIHParameters {
 			try {
 				let o = this[id];
 				if (o.left && o.top && o.width && o.height) {
-					
-					console.log(`${this.id} Panel at resizePanel: {${o.left}, ${o.top}}`);
+					// Reserved.
+					// console.log(`${this.id} Panel at resizePanel: {${o.left}, ${o.top}}`);
 					$(`#${id}`).panel('resize', o);
 				}
 			} catch(e) {
@@ -572,7 +575,7 @@ class Css {
 	findSheet() {
 		let sheets = [ ];
 		for (const sheet of document.styleSheets) {
-			if (sheet.href && sheet.href.endsWith('main.css')) {
+			if (sheet.href?.endsWith('main.css')) {
 				sheets.push(sheet);
 				this.sheet = sheet;
 				//return;

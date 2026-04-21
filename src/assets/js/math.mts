@@ -1,4 +1,5 @@
-//import './jquery-easyui/jquery.easyui.min.js';						// ADDED for unit test
+// Reserved.
+//import './jquery-easyui/jquery.easyui.min.js';						// ? ADDED for unit test ?
 
 import { inject, injectable, Factory } from 'inversify';
 import { IMath, localizerId, ILocalizer, parametersId, parserId, IParser, 
@@ -29,7 +30,7 @@ export class MathFormulae implements IMath {
 	 */
 	constructor(
 		@inject(localizerId) localizer: ILocalizer|null, 
-		@inject(parametersId) parameters: any|null, 
+		@inject(parametersId) parameters: any, 
 		@inject(parserId) parser: IParser|null,
 		@inject(messagerId) messager: IMessager|null,
 		@inject(codeMirrorFactoryId) codeMirrorFactory: Factory<ICodeMirror>
@@ -66,10 +67,7 @@ export class MathFormulae implements IMath {
 		}
 		try {
 			let target = element;
-			if (target == null) {
-				console.debug(`Attention : writing to output area : ${displayMode}`);
-				target = this.mathVisualOutput;
-			}
+			target ??= this.mathVisualOutput;
 			
 			text = text.replace(/&lt;/g, '<');							// TODO: this block moved outside if block, observe!
 			text = text.replace(/&gt;/g, '>'); 
@@ -79,7 +77,7 @@ export class MathFormulae implements IMath {
 				if (! multiple) {
 					text = text.substring(1, text.length - 1);
 				} else {
-					text = text.replace(/&nbsp;&nbsp;/g, '\\quad');
+					text = text.replace(/&nbsp;&nbsp;/g, String.raw`\quad`);
 					text = text.replace(/\$/g, '');
 				}
 			}
@@ -107,7 +105,7 @@ export class MathFormulae implements IMath {
 				if (a && $(this).find('.katex').length == 0) {								// check : no katex embedded
 					inst.updateTableAnchor(a);
 				}
-			})
+			});
 
 			// TODO: TEST: changes must be updated so that easyui knows them
 			await this.parser.parseAsync(selector);
@@ -123,14 +121,17 @@ export class MathFormulae implements IMath {
 	updateTableAnchor(a: any) {
 		let inst = this;
 		try {
-			let html = a.innerHTML;												// TODO: what was the reason for this?
+			let html = a.innerHTML;														// TODO: what was the reason for this?
 			let count = html.split('$').length - 1;
-			let text = a.innerText ?? a.innerHTML;								// poor implementation of vitest
-			let dm = (/^\n?\$\$/.test(text) || text.includes('{equation}'));	// $$ triggers display mode
-			if (count == 2 || text == '$\\$$' || text.includes('\\ce')) {		// normal case: math
-				text = text.replace(/□/g, '\\square');
+			let text = a.innerText ?? a.innerHTML;										// poor implementation of vitest
+			let dm = (/^\n?\$\$/.test(text) || text.includes('{equation}'));			// $$ triggers display mode
+			if (count == 2 || 
+				text == String.raw`$\$$` || 
+				text.includes(String.raw`\ce`)) {										// normal case: math
+				text = text.replace(/□/g, String.raw`\square`);
 				inst.insertMath(text, a);
-			} else if (count > 2 && !dm) {										// image with surrounding characters
+				
+			} else if (count > 2 && !dm) {												// image with surrounding characters
 				let text1 = a.firstChild.textContent;
 				text1 = text1.substring(1, text1.length - 1);
 
@@ -144,8 +145,10 @@ export class MathFormulae implements IMath {
 				inst.insertMath(text1, a);
 				a.appendChild(img);
 				a.appendChild(ch);
+				
 			} else if (dm) {
 				inst.updateAnchor(a);
+				
 			} else {															// direct image case
 				let img = a.firstChild as Element;
 				if (img && img.nodeType != Node.TEXT_NODE && img.hasAttribute('src')) {
@@ -159,7 +162,6 @@ export class MathFormulae implements IMath {
 	
 	/**
 	 * Updates the headers of some Panels by translating contained Math.
-	 * 
 	 * If a selector is given, it is assumed that it is a single panel from an accordion.
 	 */
 	updateHeaders(selector = "") {
@@ -170,7 +172,6 @@ export class MathFormulae implements IMath {
 				let options = $(selector).panel('options');
 				let title = options.title;
 				let info = $(title).attr('information');
-				console.debug(`Katex: opening ${info} panel`);
 				entries = $(`.panel-title span[information=${info}]`);				
 			}
 			
@@ -190,12 +191,9 @@ export class MathFormulae implements IMath {
 	
 	/**
 	 * The Latex menu command gets the true Latex symbol.
-	 * 
-	 * No longer working. Use workaround.
 	 */
 	updateLatexMenu() {
-		// THIS code runs in the Browser, but not as plug-in.
-		let html = this.katex.renderToString(String.raw`\LaTeX`, { displayMode: false, thrownOnError: false, output: 'html' });
+		const html = this.katex.renderToString(String.raw`\LaTeX`, { displayMode: false, thrownOnError: false, output: 'html' });
 		$('#mLaTeX_TEXT span, span.tree-title > span:contains("LaTeX")').html(html);
 	}
 	
@@ -231,14 +229,14 @@ export class MathFormulae implements IMath {
 	equipWithInteractivity(a: any, javascript = true) {
 		let vme = this;
 		function getSymbol(obj: any) { 
-			if (typeof ($(obj).attr("latex")) != "undefined") { 
+			if (($(obj).attr("latex")) !== undefined) { 
 				return $(obj).attr("latex"); 
 			} else { 
 				return vme.localizer.getLocalText("NO_LATEX"); 
 			} 
 		};
 
-		if (typeof ($(a).attr("latex")) == "undefined") {
+		if (($(a).attr("latex")) === undefined) {
 			return;
 		}
 		
@@ -248,7 +246,8 @@ export class MathFormulae implements IMath {
 		$(a).on('click', function(event: any) {								// TODO: seems to be functionless
 			event.preventDefault(); 
 			let latex = $(a).attr("latex");
-			console.info(`Click on equation: ${latex}`);
+			// Reserved.
+			// console.debug(`Click on equation: ${latex}`);
 			if (latex != undefined) { 
 				vme.insert(latex); 
 			} else {
@@ -299,7 +298,8 @@ export class MathFormulae implements IMath {
 	updateAnchor(a: any) {
 		let text = a.innerText ?? a.innerHTML;									// poor implementation of vitest / jsdom
 		if (text.includes('Rightarrow')) {
-			console.debug(`Found-arrow-text: ${text}`);
+			// Reserved.
+			// console.debug(`Found-arrow-text: ${text}`);
 		}
 		let mathText = text.includes('$');
 		let dm = text.includes('$$') || this.enforceDm(text);
@@ -352,7 +352,7 @@ export class MathFormulae implements IMath {
 	 */
 	enforceDm(text: string) : boolean {
 		let dmEnforcing = [
-			'\\begin{CD}',
+			String.raw`\begin{CD}`,
 			'{equation}',
 			'{gathered}',
 			'{aligned}',

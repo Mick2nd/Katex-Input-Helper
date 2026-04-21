@@ -51,12 +51,14 @@ export class KIHPanel implements IPanel {
 			return;
 		}
 		if (!this.initialMoved) {
-			console.info(`Panel with id ${this.id} initial onMove : ${left}, ${top}`);
+			// RESERVED.
+			// console.debug(`Panel with id ${this.id} initial onMove : ${left}, ${top}`);
 			this.parameters.onPanelMove(this.id, left, top, true);
 			this.initialMoved = true;
 			return;
 		}
-		console.info(`Panel with id ${this.id} onMove : ${left}, ${top}`);
+		// RESERVED.
+		// console.debug(`Panel with id ${this.id} onMove : ${left}, ${top}`);
 		this.parameters.onPanelMove(this.id, left, top);
 	}
 	
@@ -70,12 +72,14 @@ export class KIHPanel implements IPanel {
 			return;
 		}
 		if (!this.initialResized) {
-			console.info(`Panel with id ${this.id} initial onResize : ${width}, ${height}`);
+			// RESERVED.
+			// console.debug(`Panel with id ${this.id} initial onResize : ${width}, ${height}`);
 			this.parameters.onPanelResize(this.id, width, height, true);
 			this.initialResized = true;
 			return;
 		}
-		console.info(`Panel with id ${this.id} onResize : ${width}, ${height}`);
+		// RESERVED.
+		// console.debug(`Panel with id ${this.id} onResize : ${width}, ${height}`);
 		this.parameters.onPanelResize(this.id, width, height);
 	}
 	
@@ -203,7 +207,7 @@ export class KIHPanel implements IPanel {
 	
 	/**
 	 * This function handles the desktop use case. It initiates a resize for a
-	 * workaround to problems only taking place in this case. And it canters the
+	 * workaround to problems only taking place in this case. And it centers the
 	 * panels. 
 	 */
 	protected initialResize() {
@@ -223,10 +227,12 @@ export class KIHPanel implements IPanel {
 		const left = (bodyWidth - width2) / 2;
 		const top = (bodyHeight - height2) / 2;
 		
-		console.log(`${this.id} Panel at initialResize, position: {${left}, ${top}}, dimensions: panel: {${width}, ${height}}, body: {${bodyWidth}, ${bodyHeight}}`);
+		// RESERVED.
+		// console.log(`${this.id} Panel at initialResize, position: {${left}, ${top}}, dimensions: panel: {${width}, ${height}}, body: {${bodyWidth}, ${bodyHeight}}`);
 		this.panelFunc('resize', { width: width, height: height });
 		this.panelFunc('move', { left: left, top: top });
-		console.log(`${this.id} Panel at initialResize: resize executed`);
+		// RESERVED.
+		// console.log(`${this.id} Panel at initialResize: resize executed`);
 	}
 
 	/**
@@ -244,7 +250,8 @@ export class KIHPanel implements IPanel {
 		let located = this.localizer.getLocalText(key);									// use it to get localized text
 		$(html).html(located);
 		let htmlString = ((html[0] as any) as Element).outerHTML;						// insert it into orginal html
-		console.log(`Localized ${option} is ${htmlString}`);
+		// RESERVED.
+		// console.log(`Localized ${option} is ${htmlString}`);
 		return htmlString;
 	}
 	
@@ -261,7 +268,8 @@ export class KIHPanel implements IPanel {
 	 */	
 	protected get width() : any {
 		const w = $(`#${this.id}`).outerWidth();
-		console.log(`Panel with id ${this.id}: queried width: ${w}`);
+		// RESERVED.
+		// console.log(`Panel with id ${this.id}: queried width: ${w}`);
 		return w;
 	}
 
@@ -409,7 +417,8 @@ export class KIHPanel implements IPanel {
 		
 		let inst = this;
 		if (closeBtnSelector != "") {							// one of 3 cases of a 'pure' dialog
-			console.log(`Dialog ${this.id} : CLose Button is ${closeBtnSelector}`);
+			// RESERVED.
+			// console.log(`Dialog ${this.id} : Close Button is ${closeBtnSelector}`);
 			$(closeBtnSelector).on('click', function(event) { 
 				event.preventDefault(); 
 				$(`#${inst.id}`).dialog('close'); 
@@ -456,7 +465,10 @@ export class KIHPanel implements IPanel {
 		this.panelFunc('open'); 
 		
 		// New for/with Android
-		let html = (await import(`../formulas/${htmlFile}.html`)).default;
+		const html = (await import(`../formulas/${htmlFile}.html`)).default;
+		console.info(`Loaded formula file ${htmlFile} (more dialog)`);
+		// TODO: perspectively use load method in utilities
+		// const html = await this.utilities.loadFormula(htmlFile);
 		this.panelFunc('body').html(html);
 		await initialiseSymbolContent(this.id);
 	}
@@ -533,16 +545,17 @@ export class KIHPanel implements IPanel {
 			const element = $(elem);			
 			const href = element.attr('href');
 			const id = element.attr('id');
-			console.info(`Info dialog with : id : ${id}, href : ${href}`);
 			
 			const newHref = `../information/${id}.html`;						// lazily load html info
 			element.attr('href', newHref);
 			const content = (await import(`../information/${id}.html`)).default;
+			console.info(`Info dialog with : id : ${id}, href : ${href}`);
 			element.html(content);
 		}
 
 		await this.parser.parseAsync('#tINFORMATIONS div[href]', 0, 100);
-		console.info(`Parse completed for : div[href]`);
+		// Reserved.
+		// console.debug(`Parse completed for : div[href]`);
 		
 		this.assembleVersionInfo();												// injected into this.versions
 		this.math.inplaceUpdate('#tINFORMATIONS div a.s[latex]', true);	
@@ -674,7 +687,7 @@ export class KIHPanel implements IPanel {
 					eval("formula = formula + document.formMATRIX.a_" + r + c + ".value"); 
 					if (c < cols) formula += " & "; 
 				}
-				if (r < rows) formula += " \\\\ ";
+				if (r < rows) formula += String.raw` \\ `;
 			}
 			
 			return formula;
@@ -692,7 +705,7 @@ export class KIHPanel implements IPanel {
 				case "||": lbr = String.raw`\left\|`; break;
 				case "(:": lbr = String.raw`\left\langle`; break;
 				case ":)": lbr = String.raw`\left\rangle`; break;
-				default: lbr = `\\left${left}`
+				default: lbr = String.raw`\left${left}`
 			}
 			return lbr; 
 		}
@@ -709,7 +722,7 @@ export class KIHPanel implements IPanel {
 				case "||": rbr = String.raw`\right\|`; break;
 				case "(:": rbr = String.raw`\right\langle`; break;
 				case ":)": rbr = String.raw`\right\rangle`; break;
-				default: rbr = `\\right${right}`
+				default: rbr = String.raw`\right${right}`
 			}
 			
 			return rbr;			
@@ -882,11 +895,12 @@ export class KIHPanel implements IPanel {
 	 */
 	async onLocaleChanged(localizer) {
 		let inst = this;
-		console.debug(`DynamicPanel.onLocaleChanged : ${localizer.currentLocale} `);
+		// Reserved.
+		// console.debug(`DynamicPanel.onLocaleChanged : ${localizer.currentLocale} `);
 
 		$('span[locate].custom-equations')											// span elements in html
 		.each(function() { 
-			if (typeof ($(this).attr("locate")) != "undefined") { 
+			if (($(this).attr("locate")) !== undefined) { 
 				let localText = localizer.getLocalText($(this).attr("locate")); 
 				if (localText != undefined) $(this).html(localText); 
 			} 
@@ -901,7 +915,6 @@ export class KIHPanel implements IPanel {
 					$(this).tooltip({
 						content: title,
 						onShow: function() {
-							console.debug(`Tooltip %o`, $(this).tooltip('tip'));
 							$(this).tooltip('tip').css({ 
 								'z-index': 500000, 									// always above all ui elements!
 								maxWidth: 300 
@@ -945,8 +958,8 @@ export class KIHPanel implements IPanel {
 				inst.addEquation('Placeholder', selectedText);
 				inst.onAfterRender();
 				inst.editCell();														// attention! order reversed
-			} else {
 				
+			} else {				
 				inst.messager.show('FORMULA_EDITOR', 'NO_SELECTION_TEXT');
 			}
 		});
@@ -967,13 +980,13 @@ export class KIHPanel implements IPanel {
 		$('#btCUSTOM_EQUATIONS_SAVE')
 		.click(async function(event) {
 			event.preventDefault();
-			console.info('Click on btCUSTOM_EQUATIONS_SAVE');
 			inst.categoriesTree.currentEquations = inst.toJson();
 			let data = JSON.stringify(inst.categoriesTree.customEquationsProxy);			// must be a JSON string
 			let type = 'application/json';
 			
 			let fileHandler = new FileHandler();
 			fileHandler.saveFile(data, type, "fSAVE_CUSTOM_EQUATIONS");
+			console.info('Custom Equations saved to file');
 		});
 	
 		$('#btCUSTOM_EQUATIONS_LOAD')
@@ -1108,7 +1121,6 @@ export class KIHPanel implements IPanel {
 	
 	/**
 	 * A test to get all data rows.
-	 * 
 	 * No longer needed, only for illustration purposes.
 	 */
 	test() {
@@ -1228,7 +1240,8 @@ export class KIHPanel implements IPanel {
 	 * @returns -1 for a < b and +1 for a >= b;
 	 */
 	alphaSorter(a, b) {
-		console.debug(`SORT comparing ${a} < ${b}, order: ${this.sortOrderAsc}`);
+		// Reserved.
+		// console.debug(`SORT comparing ${a} < ${b}, order: ${this.sortOrderAsc}`);
 		return a < b ? -1 : +1;
 	}
 	
@@ -1250,12 +1263,14 @@ export class KIHPanel implements IPanel {
 			fit: true,
 			noheader: false,
 			onAfterEdit: async function(idx, row, changes) {
-				console.debug(`onAfterEdit for ${selector}`);
+				// Reserved.
+				// console.debug(`onAfterEdit for ${selector}`);
 				inst.onAfterRender();
 				return true;
 			},
 			onCancelEdit: async function(idx, row) {
-				console.debug(`onCancelEdit for ${selector}`);
+				// Reserved.
+				// console.debug(`onCancelEdit for ${selector}`);
 				inst.onAfterRender();
 				return true;
 			},
@@ -1282,7 +1297,8 @@ export class KIHPanel implements IPanel {
 					deltaX: 70,
 					deltaY: 70,
 					proxy: function(source) {
-						console.dir(source);
+						// Reserved.
+						// console.dir(source);
 						let p = $('<div class="datagrid-div tree-node-proxy droppable" style="border: 2px solid red; z-index: 100;"></div>').appendTo(`#${inst.id}`);
 						let row = $('<div style="width: 400px; display: flex; flex-direction: row; justify-content: center;"></div>');
 						$(source).find('td')
@@ -1298,13 +1314,15 @@ export class KIHPanel implements IPanel {
 						// THIS TRIAL TO MIMICK THE TREE NODE DOES NOT WORK
 						// p.append('<span class="tree-indent"></span><span class="tree-file" style="width: 20px;">&nbsp;</span><span class="title">TEXT SAMPLE</span>');
 						let proxy = p[0];
-						console.dir(proxy);
+						// Reserved.
+						// console.dir(proxy);
 						return p;
 					}
 				});
 			},
 			onDragOver: function(target, source) {
-				console.dir(source);
+				// Reserved.
+				// console.dir(source);
 			}
 		});
 		inst.equipDatagridWithInteractivity();
@@ -1433,7 +1451,7 @@ export class KIHPanel implements IPanel {
 	/**
 	 * A generic method to instantiate Panels based on the di framework.
 	 */
-	async showWindowDI(wndId: any, id: string, ...params: any) {
+	async showWindowDI(wndId: any, id: string, ...params: any) : Promise<void> {
 		if (!(id in this.panels)) {
 			try {
 				this.panels[id] = await this.panelFactory(wndId, id, this, ...params);
@@ -1444,7 +1462,7 @@ export class KIHPanel implements IPanel {
 				 */
 				console.warn(`Problem instantiating panel ${id} : ${e}`);
 				const inst = this;
-				globalThis.setTimeout(async () => {
+				window.setTimeout(async () => {
 					await inst.showWindowDI(wndId, id, ...params);
 				}, 20);
 				return;
@@ -1479,7 +1497,7 @@ export class KIHPanel implements IPanel {
 	/**
 	 * Handles orientation changes in *Mobile* mode. This works for a change from
 	 * *portrait* to *landscape* orientation. The opposite direction can be handled
-	 * manually by reinvoking the dialog.
+	 * manually by reinvoking the dialog. SOLVED!
 	 */
 	async refresh() : Promise<void> {
 		for (const id in this.panels) {
