@@ -53,15 +53,6 @@
 		3: "435px > width >= 299px"
 	);
 	
-	/*
-	//&::before { content: "landscape : #{&} 1"; }
-	@media (orientation: portrait) {
-		width: functions.width($isMobile, true) !important;
-	}
-	@media (orientation: landscape) {
-		width: functions.width($isMobile, false) !important;
-	}
-	*/
 	width: functions.width($isMobile, false) !important;
 	
 	@each $lines, $query in $mediaQueries {
@@ -103,7 +94,7 @@
 	$basePadding: variables.$basePadding;
 	
 	$horizontalMargin: functions.horizontalMargin($isMobile);
-	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile, false, 3);
+	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile, false, 2); //TODO: fine tune, was 3
 	
 	$id: functions.idOf(&);
 	& {
@@ -226,6 +217,10 @@
 			gap: 75% 15px;
 			align-items: center;
 		}
+		
+		hr {
+			margin-top: 10px;
+		}
 	}
 
 	@at-root .panel:has(> #wEDITOR_PARAMETERS) {
@@ -248,8 +243,7 @@
 	padding: variables.$basePadding;
 
 	fieldset {
-		margin-top: 10px;
-		margin-left: 15px;
+		margin: 10px;
 		padding: variables.$basePadding;
 	}
 
@@ -276,8 +270,7 @@
 	padding: variables.$basePadding;
 	
 	fieldset {
-		margin-top: 10px;
-		margin-left: 15px;
+		margin: 10px;
 		padding: variables.$basePadding;
 	}
 	fieldset > div {
@@ -341,8 +334,8 @@
 		// Without this no content
 		@include fit-size($isMobile, false);
 	} @else {
-		height: min(500px * $scale, calc(100vh - $unusedVerticalSpace)) !important; 
-		width: min(700px * $scale, calc(100vw - $horizontalMargin)) !important;
+		height: min(60vh, calc(100vh - $unusedVerticalSpace)) !important; 
+		width: min(60vw, calc(100vw - $horizontalMargin)) !important;
 	}
 
 	& {
@@ -459,6 +452,23 @@
 	}
 }
 
+/* Event Mixin */
+@mixin eventMixin($isMobile: false) {
+	$padding: variables.$basePadding;
+	
+	@if $isMobile {
+		@include fit-size($isMobile, false);
+	}
+	
+	&, & td, & th {
+		padding: $padding;
+	}
+	
+	@at-root .panel:has(> #wEVENT_LIST) {
+		@include align-header();
+	}
+}
+
 /* Wait Msg Mixin */
 @mixin waitMsgMixin($isMobile: false) {
 	$fontSize: functions.fontSize($isMobile);	
@@ -534,6 +544,9 @@ $contentTailored: (
 	}
 	#wMATRIX {
 		@include matrixMixin($isMobile);
+	}
+	#wEVENT_LIST {
+		@include eventMixin($isMobile);
 	}
 }
 

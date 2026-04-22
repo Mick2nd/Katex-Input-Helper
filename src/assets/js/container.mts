@@ -112,6 +112,7 @@ container
 		};
 	});
 
+console.inject(container.get(messagerId));
 const bootLoader: IBootLoader = container.get(bootLoaderId); 
 try {
 	await bootLoader.initApp();

@@ -63,4 +63,8 @@ declare global {
 	export interface EditorFromTextArea {
 		version?: string;
 	}
+	
+	export interface Console {
+		inject?: any;
+	}
 }

@@ -134,7 +134,8 @@ function preProcess(context = { }) {
 			console.log(`About to compile handlebars content`);
 			const names = [ 
 				'windows', 'head', 'accordion-west', 'accordion-east', 
-				'menu-desktop', 'menu-mobile', 'wait+form', 'footer', 'toggle' 
+				'menu-desktop', 'menu-mobile', 'wait+form', 'footer', 'toggle',
+				'menu-file', 'menu-insert', 'menu-tools', 'menu-view', 'menu-options', 'menu-informations', 'menu-chars'
 			];
 			for (const name of names) {
 				registerPartial(name);

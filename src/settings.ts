@@ -39,7 +39,8 @@ export class Settings
 			"wLATEX_CODES_LIST",
 			"wASCIIMATH_CODES_LIST",
 			"wUNICODES_LIST",
-			"wLANGUAGE_LIST"
+			"wLANGUAGE_LIST",
+			"wEVENT_LIST"
 		];
 
 	}
@@ -89,7 +90,7 @@ export class Settings
 	 */
 	async descriptions() : Promise<any>
 	{
-		var settings = {
+		let settings = {
 			'enforce_mobile_mode':
 			{
 				section: 'KatexInputHelper.settings',

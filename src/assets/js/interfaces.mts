@@ -31,8 +31,15 @@ export interface ILocalizer {
 }
 
 export interface IMessager {
-	error(msgKey: string, e: any) : void;
+	showError(msgKey: string, e: any) : void;
 	show(titleKey: string, msgKey: string, e?: any) : void;
+	
+	error(...params) : void;
+	warn(...params) : void;
+	info(...params) : void;
+	debug(...params) : void;
+	get table() : string;
+	subscribe(func: any, ...args: any) : void;
 }
 
 

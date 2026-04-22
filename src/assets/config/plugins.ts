@@ -41,12 +41,13 @@ export default function pluginsConfig(env: any) : any {
 			new webpack.ProvidePlugin({
 				$: "jquery",
 				jQuery: "jquery",
+				console: [path.resolve(srcDir, 'consoleRedirector.mts'), 'redirector']
 			}),
 			// DEFINES GLOBAL VARIABLES, but babel-loader must not be active
 			new webpack.DefinePlugin({
 				KIH_VERSION: JSON.stringify('7.44'),
 				PRODUCTION: JSON.stringify(env.kihmode ? (env.kihmode == 'production') : false),
-				EASYUI_INCLUDES: JSON.stringify(includeList)
+				EASYUI_INCLUDES: JSON.stringify(includeList),
 			}),
 			new MiniCssExtractPlugin({ 
 				filename: '[name].css',

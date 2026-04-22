@@ -137,6 +137,12 @@
 	"ONE_BRACKET_MISSING": "Both brackets must be present or not",
 	"SIDEMENU_PANEL": "Sidemenu Panel",
 	"DIALOG_PANEL": "Dialog Panel",
+	"SYMBOL_PANEL_LOADED": "Symbol Panel Loaded",
+
+	"EVENT_LIST": "Event View",
+	"TIME": "Time",
+	"MESSAGE": "Message",
+	"EXCEPTION": "Exception",
 
 	"VKI_00": "Number Pad",
 	"VKI_01": "Display virtual keyboard interface",

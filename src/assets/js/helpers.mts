@@ -1,13 +1,17 @@
 import { inject, injectable } from 'inversify';
 import { ILocalizer, localizerId, IMessager, messagerId, IUtilities, State } from './interfaces.mjs';
+import { Observable } from './patterns/observable.mjs';
 
 /**
- * Encapsulates the jquery messager with frequently used options.
+ * Encapsulates the jquery messager with frequently used options and provides a
+ * central place for user notifications.
  */
 @injectable()
-export class Messager implements IMessager {
+export class Messager extends Observable implements IMessager {
 	
 	localizer: ILocalizer;
+	eventView: Event[] = [];
+	max: number;
 	
 	/**
 	 * Constructor, localizer is injected.
@@ -15,15 +19,16 @@ export class Messager implements IMessager {
 	constructor(
 		@inject(localizerId) localizer: ILocalizer
 	) {
+		super();
 		this.localizer = localizer;
+		this.max = 100;
 	}
 	
 	/**
 	 * Displays an alert warning box.
-	 * 
 	 * Provided messages key is translated, so you get a localized message.
 	 */
-	error(msgKey: string, e: any) {
+	showError(msgKey: string, e: any) {
 		let error = this.localizer.getLocalText('ERROR');
 		let msg = this.localizer.getLocalText(msgKey);
 		$.messager.alert(`<span class='rtl-title-withicon'>${error}</span>`, `${msg} - ${e}`, 'warning'); 		
@@ -31,19 +36,107 @@ export class Messager implements IMessager {
 	
 	/**
 	 * Shows an Panel with some information or hints.
-	 * 
 	 * Title key and Message key are translated.
 	 */
 	show(titleKey: string, msgKey: string, e = null) {
-		let inst = this;
-		let msg = inst.localizer.getLocalText(msgKey);
+		const inst = this;
+		const msgText = inst.localizer.getLocalText(msgKey);
+		const titleText = inst.localizer.getLocalText(titleKey);
+
+		const title = `<span class='rtl-title-withicon'>${titleText}</span>`;
+		let msg = msgText;
 		if (e != null) {
 			msg = `<div>${msg}:</div><div style="color: red;">${e}</div>`;
 		}
-		$.messager.show({
-			title: `<span class='rtl-title-withicon'>${inst.localizer.getLocalText(titleKey)}</span>`,
-			msg: msg
-		});
+		
+		this.push(new Event(titleText, msgText, e));
+		$.messager.show({ title: title, msg: msg });
+	}
+	
+	error(...params) : void {
+		
+	}
+	warn(...params) : void {
+		
+	}
+	info(...params) : void {
+		
+	}
+	debug(...params) : void {
+		
+	}
+	
+	/**
+	 * Pushs an Event to the eventView by limiting the total length.
+	 */
+	push(item: Event) {
+		this.eventView.push(item);
+		if (this.eventView.length > this.max) {
+			this.eventView.shift();
+		}
+		
+		this.notify(this);
+	}
+	
+	/**
+	 * Gets a table out of the eventView
+	 */
+	get table() : string {
+		
+		let table = '<table>\n';
+		table += this.head;
+		for (const event of this.eventView.toReversed()) {
+			table += event.row;
+		}
+		table += '</table>\n';
+		return table;
+	}
+	
+	localize(key: string) : string {
+		return this.localizer.getLocalText(key);
+	}
+
+	get head() : string {
+		const time = this.localize('TIME') + ' (UTC, ISO)';
+		const title = this.localize('TITLE');
+		const message = this.localize('MESSAGE');
+		const exception = this.localize('EXCEPTION');
+		
+		return `<tr><th>${time}</th><th>${title}</th><th>${message}</th><th>${exception}</th></tr>\n`;
+	}
+}
+
+
+/**
+ * A messager notification or log event, to be used in an event view.
+ */
+class Event {
+	
+	time: Date;
+	title: string;
+	msg: string;
+	e: Error;
+	
+	constructor(title: string, msg: string, e: Error = null) {
+		this.time = new Date(Date.now());
+		this.title = title;
+		this.msg = msg;
+		this.e = e;
+	}
+	
+	get exception() : string {
+		if (this.e) {
+			return `${this.e}`;
+		}
+		return '';
+	}
+	
+	get formattedTime() : string {
+		return this.time.toISOString().replace('T', ' ').replace('Z', '');
+	}
+	
+	get row() : string {
+		return `<tr><td>${this.formattedTime}</td><td>${this.title}</td><td>${this.msg}</td><td>${this.exception}</td></tr>\n`;
 	}
 }
 

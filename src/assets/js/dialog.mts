@@ -874,6 +874,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 			"mVERSION": () => vme.openInformationTab(1), 
 			"mBUGS": () => vme.openInformationTab(2), 
 			"mEQUATION_SAMPLE": () => vme.openInformationTab(3), 
+			"mEVENT_LIST": async () => { await vme.openWindow('wEVENT_LIST'); }, 
 			"f_GREEK_CHAR": () => vme.initialiseUImoreDialogs("f_L_U_GREEK_CHAR"), 
 			"f_ALL_CHAR": () => vme.initialiseUImoreDialogs("f_ALL_CHAR"), 
 			"f_FR_CHAR": () =>  vme.initialiseUImoreDialogs("f_FR_CHAR"),

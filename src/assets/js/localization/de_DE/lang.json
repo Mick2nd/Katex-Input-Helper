@@ -136,6 +136,12 @@
 	"ONE_BRACKET_MISSING": "Beide Klammern müssen vorhanden sein oder keine",
 	"SIDEMENU_PANEL": "Seitenmenü-Panel",
 	"DIALOG_PANEL": "Dialogfeld",
+	"SYMBOL_PANEL_LOADED": "Symbol-Panel geladen",
+
+	"EVENT_LIST": "Ereignisanzeige",
+	"TIME": "Zeit",
+	"MESSAGE": "Nachricht",
+	"EXCEPTION": "Ausnahme",
 	
 	"VKI_00": "Keypad",
 	"VKI_01": "Anzeige virtuelle Tastatur",

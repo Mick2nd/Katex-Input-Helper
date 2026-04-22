@@ -390,6 +390,16 @@ export class KIHPanel implements IPanel {
 				await this.parser.parseAsync('#tLANGUAGE_LIST table', 0, 100);	// only for orientation changes
 			}
 		}
+		if (this.id == 'wEVENT_LIST') {
+			$('#wEVENT_LIST').html(this.messager.table);
+			if (initial) {
+				this.messager.subscribe(() => {
+					$('#wEVENT_LIST').html(this.messager.table);
+				})
+			} else {
+				await this.parser.parseAsync('#wEVENT_LIST table', 0, 100);		// only for orientation changes
+			}
+		}
 	}
 }
 
@@ -1093,7 +1103,7 @@ export class KIHPanel implements IPanel {
 				}
 			}
 		} catch(e) {
-			this.messager.error('LOAD_ERROR', e);
+			this.messager.showError('LOAD_ERROR', e);
 		}
 	}
 	
