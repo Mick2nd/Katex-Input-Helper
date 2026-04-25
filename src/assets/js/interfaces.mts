@@ -53,10 +53,22 @@ export interface IUtilities {
 	loadFormula(panelId: string) : Promise<string>;
 	getOption(id: string, option: string) : string;
 	localizeOption(id: string, option: string) : string;
-	regionToggler(btnId: string, layout: string, state: State) : any;
-	refreshRegionToggler() : any;
-	containerToggler(btnId: string, uiId: string, startState: boolean) : any;	
+	regionToggler(btnId: string, layout: string, state: State) : IToggler;
+	containerToggler(btnId: string, uiId: string, startState: boolean) : IToggler;	
 }
+
+
+/**
+ * Interface for a Toggler supporting instance.
+ */
+export interface IToggler {
+	initialize(data: any) : void;
+	cycleCheck() : any;
+	cycleState() : void;
+	update() : void;
+	resolve(key: string) : string;
+}
+
 
 export interface IThemes {
 	initialiseThemeChoice(activeTheme: string, dir: string) : Promise<void>;

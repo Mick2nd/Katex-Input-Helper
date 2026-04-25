@@ -50,7 +50,7 @@ export class ParserExtension implements IParser {
 			}
 			this.initialized = true;
 		} catch(e) {
-			console.error(`Fatal Error: jquery not loaded ${e}`);
+			console.error(`Fatal Error: jquery not loaded %s`, e);
 			this.fatalError = e;
 			throw(e);
 		}
@@ -208,7 +208,7 @@ export async function promisify(ob: any, fnc: any, ...args: any)
 			
 		if (err)
 		{
-			console.error('Error occurred: ' + err);		
+			console.error('Error occurred: %s', err);		
 			reject(err);
 		}
 		else
@@ -226,7 +226,7 @@ export async function promisifyLoad(selector: string, url: string, data: any) : 
 	{
 		$(selector).load(url, data, (response: any, status: string, xhr: any) => {
 			if (status == "error") {
-				console.error('Error occurred: ' + xhr.statusText);		
+				console.error('Error occurred: %s', xhr.statusText);		
 				reject(xhr);
 			} else {
 				resolve(response);

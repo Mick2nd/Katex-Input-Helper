@@ -53,7 +53,7 @@ async function register<TIfc>(id: Symbol, file: string) {
 				console.debug(`CategoriesTree instantiated.`);
 				return service;
 			} catch(e) {
-				console.error(`Error in toDynamicValue : ${e}`);
+				console.error(`Error in toDynamicValue : %s`, e);
 				throw e;
 			}
 		});

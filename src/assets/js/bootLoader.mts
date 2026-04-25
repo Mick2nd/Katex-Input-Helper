@@ -72,7 +72,7 @@ export default class BootLoader implements IBootLoader {
 					});
 				}
 			} catch(err) {
-				console.error(`Error occurred: ${err} `);		
+				console.error(`Error occurred: %s`, err);		
 				reject(new Error(err));
 			}		
 		});

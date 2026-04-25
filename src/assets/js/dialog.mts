@@ -15,8 +15,8 @@ import {
 	IPanels, panelsId, matrixWindowId, unicodeWindowId, informationWindowId, moreDialogId, windowId, dialogId, dynamicPanelId, 
     IMenus, menusId} from './interfaces.mjs';
 
-let console: any; 
-if (window.console) console = window.console; else console = { log: function(_: string) { }, error: function(_: string) { } }; 
+//let console: any; 
+//if (window.console) console = window.console; else console = { log: function(_: string) { }, error: function(_: string) { } }; 
 console.log(KIH_VERSION);
 
 /**
@@ -825,12 +825,12 @@ export class KatexInputHelper implements IKatexInputHelper {
 		this.customEquationsToggler = this.utilities.regionToggler(
 			'#toggle_btn_1',
 			'#CUSTOM_EQUATIONS_LAYOUT',
-			this.platformInfo.isMobile ? State.Second : State.Both
+			State.Both									// this.platformInfo.isMobile ? State.Second : State.Both
 		);
 		this.unicodeToggler = this.utilities.containerToggler(
 			'#toggle_btn_2',
 			'#cUNICODES_LIST',
-			!this.platformInfo.isMobile								// true for desktop variant
+			true										// !this.platformInfo.isMobile // true for desktop variant
 		);
 	
 		this.math.updateLatexMenu();
@@ -973,7 +973,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 		
 		let vme = this;
 		function onChange(target: any, value: boolean) {
-			console.debug(`Checkbox content of ${$(target).attr('id')} changed to : ${value} `);
 			if (value) {
 				$(target).attr('checked', 'checked');
 			} else {
@@ -1048,9 +1047,10 @@ export class KatexInputHelper implements IKatexInputHelper {
 		vme.setRTLstyle();
 		
 		$("span[locate]").each(
-			function() { 
-				if ($(this).attr("locate") != undefined) { 
-					let localText = vme.getLocalText($(this).attr("locate")); 
+			function() {
+				const key = $(this).attr("locate");
+				if (key != undefined) {
+					let localText = vme.getLocalText(key);
 					if (localText != undefined) $(this).html(localText); 
 				} 
 			});
@@ -1173,7 +1173,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 			this.setRTLstyle();
 		}
 		catch(e) {
-			console.error(`onStyleChanged error: ${e}`);		
+			console.error(`onStyleChanged error: %s`, e);		
 		}
 	}
 
@@ -1325,7 +1325,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 	async updateInfo() {
 		let vme = this;
 		await vme.parser.parseAsync('div[href]', 0, 100);
-		console.debug(`Parse completed for : div[href]`);
 
 		// updates exactly 2 dialogs (see selectors)
 		// Necessary and additional ones required?

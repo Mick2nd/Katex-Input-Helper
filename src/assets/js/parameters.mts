@@ -390,7 +390,7 @@ export class KIHParameters {
 					$(`#${id}`).panel('resize', o);
 				}
 			} catch(e) {
-				console.error(`Exception resizing panel ${id} : ${e}`);
+				console.error(`Exception resizing panel ${id} : %s`, e);
 			}
 		} else if (!this.isMobile) {
 			console.warn(`Missing id in parameters : ${id}`);
@@ -405,6 +405,19 @@ export class KIHParameters {
 	 */
 	resizeWithCss(id: any, dim: any) {
 		$(`#${id}`).css(dim);
+	}
+	
+	getConfiguredDimensions(id: string) : any {
+		if (id in this) {
+			const dimensions = this[id];
+			if (dimensions.width === undefined || dimensions.height === undefined) {
+				return { width: 'auto', height: 'auto' };
+			}
+			return { width: dimensions.width, height: dimensions.height };
+		}
+		
+		console.warn(`The panel ${id} is not known.`);
+		return { width: 'auto', height: 'auto' };
 	}
 	
 	/**
@@ -651,10 +664,12 @@ class MouseState {
 				inst.mouseUp = true;
 				if (inst.isWindowChanged) {
 					inst.transaction.end();
-					console.debug(`MouseState : ${inst.windowEvents} window events during transaction`);
+					// Reserved.
+					// console.debug(`MouseState : ${inst.windowEvents} window events during transaction`);
 				} else {
 					inst.transaction.cancel();
-					console.debug(`MouseState : no window events during transaction`);
+					// Reserved.
+					// console.debug(`MouseState : no window events during transaction`);
 				} 
 			});
 		}
@@ -666,7 +681,8 @@ class MouseState {
 	
 	increment() {
 		this.windowEvents ++;
-		console.debug(`MouseState : incremented to : ${this.windowEvents} `);
+		// Reserved.
+		// console.debug(`MouseState : incremented to : ${this.windowEvents} `);
 	}
 	
 	get isWindowChanged() {

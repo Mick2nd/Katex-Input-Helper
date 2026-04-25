@@ -99,7 +99,6 @@ export class MathFormulae implements IMath {
 			let inst = this;
 			let selector = '.panel-body table tbody tr td a.easyui-tooltip, .easyui-dialog div a.s';
 			let entries = $(selector);
-			console.debug(`Katex: ${entries.length} td or div items`);
 			entries.each(function(idx: number, a) {
 				
 				if (a && $(this).find('.katex').length == 0) {								// check : no katex embedded
@@ -111,7 +110,7 @@ export class MathFormulae implements IMath {
 			await this.parser.parseAsync(selector);
 
 		} catch(e) {
-			console.error(`Katex: updateTables : ${e}`);
+			console.error(`Katex: updateTables : %s`, e);
 		}
 	}
 
@@ -175,7 +174,6 @@ export class MathFormulae implements IMath {
 				entries = $(`.panel-title span[information=${info}]`);				
 			}
 			
-			console.debug(`Katex: ${entries.length} header items`);
 			entries.each((idx: number, a) => {
 				if (a) {
 					let text = a.innerText;
@@ -185,7 +183,7 @@ export class MathFormulae implements IMath {
 				}
 			});
 		} catch(e) {
-			console.error(`Katex: updateHeaders : ${e}`);
+			console.error(`Katex: updateHeaders : %s`, e);
 		}
 	}
 	
@@ -204,7 +202,6 @@ export class MathFormulae implements IMath {
 		try {
 			let inst = this;
 			let entries = $(selector);
-			console.debug(`Katex: ${entries.length} in-place items for selector ${selector}`);
 			entries.each(function(idx: number, a) {
 				if (a) {
 					inst.updateAnchor(a);
@@ -214,7 +211,7 @@ export class MathFormulae implements IMath {
 				}
 			});
 		} catch(e) {
-			console.error(`Katex: inplaceUpdate : ${e}`);
+			console.error(`Katex: inplaceUpdate : %s`, e);
 		}
 	}
 	
@@ -297,10 +294,6 @@ export class MathFormulae implements IMath {
 	 */	
 	updateAnchor(a: any) {
 		let text = a.innerText ?? a.innerHTML;									// poor implementation of vitest / jsdom
-		if (text.includes('Rightarrow')) {
-			// Reserved.
-			// console.debug(`Found-arrow-text: ${text}`);
-		}
 		let mathText = text.includes('$');
 		let dm = text.includes('$$') || this.enforceDm(text);
 		text = text.replace(/^\s{0,5}"?\${1,2}(.*?)\${1,2}"?\s{0,5}$/s, '$1');	// what does this mean?

@@ -1,6 +1,7 @@
 import { inject, injectable } from 'inversify';
-import { ILocalizer, localizerId, IMessager, messagerId, IUtilities, State } from './interfaces.mjs';
+import { ILocalizer, localizerId, IMessager, messagerId, IUtilities, State, IToggler } from './interfaces.mjs';
 import { Observable } from './patterns/observable.mjs';
+import { RegionToggler, ContainerToggler } from './toggler.mjs';
 
 /**
  * Encapsulates the jquery messager with frequently used options and provides a
@@ -53,8 +54,19 @@ export class Messager extends Observable implements IMessager {
 		$.messager.show({ title: title, msg: msg });
 	}
 	
-	error(...params) : void {
-		
+	/**
+	 * The error hook from console. This stores an error in the Event view for 
+	 * later inspection.
+	 */
+	error(...params: any[]) : void {
+		if (params.length == 2) {
+			const [ msg, e ] = params;
+			this.push(new Event('LOG_ERROR', msg.splice(0, -2), e));
+		}
+		if (params.length == 1) {
+			const [ msg ] = params;
+			this.push(new Event('LOG_ERROR', msg, null));
+		}
 	}
 	warn(...params) : void {
 		
@@ -178,7 +190,7 @@ export class Utilities implements IUtilities {
 
 		} catch(e) {
 			this.messager.show('ERROR_LOADING_SYMBOL_PANEL', panelId, e);
-			console.error(`Error loading symbol panel ${panelId} : ${e}`);
+			console.error(`Error loading symbol panel ${panelId} : %s`, e);
 			return "";
 		}
 	}
@@ -224,17 +236,12 @@ export class Utilities implements IUtilities {
 	 * 
 	 * @param btnId -  the id selector of the button
 	 * @param layout - a layout id selector
-	 * @param region - the region identifier
-	 * @param firstIcon - the text of the button
-	 * @param secondIcon - the text of the button
+	 * @param state - the start state
 	 */
-	regionToggler(btnId: string, layout: string, state: State) : any {
-		this.regionTogglerInst ??= new RegionToggler(btnId, layout, state, this);
-		return this.regionTogglerInst;
-	}
-	
-	refreshRegionToggler() {
-		this.regionTogglerInst.toggle();
+	regionToggler(btnId: string, layout: string, state: State) : IToggler {
+		const toggler = new RegionToggler(this);
+		toggler.initialize({id: btnId, layout: layout, state: state});
+		return toggler;
 	}
 	
 	/**
@@ -242,198 +249,13 @@ export class Utilities implements IUtilities {
 	 * with toggle functionality.
 	 * 
 	 * @param btnId -  the id selector of the button
-	 * @param uiId - a container id selector
-	 * @param region - the region identifier
-	 * @param firstIcon - the text of the button
-	 * @param secondIcon - the text of the button
-	 */
-	containerToggler(btnId: string, uiId: string, startState: boolean) : any {
-		return new ContainerToggler(btnId, uiId, startState, this);
-	}
-	
-	regionTogglerInst: any = null;
-}
-
-
-/**
- * This class implements a toggle button for the Custom Equations dialog. It
- * toggles the Categories region on and of.
- */
-class RegionToggler {
-	
-	id: string;
-	layout: string;
-	state: State;
-	parent: any;
-
-	firstRegion = "west";
-	firstIcon: string;
-	secondIcon: string;
-	
-	/**
-	 * @constructor
-	 * 
-	 * @param id - the id of the button
-	 * @param layout - the layout containing the region
-	 * @param startState - the initial state
-	 */
-	constructor(id: string, layout: string, startState: State, parent: any) {
-		
-		this.id = id;
-		this.layout = layout;
-		this.state = startState;
-		this.parent = parent;
-		this.firstIcon = '&#x2770;';
-		this.secondIcon = '&#x2771;';
-		
-		this.addResolver();
-
-		this.toggle();
-		
-		let inst = this;
-		$(this.id).on('click', function(event) {
-			event.preventDefault();
-			inst.state = inst.switchState();
-			inst.toggle();
-		});
-	}
-	
-	/**
-	 * Toggle between Categories ON and OFF and BOTH states.
-	 */
-	toggle() {
-		let width = "";
-		let text = "";
-		
-		switch(this.state) {
-			case State.First:
-				width = "100%";
-				text = this.firstIcon + "&nbsp;" + this.secondIcon;
-				break;
-			case State.Both:
-				width = "30%";
-				text = this.firstIcon;
-				break;
-			case State.Second:
-				width = "0%";
-				text = this.secondIcon;
-		}
-		$(this.layout).layout('panel', this.firstRegion).panel('resize', { width: width });
-		$(this.layout).layout('resize');		
-
-		text = `&nbsp;${text}&nbsp;`;
-		$(`${this.id} span`).html(text);
-		this.parent.localizer.notify();						// updates the tooltip text
-	}
-	
-	/**
-	 * Adds a resolver to the Localizer instance.
-	 */
-	addResolver() {
-		this.parent.localizer.addResolver(this.resolver.bind(this));
-	}
-	
-	/**
-	 * The resolver used to dynamically update the tooltip.
-	 */
-	resolver(key: string) : string | undefined {
-		if (key == "TTREGION") {
-			switch(this.switchState()) {
-				case State.First:
-					return this.parent.localizer.getLocalText("TTREGION_FIRST");
-				case State.Second:
-					return this.parent.localizer.getLocalText("TTREGION_SECOND");
-				case State.Both:
-					return this.parent.localizer.getLocalText("TTREGION_BOTH");
-			}
-		}
-		return "";
-	}
-	
-	/**
-	 * Cyclicly switches between Both - Second - First states;
-	 */
-	switchState() : State {
-		switch(this.state) {
-			case State.First:
-				return State.Both;
-			case State.Both:
-				return State.Second;
-		}
-		return State.First;
-	}
-}
-
-
-/**
- * Used to toggle the Unicode list in the Unicode window between hidden and block
- * view.
- */
-class ContainerToggler {
-	
-	btnId: string;
-	uiId: string;
-	firstIcon: string;
-	secondIcon: string;
-	active: boolean = true;
-	parent: any;
-	
-	/**
-	 * @constructor
-	 * 
-	 * @param btnId - id of the toggle button
-	 * @param uiId - id of the view to toggle OFF and ON
+	 * @param uiId - a view id selector
 	 * @param startState - the start state (true for active)
 	 */
-	constructor(btnId: string, uiId: string, startState: boolean, parent: any) {
-		this.btnId = btnId;
-		this.uiId = uiId;
-		this.active = startState;
-		this.parent = parent;
-		this.firstIcon = '&#x2770;';
-		this.secondIcon = '&#x2771;';
-		
-		this.addResolver();
-		this.toggle();
-		
-		let inst = this;
-		$(this.btnId).on('click', function(event) {
-			event.preventDefault();
-			inst.active = !inst.active;
-			inst.toggle();
-		});
-	}
-	
-	/**
-	 * The toggle method.
-	 */
-	toggle() {
-		
-		$(this.uiId)
-		.css('display', this.active ? 'inline-block' : 'none');
-		$(`${this.btnId} span`).html(this.active ? this.secondIcon : this.firstIcon);
-		this.parent.localizer.notify();						// updates the tooltip text
-	}
-
-	/**
-	 * Adds a resolver to the Localizer instance.
-	 */
-	addResolver() {
-		this.parent.localizer.addResolver(this.resolver.bind(this));
-	}
-	
-	/**
-	 * The resolver used to dynamically update the tooltip.
-	 */
-	resolver(key: string) : string | undefined {
-		if (key == "TTCONTAINER") {
-			if (this.active) {
-				return this.parent.localizer.getLocalText("TTCONTAINER_DEACTIVATE");
-			} else {
-				return this.parent.localizer.getLocalText("TTCONTAINER_ACTIVATE");
-			}
-		}
-		return "";
+	containerToggler(btnId: string, uiId: string, startState: boolean) : IToggler {
+		const toggler = new ContainerToggler(this);
+		toggler.initialize({ id: btnId, view: uiId, state: startState });
+		return toggler;
 	}
 }
 

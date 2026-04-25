@@ -5,6 +5,22 @@
 @use "functions";
 
 /* Mixins */
+/* Fit Minmax mixin */
+@mixin fit-minmax($maxWidth: 100vw, $maxHeight: 100vh) {
+	$headerHeight: 52.33px;
+	
+	@debug "Applying fit-minmax to selector(s) #{&}";
+	max-height: $maxHeight;
+	max-width: $maxWidth;
+	min-height: calc($maxHeight / 4);
+	min-width: calc($maxWidth / 4);
+	
+	& .panel-body {
+		width: $maxWidth;
+		height: calc($maxHeight - $headerHeight);
+	} 
+}
+
 /* Fit Content mixin */
 @mixin fit-content($horizontalMargin: 0, $unusedVerticalSpace: 0) {
 	$maxWidth: calc(100vw - $horizontalMargin);
@@ -27,9 +43,9 @@
 
 	// TODO: last change did work .. do this in HTML?
 	// Switches the shadow of the using window off
-	@at-root .panel:has(> #{functions.idOf(&)}) + .window-shadow {
-		display: none !important;
-	}
+	//@at-root .panel:has(> #{functions.idOf(&)}) + .window-shadow {
+	//	display: none !important;
+	//}
 }
 
 /* Sometimes simplifies usage */
@@ -63,27 +79,46 @@
 		}
 	}
 	
-	// Switches the shadow of the using window off
+	/** 
+	 * Switches the shadow of the using window off
+	 * This was necessary for orientation changes Portrait -> Landscape. Do not remove!
+	 */
 	@at-root .panel:has(> #{functions.idOf(&)}) + .window-shadow {
 		display: none !important;
 	}
 }
 
 /* Align Header mixin */
-@mixin align-header() {
-	display: grid;
-	grid-template-rows: repeat(2, 1fr);
+@mixin align-header($isMobile: false) {
+		$margin: functions.scale($isMobile) * 2.67px;
 
-	.panel-header {
-		width: auto !important;
-		display: flex;
-		justify-content: flex-start;
-		&:not(:has(.panel-tool-expand)) {
-			padding: 0 0 0 10px;
+		display: grid;
+		grid-template-rows: auto 1fr auto;
+		grid-template-columns: repeat( 5, 1fr );
+
+		.panel-header {
+			width: auto !important;
+			height: auto !important;
+			//display: grid;
+			//grid-template-columns: auto 1fr auto;
+			
+			&:not(:has(.panel-tool-expand)) {
+				padding: 3px 0 5px 10px;
+			}
+			&:has(.panel-tool-expand) {
+				padding: 3px 50px 5px 10px;
+			}
+			
+			.panel-icon {
+				margin-top: $margin !important;
+				margin-bottom: $margin !important;
+				top: 0px !important;
+			}
 		}
-		&:has(.panel-tool-expand) {
-			padding: 0 50px 0 10px;
-		}
+	
+	// Reserved.
+	@if $isMobile {
+	} @else {
 	}
 }
 
@@ -95,31 +130,24 @@
 	
 	$horizontalMargin: functions.horizontalMargin($isMobile);
 	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile, false, 2); //TODO: fine tune, was 3
-	
-	$id: functions.idOf(&);
+
+	$id: functions.idOf(&);	
 	& {
+		width: fit-content !important;
+		height: fit-content !important;
+	}
+	& > .panel-body {
 		@debug "More dialog with id #{$id} configured for mobile #{$isMobile}";
 		padding: $basePadding;
 		@include fit-content($horizontalMargin, $unusedVerticalSpace);
 
 		font-size: $fontSize !important;
 		overflow-y: auto !important;
-	
-		@if ($isMobile and ($id == '#wf_COMMUTATIVE_DIAGRAM_MORE')) {
-			@media (orientation: landscape) {
-				// Working, but not nice ... RESERVED
-				// @debug "More dialog with id #{$id} for horizontal display";
-				// table tr { display: table-cell !important; }
-			}
-		}
-		
-		// RESERVED
-		// overflow-wrap: break-word;
 	}
 	
 	// The problem is getting the right selector here.
 	// Attention: selector is treated as list of lists
-	@at-root .panel:has(> #{functions.passThrough($id)}) {
+	& {
 		@include align-header();
 	} 
 }
@@ -134,13 +162,17 @@
 	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile);
 	
 	@if $isMobile {
-		@include fit-size($isMobile, false);
+		& > .panel-body {
+			@include fit-size($isMobile, false);
+		}
 	} @else {
-		@include fit-content($horizontalMargin, $unusedVerticalSpace);
+		@include fit-minmax(60vw, 80vh);
 	}
 	
-	font-size: $fontSize;
-	padding: variables.$basePadding;
+	& > .panel-body {
+		font-size: $fontSize;
+		padding: variables.$basePadding;
+	}
 
 	& #cUNICODES_GROUP {
 		width: $widthCombo;
@@ -171,9 +203,9 @@
 			padding: 3px;
 		}
 	}
-	
-	@at-root .panel:has(> #wUNICODES_LIST) {
-		@include align-header();
+
+	& {
+		@include align-header($isMobile);
 	}
 }
 
@@ -184,12 +216,19 @@
 	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile, true);
 
 	@if $isMobile {
-		@include fit-size($isMobile, true);
+		& > .panel-body {
+			@include fit-size($isMobile, true);
+		}
 	} @else {
-		@include fit-content($horizontalMargin, $unusedVerticalSpace);
+		&, & > .panel-body {
+			@include fit-content($horizontalMargin, $unusedVerticalSpace);
+		}
 	}
-	font-size: 1rem * $scale;
-	padding: variables.$basePadding;
+	
+	& > .panel-body {
+		font-size: 1rem * $scale;
+		padding: variables.$basePadding;
+	}
 	
 	#formEDITOR_PARAMETERS {
 		padding: variables.$basePadding;
@@ -209,6 +248,12 @@
 		a {
 			background-color: lightgray;
 		}
+
+		@if not $isMobile {
+			label {
+				white-space: nowrap;
+			}
+		}
 		
 		// TEST
 		fieldset > div {
@@ -223,8 +268,8 @@
 		}
 	}
 
-	@at-root .panel:has(> #wEDITOR_PARAMETERS) {
-		@include align-header();
+	& {
+		@include align-header($isMobile);
 	}
 }
 
@@ -235,20 +280,31 @@
 	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile, true);
 		
 	@if $isMobile {
-		@include fit-size($isMobile, true);
+		& > .panel-body {
+			@include fit-size($isMobile, true);
+		}
 	} @else {
-		@include fit-content($horizontalMargin, $unusedVerticalSpace);
+		&, & > .panel-body {
+			@include fit-content($horizontalMargin, $unusedVerticalSpace);
+		}
 	}
-	font-size: 1rem * $scale;
-	padding: variables.$basePadding;
+	
+	& > .panel-body {
+		font-size: 1rem * $scale;
+		padding: variables.$basePadding;
+	}
 
 	fieldset {
 		margin: 10px;
 		padding: variables.$basePadding;
 	}
 
-	@at-root .panel:has(> #wSTYLE_CHOISE) {
-		@include align-header();
+	label {
+		white-space: nowrap;
+	}
+
+	& {
+		@include align-header($isMobile);
 	}
 }
 
@@ -262,12 +318,19 @@
 	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile, true);
 		
 	@if $isMobile {
-		@include fit-size($isMobile, true);
+		& > .panel-body {
+			@include fit-size($isMobile, true);
+		}
 	} @else {
-		@include fit-content($horizontalMargin, $unusedVerticalSpace);
+		&, & > .panel-body {
+			@include fit-content($horizontalMargin, $unusedVerticalSpace);
+		}
 	}
-	font-size: 1rem * $scale;
-	padding: variables.$basePadding;
+	
+	& > .panel-body {
+		font-size: 1rem * $scale;
+		padding: variables.$basePadding;
+	}
 	
 	fieldset {
 		margin: 10px;
@@ -279,10 +342,10 @@
 		grid-template-columns: (16px * $scale) (16px * $scale) auto;
 		gap: 100% 10px;
 		align-items: center;
-		
-		label {
-			white-space: nowrap;
-		}
+	}
+
+	label {
+		white-space: nowrap;
 	}
 	
 	img {
@@ -292,8 +355,8 @@
 	
 	position: relative;
 
-	@at-root .panel:has(> #wLANGUAGE_CHOISE) {
-		@include align-header();
+	& {
+		@include align-header($isMobile);
 	}
 }
 
@@ -303,10 +366,11 @@
 	$scale: functions.scale($isMobile);
 	
 	@if $isMobile {
-		@include fit-size($isMobile, false);
+		& > .panel-body {
+			@include fit-size($isMobile, false);
+		}
 	} @else {
-		height: 50vh !important; 
-		width: 80vw !important;
+		@include fit-minmax(80vw, 50vh);
 	}
 		
 	/* Extracted from code */
@@ -317,41 +381,33 @@
 		width: fit-content !important;
 		overflow: auto !important;		
 	}
-	
-	@at-root .panel:has(> #wLANGUAGE_LIST) {
-		@include align-header();
+
+	& {
+		@include align-header($isMobile);
 	}
 }
 
 /* Informations window */
 /* TODO: goal: avoid px units, use relative units */
+// Invocation with .informations selector
 @mixin informationsMixin($isMobile: false) {
 	$scale: functions.scale($isMobile);
 	$horizontalMargin: functions.horizontalMargin($isMobile);
 	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile);
 	
 	@if $isMobile {
-		// Without this no content
-		@include fit-size($isMobile, false);
+		& > .panel-body {
+			@include fit-size($isMobile, false);				// Without this no content
+		}
 	} @else {
-		height: min(60vh, calc(100vh - $unusedVerticalSpace)) !important; 
-		width: min(60vw, calc(100vw - $horizontalMargin)) !important;
+		@include fit-minmax(60vw, 60vh);
 	}
 
-	& {
-		padding: 5px;
-		font-size: 1rem * $scale;
-
-		>div >div {
-			padding: {
-				top: 10px;
-				bottom: 10px;
-				left: 10px;
-			}
-			
-			div[id] {
-				padding-right: 2px;
-			}
+	& > .panel-body {
+		font-size: 1rem;
+		
+		div[href] {
+			padding: 5px;
 		}
 		
 		#tCOPYRIGHT hr, #tVERSION hr {
@@ -380,47 +436,53 @@
 		}
 	}	
 
-	@at-root .panel:has(> #wINFORMATIONS) {
-		@include align-header();
+	& {
+		@include align-header($isMobile);
 	}
 }
+
 
 /* Custom Equations Mixin */
 @mixin customEquationsMixin($isMobile: false) {
 	$fontSize: functions.fontSize($isMobile);
 
 	@if $isMobile {
-		@include fit-size($isMobile, true);
+		& > .panel-body {
+			@include fit-size($isMobile, true);
+		}
 	} @else {
-		width: 700px;
-		height: 500px;
-	}
-	
-	#CUSTOM_EQUATIONS_LAYOUT {
-		width: 100% !important;
-		height: 100% !important;
+		& > .panel-body {
+			@include fit-minmax(60vw, 70vh);
+		}
 	}
 
-	#customDatagrid {
-		border-spacing: 0px;
-		border-collapse: collapse;
-		width: 100%;
-	}
-	.datagrid-body, .datagrid-header {
-		table td div {
-			&, input, span {
-				font-size: $fontSize;
-			}
-		} 
+	& > .panel-body {
+		#CUSTOM_EQUATIONS_LAYOUT {
+			width: 100% !important;
+			height: 100% !important;
+		}
+
+		#customDatagrid {
+			border-spacing: 0px;
+			border-collapse: collapse;
+			width: 100%;
+		}
+		.datagrid-body, .datagrid-header {
+			table td div {
+				&, input, span {
+					font-size: $fontSize;
+				}
+			} 
+		}
 	}
 	
 	#categories li div span {
 		font-size: $fontSize;
 	}
 
-	@at-root .panel:has(> #wf_CUSTOM_EQUATIONS_MORE) {
-		@include align-header();
-	}
+//	& { // TODO: improve
+//		@include align-header();
+//	}
 }
 
 /* Matrix Mixin */
@@ -431,6 +493,9 @@
 	
 	font-size: $fontSize;
 	& {
+		@include fit-content(0px, 0px);
+	}
+	& > .panel-body{
 		@include fit-content($horizontalMargin, $unusedVerticalSpace);
 	}
 	form {
@@ -446,9 +511,9 @@
 			text-align: center;
 		}
 	}
-
-	@at-root .panel:has(> #wMATRIX) {
-		@include align-header();
+	
+	& {
+		@include align-header($isMobile);
 	}
 }
 
@@ -457,15 +522,19 @@
 	$padding: variables.$basePadding;
 	
 	@if $isMobile {
-		@include fit-size($isMobile, false);
+		& > .panel-body {
+			@include fit-size($isMobile, false);
+		}
+	} @else {
+		@include fit-minmax(80vw, 50vh);
 	}
 	
 	&, & td, & th {
 		padding: $padding;
 	}
-	
-	@at-root .panel:has(> #wEVENT_LIST) {
-		@include align-header();
+
+	& {
+		@include align-header($isMobile);
 	}
 }
 
@@ -491,19 +560,19 @@
 
 /* List of 'more' dialogs. */
 $contentTailored: (
-	'wf_COMMUTATIVE_DIAGRAM_MORE',
-	'wf_CHEMICAL_FORMULAE_MORE',
-	'wf_BRACKET_SYMBOLS_MORE',
-	'wf_RELATION_SYMBOLS_MORE',
-	'wf_ARROW_SYMBOLS_MORE',
-	'wf_FR_CHAR_MORE',
-	'wf_BBB_CHAR_MORE',
-	'wf_L_U_GREEK_CHAR_MORE',
-	'wf_ALL_CHAR_MORE',
-	'wf_EQUATION_MORE',
-	'wf_HORIZONTAL_SPACING_MORE',
-	'wf_VERTICAL_SPACING_MORE',
-	'wf_SPECIAL_CHARACTER_MORE'
+	'commutative-diagram',
+	'chemical-formulae',
+	'bracket-symbols',
+	'relation-symbols',
+	'arrow-symbols',
+	'fr-char',
+	'bbb-char',
+	'greek-char',
+	'all-char',
+	'equation',
+	'horizontal-spacing',
+	'vertical-spacing',
+	'special-chars'
 );
 
 @mixin dialogs($isMobile: false) {
@@ -511,12 +580,12 @@ $contentTailored: (
 	 * The MORE dialogs with an unique shape
 	 */
 	@each $id in $contentTailored {
-		##{$id} {
+		.#{$id} {
 			@include moreDialogsMixin($isMobile);
 		}
 	}
 	
-	#wUNICODES_LIST {
+	.unicodes-list {
 		@include unicodeMixin($isMobile);
 	}
 	// Belongs to Unicode but placed outside in html, working!!
@@ -524,28 +593,28 @@ $contentTailored: (
 		font-size: functions.fontSize($isMobile);
 	}
 	
-	#wEDITOR_PARAMETERS {
+	.parameters {
 		@include editorParametersMixin($isMobile);
 	}
-	#wSTYLE_CHOISE {
+	.style-choice {
 		@include styleChoiceMixin($isMobile);
 	}
-	#wLANGUAGE_CHOISE {
+	.language-choice {
 		@include languageChoiceMixin($isMobile);
 	}
-	#wLANGUAGE_LIST {
+	.language-list {
 		@include languageListMixin($isMobile);
 	}
-	#wINFORMATIONS {
+	.informations {									// was #wINFORMATIONS
 		@include informationsMixin($isMobile);
 	}
-	#wf_CUSTOM_EQUATIONS_MORE {
+	.custom-equations-dialog {
 		@include customEquationsMixin($isMobile);
 	}
-	#wMATRIX {
+	.mat {
 		@include matrixMixin($isMobile);
 	}
-	#wEVENT_LIST {
+	.events {
 		@include eventMixin($isMobile);
 	}
 }

@@ -70,7 +70,7 @@
 
 @function heightCorrecture($isMobile: false) {
 	@if $isMobile {
-		@return 25px;
+		@return 25px;	// @return 25px; changed 2026-04-22 together with INFORMATIONS
 	} @else {
 		@return 0px;
 	}

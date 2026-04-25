@@ -5,6 +5,12 @@ import { inject, injectable, injectFromBase, Factory } from 'inversify';
 import { ILocalizer, IParser, IMath, utilitiesId, IUtilities, categoriesTreeId, ICategoriesTree,
 	IMessager, dynamicParametersId, panelFactoryId, IPanel } from './interfaces.mjs';
 
+enum RESIZING_TYPE {
+	AUTO,
+	FIT,
+	SETTINGS
+}	
+	
 /**
  * The base class of all Panels, Dialogs, Windows.
  */
@@ -196,6 +202,28 @@ export class KIHPanel implements IPanel {
 	 */
 	resize() {
 		this.parameters.resizePanel(this.id);
+	}
+
+	/**
+	 * Performs a Resize depending on a provided type.
+	 * 
+	 * @param type - resizing type
+	 */	
+	protected typedResize(type: RESIZING_TYPE) {
+		if (this.parameters.isMobile) { return; }							// only has effect on desktop
+		
+		let dimensions = { };
+		if (type == RESIZING_TYPE.AUTO) {
+			dimensions = { width: 'auto', height: 'auto' };
+		}
+		if (type == RESIZING_TYPE.FIT) {
+			dimensions = { width: 'fit-content', height: 'fit-content' };
+		}
+		if (type == RESIZING_TYPE.SETTINGS) {
+			dimensions = this.parameters.getConfiguredDimensions(this.id);
+		}
+		
+		this.panelFunc('resize', dimensions);
 	}
 
 	/**
@@ -506,10 +534,13 @@ export class KIHPanel implements IPanel {
 		await this.load();
 		
 		let inst = this;
-		$('#tINFORMATIONS').tabs({ onSelect: (title: string, tab: number) => {
-			inst.tab = tab;
-			this.tabChanged = false;
-		} });
+		$('#tINFORMATIONS').tabs({ 
+			onSelect: (title: string, tab: number) => {
+				inst.tab = tab;
+				inst.tabChanged = false;
+			},
+			fit: true
+		});
 	}
 	
 	/**
@@ -550,20 +581,27 @@ export class KIHPanel implements IPanel {
 	 * Loads the Informations dialog with info contained in separate HTML files.
 	 */
 	override async load() : Promise<void> {
-		const elements = $('#tINFORMATIONS div[href]').toArray();
-		for (const elem of elements) {
-			const element = $(elem);			
-			const href = element.attr('href');
-			const id = element.attr('id');
+		
+		// This 'official' recipe has the same action ... no initial display on mobile
+		// Helpful was application of the correct selector
+		for (let idx = 0; idx < 4; idx++) {
+			const tab = $('#tINFORMATIONS').tabs('getTab', idx);
 			
-			const newHref = `../information/${id}.html`;						// lazily load html info
-			element.attr('href', newHref);
+			const id = $(tab).attr('id');
 			const content = (await import(`../information/${id}.html`)).default;
-			console.info(`Info dialog with : id : ${id}, href : ${href}`);
-			element.html(content);
+			
+			$('#tINFORMATIONS').tabs('update', {
+				tab: tab,
+				type: 'body',
+				options: {
+					content: content
+				}
+			});
 		}
-
+		
+		// This was essential for orientation changes Portrait <-> Landscape
 		await this.parser.parseAsync('#tINFORMATIONS div[href]', 0, 100);
+		
 		// Reserved.
 		// console.debug(`Parse completed for : div[href]`);
 		
@@ -960,7 +998,7 @@ export class KIHPanel implements IPanel {
 		// price and enables language update of the pagination bar over invocations.
 
 		$('#btCUSTOM_EQUATIONS_ADD')
-		.click(async function(event) { 
+		.on('click', async function(event) { 
 			event.preventDefault();
 			
 			let selectedText = inst.math.codeMirror.getSelection();
@@ -975,7 +1013,7 @@ export class KIHPanel implements IPanel {
 		});
 	
 		$('#btCUSTOM_EQUATIONS_REMOVE')
-		.click(async function(event) { 
+		.on('click', async function(event) { 
 			event.preventDefault();
 			let checkedEquations = inst.categoriesTree.getCheckedEquations();			// indices of checked equations
 			let from = inst.categoriesTree.currentLeaf;									// the currrent set
@@ -988,7 +1026,7 @@ export class KIHPanel implements IPanel {
 		});
 	
 		$('#btCUSTOM_EQUATIONS_SAVE')
-		.click(async function(event) {
+		.on('click', async function(event) {
 			event.preventDefault();
 			inst.categoriesTree.currentEquations = inst.toJson();
 			let data = JSON.stringify(inst.categoriesTree.customEquationsProxy);			// must be a JSON string
@@ -1000,7 +1038,7 @@ export class KIHPanel implements IPanel {
 		});
 	
 		$('#btCUSTOM_EQUATIONS_LOAD')
-		.click(async function(event) {
+		.on('click', async function(event) {
 			event.preventDefault();
 			let fileHandler = new FileHandler();
 			let json = await fileHandler.loadFile("fOPEN_CUSTOM_EQUATIONS");
@@ -1090,7 +1128,7 @@ export class KIHPanel implements IPanel {
 	 * 
 	 * @param json - a json object used to fill the data grid
 	 */
-	fromJson(json) {
+	fromJson(json: any) {
 		$(this.gridSelector)
 		.datagrid('loadData', []);
 		let id = 0;
@@ -1294,7 +1332,6 @@ export class KIHPanel implements IPanel {
 			]],
 			idField: 'id',
 			onBeforeSortColumn: function(sort, order) {
-				console.debug(`Sort order is: ${order}`);
 				inst.sortOrderAsc = order;
 				return true;
 			},
@@ -1388,7 +1425,7 @@ export class KIHPanel implements IPanel {
 	 */
 	equipDatagridWithInteractivity() {
 		let inst = this;
-		function getSymbol(obj) { 
+		function getSymbol(obj: any) { 
 			if ($(obj).attr("latex") != undefined) { 
 				return $(obj).attr("latex"); 
 			} else { 
@@ -1419,7 +1456,7 @@ export class KIHPanel implements IPanel {
 				}
 			});
 		} catch(e) {
-			console.error(`Katex: equipDatagridWithInteractivity : ${e}`);
+			console.error(`Katex: equipDatagridWithInteractivity : %s`, e);
 		}
 	}
 	

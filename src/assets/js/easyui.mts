@@ -30,7 +30,7 @@ async function promisify(fnc: any, ...args: any[]) {
 				});
 			}
 		} catch(err) {
-			console.error(`Error occurred: ${err} `);		
+			console.error(`Error occurred: %s`, err);		
 			reject(err);
 		}		
 	});
@@ -115,7 +115,7 @@ export class EasyuiLoader implements IEasyuiLoader {
 			const ready = await promisify(/*using*/this.easyloader.load.bind(this.easyloader), modules);
 			return ready;
 		} catch(e) {
-			console.error(`Could not load 'easyui' ${e}`);
+			console.error(`Could not load 'easyui' %s`, e);
 			throw e;
 		}
 	}

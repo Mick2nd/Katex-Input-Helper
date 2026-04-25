@@ -57,7 +57,7 @@ export class Localizer implements ILocalizer {
 			}
 			return this.localeData[langCode];
 		} catch(e) {
-			console.error(`Could not load language file - ${e}`);
+			console.error(`Could not load language file - %s`, e);
 			throw(e);
 		}
 	}

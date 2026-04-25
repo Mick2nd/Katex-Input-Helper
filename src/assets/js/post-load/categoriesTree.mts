@@ -191,7 +191,6 @@ import { ICategoriesTree } from '../interfaces.mjs';
 				return (function() {
 					let node = $(jq[0]).tree('getNode', target);
 					if (node != null) {
-						console.debug(`isLeaf: ${'attributes' in node} `);
 						return 'attributes' in node;
 					}
 					return $(jq[0]).tree('isLeafDefault', target);
@@ -221,24 +220,18 @@ import { ICategoriesTree } from '../interfaces.mjs';
 			accept: '.datagrid-div, .tree-node',
 			
 			onDragEnter: function(target, source) {
-				console.debug(`onDragEnter `);
-				console.dir(this);
 				let isLeaf = $(this).tree('isLeaf', target);
 				updateDndIcon(!isLeaf);
 			},
 			onDragOver: function(target, source) {
-				console.debug(`onDragOver `);
 				let isLeaf = $(this).tree('isLeaf', target);
 				updateDndIcon(!isLeaf);
 			},
 			onDragLeave: function(target, source) {
-				console.debug(`onDragLeave `);
 				updateDndIcon(false);
 			},
 			
 			onBeforeDrop: function(target, source, point) {
-				console.debug(`onBeforeDrop ${point} `);
-				console.dir(source);
 				
 				if (point != 'append') {
 					return false;
@@ -251,7 +244,6 @@ import { ICategoriesTree } from '../interfaces.mjs';
 
 				inst.dropSourceParent = inst.getParent(source);
 
-				console.debug(`onBeforeDrop target is Leaf ${isLeaf} `);
 				return !isLeaf;
 			},
 			onDrop: function(target, source, point) {
@@ -263,13 +255,12 @@ import { ICategoriesTree } from '../interfaces.mjs';
 					inst.openFolder(inst.dropSourceParent, false);
 					inst.correctIcon(inst.dropSourceParent);
 				}				
-				console.debug(`onDrop dropping ${source.text} `);
 			},
-			onBeforeSelect: function(node) {
+			onBeforeSelect: function(node: any) {
 				let isLeaf = $(this).tree('isLeaf', node.target);
 				return isLeaf;
 			},
-			onSelect: function(node) {
+			onSelect: function(node: any) {
 				let isLeaf = $(this).tree('isLeaf', node.target);
 				if (isLeaf) {
 					inst.previousLeaf = inst.currentLeaf;
@@ -280,10 +271,10 @@ import { ICategoriesTree } from '../interfaces.mjs';
 					
 				}
 			},
-			onDblClick: function(node) {
+			onDblClick: function(node: any) {
 				$(this).tree('beginEdit', node.target);				
 			},
-			onAfterEdit: function(node) {
+			onAfterEdit: function(node: any) {
 				inst.treeChanged.notify(node);				
 			},
 			onContextMenu: inst.onContextMenu.bind(inst),
@@ -303,8 +294,6 @@ import { ICategoriesTree } from '../interfaces.mjs';
 			this.findNode(node);
 			this.tree.tree('select', node.target);			
 		}
-		
-		console.debug(`CategoriesTree : %O`, this.data);
 	}
 	
 	/**
@@ -312,7 +301,7 @@ import { ICategoriesTree } from '../interfaces.mjs';
 	 * 
 	 * We distinguish 2 context menues: one for the Leafs and one for the Folders.
 	 */
-	onContextMenu(e, node) {
+	onContextMenu(e: MouseEvent, node: any) {
 		let inst = this;
 
 		function remove() {
@@ -331,7 +320,6 @@ import { ICategoriesTree } from '../interfaces.mjs';
 			$('#treeMenu')							// prepare menu for Folders
 			.menu({
 				onClick: function(item) {
-					console.debug(`Click on menu item ${item.target.id} `);
 					switch(item.target.id) {
 						case "mAppendFolder": 
 							inst.tree
@@ -360,7 +348,6 @@ import { ICategoriesTree } from '../interfaces.mjs';
 			$('#treeMenuLeaf')					// prepare menu for Leafs
 			.menu({
 				onClick: function(item) {
-					console.debug(`Click on menu item ${item.target.id} `);
 					switch(item.target.id) {
 						case "mRemoveLeaf":
 							remove();
@@ -386,7 +373,6 @@ import { ICategoriesTree } from '../interfaces.mjs';
 	 * to the tree.
 	 */
 	onLoadSuccess() {
-		console.debug(`onLoadSuccess`);
 		let inst = this;
 		inst.tree
 		.find('.tree-node')
@@ -398,7 +384,6 @@ import { ICategoriesTree } from '../interfaces.mjs';
 			})
 			*/
 			.droppable('options');			
-			console.debug(`Found tree node with accept: ${opts.accept} `);
 
 			opts.accept = 'div.tree-node, div.datagrid-div';
 			let onDragEnter = opts.onDragEnter;
@@ -408,15 +393,12 @@ import { ICategoriesTree } from '../interfaces.mjs';
 			let onBeforeDrop = opts.onBeforeDrop;
 			
 			opts.onDragEnter = function(e, source) {
-				console.debug(`opts.onDragEnter`);
-				console.dir(source);
 				if ($(source).hasClass('tree-node')) {
 					return onDragEnter.call(this, e, source);
 				}
 				return true;
 			};
 			opts.onDragOver = function(e, source) {
-				console.debug(`opts.onDragOver`);
 				if ($(source).hasClass('tree-node')) {
 					onDragOver.call(this, e, source);
 				} else {
@@ -544,17 +526,17 @@ import { ICategoriesTree } from '../interfaces.mjs';
 		/**
 		 * Searches from a given start node down the hierarchy until node with text is found.
 		 */
-		function getSamplesNode(node, text) {
+		function getSamplesNode(node: any, text) {
 			
 			return _traverse(node.children);
 			
-			function _traverse(nodes) {
+			function _traverse(nodes: any[]) {
 				for (let node of nodes) {
 					if (node.text === text) {
 						return node;
 					}
 					let children = node.children;
-					if (children && children.length) {
+					if (children?.length) {
 						let found = _traverse(children);
 						if (found) {
 							return found;
@@ -594,12 +576,11 @@ import { ICategoriesTree } from '../interfaces.mjs';
 	 * 
 	 * @param order - the order. 'asc' for ascending 
 	 */
-	sort(order) {
+	sort(order = 'asc') {
 		let inst = this;
 		let tree = inst.tree;		
-		order = order || 'asc';
 		
-		this.traverse(function(node) {
+		this.traverse(function(node: any) {
 			let nodes = node.children;
 			if (nodes) {
 				_sort(nodes);
@@ -617,7 +598,6 @@ import { ICategoriesTree } from '../interfaces.mjs';
 
 				let isLeaf1 = inst.isLeaf(r1);
 				let isLeaf2 = inst.isLeaf(r2);
-				console.debug(`Leaf Test: ${r1.text}:${isLeaf1}, ${r2.text}:${isLeaf2}`)
 				if (isLeaf1 != isLeaf2) {
 					return (isLeaf1 ? 1 : -1) * (order == 'asc' ? 1 : -1);
 				}
@@ -644,7 +624,7 @@ import { ICategoriesTree } from '../interfaces.mjs';
 	 */
 	correctIcons() {
 		let inst = this;
-		this.traverse(function(node) {
+		this.traverse(function(node: any) {
 			if (!inst.tree.tree('isLeaf', node.target)) {
 				inst.correctIcon(node);
 			}
@@ -654,7 +634,7 @@ import { ICategoriesTree } from '../interfaces.mjs';
 	/**
 	 * Correct the Folder icon of a single node.
 	 */
-	correctIcon(node) {
+	correctIcon(node: any) {
 		this.findNode(node);									// seems to be essential to get target
 		let icon = $(node.target).find('.tree-icon');
 		if (icon.hasClass('tree-file')) {
@@ -665,11 +645,8 @@ import { ICategoriesTree } from '../interfaces.mjs';
 			.removeClass('tree-indent')
 			.addClass('tree-hit')
 			.addClass('tree-collapsed');
-			
-			console.debug(`correctIcon for ${node.text} `);			
 		}
 		if (icon.hasClass('tree-folder')) {
-			console.debug(`correctIcon for ${node.text} already has class 'tree-folder' `);
 		}
 	}
 	
@@ -686,12 +663,12 @@ import { ICategoriesTree } from '../interfaces.mjs';
 		let nodes = inst.tree.tree('getRoots');
 		_traverse(nodes, ...args);
 
-		function _traverse(nodes, ...args) {
+		function _traverse(nodes: any[], ...args) {
 			for (let node of nodes) {
 				inst.findNode(node);
 				func(node, ...args);
 				let children = node.children;
-				if (children && children.length) {
+				if (children?.length) {
 					_traverse(children, ...args);
 				}
 			}
@@ -707,7 +684,7 @@ import { ICategoriesTree } from '../interfaces.mjs';
 	 * @param node - a node of the tree
 	 * @returns the path string belonging to that node 
 	 */
-	pathFromNode(node) {
+	pathFromNode(node: any) {
 		let current = node;
 		let path = '';
 		while(current !== null) {
@@ -715,7 +692,6 @@ import { ICategoriesTree } from '../interfaces.mjs';
 			current = this.getParent(current);
 		}
 		
-		console.debug(`CategoriesTree : pathFromNode : ${path} `);
 		return path;
 	}
 	
@@ -725,7 +701,7 @@ import { ICategoriesTree } from '../interfaces.mjs';
 	 * @param {string} path - the path of a node in the tree
 	 * @returns the node belonging to that path or null
 	 */
-	nodeFromPath(path) {
+	nodeFromPath(path: string) {
 		
 		let pathComponents = path.split('/').slice(1);
 		let rest = pathComponents;
@@ -735,7 +711,7 @@ import { ICategoriesTree } from '../interfaces.mjs';
 		let nodes = this.tree.tree('getRoots');
 		return _traverse(nodes);
 
-		function _traverse(nodes) {
+		function _traverse(nodes: any[]) {
 			
 			first = rest[0];
 			rest = rest.slice(1);
@@ -746,7 +722,7 @@ import { ICategoriesTree } from '../interfaces.mjs';
 						return node;
 					
 					let children = node.children;
-					if (children && children.length) {
+					if (children?.length) {
 						return _traverse(children);
 					}
 				}
@@ -761,7 +737,7 @@ import { ICategoriesTree } from '../interfaces.mjs';
 	 */
 	renumberIds() {
 		let id = 1;
-		this.traverse(function(node) {
+		this.traverse(function(node: any) {
 			node.id = id++;
 		});
 	}
@@ -771,7 +747,7 @@ import { ICategoriesTree } from '../interfaces.mjs';
 	 */
 	get freeId() {
 		let id = 0;
-		this.traverse(function(node) {
+		this.traverse(function(node: any) {
 			if (node.id > id) id = node.id;
 		});
 		return id + 1;
@@ -783,7 +759,7 @@ import { ICategoriesTree } from '../interfaces.mjs';
 	 * @param node - the folder node
 	 * @param open - the target state, true for open
 	 */
-	openFolder(node, open) {
+	openFolder(node: any, open) {
 		this.findNode(node);										// seems to be essential to get target
 		let isLeaf = this.tree.tree('isLeaf', node.target);
 		if (isLeaf) {
@@ -792,18 +768,16 @@ import { ICategoriesTree } from '../interfaces.mjs';
 		if (open) {
 			this.tree.tree('expand', node.target);
 			node.state = 'open';
-			console.debug(`openFolder true : ${node.text} `);			
 		} else {
 			this.tree.tree('collapse', node.target);
 			node.state = 'closed';
-			console.debug(`openFolder false : ${node.text} `);			
 		}
 	}
 	
 	/**
 	 * Determines the parent of the given node.
 	 */
-	getParent(node) {
+	getParent(node: any) {
 		this.findNode(node);										// seems to be essential to get target
 		let parent = this.tree.tree('getParent', node.target);
 		return parent;
@@ -812,7 +786,7 @@ import { ICategoriesTree } from '../interfaces.mjs';
 	/**
 	 * Checks the given node if it is a leaf node.
 	 */	
-	isLeaf(node) {
+	isLeaf(node: any) {
 		this.findNode(node);										// seems to be essential to get target
 		let isLeaf = this.tree.tree('isLeaf', node.target);
 		return isLeaf;
@@ -823,7 +797,7 @@ import { ICategoriesTree } from '../interfaces.mjs';
 	 * 
 	 * @param node - origin node
 	 */
-	findNode(node) {
+	findNode(node: any) {
 		if ('id' in node)
 			return this.tree.tree('find', { text: node.text, id: node.id });
 		else
