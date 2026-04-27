@@ -1,0 +1,57 @@
+
+@mixin tableMixin {
+	/* where applied => all tables 
+	 * RESERVED.
+	table, th, td {
+	  border-style: solid;
+	  border-width: 1px;
+	}
+	*/
+
+	%table-border {
+		border-style: solid;
+		border-width: 1px;
+	}
+
+	/* in-line = Informations table */
+	.inline-table, .events-table {
+		th, td {
+			@extend %table-border;
+			padding: 5px;
+		}
+	}
+
+	.formulas-table {
+		a {
+			@extend %table-border;
+		}
+		.s-light {
+			border-color: lightgray;
+		}
+		.s-dark {
+			border-color: darkgray;
+		}
+	} 
+
+	/**
+	 * ATTENTION! To successfully use the border css properties the *cellspacing*
+	 * attribute of the appropriate table must be set to 0. Otherwise it will not
+	 * work.
+	 */
+	.unicode-list-table {
+		border-collapse: separate;
+		border-spacing: 2px;
+		th, td {
+			@extend %table-border;
+			border-radius: 3px;
+			// border-color: #f0f0f0; 		// setting of original
+		}
+	}
+
+	.unicode-value-table {
+		border-collapse: collapse;
+		th, td {
+			@extend %table-border;
+		}
+	} 
+}

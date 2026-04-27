@@ -914,6 +914,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		let vme = this;
 		let fPanelMoreID = 'w' + fPanelID + '_MORE';
 		await vme.panels.showWindowDI(moreDialogId, fPanelMoreID, vme.initialiseSymbolContent.bind(vme));
+		await vme.themes.activateStyle(vme.style);
 	}
 	
 	/**
@@ -1151,12 +1152,13 @@ export class KatexInputHelper implements IKatexInputHelper {
 	onStyleChanged(style: string, _rtlStyle: string, colorType: string) {
 		this.style = style;																// necessary to persist and delegate
 		try {
-			let colorImg = "black", codemirrorCSS = "default", colorpickerCSS = "gray"; 
+			let colorImg = "black", codemirrorCSS = "default", colorpickerCSS = "gray", borderClass = "s-dark"; 
 			
 			if (colorType == "black") {
 				colorImg = "white"
 				codemirrorCSS = "zenburn"; 
 				colorpickerCSS = "black";
+				borderClass = "s-light";
 			}
 			this.codeMirrorEditor.setOption("theme", codemirrorCSS); 
 			if (!this.runNotColorPicker) { 
@@ -1169,7 +1171,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 					posColor = this.className.lastIndexOf("_"); 
 					if (posColor) this.className = this.className.substring(0, posColor + 1) + colorImg; 
 				} 
-			}); 
+			});
+			const oppositeClass = (borderClass == 's-dark' ? 's-light' : 's-dark');
+			$('.formulas-table a').removeClass(oppositeClass).addClass(borderClass);
 			this.setRTLstyle();
 		}
 		catch(e) {

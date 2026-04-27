@@ -6,8 +6,9 @@
 
 /* Mixins */
 /* Fit Minmax mixin */
-@mixin fit-minmax($maxWidth: 100vw, $maxHeight: 100vh) {
-	$headerHeight: 52.33px;
+@mixin fit-minmax($maxWidth: 100vw, $maxHeight: 100vh, $hasButtons: false) {
+	$headerHeight: 52.33px;					// TODO: use function
+	$buttonBarHeight: functions.buttonBarHeight($hasButtons);
 	
 	@debug "Applying fit-minmax to selector(s) #{&}";
 	max-height: $maxHeight;
@@ -17,11 +18,15 @@
 	
 	& .panel-body {
 		width: $maxWidth;
-		height: calc($maxHeight - $headerHeight);
+		height: calc($maxHeight - $headerHeight - $buttonBarHeight);
 	} 
 }
 
-/* Fit Content mixin */
+/**
+ * Fit Content mixin.
+ * Additionally to the 'fit-content' setting it limits the maximum dimension. This
+ * depends on correct measures.
+ */
 @mixin fit-content($horizontalMargin: 0, $unusedVerticalSpace: 0) {
 	$maxWidth: calc(100vw - $horizontalMargin);
 	$maxHeight: calc(100vh - $unusedVerticalSpace);
@@ -31,36 +36,11 @@
 	width: calc-size(fit-content, min(size, $maxWidth)) !important;
 }
 
-/* Fit Container mixin
- * !! Used in mobile only !!
- */
-@mixin fit-container($horizontalMargin: 0, $unusedVerticalSpace: 0) {
-	$maxWidth: calc(100vw - $horizontalMargin);
-	$maxHeight: calc(100vh - $unusedVerticalSpace);
-	
-	height: $maxHeight !important;
-	width: $maxWidth !important;
-
-	// TODO: last change did work .. do this in HTML?
-	// Switches the shadow of the using window off
-	//@at-root .panel:has(> #{functions.idOf(&)}) + .window-shadow {
-	//	display: none !important;
-	//}
-}
-
-/* Sometimes simplifies usage */
-@mixin fit($isMobile: false, $horizontalMargin: 0, $unusedVerticalSpace: 0) {
-	@if $isMobile {
-		@include fit-container($horizontalMargin, $unusedVerticalSpace);
-	} @else {
-		@include fit-content($horizontalMargin, $unusedVerticalSpace);
-	}
-}
-
 /**
  * New implementation to fit a Dialog to its container. This is desired mainly
  * for usage in the mobile mode. It takes into account different heights the
- * footer can have depending on line breaks.
+ * footer can have depending on line breaks. The entry selector is the surrounding
+ * panel.
  */
 @mixin fit-size($isMobile: false, $hasButtons: false) {
 	$mediaQueries: (
@@ -68,14 +48,19 @@
 		2: "843px > width >= 435px",
 		3: "435px > width >= 299px"
 	);
-	
-	width: functions.width($isMobile, false) !important;
-	
-	@each $lines, $query in $mediaQueries {
-		$height: functions.height($isMobile, $hasButtons, $lines) !important;
-		@debug "Media query #{$query} -> #{$height}";
-		@media (#{$query}) {
-			height: $height;
+
+	& {
+		width: 100% !important;						// essential for upper right rounded corner
+	}	
+	& > .panel-body {
+		width: functions.width($isMobile, false) !important;
+
+		@each $lines, $query in $mediaQueries {
+			$height: functions.height($isMobile, $hasButtons, $lines) !important;
+			@debug "Media query #{$query} -> #{$height}";
+			@media (#{$query}) {
+				height: $height;
+			}
 		}
 	}
 	
@@ -83,42 +68,40 @@
 	 * Switches the shadow of the using window off
 	 * This was necessary for orientation changes Portrait -> Landscape. Do not remove!
 	 */
-	@at-root .panel:has(> #{functions.idOf(&)}) + .window-shadow {
+	& + .window-shadow {
 		display: none !important;
 	}
 }
 
 /* Align Header mixin */
 @mixin align-header($isMobile: false) {
-		$margin: functions.scale($isMobile) * 2.67px;
+	$scale: functions.scale($isMobile);
 
-		display: grid;
-		grid-template-rows: auto 1fr auto;
-		grid-template-columns: repeat( 5, 1fr );
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+	grid-template-columns: repeat( 5, 1fr );
 
-		.panel-header {
-			width: auto !important;
-			height: auto !important;
-			//display: grid;
-			//grid-template-columns: auto 1fr auto;
-			
-			&:not(:has(.panel-tool-expand)) {
-				padding: 3px 0 5px 10px;
-			}
-			&:has(.panel-tool-expand) {
-				padding: 3px 50px 5px 10px;
-			}
-			
-			.panel-icon {
-				margin-top: $margin !important;
-				margin-bottom: $margin !important;
-				top: 0px !important;
-			}
+	.panel-header {
+		width: auto !important;
+		height: auto !important;
+		
+		&:not(:has(.panel-tool-expand)) {
+			padding: 4px 2px 5px 15px;
 		}
-	
-	// Reserved.
-	@if $isMobile {
-	} @else {
+		&:has(.panel-tool-expand) {
+			padding: 4px 50px 5px 15px;
+		}
+		
+		.panel-icon {
+			/** 
+			 * TODO: Check what is best suited for vertical align
+			 * - top is set to 50%
+			 * - for margin-top use negative shift of the half height, 16px or 24px
+			 */
+			transform: scale($scale);
+			margin-top: math.div(-16px, 2) * $scale !important;
+			margin-left: math.div(16px, 3) * $scale !important;
+		}
 	}
 }
 
@@ -162,9 +145,7 @@
 	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile);
 	
 	@if $isMobile {
-		& > .panel-body {
-			@include fit-size($isMobile, false);
-		}
+		@include fit-size($isMobile, false);
 	} @else {
 		@include fit-minmax(60vw, 80vh);
 	}
@@ -216,9 +197,7 @@
 	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile, true);
 
 	@if $isMobile {
-		& > .panel-body {
-			@include fit-size($isMobile, true);
-		}
+		@include fit-size($isMobile, true);
 	} @else {
 		&, & > .panel-body {
 			@include fit-content($horizontalMargin, $unusedVerticalSpace);
@@ -280,9 +259,7 @@
 	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile, true);
 		
 	@if $isMobile {
-		& > .panel-body {
-			@include fit-size($isMobile, true);
-		}
+		@include fit-size($isMobile, true);
 	} @else {
 		&, & > .panel-body {
 			@include fit-content($horizontalMargin, $unusedVerticalSpace);
@@ -318,9 +295,7 @@
 	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile, true);
 		
 	@if $isMobile {
-		& > .panel-body {
-			@include fit-size($isMobile, true);
-		}
+		@include fit-size($isMobile, true);
 	} @else {
 		&, & > .panel-body {
 			@include fit-content($horizontalMargin, $unusedVerticalSpace);
@@ -366,9 +341,7 @@
 	$scale: functions.scale($isMobile);
 	
 	@if $isMobile {
-		& > .panel-body {
-			@include fit-size($isMobile, false);
-		}
+		@include fit-size($isMobile, false);
 	} @else {
 		@include fit-minmax(80vw, 50vh);
 	}
@@ -379,7 +352,11 @@
 		border-collapse: collapse !important;
 		margin: 10px !important;
 		width: fit-content !important;
-		overflow: auto !important;		
+		overflow: auto !important;
+		
+		th, td {
+			padding: 2px;
+		}
 	}
 
 	& {
@@ -396,9 +373,7 @@
 	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile);
 	
 	@if $isMobile {
-		& > .panel-body {
-			@include fit-size($isMobile, false);				// Without this no content
-		}
+		@include fit-size($isMobile, false);				// Without this no content
 	} @else {
 		@include fit-minmax(60vw, 60vh);
 	}
@@ -447,13 +422,9 @@
 	$fontSize: functions.fontSize($isMobile);
 
 	@if $isMobile {
-		& > .panel-body {
-			@include fit-size($isMobile, true);
-		}
+		@include fit-size($isMobile, true);
 	} @else {
-		& > .panel-body {
-			@include fit-minmax(60vw, 70vh);
-		}
+		@include fit-minmax(60vw, 70vh, true);
 	}
 
 	& > .panel-body {
@@ -463,16 +434,41 @@
 		}
 
 		#customDatagrid {
-			border-spacing: 0px;
 			border-collapse: collapse;
-			width: 100%;
+			width: 99.5%;
 		}
 		.datagrid-body, .datagrid-header {
 			table td div {
 				&, input, span {
 					font-size: $fontSize;
 				}
-			} 
+			}			
+			/**
+			 * This solution not ideal, NOT RESPONSIVE
+			 *
+			$title-width: 40%;
+			$check-width: 27.67px;
+			$rowheader-width: 0px;  // 29.67px, but not included
+
+			> div {
+				width: 100% !important;
+			}
+			& table {
+				width: 100% !important;		// shrinks to fitting view (.datagrid-body)
+			}
+			td:nth-child(1) {
+				width: 0px !important;
+			}
+			td:nth-child(2) {
+				width: $check-width !important;
+			}
+			td:nth-child(3) {
+				width: $title-width !important;
+			}
+			td:nth-child(4) {
+				width: calc(100% - $title-width - $rowheader-width - $check-width) !important;
+			}
+			*/			
 		}
 	}
 	
@@ -480,15 +476,15 @@
 		font-size: $fontSize;
 	}
 
-//	& { // TODO: improve
-//		@include align-header();
-//	}
+	& { // TODO: improve
+		@include align-header();
+	}
 }
 
 /* Matrix Mixin */
 @mixin matrixMixin($isMobile: false) {
 	$fontSize: functions.fontSize($isMobile);
-	$horizontalMargin: functions.horizontalMargin($isMobile);
+	$horizontalMargin: functions.horizontalMargin(false);	// take always margin
 	$unusedVerticalSpace: functions.unusedVerticalSpace($isMobile, true);
 	
 	font-size: $fontSize;
@@ -522,9 +518,7 @@
 	$padding: variables.$basePadding;
 	
 	@if $isMobile {
-		& > .panel-body {
-			@include fit-size($isMobile, false);
-		}
+		@include fit-size($isMobile, false);
 	} @else {
 		@include fit-minmax(80vw, 50vh);
 	}
@@ -614,132 +608,9 @@ $contentTailored: (
 	.mat {
 		@include matrixMixin($isMobile);
 	}
-	.events {
+	.events-list {
 		@include eventMixin($isMobile);
 	}
 }
 
 
-/**
- *	This mixin for menu settings of both variants.
- */
-@mixin commonMenuMixin() {
-	// Placeholder
-}
-
-/**
- *	This mixin for menu settings of the Desktop variant.
- */
-@mixin desktopMenuMixin() {
-	.menus {
-		width: 200px;
-		overflow: hidden !important;
-	}	
-
-	#menu {
-		padding: 5px;
-	}
-
-	/* The Latex menu item */
-	#mLaTeX_TEXT {
-		// TODO: Fontsize 120% has been the reason for fundamental problems -> solved
-		.katex {
-			font-size: 1.2em !important;
-		}		
-	}
-
-	/**
-	 *	I have no idea why 'noline' is active. But resetting 'none' to  'block'
-	 *	should activate the menu line between icons and text. Also menu separator
-	 *	gets truncated where the icon is.
-	 */	
-	.menu-noline .menu-line {
-		display: block !important;
-	}
-	.menu-sep {
-		margin: 3px 0px 3px 25px !important;
-	}
-}
-
-/**
- *	This mixin for menu settings of the Mobile variant.
- */
-@mixin mobileMenuMixin() {
-	$fontSize: functions.fontSize(true);	
-	
-	/* Sidemenu menu-line handling */
-	#sm {		
-		width: 500px !important;
-		/* Supress scrollbars */
-		div {
-			overflow-y: hidden !important;
-		}
-	}
-
-	/* The Latex menu item */
-	#sm span:has(> .katex) {
-		// TODO: Fontsize 120% has been the reason for fundamental problems -> solved
-		padding-top: 2px;
-		.katex {
-			font-size: 1.0em !important;
-		}
-	}
-
-	/* Indentation of the text */
-	.sidemenu-tree span.tree-title, .sidemenu .panel-title span {
-		margin-left: 5px;
-		padding-left: 5px;		
-	}
-
-	/**
-	 *	After changes for dynamic loading menu did not work. It costed me about
-	 *	one day to find this solution. 
-	 */	
-	#sm .accordion { 
-		.panel, .panel-header {
-			width: 100% !important;
-			height: fit-content !important;
-		}		
-		.panel-body {
-			width: 100% !important;
-		}
-	}
-	
-	/* The menu line for the mobile case */
-	.menu-noline .menu-line {
-		display: inline-block;
-		position: static;
-		font-size: 1px;
-		width: 2px !important;
-		margin-left: 7px;
-		vertical-align: middle;
-		
-		height: 22px !important;
-		transform: scaleY(2.0);
-	}
-
-	/*	Menu separator
-		Use the colors of the themes !! */
-	.menu-sep {
-		flex-grow: 1;
-		margin-left: 0px !important;
-		height: 0px;
-	}
-	div:has(> .menu-sep) {
-		display: flex;
-		height: fit-content !important;
-		padding: 0;
-		& > span.tree-icon, 
-		& > span.tree-indent {
-			height: 0px;
-		}
-		& > span.tree-icon {
-			width: 16px;
-		} 
-	}
-
-	/* Side menu font-size */
-	.panel-title span, span.rtl-menu-item {
-		font-size: $fontSize !important;
-	}
-}

@@ -2,6 +2,8 @@
 @use 'partials/variables';
 @use 'partials/functions';
 @use 'partials/mixins';
+@use 'partials/menu_mixins';
+@use 'partials/table_mixins';
 
 @import 'katex/dist/katex.min.css';
 @import '../keyboard/keyboard.css';
@@ -15,14 +17,18 @@
  */
 * {
 	margin : 0; 
-	padding: 0; 
+	padding: 0;
+	
+	::before {
+		display: none;
+	}
 }
  
 body {
 	/* essential: must be written at the correct moment */
 	height: 100vh;
 	
-	@include mixins.commonMenuMixin();
+	@include menu_mixins.commonMenuMixin();
 	 
 	/* Hidden elements for file open / save ... */
 	.invisible {
@@ -87,18 +93,7 @@ body {
 		}
 	}
 	
-	/* where applied => all tables 
-	 */
-	table, th, td {
-	  border: 1px solid;
-	}
-	
-	/* in-line = Informations table */
-	.inline-table {
-		td {
-			padding: 5px;
-		}
-	}
+	@include table_mixins.tableMixin();
 }
 
 /* Section for desktop styles
@@ -145,7 +140,7 @@ body.katex-desktop {
 		}
 	}
 	
-	@include mixins.desktopMenuMixin();
+	@include menu_mixins.desktopMenuMixin();
 	
 	/* Suppress scroll bars */
 	.easyui-menubutton {
@@ -249,7 +244,7 @@ body.katex-mobile {
 	@include mixins.dialogs(true);
 	
 	/* All menu settings */
-	@include mixins.mobileMenuMixin();	
+	@include menu_mixins.mobileMenuMixin();	
 	
 	/* Improves accessibility -> can also use .dialog-button */
 	#btLANGUAGE_CHOISE, #btSTYLE_CHOISE, #btEDITOR_PARAMETERS, #btMATRIX, #btCUSTOM_EQUATIONS_BUTTONS {

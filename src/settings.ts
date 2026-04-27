@@ -52,6 +52,7 @@ export class Settings
 	async register() : Promise<void>
 	{
 		if (!this.fullyRegistered) {
+			this.mobile = (await joplin.versionInfo()).platform == 'mobile';
 			this.settings = await this.descriptions();
 			await joplin.settings.registerSection(this.sectionName(), this.sectionLabel());
 			await joplin.settings.registerSettings(this.settings);
@@ -70,13 +71,6 @@ export class Settings
 	onChange(event: { keys: [string] }) : void
 	{
 		console.info(`onChange triggered: ${event.keys}`);
-		
-		if (event.keys.includes('xxx'))											// handles changes of the library folder
-		{
-		}
-		else
-		{
-		}
 	}
 	
 	/**
@@ -97,8 +91,8 @@ export class Settings
 				public: true,
 				value: false,
 				type: SettingItemType.Bool,
-				label: 'Enforce Mobile Mode',
-				description: 'Used to enforce mobile mode on desktop'
+				label: this.mobile ? 'Enforce Desktop Mode' : 'Enforce Mobile Mode',
+				description: this.mobile ? 'Used to enforce desktop mode on mobile' : 'Used to enforce mobile mode on desktop'
 			},
 			'data_dir':												// available for Content Scripts
 			{
@@ -276,12 +270,12 @@ export class Settings
 	/**
 	 * PUBLIC
 	 */
-	async enforceMobileMode() : Promise<Boolean>
+	async enforceMobileMode() : Promise<boolean>
 	{
 		return await joplin.settings.value('enforce_mobile_mode');
 	}
 
-	async setEnforceMobileMode(mode: Boolean) : Promise<void> {
+	async setEnforceMobileMode(mode: boolean) : Promise<void> {
 		await joplin.settings.setValue('enforce_mobile_mode', mode);
 	}
 
@@ -298,7 +292,7 @@ export class Settings
 	}
 	
 	async localType() : Promise<string> {
-		var local_type = await joplin.settings.value('local_type');
+		let local_type = await joplin.settings.value('local_type');
 		console.info(`LocalType was: ${local_type}`);
 		return local_type;
 	}
@@ -307,40 +301,40 @@ export class Settings
 		await joplin.settings.setValue('local_type', type);
 	}
 
-	async encloseAllFormula() : Promise<Boolean>
+	async encloseAllFormula() : Promise<boolean>
 	{
 		return await joplin.settings.value('enclose_all_formula');
 	}
 	
-	async setEncloseAllFormula(enclose: Boolean) : Promise<void> {
+	async setEncloseAllFormula(enclose: boolean) : Promise<void> {
 		await joplin.settings.setValue('enclose_all_formula', enclose);
 	}
 	
-	async autoUpdateTime() : Promise<Number>
+	async autoUpdateTime() : Promise<number>
 	{
 		return await joplin.settings.value('auto_update_time');
 	}
 	
-	async setAutoUpdateTime(time: Number) : Promise<void> {
+	async setAutoUpdateTime(time: number) : Promise<void> {
 		await joplin.settings.setValue('auto_update_time', time);
 	}
 
-	async menuUpdateType() : Promise<Boolean>
+	async menuUpdateType() : Promise<boolean>
 	{
 		return await joplin.settings.value('menu_update_type');
 	}
 	
-	async setMenuUpdateType(type: Boolean) : Promise<void> {
+	async setMenuUpdateType(type: boolean) : Promise<void> {
 		await joplin.settings.setValue('menu_update_type', type);
 	}
 	
 
-	async autoUpdateType() : Promise<Boolean>
+	async autoUpdateType() : Promise<boolean>
 	{
 		return await joplin.settings.value('auto_update_type');
 	}
 	
-	async setAutoUpdateType(type: Boolean) : Promise<void> {
+	async setAutoUpdateType(type: boolean) : Promise<void> {
 		await joplin.settings.setValue('auto_update_type', type);
 	}
 	
@@ -405,6 +399,7 @@ export class Settings
 	fullyRegistered: boolean;
 	dialogSettingsPrefix: string;
 	dialogs: string[];
+	mobile: boolean;
 }
 
 export const settings = new Settings();

@@ -188,7 +188,7 @@ export class Localizer implements ILocalizer {
 			let title = lang; 
 			let langage = json["_i18n_Langage"]; 
 			if (!$('#tLANGUAGE_LIST').tabs('exists', title)) {
-				let list = "<table border='1' cellspacing='0' >"; 
+				let list = "<table border='1' cellspacing='0' class='resources-table' >"; 
 				let dir = json["_i18n_HTML_Dir"]; 
 				for (let ressource in json) { 
 					list += (

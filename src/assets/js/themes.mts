@@ -127,9 +127,10 @@ export class Themes extends Observable implements IThemes {
 	 * @param activeTheme - the theme / style to be activated.
 	 */
 	async activateStyle(activeTheme: string) {
-		if (activeTheme == this.activeTheme) {												// no change
-			return;
-		}
+		// ATTENTION! Notification may be necessary
+		// if (activeTheme == this.activeTheme) {												// no change
+		//	return;
+		// }
 		
 		await this.initializeTheme(activeTheme);		// action only if not loaded yet
 		

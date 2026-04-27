@@ -95,7 +95,7 @@ export class Messager extends Observable implements IMessager {
 	 */
 	get table() : string {
 		
-		let table = '<table>\n';
+		let table = '<table cellspacing="0" class="events-table">\n';
 		table += this.head;
 		for (const event of this.eventView.toReversed()) {
 			table += event.row;

@@ -131,13 +131,13 @@ export class KIHPanel implements IPanel {
 	/**
 	 * Initialise method, creates the *Panel* with the handlers provided.
 	 */
-	async initialise(dummy: any = null) : Promise<void> {
+	async initialise(_dummy: any = null) : Promise<void> {
 	}
 	
 	/**
 	 * Virtual method. Updates a panel. F.i. used for Information Window.
 	 */
-	async update(...params) : Promise<void> {
+	async update(..._params) : Promise<void> {
 		
 	}
 	
@@ -614,7 +614,7 @@ export class KIHPanel implements IPanel {
 	 */
 	assembleVersionInfo() {
 		$("#VMEversion").html(`
-			<table class="inline-table">
+			<table cellspacing="0" class="inline-table">
 				<tr><td><b> ${this.versions.version} </b></td><td><b>Katex Input Helper / Visual Math Editor</b>, (This software)</td></tr>
 				<tr><td> ${this.versions.katexVersion} </td><td>Katex</td></tr>
 				<tr><td> ${this.versions.codemirrorEditorVersion} </td><td>Code Mirror</td></tr>
@@ -828,13 +828,13 @@ export class KIHPanel implements IPanel {
 				} 
 			});
 
-			let html = "<table><caption>[0x0000,0xFFFF]</caption>"; 
+			let html = "<table cellspacing='0' class='unicode-list-table'><caption>[0x0000,0xFFFF]</caption>"; 
 			for (let i = 0; i <= 650; i = i + 10) {
 				html += "\n<tr>"; 
 				for (let j = i; j < i + 10; j++) { 
 					if (j > 655) break;
 					let cellDec = prependNumber(j);
-					html += `<td><a style='border:1px solid #f0f0f0;' class='s' href=''>${cellDec}</a></td>`; 
+					html += `<td><a class='s' href=''>${cellDec}</a></td>`; 
 				}
 				html += "</tr>";
 			}
@@ -875,7 +875,7 @@ export class KIHPanel implements IPanel {
 		 */
 		function d2h(d: number) { return d.toString(16).toUpperCase(); }
 		
-		let html = ("<table border='1' cellspacing='0' style='border-spacing:0px;border-collapse:collapse;'>"); 
+		let html = ("<table cellspacing='0' class='unicode-value-table'>"); 
 		html += `
 			<tr>
 				<th><span locate='UNICODES_INPUT'>${this.localizer.getLocalText("UNICODES_INPUT")}</span></th>
@@ -1287,7 +1287,7 @@ export class KIHPanel implements IPanel {
 	 * @param b - item 2
 	 * @returns -1 for a < b and +1 for a >= b;
 	 */
-	alphaSorter(a, b) {
+	alphaSorter(a: string, b: string) : number {
 		// Reserved.
 		// console.debug(`SORT comparing ${a} < ${b}, order: ${this.sortOrderAsc}`);
 		return a < b ? -1 : +1;
@@ -1295,10 +1295,13 @@ export class KIHPanel implements IPanel {
 	
 	/**
 	 * Initialises a Data Grid given by the selector
+	 * TODO: CHECK state of DND.
 	 */
-	async initialiseDatagrid(selector) {
+	async initialiseDatagrid(selector: string) {
 		let inst = this;
 		let filterPrompt = inst.localizer.getLocalText('FILTER_PROMPT');
+		const titleWidth = 200; // TODO: evt. use configured measure ! $(`#this.id datagrid`).outerWidth() * 0.4;
+		
 		$(selector)
 		.datagrid({
 			//singleSelect: true,
@@ -1310,7 +1313,7 @@ export class KIHPanel implements IPanel {
 			rownumbers: true,
 			fit: true,
 			noheader: false,
-			onAfterEdit: async function(idx, row, changes) {
+			onAfterEdit: async function(_idx, _row, _changes) {
 				// Reserved.
 				// console.debug(`onAfterEdit for ${selector}`);
 				inst.onAfterRender();
@@ -1324,11 +1327,13 @@ export class KIHPanel implements IPanel {
 			},
 			clickToEdit: false,
 			dblclickToEdit: true,
+			fitColumns: true,
+			scrollbarSize: 0,
 			columns: [[
-				{ field: 'id', title: 'Id', hidden: true },
-				{ field: 'check', checkbox: true },
-				{ field: 'title', title: '<span class="custom-equations" locate="TITLE">Title</span>', width: '37%', editor: 'text', sortable: true, sorter: inst.alphaSorter.bind(inst) },
-				{ field:'formula', title: '<span class="custom-equations" locate="FORMULA">Formula</span>', width:'60%' }
+				{ field: 'id', title: 'Id', hidden: true, width: 0, fixed: true },
+				{ field: 'check', checkbox: true, width: 'auto', fixed: true },
+				{ field: 'title', title: '<span class="custom-equations" locate="TITLE">Title</span>', width: titleWidth, fixed: true, editor: 'text', sortable: true, sorter: inst.alphaSorter.bind(inst) },
+				{ field:'formula', title: '<span class="custom-equations" locate="FORMULA">Formula</span>', width: 200, fixed: false }
 			]],
 			idField: 'id',
 			onBeforeSortColumn: function(sort, order) {
@@ -1520,18 +1525,40 @@ export class KIHPanel implements IPanel {
 		await this.toggle(id);
 	}
 	
+	/**
+	 * Performs initialization of the requested panel. This is done immediately 
+	 * after construction and can contain asynchronous code.
+	 * 
+	 * @param id - the id of the panel
+	 * @param [initialiseSymbolContent=null] - a routine of the client to be invoked on successful execution
+	 */
 	async initialise(id: string, initialiseSymbolContent = null) {
 		await this.panels[id].initialise(initialiseSymbolContent);
 	}
 
+	/**
+	 * Toggles the state of the panel from OPEN -> CLOSED -> OPEN.
+	 * 
+	 * @param id - the id of the panel
+	 */
 	async toggle(id: string) {
 		await this.panels[id].toggle();
 	}
 	
-	async update(id: string, ...params) {
+	/**
+	 * Updates the given panel with the provided parameters. This could be a new 
+	 * tab for the *Informations* window.
+	 * 
+	 * @param id - the id of the panel
+	 * @param params - new parameters
+	 */
+	async update(id: string, ...params: any[]) {
 		await this.panels[id].update(...params);
 	}
 	
+	/**
+	 * Closes all open panels.
+	 */
 	closeOpen() {
 		for (const id in this.panels) {
 			const panel = this.panels[id];

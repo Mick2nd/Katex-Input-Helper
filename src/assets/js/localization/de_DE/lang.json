@@ -37,7 +37,7 @@
 	"MATHJAX_LATEX_SYMBOLS": "MathJax LaTeX Symbole!",
 	"ASCIIMATH_INPUT": "AsciiMath Eingabe",
 	"MATHJAX_LATEX_INPUT": "MathJax LaTeX Eingabe",
-	"UNICODES_INPUT": "Unicode Eingabe",
+	"UNICODES_INPUT": "Code",
 	"OUTPUT": "Ausgabe",
 	"LATEX_EQUIVALENT": "LaTeX Äquivalent",
 	"LATEX_DOCUMENTATION": "LaTeX Dokumentation",

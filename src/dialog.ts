@@ -51,12 +51,10 @@ export class Dialog
 	 */
 	public create = async function() : Promise<any> {
 		
-		if (handle == null) {
-			handle = await joplin.views.dialogs.create(this.id);
-		}
+		handle ??= await joplin.views.dialogs.create(this.id);
 
 		this.installationDir = await joplin.plugins.installationDir();
-		this.isMobile = (await joplin.versionInfo()).platform == 'mobile' || (await this.settings.enforceMobileMode());
+		this.isMobile = ((await joplin.versionInfo()).platform == 'mobile') !== (await this.settings.enforceMobileMode());
 		
 		await this.loadCss(handle);
 		await this.loadJs(handle);

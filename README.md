@@ -122,6 +122,8 @@ This does not appear on the *Chrome* browser on desktop.
 - Used the *easyloader* of the easyui library to improve the start experience
 - Improved the FOUC behavior
 - Joplin API updated together with node modules, reduced the number of vulnerabilities
+- Improvements for a nice UI
+- Bug fixes
 
 ### 3.0.1
 

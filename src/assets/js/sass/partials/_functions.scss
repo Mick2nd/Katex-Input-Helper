@@ -92,7 +92,7 @@
 
 @function horizontalMargin($isMobile: false) {
 	@if $isMobile {
-		@return 2 * variables.$baseMargin;		// otherwise hor scrollbar and missing frame
+		@return 0px; // 2 * variables.$baseMargin;	// TODO: TEST => otherwise hor scrollbar and missing frame, last value: 0px
 	} @else {
 		@return 2 * variables.$baseMargin;
 	}
@@ -103,5 +103,5 @@
 }
 
 @function width($isMobile, $portrait: true) {
-	@return calc(100vw - horizontalMargin($isMobile));
+	@return calc(100% - horizontalMargin($isMobile));
 }
