@@ -102,7 +102,7 @@
 	"LOAD_ERROR": "Fehler beim Laden der Gleichungen",
 	"FORMULA_EDITOR": "Formeleditor",
 	"NO_SELECTION_TEXT": "Bitte, selektieren sie Text, um eine Gleichung hinzuzufügen!",
-	"NO_SELECTION_CELL": "Bitte, selektieren sie eine Zelle, um eine GLeichung zu entfernen",
+	"NO_SELECTION_CELL": "Bitte, selektieren sie eine Zelle, um eine Gleichung zu entfernen",
 	"TITLE": "Titel",
 	"PERSISTENCE": "Persistenz",
 	"PERSIST_WINDOW_POSITIONS": "Wählen, um Fensterpostionen zu speichern",
@@ -142,6 +142,7 @@
 	"TIME": "Zeit",
 	"MESSAGE": "Nachricht",
 	"EXCEPTION": "Ausnahme",
+	"LOADING_MORE_FORMULAE": "Laden von noch mehr Formeln",
 	
 	"VKI_00": "Keypad",
 	"VKI_01": "Anzeige virtuelle Tastatur",

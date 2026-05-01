@@ -14,7 +14,7 @@ declare global {
 		tabs(p1?: any, p2?: any): any;
 		layout(p1?: any, p2?: any): any;
 		accordion(p1?: any, p2?: any): any;
-		tooltip(p1?: any, p2?: any): any;
+		tooltip: any;
 		datagrid: any;
 		tree: any;
 		resizable: any;

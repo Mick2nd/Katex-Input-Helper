@@ -137,6 +137,13 @@
 	"ONE_BRACKET_MISSING": "Cả hai dấu ngoặc phải có hoặc không",
 	"SIDEMENU_PANEL": "Bảng điều khiển Sidemenu",
 	"DIALOG_PANEL": "Bảng điều khiển hộp thoại",
+	"SYMBOL_PANEL_LOADED": "Bảng biểu tượng đã được tải",
+
+	"EVENT_LIST": "Chế độ xem sự kiện",
+	"TIME": "Thời gian",
+	"MESSAGE": "Tin nhắn",
+	"EXCEPTION": "Ngoại lệ",
+	"LOADING_MORE_FORMULAE": "Đang tải thêm công thức",
 	
 	"VKI_00": "bàn phím",
 	"VKI_01": "Mở bàn phím ảo",

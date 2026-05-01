@@ -143,6 +143,7 @@
 	"TIME": "Time",
 	"MESSAGE": "Message",
 	"EXCEPTION": "Exception",
+	"LOADING_MORE_FORMULAE": "Loading more formulae",
 
 	"VKI_00": "Number Pad",
 	"VKI_01": "Display virtual keyboard interface",

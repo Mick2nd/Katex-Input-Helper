@@ -137,6 +137,13 @@
 	"ONE_BRACKET_MISSING": "Ambos paréntesis deben estar presentes o no estarlo.",
 	"SIDEMENU_PANEL": "Panel de menú lateral",
 	"DIALOG_PANEL": "Panel de diálogo",
+	"SYMBOL_PANEL_LOADED": "Panel de símbolos cargado",
+
+	"EVENT_LIST": "Vista de eventos",
+	"TIME": "Tiempo",
+	"MESSAGE": "Mensaje",
+	"EXCEPTION": "Excepción",
+	"LOADING_MORE_FORMULAE": "Cargando más fórmulas",
 	
 	"VKI_00": "Teclado",
 	"VKI_01": "Mostrar la interfaz teclado virtual",

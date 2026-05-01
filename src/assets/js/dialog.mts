@@ -13,7 +13,8 @@ import {
 	IParser, parserId, 
 	IMath, mathId, ICodeMirror,
 	IPanels, panelsId, matrixWindowId, unicodeWindowId, informationWindowId, moreDialogId, windowId, dialogId, dynamicPanelId, 
-    IMenus, menusId} from './interfaces.mjs';
+    IMenus, menusId,
+	IHints, hintsId, HintsClient } from './interfaces.mjs';
 
 //let console: any; 
 //if (window.console) console = window.console; else console = { log: function(_: string) { }, error: function(_: string) { } }; 
@@ -129,7 +130,7 @@ class Documentations {
 /**
  * The main class Katex Input Helper
  */
-export class KatexInputHelper implements IKatexInputHelper {
+export class KatexInputHelper extends HintsClient implements IKatexInputHelper {
 
 	versions = null;
 	codeType = 'Latex'; 
@@ -160,6 +161,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	messager: IMessager = null;
 	panels: IPanels = null;
 	menus: IMenus = null;
+	hints: IHints = null;
 	baseLocation = "";
 	parser: IParser = null;
 	VKI_show: any = null;
@@ -181,7 +183,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 		@inject(mathId) math : IMath,
 		@inject(panelsId) panels : IPanels,
 		@inject(menusId) menus : IMenus,
+		@inject(hintsId) hints : IHints,
 	) {
+		super();
 		window.vme = this;
 	
 		$('body').on('error', (event) => {
@@ -203,6 +207,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 		this.math = math;
 		this.panels = panels;
 		this.menus = menus;
+		this.hints = hints;
+		this.hints.inject(this);
+		
 		this.documentations = new Documentations(false, this.baseLocation);
 		
 		for (let i = 65; i <= 90; i++) if ($.inArray(i, this.allowedCtrlKeys) == -1) this.notAllowedCtrlKeys.push(i); 
@@ -325,9 +332,9 @@ export class KatexInputHelper implements IKatexInputHelper {
 		const htmlString = (await import(`../dialog-${app}.hbs`)).default;
 		
 		// Experiments manipulating HTML
+		// Maybe this can be made simpler
 		const root = document.createElement('html');
 		root.innerHTML = htmlString;
-		console.log(`Parsed HTML : %O`, root);					// this is a full html DOM node with head and body
 		const body = (root.lastChild as HTMLElement);
 		append(body, 'body');
 		
@@ -453,17 +460,27 @@ export class KatexInputHelper implements IKatexInputHelper {
 			defineProportions('#innerLayout', 'south', 50);
 			
 			await this.registerEventHandlers();
-			this.sidemenuData = this.getSidemenuData();
-			this.populateSidemenu(this.sidemenuData);
+			
+			const data = this.menus.sidemenuData;
+			this.menus.populateSidemenu(data, this.onMenuClick.bind(this));
+
+			$('body').append(this.menus.mobileMenus);
+			await this.parser.parseAsync(this.menus.mobileSelectors);
+
+			this.hints.overrideDefaults(3000);
 			
 		} else {
 			$("body").addClass("katex-desktop");
 			$("div.katex-desktop").removeClass("katex-desktop");
 			
+			$('#northRegion').append(this.menus.desktopMenus);			// implements the complete menus in typescript
 			await this.parser.parseAsync('html');
-			defineProportions('#innerLayout', 'south', 50);
+			//await this.parser.parseAsync(this.menus.desktopSelectors);// some data missing
 			
-			$('.menu').addClass('menu-line');						// adds Menu line support
+			defineProportions('#innerLayout', 'south', 50);			
+			$('.menu').addClass('menu-line');							// adds Menu line support
+
+			this.hints.overrideDefaults(-1);		
 		}
 	}
 	
@@ -536,48 +553,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * Using the traditional (desktop) menu, extracts data for the side menu.
 	 */
 	getSidemenuData() {
-		const inst = this;
-
-		function parseMenu(id: string, level: number = 0) : any {
-			const level1Submenus = [ 'mFILE', 'mINSERT', 'mTOOLS', 'mVIEW', 'mOPTIONS', 'mINFORMATIONS' ];
-			
-			const data = $(`#${id} > div`).map(function(idx: number, dom) {
-				if ($(this).hasClass('menu-sep')) {
-					return {
-						id: '',
-						text: '',
-						iconCls: ''
-					};
-				}
-				const span = $(this).find('span');
-				let children = undefined;
-				if (level == 0) {
-					children = parseMenu(level1Submenus[idx - 1], level + 1);
-				}
-				if (level == 1 && id == 'mINSERT' && idx == 1) {
-					children = parseMenu('mCHARS', level + 1);
-				}
-				const locate = span.attr('locate');
-				span.text(inst.getLocalText(locate));
-				const spanHtml = span.get(0) == undefined ? '' : span.get(0).outerHTML;
-				if (spanHtml == '') {
-					return null;
-				}
-				const line: any = {
-					text: spanHtml,
-					iconCls: $(this).attr('iconcls'),
-					children: children
-				};
-				const itemId = $(this).attr('id');
-				if (itemId) {
-					line.id = itemId + '_side';
-				}
-				return line;
-			});
-			return data.get();
-		}
-
-		const data = parseMenu('main-menu');
+		const data = this.menus.sidemenuData;
 		return data;
 	}
 	
@@ -587,27 +563,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * @param data - the data structure used to describe the menu
 	 */
 	populateSidemenu(data: any) {
-		
-		const optionsBefore = $('#sm').sidemenu('options')['data'];
-		$('#sm').sidemenu({
-			data: data,
-			floatMenuPosition: 'left',
-			multiple: false,
-			onSelect: this.onMenuClick.bind(this),
-			animate: true
-		});
-		const optionsAfter = $('#sm').sidemenu('options')['data'];
-		
-		$('ul.sidemenu-tree span.tree-title').each(function(idx) {				// set the css class for menu separator
-			if ($(this).text() == '') {
-				$(this).addClass('menu-sep');
-			}
-		});
-		
-		$('.tree-node').addClass('menu-noline');								// CSS classes for menu-line implementation
-		$('<span class="menu-line" ></span>').insertBefore('#sm .tree-title');
-		
-		$('#sm').sidemenu('expand');
+		this.menus.populateSidemenu(data, this.onMenuClick.bind(this));
 	}
 	
 	/**
@@ -630,7 +586,6 @@ export class KatexInputHelper implements IKatexInputHelper {
 	
 	/**
 	 * Sets Cursor at editor end.
-	 * TODO: Probably erroneous .. getValue queries the whole content
 	 */
 	setCodeMirrorCursorAtEnd() { 
 		this.codeMirrorEditor.setCursor(-1); 
@@ -663,66 +618,25 @@ export class KatexInputHelper implements IKatexInputHelper {
 		
 		if(vme.platformInfo.isMobile) {
 			$(vme.cmSelector).css('font-size', '1.3em');
+			
 		} else {
-			/*	The context menu appears but throws on click or mouse move afterwards:
-			 *	NO OWNER => special handling.
-			 */
-			$(vme.cmSelector).on('contextmenu', (event) => vme.onContextMenu('#mINSERT', event)); 
+			$(vme.cmSelector).on('contextmenu', (event) => vme.onContextMenu('#mINSERT-CM', event)); 
 		}
 	}
 
 	/**
-	 * Handles context menu invocation.
-	 * 
-	 * This is a workaround because of crashs raised otherwise. The hide method
-	 * will be overridden. Left unwanted effect: display of menu at false location,
-	 * this can be handled by shifting the menu via CSS.
+	 * Handles context menu invocation. Workaround for crashs no longer necessary
+	 * because context menus use a copy of the menu.
 	 * 
 	 * @param selector - the selector of the html element which caused the event
 	 * @param event - the event
 	 */	
 	onContextMenu(selector: string, event: any) {
 		event.preventDefault();
-		
-		let options = $(selector).menu('options');
-		let onHide = options.onHide;
-		let onShow = options.onShow;
-		
-		// has the effect of not highlighting main menu
-		options.onShow = function() {
-			return false;
-		}
-
-		// has the effect of avoiding crash		
-		options.onHide = function() {
-			$(this).menu('hide');
-			options.onHide = onHide;
-			options.onShow = onShow;
-			return false;
-		};
-		
-		// this.logProperties(selector); => Reserved for future use.
-		// this code uses CSS to shift the context menu to the desired location (and its
-		// shadow)
 		try {
 			$(selector).menu('show', { left: event.pageX, top: event.pageY });
-			$(`${selector}`).css({
-				position: 'absolute',
-				left: `${event.pageX}px`,
-				top: `${event.pageY}px`,
-				display: 'block'
-			});
-			
-			let next = $(selector).next();
-			if (next.hasClass('menu-shadow')) {
-				next.css({
-					position: 'absolute',
-					left: `${event.pageX}px`,
-					top: `${event.pageY}px`,
-					display: 'block'
-				});
-			}
-		} catch(e) { 
+		} catch(e) {
+			console.error(`onContextMenu error %s`, e);
 		}
 		return false;
 	}
@@ -755,7 +669,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		
 		// The whole menu commands.
 		// TRY different way: use options
-		$("#mFILE, #mINSERT, #mTOOLS, #mVIEW, #mOPTIONS, #mINFORMATIONS, #main-menu").menu({
+		$("#mFILE, #mINSERT, #mINSERT-CM, #mTOOLS, #mVIEW, #mVIEW-CM, #mOPTIONS, #mINFORMATIONS, #main-menu").menu({
 			onClick: vme.onMenuClick.bind(vme)
 		});
 		
@@ -784,7 +698,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 			vme.parameters.resetWindowPositions();
 			vme.messager.show('RESTART', 'RESTART_REQUIRED');
 		}); 
-		$("#mathVisualOutput").on('contextmenu', (event) => vme.onContextMenu('#mVIEW', event)); 
+		$("#mathVisualOutput").on('contextmenu', (event) => vme.onContextMenu('#mVIEW-CM', event)); 
 		$("[information]").on('mouseover', function(_event) { 
 			$(".divInformation").html(vme.getLocalText($(this).attr("information"))); 
 		}); 
@@ -880,7 +794,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 			"f_FR_CHAR": () =>  vme.initialiseUImoreDialogs("f_FR_CHAR"),
 			"f_BBB_CHAR": () => vme.initialiseUImoreDialogs("f_BBB_CHAR"), 
 			"mEQUATION": () => vme.initialiseUImoreDialogs("f_EQUATION"), 
-			"mCUSTOM_EQUATIONS": () => vme.panels.showWindowDI(dynamicPanelId, 'wf_CUSTOM_EQUATIONS_MORE', vme.math),
+			"mCUSTOM_EQUATIONS": () => vme.panels.showWindowDI(dynamicPanelId, 'wf_CUSTOM_EQUATIONS_MORE'),
 			"mHORIZONTAL_SPACING": () => vme.initialiseUImoreDialogs("f_HORIZONTAL_SPACING"), 
 			"mVERTICAL_SPACING": () => vme.initialiseUImoreDialogs("f_VERTICAL_SPACING"), 
 			"mSPECIAL_CHARACTER": () => vme.initialiseUImoreDialogs("f_SPECIAL_CHARACTER"), 
@@ -1083,7 +997,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 * Wrapper of the appropriate Math routine. Inserts a piece of 
 	 * math code into the editor and updates the output.
 	 */	
-	insert(b: string) {
+	override insert(b: string) {
 		this.math.insert(b);
 		this.setFocus();
 	}
@@ -1091,7 +1005,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 	/**
 	 * For insertion of formulae with insertion point.
 	 */
-	tag(b: any, a: any) {
+	override tag(b: any, a: any) {
 		b = b || null; 
 		a = a || b; 
 		if (!b || !a) { return }
@@ -1102,6 +1016,10 @@ export class KatexInputHelper implements IKatexInputHelper {
 		if (this.menuupdateType) this.updateOutput(); 
 		this.setFocus();		
 		this.cursorAtInsertionPoint = true;				// used in mobile only
+	}
+	
+	override missing() {
+		this.messager.show("INFORMATION", "NO_LATEX");
 	}
 	
 	/**
@@ -1244,7 +1162,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 		}); 
 		let p = $(accordionID).accordion('getSelected'); 
 		if (p) { p.panel('collapse', false); }
-		this.math.updateHeaders("");
+		this.math.updateHeaders("");						// change all titles of accordion at once
 	}
 	
 	/**
@@ -1257,65 +1175,10 @@ export class KatexInputHelper implements IKatexInputHelper {
 	 */
 	async initialiseSymbolContent(fPanelID: string) { 
 		let vme = this; 
-		/**
-		 * Given an anchor object, determines and returns the included
-		 * LATEX code used as info for tool tip and info line.
-		 */
-		function getSymbol(a: any) {
-			let info: any = beginEndInfo(a);
-			if (info !== null) return info[0] + info[1];
-			info = latex(a);
-			if (info !== null) return info;
-			return vme.getLocalText("NO_LATEX"); 
-		};
-		
-		/**
-		 * Returns the begin to end info of an anchor.
-		 */
-		function beginEndInfo(a: any) {
-			if ($(a).attr("lbegin") != undefined && $(a).attr("lend") != undefined) 
-				return [$(a).attr("lbegin"), $(a).attr("lend")];
-			return null; 
-		};
-		
-		/**
-		 * Returns the latex info of an anchor.
-		 */
-		function latex(a: any) {
-			if ($(a).attr("latex") != undefined)
-				return $(a).attr("latex");
-			return null;
-		};
-		
-		$(`#${fPanelID} a.s`)
-		.each(function() {
-			let tt = getSymbol(this);
-			vme.math.equipWithTooltip($(this), tt, true);
-		});
-		$(`#${fPanelID} a.s`).on('click', function(event) {
-			event.preventDefault(); 
-			let info: any = beginEndInfo(this);
-			if (info !== null) {
-				const [ a, b ] = info;
-				vme.tag(a, b);
-				return;
-			}
-			info = latex(this);
-			if (info !== null) {
-				vme.insert(info);
-				return;
-			}
-			vme.messager.show("INFORMATION", "NO_LATEX");
-		}); 
-		
-		// this is solely for a single ...more button linking to a dialog
-		// containing more formulae.
-		$(`#${fPanelID} a.more`)
-		.addClass("easyui-tooltip")
-		.attr("title", function(_index: number, _attr: any) { return "Loading more formulae"; });
+		this.hints.symbolizeTooltip(`#${fPanelID}`);
 		
 		await vme.parser.parseAsync("#" + fPanelID); 
-		await this.math.updateTables();
+		await this.math.updateTables(fPanelID);
 	}
 	
 	/**
@@ -1332,7 +1195,7 @@ export class KatexInputHelper implements IKatexInputHelper {
 
 		// updates exactly 2 dialogs (see selectors)
 		// Necessary and additional ones required?
-		vme.math.inplaceUpdate('#tEQUATION div a.s[latex], #mSPECIAL_CHARACTER div a.s[latex]', true);	// where and when to do that
+		vme.math.inplaceUpdate('#tEQUATION div, #mSPECIAL_CHARACTER div', true);	// where and when to do that
 	}
 	
 	/**

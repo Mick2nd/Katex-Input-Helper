@@ -94,6 +94,14 @@ body {
 	}
 	
 	@include table_mixins.tableMixin();
+
+	/* THERE IS ACTION ON THIS, BUT ONLY THE Z-INDEX */
+	.tooltip {
+		// background-color: 'lightyellow' !important;
+		// border-color: 'red' !important;
+		// max-width: 500 !important;
+		z-index: 500000 !important;	
+	}
 }
 
 /* Section for desktop styles
@@ -156,14 +164,6 @@ body.katex-desktop {
 	.katex {
 		pointer-events: none;
 	}
-	
-	/* THERE IS NO ACTION ON THIS */
-	.tooltip {
-		background-color: 'lightyellow';
-		border-color: 'red';
-		width: 500;
-		z-index: 500000;	
-	}
 }
 
 /* Section for mobile styles
@@ -216,6 +216,7 @@ body.katex-mobile {
 			height: fit-content;
 			
 			.accordion-body {
+				overflow-y: hidden;
 				font-size: $fontSize;
 				height: fit-content;
 			}

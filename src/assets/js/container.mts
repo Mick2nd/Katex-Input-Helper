@@ -16,7 +16,8 @@ import {
 	categoriesTreeId, ICategoriesTree, 
 	asyncId,
 	codeMirrorFactoryId, ICodeMirror, 
-	menusId, IMenus } from './interfaces.mjs';
+	menusId, IMenus,
+	hintsId, IHints } from './interfaces.mjs';
 
 import { EasyuiLoader } from './easyui.mjs';
 import { default as BootLoader } from './bootLoader.mjs';
@@ -30,6 +31,7 @@ import { MathFormulae } from './math.mjs';
 import { KIHPanels, KIHPanel, DynamicPanel, MatrixWindow, InformationWindow, KIHMoreDialog, KIHWindow, KIHDialog, UnicodeWindow } from './panels.mjs';
 import { CodeMirrorProxy } from './codeMirrorProxy.mjs';
 import { Menus } from './menus.mjs';
+import { Hints } from './hints.mjs';
 
 
 const container = new Container();
@@ -72,6 +74,8 @@ container.bind<IParser>(parserId).to(ParserExtension).inSingletonScope();
 container.bind<IMath>(mathId).to(MathFormulae).inSingletonScope();
 container.bind<IPanels>(panelsId).to(KIHPanels).inSingletonScope();
 container.bind<IMenus>(menusId).to(Menus).inSingletonScope();
+container.bind<IHints>(hintsId).to(Hints).inSingletonScope();
+
 container
 	.bind<Factory<IKatexInputHelper>>(katexInputHelperFactoryId)
 	.toFactory((context: ResolutionContext) : () => IKatexInputHelper => {
@@ -119,5 +123,6 @@ try {
 	
 } catch(err) {
 	console.error(`Error ${err} `, err);
+	console.trace('Init error stack trace');
 	bootLoader.fatal(err);
 }

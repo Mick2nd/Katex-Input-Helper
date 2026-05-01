@@ -110,12 +110,11 @@ export class Themes extends Observable implements IThemes {
 		}
 		
 		// It's essential to have the icons after the active theme : best after all themes
+		// The same is true for *mobile* styles.
 		if (!themeLoaded || !iconsLoaded) {
 			$('.kihmenuicons').appendTo('head');
+			$('link[href$="mobile.css"]').appendTo('head');
 		}
-		
-		// TODO: NO EFFECT ON THIS
-		//$('link[href$="mobile.css"]').appendTo('head');
 	}
 	
 	/**

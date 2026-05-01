@@ -3,7 +3,7 @@ import { Versions } from './versions.mjs';
 
 import { inject, injectable, injectFromBase, Factory } from 'inversify';
 import { ILocalizer, IParser, IMath, utilitiesId, IUtilities, categoriesTreeId, ICategoriesTree,
-	IMessager, dynamicParametersId, panelFactoryId, IPanel } from './interfaces.mjs';
+	IMessager, dynamicParametersId, panelFactoryId, IPanel, hintsId, IHints } from './interfaces.mjs';
 
 enum RESIZING_TYPE {
 	AUTO,
@@ -606,7 +606,7 @@ export class KIHPanel implements IPanel {
 		// console.debug(`Parse completed for : div[href]`);
 		
 		this.assembleVersionInfo();												// injected into this.versions
-		this.math.inplaceUpdate('#tINFORMATIONS div a.s[latex]', true);	
+		this.math.inplaceUpdate('#tINFORMATIONS div', true);	
 	}
 	
 	/**
@@ -911,8 +911,10 @@ export class KIHPanel implements IPanel {
 @injectFromBase({extendProperties: false}) export class DynamicPanel extends KIHDialog {
 	
 	@inject(utilitiesId) utilities: IUtilities;
+	@inject(hintsId) hints: IHints;
 	@inject(categoriesTreeId) categoriesTreeFactory: Promise<Factory<ICategoriesTree>> = null;
 	categoriesTree: ICategoriesTree;
+	
 	gridSelector = "";
 	gridSelectorOfCopy = "";
 	treeSelector = "";
@@ -954,26 +956,7 @@ export class KIHPanel implements IPanel {
 			} 
 		});
 		
-		$('.custom-equations:not(span)')											// the spans are embedded in titles (tooltips)
-		.each(function() {
-			if ($(this).hasClass('easyui-tooltip')) {
-				try {
-					let id = $(this).attr('id');
-					let title = inst.localizeOption('content', id, $.fn.tooltip);
-					$(this).tooltip({
-						content: title,
-						onShow: function() {
-							$(this).tooltip('tip').css({ 
-								'z-index': 500000, 									// always above all ui elements!
-								maxWidth: 300 
-							});
-						}
-					});
-				} catch(e) {
-					console.warn(`easyui-tooltip warning : ${e}`);
-				}
-			}
-		});
+		this.hints.localizeTooltip('.custom-equations:not(span)');
 	}	
 
 	/**
@@ -981,7 +964,8 @@ export class KIHPanel implements IPanel {
 	 */
 	override async initialise(dummy: any = null) {
 		let inst = this;
-		
+
+		this.localizer.notify();											// notify my self
 		this.categoriesTree = await (await this.categoriesTreeFactory)();
 		
 		// subscribe to Tree observables here because in ctor property injection is done
@@ -1239,8 +1223,7 @@ export class KIHPanel implements IPanel {
 	 * - saving of equations
 	 */
 	onAfterRender(withParametersUpdate = true) {
-		let anchor = $(`${this.gridSelectorOfCopy} a`);
-		this.math.inplaceUpdate(anchor, true);
+		this.math.inplaceUpdate(this.gridSelectorOfCopy, true);
 		$(this.gridSelector).datagrid('fixRowHeight');
 		if (withParametersUpdate) this.customEquationsToParameters();
 	}
@@ -1377,6 +1360,17 @@ export class KIHPanel implements IPanel {
 				// console.dir(source);
 			}
 		});
+		
+		// TODO: Test of advice
+		// - NO EFFECT to see on appearing warnings
+//		$(function(){
+//			const dc = $(`#${inst.id}`).data('datagrid').dc;
+//			dc.body1.unbind('mousewheel DOMMouseScroll');
+//		});
+		$(`#${inst.id}`).bind('mousewheel', function(e){
+		    return false;
+		});		
+		
 		inst.equipDatagridWithInteractivity();
 		$(selector)
 		.datagrid('enableCellEditing')
@@ -1429,37 +1423,8 @@ export class KIHPanel implements IPanel {
 	 * do not stay active after changes.
 	 */
 	equipDatagridWithInteractivity() {
-		let inst = this;
-		function getSymbol(obj: any) { 
-			if ($(obj).attr("latex") != undefined) { 
-				return $(obj).attr("latex"); 
-			} else { 
-				return undefined; 
-			} 
-		}; 
-		let selector = `${this.gridSelectorOfCopy}`;
-		
 		try {
-			let grid = $(selector);
-			grid
-			.on('mouseover', 'a', function(event) { 
-				let latex = getSymbol(event.target);
-				if (latex) $(".divInformation").html(latex); 
-			})
-			.on('mouseout', 'a', function(event) { $(".divInformation").html("&nbsp;"); })
-			.on('click', 'a', function(event) {
-				event.preventDefault(); 
-				let a = $(event.target);
-				let latex = a.attr("latex");
-				if (latex != undefined) { 
-					inst.insert(latex); 
-				} else { 
-					$.messager.show({ 
-						title: "<span class='rtl-title-withicon'>" + inst.localizer.getLocalText("INFORMATION") + "</span>", 
-						msg: inst.localizer.getLocalText("NO_LATEX") 
-					}); 
-				}
-			});
+			this.hints.provideInteractivity(this.gridSelectorOfCopy);
 		} catch(e) {
 			console.error(`Katex: equipDatagridWithInteractivity : %s`, e);
 		}

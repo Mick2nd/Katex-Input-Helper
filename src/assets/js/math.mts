@@ -3,7 +3,8 @@
 
 import { inject, injectable, Factory } from 'inversify';
 import { IMath, localizerId, ILocalizer, parametersId, parserId, IParser, 
-	codeMirrorFactoryId, ICodeMirror, messagerId, IMessager } from './interfaces.mjs';
+	codeMirrorFactoryId, ICodeMirror, messagerId, IMessager,
+	hintsId, IHints } from './interfaces.mjs';
 
 /**
  * Class responsible for Math Formula handling.
@@ -24,6 +25,7 @@ export class MathFormulae implements IMath {
 	dynamicPanels = [];
 	messager = null;
 	katex = null;
+	hints: IHints = null;
 	
 	/**
 	 * Constructor.
@@ -33,17 +35,19 @@ export class MathFormulae implements IMath {
 		@inject(parametersId) parameters: any, 
 		@inject(parserId) parser: IParser|null,
 		@inject(messagerId) messager: IMessager|null,
-		@inject(codeMirrorFactoryId) codeMirrorFactory: Factory<ICodeMirror>
+		@inject(codeMirrorFactoryId) codeMirrorFactory: Factory<ICodeMirror>,
+		@inject(hintsId) hints: IHints
 	) {
 		this.localizer = localizer;
 		this.parameters = parameters;
 		this.parser = parser;
 		this.messager = messager;
 		this.codeMirrorFactory = codeMirrorFactory;
+		this.hints = hints;
 	}
 	
 	/**
-	 * Used for postponed injection.
+	 * Used for postponed injection. Used also for other task: loading katex.
 	 */
 	async injectCodeMirror() : Promise<void> {
 		this.codeMirror = await this.codeMirrorFactory(this.parameters.isMobile);
@@ -69,7 +73,7 @@ export class MathFormulae implements IMath {
 			let target = element;
 			target ??= this.mathVisualOutput;
 			
-			text = text.replace(/&lt;/g, '<');							// TODO: this block moved outside if block, observe!
+			text = text.replace(/&lt;/g, '<');
 			text = text.replace(/&gt;/g, '>'); 
 			text = text.replace(/&amp;/g, '&');
 			
@@ -94,10 +98,10 @@ export class MathFormulae implements IMath {
 	 * method, it also updates some image references. TODO: implement SRP (single responsibility 
 	 * principle)
 	 */
-	async updateTables() {
+	async updateTables(panelId: string) {
 		try {
 			let inst = this;
-			let selector = '.panel-body table tbody tr td a.easyui-tooltip, .easyui-dialog div a.s';
+			let selector = `#${panelId} a.s`;
 			let entries = $(selector);
 			entries.each(function(idx: number, a) {
 				
@@ -200,91 +204,17 @@ export class MathFormulae implements IMath {
 	 */
 	inplaceUpdate(selector: string, javascript = true) {
 		try {
-			let inst = this;
-			let entries = $(selector);
+			const inst = this;
+			const entries = $(`${selector} a.s`);
 			entries.each(function(idx: number, a) {
 				if (a) {
 					inst.updateAnchor(a);
-					if (typeof selector !== 'string' || !selector.startsWith('#mLaTeX_TEXT')) {
-						inst.equipWithInteractivity($(this), javascript);					// the latex menu command will not get tooltip...
-					}
 				}
 			});
+			this.hints.symbolizeTooltip(selector);
 		} catch(e) {
 			console.error(`Katex: inplaceUpdate : %s`, e);
 		}
-	}
-	
-	/**
-	 * Equips some anchors with interactivity which they do not already have.
-	 * 
-	 * "Equips" means *tooltip* and *click* and *mouseover*.
-	 * If the anchor does not have a latex attribute, it will not be equipped
-	 * 
-	 * @param a - the anchor to be equipped
-	 */
-	equipWithInteractivity(a: any, javascript = true) {
-		let vme = this;
-		function getSymbol(obj: any) { 
-			if (($(obj).attr("latex")) !== undefined) { 
-				return $(obj).attr("latex"); 
-			} else { 
-				return vme.localizer.getLocalText("NO_LATEX"); 
-			} 
-		};
-
-		if (($(a).attr("latex")) === undefined) {
-			return;
-		}
-		
-		let text = getSymbol(a);
-		this.equipWithTooltip(a, text, javascript);
-		
-		$(a).on('click', function(event: any) {								// TODO: seems to be functionless
-			event.preventDefault(); 
-			let latex = $(a).attr("latex");
-			// Reserved.
-			// console.debug(`Click on equation: ${latex}`);
-			if (latex != undefined) { 
-				vme.insert(latex); 
-			} else {
-				vme.messager.show('INFORMATION', 'NO_LATEX'); 
-			} 
-		}); 
-	}
-	
-	/**
-	 * Equips a selector (preferibly an anchor) with a tooltip.
-	 * 
-	 * Additionally prepares the same info for the status line.
-	 * This is the central place for doing that.
-	 * 
-	 * @param selector - ui item to be equipped, must be a jquery object
-	 * @param text - the tooltip text 
-	 * @param javascript - how to equip. if true, javascript is used.
-	 */
-	equipWithTooltip(selector: any, text: string, javascript: boolean) {
-
-		selector.addClass("easyui-tooltip s");
-
-		let encoded = text.replace(/</g, '&lt;');									// GUI does not like text looking like tag begin -> encode
-		if (javascript) {
-			selector.attr("href", "javascript:void(0)");
-			selector.tooltip({ 
-				content: encoded,
-				show: function() {
-					$(this).tooltip('tip').css({ maxWidth: 500 });
-				} 
-			});
-		} else {
-			selector.attr("href", "#")
-			.attr("title", function(index: number, attr: string) { return encoded; });
-		}		
-
-		selector.on('mouseover', function(event: any) { $(".divInformation").html(encoded); });
-		selector.mouseout(function(event: any) { $(".divInformation").html("&nbsp;"); });
-		
-		return selector;
 	}
 
 	/**
@@ -330,7 +260,7 @@ export class MathFormulae implements IMath {
 	}
 	
 	/**
-	 * Sets the Focus to the Code Mirror Editor.
+	 * Sets the Focus to the Code Mirror Editor. Parameter OBSOLETE?
 	 */
 	setFocus(disableKeyboard: boolean = false) { 
 		this.codeMirror.focus(disableKeyboard);
@@ -351,7 +281,7 @@ export class MathFormulae implements IMath {
 			'{aligned}',
 			'{alignedat}',
 		];
-		return dmEnforcing.some(item => text.includes(item));			// TODO: includes?
+		return dmEnforcing.some(item => text.includes(item));
 	}
 }
 

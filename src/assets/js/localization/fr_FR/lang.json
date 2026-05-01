@@ -137,6 +137,13 @@
 	"ONE_BRACKET_MISSING": "Les deux parenthèses doivent être présentes ou non",
 	"SIDEMENU_PANEL": "Panneau de menu latéral",
 	"DIALOG_PANEL": "Panneau de dialogue",
+	"SYMBOL_PANEL_LOADED": "Panneau de symboles chargé",
+
+	"EVENT_LIST": "Vue des événements",
+	"TIME": "Temps",
+	"MESSAGE": "Message",
+	"EXCEPTION": "Exception",
+	"LOADING_MORE_FORMULAE": "Chargement de formules supplémentaires",
 	
 	"VKI_00": "Pavé numérique",
 	"VKI_01": "Ouvrir le clavier virtuel",

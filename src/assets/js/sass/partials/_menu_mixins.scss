@@ -87,7 +87,7 @@
 	}
 	
 	/* The menu line for the mobile case */
-	.menu-noline .menu-line {
+	#sm .menu-noline .menu-line {
 		display: inline-block;
 		position: static;
 		font-size: 1px;
@@ -101,12 +101,12 @@
 
 	/*	Menu separator
 		Use the colors of the themes !! */
-	.menu-sep {
+	#sm .menu-sep {
 		flex-grow: 1;
 		margin-left: 0px !important;
 		height: 0px;
 	}
-	div:has(> .menu-sep) {
+	#sm div:has(> .menu-sep) {
 		display: flex;
 		height: fit-content !important;
 		padding: 0;

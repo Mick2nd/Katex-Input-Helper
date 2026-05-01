@@ -51,7 +51,9 @@ class Redirector {
 	inject(messager: IMessager) {
 		this.messager = messager;
 		this.debug(`Messager injected`);
-		this['assert'](this.messager !== null);
+		if (this['assert'] !== undefined) {
+			window.console.assert(this.messager !== null);
+		}
 	}
 
 	error(...params) {

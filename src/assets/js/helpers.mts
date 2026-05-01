@@ -61,7 +61,7 @@ export class Messager extends Observable implements IMessager {
 	error(...params: any[]) : void {
 		if (params.length == 2) {
 			const [ msg, e ] = params;
-			this.push(new Event('LOG_ERROR', msg.splice(0, -2), e));
+			this.push(new Event('LOG_ERROR', msg.slice(0, -2), e));
 		}
 		if (params.length == 1) {
 			const [ msg ] = params;

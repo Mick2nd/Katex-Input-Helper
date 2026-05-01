@@ -34,10 +34,20 @@ export class Menus implements IMenus {
 			data: data,
 			floatMenuPosition: 'left',
 			multiple: false,
-			onSelect: onMenuClick
+			onSelect: onMenuClick,
+			animate: true
 		});
+		
+		$('ul.sidemenu-tree span.tree-title').each(function(idx) {				// set the css class for menu separator
+			if ($(this).text() == '') {
+				$(this).addClass('menu-sep');
+			}
+		});
+
+		$('.tree-node').addClass('menu-noline');								// CSS classes for menu-line implementation
+		$('<span class="menu-line" ></span>').insertBefore('#sm .tree-title');
+		
 		$('#sm').sidemenu('expand');
-		$('#sm').sidemenu('resize', { width: 300 });
 	}
 	
 	/**
@@ -64,19 +74,142 @@ export class Menus implements IMenus {
 		}
 	}
 	
+	get desktopSelectors() {
+		return `#menu, #${this.insertContextMenuData.id}-CM, #${this.viewContextMenuData.id}-CM, #${this.treeMenuFolderData.id}, #${this.treeMenuLeafData.id}`;
+	}
+
+	get mobileSelectors() {
+		return `#${this.viewContextMenuData.id}-CM, #${this.treeMenuFolderData.id}, #${this.treeMenuLeafData.id}`;
+	}
+	
+	get desktopMenus() : string {
+		return this.mainMenu + this.insertMenu + this.viewMenu + this.treeMenuFolder + this.treeMenuLeaf;
+	}
+	
+	get mobileMenus() : string {
+		let anchor = "";
+		anchor += '<a id="fSAVE_EQUATION" href="#" class="invisible">saveFile</a>\n';
+		anchor += '<input type="file" id="fOPEN_EQUATION" class="invisible" />\n';
+		
+		return this.viewMenu + this.treeMenuFolder + this.treeMenuLeaf + anchor;
+	}
+	
+	get mainMenu() : string {
+		let main = "";
+		main += this.getMainMenuBar();
+		for (const menu of this.mainMenuData) {
+			main += this.getSingleMenu(menu);
+		}
+		main += '<a id="fSAVE_EQUATION" href="#" class="invisible">saveFile</a>\n';
+		main += '<input type="file" id="fOPEN_EQUATION" class="invisible" />\n';
+		return main;
+	}
+	
+	get insertMenu() : string {
+		const insertMenuData = { };
+		Object.assign(insertMenuData, this.insertContextMenuData);
+		insertMenuData["id"] += '-CM';
+		const menu = this.getSingleMenu(insertMenuData);
+		$(menu).addClass('easyui-menu');
+		return menu;
+	}
+
+	get viewMenu() : string {
+		const viewMenuData = { };
+		Object.assign(viewMenuData, this.viewContextMenuData);
+		viewMenuData["id"] += '-CM';
+		const menu = this.getSingleMenu(viewMenuData);
+		$(menu).addClass('easyui-menu');
+		return menu;
+	}
+
+	get treeMenuFolder() : string {
+		const menu = this.getSingleMenu(this.treeMenuFolderData);
+		return menu;
+	}
+	
+	/**
+	 * TODO: the addClass API seems to have no effect, but in viewMenu it has one.
+	 * What is going on?
+	 * In the mean time I set class 'easyui-menu' for all menus but not simple menu
+	 * items.
+	 */
+	get treeMenuLeaf() : string {
+		const menu = this.getSingleMenu(this.treeMenuLeafData);
+		return menu;
+	}
+	
+	getMainMenuBar() : string {
+		let menuBar = '<div id="menu">\n';
+		for (const item of this.mainMenuData) {
+			menuBar += `<a class="easyui-menubutton" data-options="iconCls:'${item.iconCls}',menu:'#${item.id}'"><span locate="${item.locate}"></span></a>\n`;
+		}
+		menuBar += '</div>\n';
+		return menuBar;
+	}
+	
+	getSingleMenu(item: any, nested: boolean = false) : string {
+		if (item.children) {
+			let menu = "";
+			if (nested) {
+				menu = `<div iconcls="${item.iconCls}" id="${item.id}">\n
+					<span class='rtl-menu-item' locate="${item.locate}"></span>\n
+					<div class="menus">\n`;
+			} else {
+				menu = `<div id="${item.id}" class="menus easyui-menu">\n`;
+			}
+			for (const child of item.children) {
+				menu += this.getSingleMenu(child, true);
+			}
+			if (nested) {
+				menu += '</div>\n';
+			}
+			menu += '</div>\n';
+			return menu;
+			
+		} else {
+			return this.mapMenuItem(item);
+		}
+	}
+	
+	/**
+	 * Transforms an item into a menuitem entry, provided we have a single menu
+	 * item. We have 3 cases:
+	 * - menu separator
+	 * - latex menu
+	 * - the common case with localized text
+	 */
+	mapMenuItem(item: any) : string {
+		if (item.separator) {
+			return '<div class="menu-sep"></div>\n';
+			
+		} else {
+			const spanLatex = '<span class="rtl-menu-item">LaTeX</span>';
+			const spanLocate = `<span class="rtl-menu-item" locate="${item.locate}" information="${item.locate}">${this.localizer.getLocalText(item.locate)}</span>`;
+			const span = item.locate ? spanLocate : spanLatex;
+			const title = (item.tooltip ? `title="<span locate='${item.tooltip}'>${item.tooltip}</span>"` : "");
+			const custom = item.custom ?? "";
+			return `
+				<div id="${item.id}" iconcls="${item.iconCls}" ${custom} ${title}>\n
+					${span}\n
+				</div>\n`;
+		}
+	}
+	
 	/**
 	 * Transforms the menu data into a ready to use html string.
+	 * TODO: Too complex, could be like *mainMenu*. To be used ?
 	 * 
-	 * @param data - the menu description, preferably the mainMenuData
 	 * @returns the ready to use html
 	 */
-	getTabletMenu(data: any) : string {
+	get tabletMenu() : string {
+		const data = this.mainMenuData;
 		const map = this.mapTabletMenuItem.bind(this);
 		/**
 		 * Maps hierarchical menu description to nested arrays of text.
 		 */
 		function mapAll(data: any) : any {
-			const mapped = data.map(item => {
+			const mapped = data.map((item: any) => {
 				const mappedItem = map(item);
 				if (typeof(mappedItem) != 'string') {
 					mappedItem.splice(1, 0, mapAll(item.children));
@@ -90,7 +223,7 @@ export class Menus implements IMenus {
 		 * Reduces nested array of text to a single string.
 		 */
 		function reduce(lines: any) : string {
-			const result = lines.reduce((accu, current) => {
+			const result = lines.reduce((accu: string, current: any) => {
 				if (typeof current == 'string') {
 					return accu + current + '\n';
 				} else {
@@ -111,7 +244,8 @@ export class Menus implements IMenus {
 	 * @param data - menu tree
 	 * @returns menu tree transformed to side menu format
 	 */
-	getSidemenuData(data: any) : any {
+	get sidemenuData() : any {
+		const data = this.mainMenuData;
 		return this.getTransformedData(data, this.mapSidemenuItem.bind(this), item => item != null);
 	}
 
@@ -119,10 +253,18 @@ export class Menus implements IMenus {
 	 * Prepares a single side menu item.
 	 */
 	mapSidemenuItem(single: any) : any {
-		if (single.separator) return null;
+		if (single.separator) return {
+			id: '',
+			text: '',
+			iconCls: ''
+		};
+		let text = String.raw`<span class='rtl-menu-item' >$\LaTeX$</span>`;		// special case LaTeX menu
+		if (single.locate) {
+			text = `<span class="rtl-menu-item" locate="${single.locate}">${this.localizer.getLocalText(single.locate)}</span>`;
+		}
 		return {
 			id: single.id + '_side',
-			text: `<span class="rtl-menu-item" locate="${single.locate}">${this.localizer.getLocalText(single.locate)}</span>`,
+			text: text,
 			iconCls: single.iconCls,
 		};
 	}
@@ -135,9 +277,9 @@ export class Menus implements IMenus {
 	 * @param filter - filter function of a single entry
 	 * @returns the transformed menu tree
 	 */
-	getTransformedData(data: any, map: (any) => any, filter: (any) => boolean = (item) => true) : any {
+	getTransformedData(data: any, map: (item: any) => any, filter: (item: any) => boolean = (_item: any) => true) : any {
 		function mapAll(data: any) {
-			const mapped = data.map(item => {
+			const mapped = data.map((item: any) => {
 				const mappedItem = map(item);
 				if (item == null) return null;
 				if (item.children != undefined) {
@@ -148,7 +290,7 @@ export class Menus implements IMenus {
 			return mapped;
 		}
 		function filterAll(data: any) {
-			const filtered = data.filter(item => {
+			const filtered = data.filter((item: any) => {
 				
 				if (!filter(item)) return false;
 				if (item.children != undefined) {
@@ -259,6 +401,14 @@ export class Menus implements IMenus {
 						locate: "EQUATION_SAMPLE",
 						iconCls: "icon-equation",
 					},
+					{
+						separator: true
+					},
+					{
+						id: "mEVENT_LIST",
+						locate: "EVENT_LIST",
+						iconCls: "icon-info",
+					},
 				]
 			},
 		];
@@ -348,8 +498,7 @@ export class Menus implements IMenus {
 				},
 				{
 					id: "mLaTeX_TEXT",
-					locate: "",
-					iconCls: "",
+					iconCls: "icon-blank",
 					text: "LaTeX"			// TODO: special case, needs extra handling
 				},
 			]
@@ -409,6 +558,89 @@ export class Menus implements IMenus {
 			]
 		};
 	}
+	
+	get treeMenuFolderData() {
+		return {
+			id: "treeMenu",
+			children: [
+				{
+					id: "mAppendFolder",
+					locate: "APPENDFOLDER",
+					iconCls: "icon-add",
+					tooltip: "TTAPPENDFOLDER",
+					custom: "class='easyui-tooltip custom-equations'"
+				},
+				{
+					id: "mAppendCategory",
+					locate: "APPENDCATEGORY",
+					iconCls: "icon-add",
+					tooltip: "TTAPPENDCATEGORY",
+					custom: "class='easyui-tooltip custom-equations'"
+				},
+				{
+					id: "mRemove",
+					locate: "REMOVE",
+					iconCls: "icon-remove",
+					tooltip: "TTREMOVEFOLDER",
+					custom: "class='easyui-tooltip custom-equations'"
+				}
+			]
+		};
+	}
+	
+	get treeMenuLeafData() {
+		return {
+			id: "treeMenuLeaf",
+			children: [
+				{
+					id: "mRemoveLeaf",
+					locate: "REMOVE",
+					iconCls: "icon-remove",
+					tooltip: "TTREMOVECATEGORY",
+					custom: "class='easyui-tooltip custom-equations'"
+				},
+				{
+					separator: true
+				},
+				{
+					id: "mCutPaste",
+					locate: "CUTPASTE",
+					iconCls: "icon-cut",
+					tooltip: "TTCUTPASTE",
+					custom: "class='easyui-tooltip custom-equations'"
+				}
+			]
+		};
+	}
+	
+	/*
+	<div id="treeMenu" class="easyui-menu" data-options="minWidth:160">
+		<div id="mAppendFolder" class="custom-equations easyui-tooltip" data-options="iconCls:'icon-add'"
+			title="<span locate='TTAPPENDFOLDER'>Append Folder</span>">
+			<span class="custom-equations" locate="APPENDFOLDER">Append Folder</span>
+		</div>
+		<div id="mAppendCategory" class="custom-equations easyui-tooltip" data-options="iconCls:'icon-add'"
+			title="<span locate='TTAPPENDCATEGORY'>Append Categroy</span>">
+			<span class="custom-equations" locate="APPENDCATEGORY">Append Category</span>
+		</div>
+		<div id="mRemove" class="custom-equations easyui-tooltip" data-options="iconCls:'icon-remove'"
+			title="<span locate='TTREMOVEFOLDER'>REMOVE</span>" >
+			<span class="custom-equations" locate="REMOVE">Remove</span>
+		</div>
+	</div>
+	
+	<div id="treeMenuLeaf" class="easyui-menu" data-options="minWidth:160">
+		<div id="mRemoveLeaf" class="custom-equations easyui-tooltip" data-options="iconCls:'icon-remove'"
+			title="<span locate='TTREMOVECATEGORY'>REMOVE</span>" >
+			<span class="custom-equations" locate="REMOVE">Remove</span>
+		</div>
+		<div data-options="separator:true"></div>
+		<div id="mCutPaste" class="custom-equations easyui-tooltip" data-options="iconCls:'icon-cut'"
+			title="<span locate='TTCUTPASTE'>Cut &amp; Paste Equations</span>" >
+			<span class="custom-equations" locate="CUTPASTE">Cut &amp; Paste Equations</span>
+		</div>
+	</div>
+	 */
 }
 
 // This helps to import symbols in test suite

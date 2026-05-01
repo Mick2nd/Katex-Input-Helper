@@ -85,9 +85,7 @@ export interface IParser {
 
 export interface IMath {
 	injectCodeMirror() : Promise<void>;
-	equipWithInteractivity(a: any, javascript: boolean) : void;
-	equipWithTooltip(selector: any, text: string, javascript: boolean) : void;
-	inplaceUpdate(selector: any, javascript: boolean) : void;
+	inplaceUpdate(selector: string, javascript: boolean) : void;
 	insert(b: any) : void;
 	insertMath(text: string, element: any, multiple?: boolean, displayMode?: boolean) : void;
 	codeMirror: any;
@@ -97,7 +95,7 @@ export interface IMath {
 	updateHeaders(selector: string) : void;
 	updateLatexMenu() : void;
 	updateOutput() : void;
-	updateTables() : Promise<void>;
+	updateTables(panelId: string) : Promise<void>;
 }
 
 export interface ICodeMirror {
@@ -151,7 +149,41 @@ export interface ICategoriesTree {
 }
 
 export interface IMenus {
-	getTabletMenu(data: any) : string;
+	get desktopSelectors() : string;
+	get desktopMenus() : string;
+	get mobileSelectors() : string;
+	get mobileMenus() : string;
+	get mainMenu() : string;
+	get insertMenu() : string;
+	get viewMenu() : string;
+	get treeMenuFolder() : string;
+	get treeMenuLeaf() : string;
+	get sidemenuData() : any;
+	populateSidemenu(data: any, onMenuClick: () => void) : void;
+	
+	// RESERVED.
+	get tabletMenu() : string;
+}
+
+export interface IHints {
+	inject(client: IHintsClient);
+	overrideDefaults(time: number);
+	localizeTooltip(selector: string);
+	symbolizeTooltip(selector: string);
+	provideInteractivity(selector: string);
+	configureTooltip(jqThis: any, options: any);
+}
+
+export interface IHintsClient {
+	insert(formula: string);
+	tag(begin: string, end: string);
+	missing();
+}
+
+export class HintsClient implements IHintsClient {
+	insert(formula: string) { }
+	tag(begin: string, end: string) { }
+	missing() { }
 }
 
 export const asyncId = Symbol.for('AsyncId');
@@ -172,6 +204,7 @@ export const codeMirrorId = Symbol.for('CodeMirrorId');
 export const codeMirrorFactoryId = Symbol.for('CodeMirrorFactoryId');
 export const panelsId = Symbol.for('PanelsId');
 export const menusId = Symbol.for('MenusId');
+export const hintsId = Symbol.for('HintsId');
 
 export const dynamicPanelId = Symbol.for('DynamicPanelId');
 export const informationWindowId = Symbol.for('InformationWindowId');
