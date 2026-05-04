@@ -9,15 +9,24 @@ export function ParametersProxy() {
 		parameters,
 		{
 			set(target: any, prop: string, value: any, receiver: any) {
-				let changed = target[prop] != value;
+				let changed = !isEqual(target[prop], value); 	// TEST, was: target[prop] !== value;
 				if (changed) {
 					target[prop] = value;
 					target.storeCookie(prop, value);
-					if (!target.transaction.isOngoingTransaction) {
-						target.transaction.complete();
+					if (!target.transaction.isOngoingTransaction) {				// not in queryParameters
+						// Reserved.
+						// console.debug(`Proxy : ${prop} = ${value}`);
+						target.changed.add(prop);								// -> register the change
+						target.transaction.complete();							// -> performs writeParameters
 					}
 				}
 				return true;
+			},
+			
+			/*
+			 */
+			get(target: any, prop: string, receiver: any) : any {
+				return Reflect.get(target, prop, receiver);
 			}
 		});
 }
@@ -49,6 +58,8 @@ export class KIHParameters {
 	displayMode = true;
 	isMobilePlugin = false;
 	mode = "plugin";
+	available = false;
+	changed = new Set<string>();
 	
 	/**
 	 * Constructor.
@@ -59,6 +70,8 @@ export class KIHParameters {
 		this.mouseState = new MouseState(this.transaction);
 		
 		document.cookie = "mjx.menu=";
+		this.changed.add('persistEquations');
+		this.changed.add('persistWindowPositions');
 	}
 	
 	/**
@@ -96,6 +109,7 @@ export class KIHParameters {
 				}
 			}
 			inst.transaction.end();
+			inst.available = true;
 		} else {
 			console.warn(`The "Katex Input Helper" plugin did not return a response to get parameters `);
 		}
@@ -115,6 +129,11 @@ export class KIHParameters {
 		// Reserved.
 		// console.log(`Not Mobile`);
 		return false;
+	}
+	
+	async isMobileAsync() : Promise<boolean> {
+		await this.queryParameters();
+		return this.isMobile;
 	}
 	
 	/**
@@ -177,16 +196,21 @@ export class KIHParameters {
 	
 	/**
 	 * Filters some parameters out from the attributes of this instance.
-	 * 
 	 * Those are not needed as settings nor are they JSON stringifyable.
 	 * 
 	 * @returns the filtered settings keys
 	 */
 	get filteredParameters() {
 		let o = { };
-		let doNotUse = [ "transaction", "displayMode", "mouseState", "mode", "isMobile" ];
+		let doNotUse = [ 
+			"transaction", 
+			"mouseState", 
+			"displayMode", "mode", "isMobile", "isMobilePlugin", 
+			"available", "changed" 
+		];
 		for (const [key, val] of Object.entries(this)) {
-			if (!doNotUse.some(item => item == key)) {
+			if (!doNotUse.some(item => item == key) && 
+				this.changed.has(key)) {
 				o[key] = val;
 			}
 		}
@@ -305,6 +329,7 @@ export class KIHParameters {
 		
 		let stateChanged = false;
 		if (initial) {
+			stateChanged = this[id].initialLeft != left || this[id].initialTop != top;
 			this[id].initialLeft = left;
 			this[id].initialTop = top;
 		} else {
@@ -313,7 +338,8 @@ export class KIHParameters {
 			this[id].top = top;
 		}
 
-		if (stateChanged || initial) {
+		if (stateChanged) {
+			this.changed.add(id);					// mark this id as changed
 			this.mouseState.increment();			
 			this.transaction.complete();
 		}
@@ -342,6 +368,7 @@ export class KIHParameters {
 
 		let stateChanged = false;
 		if (initial) {
+			stateChanged = this[id].initialWidth != width || this[id].initialHeight != height;
 			this[id].initialWidth = width;
 			this[id].initialHeight = height;
 		} else {
@@ -352,9 +379,10 @@ export class KIHParameters {
 			// console.debug(`onPanelResize id ${id} : ${JSON.stringify(this[id])}`);
 		}
 		
-		if (stateChanged || initial) {
+		if (stateChanged) {
 			
-			this.mouseState.increment();								// counts the number of resize / move events
+			this.changed.add(id);								// mark this id as changed
+			this.mouseState.increment();						// counts the number of resize / move events
 			this.transaction.complete();
 		}
 		
@@ -547,7 +575,6 @@ class Transaction {
 	
 	/**
 	 * Ends a *Transaction*.
-	 * 
 	 * The *End* routine is executed, then the Completion routine is re-activated.
 	 */
 	end(...args: any) {

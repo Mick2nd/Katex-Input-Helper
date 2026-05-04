@@ -11,3 +11,6 @@ declare module "*.scss" {
 declare let PRODUCTION: boolean;
 declare let KIH_VERSION: string;
 declare let EASYUI_INCLUDES: string[];
+
+//declare var _: any;
+declare function isEqual(any, any): boolean;

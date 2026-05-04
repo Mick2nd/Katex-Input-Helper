@@ -19,12 +19,16 @@ export class MathContext {
 	async displayMode() : Promise<boolean | undefined> {
 		
 		try {
+			let note = "";
+			let cursorIndex = 0;
+			
 			if (await this.execute('isCm6')) {
-				return await this.execute('displayMode');
+				// This is my own implementation !
+				return await this.execute('displayMode');							// TODO: provide own implementation
 			}
+			note = await this.getValue();											// the whole note text
+			cursorIndex = await this.cursorIndex(note);								// the cursor index inside the text
 
-			const note = await this.getValue();										// the whole note text
-			const cursorIndex = await this.cursorIndex(note);						// the cursor index inside the text
 			const re = /(?<![\\$])((\$\$)|\$)([^{].*?)(\1)/g;						// regex searches for math sections (block or inline)
 			for (const match of note.matchAll(re)) {								// through all matches
 				
@@ -92,6 +96,10 @@ export class MathContext {
 		
 		if (await this.firstLine() > 0) console.warn(`MathContext : irregular first line`);
 		return noteUntilCursor.length;
+	}
+	
+	async cursorIndex6() : Promise<number> {
+		return (await this.execute('cm.state.selection.ranges[0].to'));
 	}
 	
 	/**

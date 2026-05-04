@@ -73,16 +73,16 @@ export class MathFormulae implements IMath {
 			let target = element;
 			target ??= this.mathVisualOutput;
 			
-			text = text.replace(/&lt;/g, '<');
-			text = text.replace(/&gt;/g, '>'); 
-			text = text.replace(/&amp;/g, '&');
+			text = text.replace(/&lt;/gs, '<');
+			text = text.replace(/&gt;/gs, '>'); 
+			text = text.replace(/&amp;/gs, '&');
 			
 			if (text.startsWith('$')) {
 				if (! multiple) {
 					text = text.substring(1, text.length - 1);
 				} else {
-					text = text.replace(/&nbsp;&nbsp;/g, String.raw`\quad`);
-					text = text.replace(/\$/g, '');
+					text = text.replace(/&nbsp;&nbsp;/gs, String.raw`\quad`);
+					text = text.replace(/\$/gs, '');
 				}
 			}
 			
@@ -131,7 +131,7 @@ export class MathFormulae implements IMath {
 			if (count == 2 || 
 				text == String.raw`$\$$` || 
 				text.includes(String.raw`\ce`)) {										// normal case: math
-				text = text.replace(/□/g, String.raw`\square`);
+				text = text.replace(/□/gs, String.raw`\square`);
 				inst.insertMath(text, a);
 				
 			} else if (count > 2 && !dm) {												// image with surrounding characters
@@ -249,7 +249,7 @@ export class MathFormulae implements IMath {
 		let encloseChar = "$"; 
 		let content = this.codeMirror.getValue(); 
 		if (content == "") content = " "; 
-		content = content.replace(/</gi, "&lt;"); 
+		content = content.replace(/</gsi, "&lt;"); 
 		content = encloseChar + content + encloseChar; 
 		
 		let dm = this.enforceDm(content);

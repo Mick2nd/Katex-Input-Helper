@@ -17,6 +17,7 @@ export class Localizer implements ILocalizer {
 	observable = null;
 	resolvers: any[] = [];
 	localeData = { };
+	scrollPos = 0;
 	
 	/**
 	 * Constructor. The script location is queried as needed to locate the language files.
@@ -122,23 +123,23 @@ export class Localizer implements ILocalizer {
 	
 	/**
 	 * Initialises the **Language Choice** dialog.
-	 * 
 	 * This is a one time initialisation task
 	 * 
 	 * @param localType - the language code as de_DE or en_US
 	 */
 	async initialiseLanguageChoice(localType: string) {
-		let inst = this;
-		let html = await this.buildLocalTypes();
+		const preparedLocalType = (localType === '' ? 'en_US' : localType);
+		const inst = this;
+		const html = await this.buildLocalTypes();
 		$("#formLANGUAGE_CHOISE").html(html);
-		$("[name='localType']").filter(`[value=${localType}]`).attr("checked", "checked"); 
+		$("[name='localType']").filter(`[value=${preparedLocalType}]`).attr("checked", "checked"); 
 		
 		$("input[name='localType']").on('change', async function() { 
-			let localType = $("input[name='localType']:checked").val() as string; 
+			const localType = $("input[name='localType']:checked").val() as string; 
 			await inst.load(localType); 
 		}); 
 
-		await this.load(localType);
+		await this.load(preparedLocalType);
 	}
 	
 	/**
@@ -190,10 +191,14 @@ export class Localizer implements ILocalizer {
 			if (!$('#tLANGUAGE_LIST').tabs('exists', title)) {
 				let list = "<table border='1' cellspacing='0' class='resources-table' >"; 
 				let dir = json["_i18n_HTML_Dir"]; 
-				for (let ressource in json) { 
+				let dirStyle = ((dir == "rtl") ? "style='text-align:right;'" : "");
+				for (let ressource in json) {
+					let encodedResourceValue = json[ressource].replace(/</gi, "&lt;");
 					list += (
-						"<tr><td valign='top'><b>" + ressource + "</b> : </td>" + 
-						"<td valign='top' class='rtl-align-right'" + ((dir == "rtl") ? "style='text-align:right;'" : "") + " dir='" + dir + "'>" + json[ressource].replace(/</gi, "&lt;") + "</td></tr>\n"); 
+						`<tr>
+							<td valign='top'><b>${ressource}</b>: </td>
+							<td valign='top' class='rtl-align-right' ${dirStyle} dir='${dir}'>${encodedResourceValue}</td>
+						</tr>\n`); 
 				}
 				list += "</table>"; 
 				$('#tLANGUAGE_LIST').tabs('add', { title: title, content: list, closable: false });
@@ -201,6 +206,25 @@ export class Localizer implements ILocalizer {
 		}
 		console.info(`Language Resources loaded, locale is : ${inst.currentLocale}`);
 		$('#tLANGUAGE_LIST').tabs('select', inst.currentLocale);
+		
+		this.activateSynchronization();
+	}
+	
+	/**
+	 * Synchronization feature between the several tabs' scroll positions.
+	 */
+	activateSynchronization() {
+		const inst = this;
+		$(`#tLANGUAGE_LIST .panel .panel-body`).on('scroll', function() {
+			const scrollPos = this.scrollTop;
+			inst.scrollPos = scrollPos;
+		});
+
+		$('#tLANGUAGE_LIST').tabs({
+			onSelect: function(title: string, idx: number) {
+				$(`#tLANGUAGE_LIST .panel:nth-child(${idx + 1}) .panel-body`).scrollTop(inst.scrollPos);
+			}
+		})
 	}
 }
 

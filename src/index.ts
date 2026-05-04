@@ -17,10 +17,9 @@ const dialog_command = async () =>
 	{
 		const mathContext = new MathContext();
 		const dm = await mathContext.displayMode();
-		let dlg = new Dialog(dm ? true : false);
+		let dlg = new Dialog(!!dm);
 		await dlg.create();
 		let res = await dlg.open();
-		console.dir(res);
 	}
 	catch(e)
 	{

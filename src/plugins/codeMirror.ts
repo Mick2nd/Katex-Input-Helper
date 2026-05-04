@@ -1,8 +1,8 @@
 
 /**
- * @abstract Determines the display mode.
- * 
+ * Determines the display mode as an extension of the code mirror editor 6.
  * Uses a regular expression search.
+ * ATTENTION: the **s** flag is essential and only with ES2016 available.
  */
 function displayMode(cm : any) : any {
 	
@@ -12,19 +12,20 @@ function displayMode(cm : any) : any {
 			const state = cm.cm6.viewState.state;
 			const note = state.doc.toString();										// the whole note text
 			const cursorIndex = state.selection.ranges[0].to;						// the cursor index inside the text
-			const re = /(?<![\\$])((\$\$)|\$)([^{].*?)(\1)/g;						// regex searches for math sections (block or inline)
-			for (const match of note.matchAll(re)) {								// through all matches
+			const re = /(?<![\\$])((\$\$)|\$)([^{].*?)(\1)/msg;						// regex searches for math sections (block or inline)
+			for (let match of note.matchAll(re)) {									// through all matches
 				
 				const sign = match[1];
 				const enclosed = match[3];
-				console.debug(`parse2 found : ${sign} ${enclosed} ${match[3]} `);
-				console.debug(`parse2 (whole match) : %O `, match);
+				// Reserved.
+				// console.debug(`parse2 found : ${sign} ${enclosed} ${match[3]} `);
+				// console.debug(`parse2 (whole match) : %O `, match);
 				
 				const start = match.index;
 				const end = start + match[0].length - 1;
-				console.debug(`parse2 from ${start} to ${end}`);
+				// Reserved.
+				// console.debug(`parse2 from ${start} to ${end}`);
 				
-				// alert(`detected : regex : ${match[0]} `);
 				if (start <= cursorIndex && cursorIndex <= end) {					// is cursor inside match
 					if (sign === '$$') return true;
 					else return false;

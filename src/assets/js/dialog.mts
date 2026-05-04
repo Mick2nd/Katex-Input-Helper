@@ -5,16 +5,16 @@ import { Versions } from './versions.mjs';
 import { inject } from 'inversify';
 import { 
 	IKatexInputHelper, 
-	ILocalizer, localizerId,
-	IMessager, messagerId, 
-	IUtilities, utilitiesId, State, 
-	parametersId, 
+	ILocalizer,
+	IMessager, 
+	IUtilities, State, 
 	IThemes, themesId, 
-	IParser, parserId, 
-	IMath, mathId, ICodeMirror,
+	IParser, 
+	IMath, ICodeMirror,
 	IPanels, panelsId, matrixWindowId, unicodeWindowId, informationWindowId, moreDialogId, windowId, dialogId, dynamicPanelId, 
     IMenus, menusId,
-	IHints, hintsId, HintsClient } from './interfaces.mjs';
+	IHints, HintsClient,
+	ISelectedServices, selectedServicesId } from './interfaces.mjs';
 
 //let console: any; 
 //if (window.console) console = window.console; else console = { log: function(_: string) { }, error: function(_: string) { } }; 
@@ -157,6 +157,7 @@ export class KatexInputHelper extends HintsClient implements IKatexInputHelper {
 	themes: IThemes = null;
 	math: IMath = null;
 	parameters = null;
+	services: ISelectedServices = null;
 	utilities: IUtilities = null;
 	messager: IMessager = null;
 	panels: IPanels = null;
@@ -174,16 +175,10 @@ export class KatexInputHelper extends HintsClient implements IKatexInputHelper {
 	 * Constructor
 	 */
 	constructor(
-		@inject(parametersId) parameters: any,
-		@inject(localizerId) localizer: ILocalizer,
-		@inject(messagerId) messager : IMessager,
-		@inject(utilitiesId) utilities : IUtilities,
+		@inject(selectedServicesId) services: ISelectedServices,
 		@inject(themesId) themes : IThemes,
-		@inject(parserId) parser : IParser,
-		@inject(mathId) math : IMath,
 		@inject(panelsId) panels : IPanels,
 		@inject(menusId) menus : IMenus,
-		@inject(hintsId) hints : IHints,
 	) {
 		super();
 		window.vme = this;
@@ -198,16 +193,18 @@ export class KatexInputHelper extends HintsClient implements IKatexInputHelper {
 		// Probably not needed
 		console.info(`Url: ${window.location}`);
 		
-		this.parameters = parameters;
-		this.localizer = localizer;
-		this.messager = messager;
-		this.utilities = utilities;
+		this.services = services;
+		this.parameters = services.parameters;
+		this.localizer = services.localizer;
+		this.messager = services.messager;
+		this.utilities = services.utilities;
+		this.parser = services.parser;
+		this.math = services.math;
+		this.hints = services.hints;
+		
 		this.themes = themes;
-		this.parser = parser;
-		this.math = math;
 		this.panels = panels;
 		this.menus = menus;
-		this.hints = hints;
 		this.hints.inject(this);
 		
 		this.documentations = new Documentations(false, this.baseLocation);
@@ -353,6 +350,13 @@ export class KatexInputHelper extends HintsClient implements IKatexInputHelper {
 	 */
 	async initialise() { 
 
+		// TODO: test on submit -> NOT WORKING
+		/* No data return ... due to this handler ??
+		$('#KATEX').on('submit', function(event: Event) {
+			alert('Canceling the dialog');
+			event.preventDefault();
+		});
+		*/
 		console.info('Starting initialization');
 		let vme = this;
 		this.versions = new Versions();

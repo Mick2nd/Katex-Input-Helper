@@ -115,7 +115,7 @@ export class Dialog
 				'editor.execCommand', 
 				{
 					name: 'replaceSelection',
-					args: [ parameters.equation ]
+					args: [ parameters.equation ?? "" ]
 				});
 		}
 		await this.settings.writeSettings(parameters, res.id != 'okay');		// save settings according to policy

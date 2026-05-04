@@ -41,15 +41,16 @@ export class Themes extends Observable implements IThemes {
 	 * @param dir - the language direction parameter (comes from the selected language)
 	 */
 	async initialiseThemeChoice(activeTheme: string, dir = 'ltr') {
-		let inst = this;
-		$("[name='style']").filter(`[value=${activeTheme}]`).attr("checked", "checked"); 	// select Radio button
+		const preparedTheme = (activeTheme === '' ? 'aguas' : activeTheme);
+		const inst = this;
+		$("[name='style']").filter(`[value=${preparedTheme}]`).attr("checked", "checked"); 	// select Radio button
 
 		$("input[name='style']").on('change', function() { 									// change handler of style changes
-			let activeTheme = $("input[name='style']:checked").val() as string; 
+			const activeTheme = $("input[name='style']:checked").val() as string; 
 			inst.activateStyle(activeTheme).then(() => { });
 		}); 
 		
-		await this.activateStyle(activeTheme);
+		await this.activateStyle(preparedTheme);
 		this.setRTLstyle(dir);
 	}
 

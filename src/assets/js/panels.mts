@@ -2,8 +2,8 @@ import { FileHandler } from './fileHandling.mjs';
 import { Versions } from './versions.mjs';
 
 import { inject, injectable, injectFromBase, Factory } from 'inversify';
-import { ILocalizer, IParser, IMath, utilitiesId, IUtilities, categoriesTreeId, ICategoriesTree,
-	IMessager, dynamicParametersId, panelFactoryId, IPanel, hintsId, IHints } from './interfaces.mjs';
+import { ILocalizer, IParser, IMath, IUtilities, categoriesTreeId, ICategoriesTree,
+	IMessager, dynamicParametersId, panelFactoryId, IPanel, IHints, ISelectedServices } from './interfaces.mjs';
 
 enum RESIZING_TYPE {
 	AUTO,
@@ -22,6 +22,7 @@ export class KIHPanel implements IPanel {
 	initialResized = false;
 	initialMoved = false;
 	isOpen = false;
+	services: ISelectedServices = null;
 	math: IMath = null;
 	localizer: ILocalizer = null;
 	parameters: any = null;
@@ -36,12 +37,13 @@ export class KIHPanel implements IPanel {
 	constructor(
 		@inject(dynamicParametersId)params: any
 	) {	
-		const [ math, localizer, parameters, messager, parser, id, parent ] = params;
-		this.math = math;
-		this.localizer = localizer;
-		this.parameters = parameters;
-		this.messager = messager;
-		this.parser = parser;
+		const [ services, id, parent ] = params;
+		this.services = services;
+		this.math = services.math;
+		this.localizer = services.localizer;
+		this.parameters = services.parameters;
+		this.messager = services.messager;
+		this.parser = services.parser;
 		this.id = id;
 		this.func = $.fn.panel;
 		this.parent = parent;
@@ -910,8 +912,8 @@ export class KIHPanel implements IPanel {
  */
 @injectFromBase({extendProperties: false}) export class DynamicPanel extends KIHDialog {
 	
-	@inject(utilitiesId) utilities: IUtilities;
-	@inject(hintsId) hints: IHints;
+	utilities: IUtilities;
+	hints: IHints;
 	@inject(categoriesTreeId) categoriesTreeFactory: Promise<Factory<ICategoriesTree>> = null;
 	categoriesTree: ICategoriesTree;
 	
@@ -931,6 +933,9 @@ export class KIHPanel implements IPanel {
 		@inject(dynamicParametersId)params: any,
 	) {
 		super(params);
+		this.utilities = this.services.utilities;
+		this.hints = this.services.hints;
+		
 		this.gridSelector = `#${this.id} .easyui-datagrid`;
 		this.gridSelectorOfCopy = `#${this.id} table:not(.easyui-datagrid)`;
 		this.treeSelector = `#categories`;

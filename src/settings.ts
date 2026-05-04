@@ -241,21 +241,23 @@ export class Settings
 	
 	async writeSettings(parameters: any, cancel: boolean = false) : Promise<void> {
 		console.info(`writeSettings: ${JSON.stringify(parameters)}`);
-		await this.setEquation(parameters.equation);
-		
-		await this.setEnforceMobileMode(parameters.enforceMobileMode);				// CONFIGURABLE
-		
-		await this.setStyle(parameters.style);
-		await this.setLocalType(parameters.localType);
-		await this.setEncloseAllFormula(parameters.encloseAllFormula);
-		await this.setAutoUpdateTime(parameters.autoUpdateTime);
-		await this.setAutoUpdateType(parameters.autoupdateType);
-		await this.setMenuUpdateType(parameters.menuupdateType);
-
-		await this.setPersistEquations(parameters.persistEquations);
-		await this.setPersistWindowPositions(parameters.persistWindowPositions);
+		for (const [key, val] of Object.entries(parameters)) {
+			switch(key) {
+				case 'equation': await this.setEquation(val as string); break;
+				case 'enforceMobileMode': await this.setEnforceMobileMode(val as boolean); break;
+				case 'style': await this.setStyle(val as string); break;
+				case 'localType': await this.setLocalType(val as string); break;
+				case 'encloseAllFormula': await this.setEncloseAllFormula(val as boolean); break;
+				case 'autoUpdateTime': await this.setAutoUpdateTime(val as number); break;
+				case 'autoupdateType': await this.setAutoUpdateType(val as boolean); break;
+				case 'menuupdateType': await this.setMenuUpdateType(val as boolean); break;
+				case 'persistEquations': await this.setPersistEquations(val as boolean); break;
+				case 'persistWindowPositions': await this.setPersistWindowPositions(val as boolean); break;
+			
+			}
+		}
 				
-		if (parameters.persistEquations || !cancel) {
+		if ((parameters.persistEquations || !cancel) && 'equationCollection' in parameters) {
 			await this.setEquationCollection(parameters.equationCollection);
 		}
 		if (parameters.persistWindowPositions) {
@@ -331,10 +333,13 @@ export class Settings
 
 	async autoUpdateType() : Promise<boolean>
 	{
-		return await joplin.settings.value('auto_update_type');
+		const value = await joplin.settings.value('auto_update_type');
+		console.debug(`Read autoupdateType : ${value}`);
+		return value;
 	}
 	
 	async setAutoUpdateType(type: boolean) : Promise<void> {
+		console.debug(`About to write autoupdateType : ${type}`);
 		await joplin.settings.setValue('auto_update_type', type);
 	}
 	

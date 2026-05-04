@@ -130,7 +130,7 @@ import { IHints, IHintsClient, localizerId, ILocalizer } from './interfaces.mjs'
 			
 			$(this).attr("href", "javascript:void(0)");
 			const tt = inst.getSymbol(this);
-			const encoded = tt.replace(/</g, '&lt;');				// GUI does not like text looking like tag begin -> encode
+			const encoded = tt.replace(/</gs, '&lt;');				// GUI does not like text looking like tag begin -> encode
 			inst.configureTooltip(this, { content: encoded });
 		});
 
@@ -157,7 +157,7 @@ import { IHints, IHintsClient, localizerId, ILocalizer } from './interfaces.mjs'
 		const inst = this;
 		$(`${selector} a.s`).on('mouseover', function(event: any) { 
 			const latex = inst.getSymbol(this);
-			const encoded = latex.replace(/</g, '&lt;');				// GUI does not like text looking like tag begin -> encode
+			const encoded = latex.replace(/</gs, '&lt;');				// GUI does not like text looking like tag begin -> encode
 			$(".divInformation").html(encoded); 
 		});
 		$(`${selector} a.s`).on('mouseleave', function(event: any) { 

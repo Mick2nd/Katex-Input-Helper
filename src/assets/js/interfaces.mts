@@ -186,6 +186,18 @@ export class HintsClient implements IHintsClient {
 	missing() { }
 }
 
+export interface ISelectedServices {
+	get hints() : IHints;
+	get localizer() : ILocalizer;
+	get parameters() : any;
+	get utilities() : IUtilities;
+	get parser() : IParser;
+	get math() : IMath;
+	get messager() : IMessager;
+	getLocalText(key: string) : string;
+	
+}
+
 export const asyncId = Symbol.for('AsyncId');
 export const rawBootLoaderId = Symbol.for('RawBootLoaderId');
 export const easyuiLoaderId = Symbol.for('EasyuiLoaderId');
@@ -205,6 +217,7 @@ export const codeMirrorFactoryId = Symbol.for('CodeMirrorFactoryId');
 export const panelsId = Symbol.for('PanelsId');
 export const menusId = Symbol.for('MenusId');
 export const hintsId = Symbol.for('HintsId');
+export const selectedServicesId = Symbol.for('SelectedServicesId');
 
 export const dynamicPanelId = Symbol.for('DynamicPanelId');
 export const informationWindowId = Symbol.for('InformationWindowId');

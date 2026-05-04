@@ -41,7 +41,13 @@ export default function pluginsConfig(env: any) : any {
 			new webpack.ProvidePlugin({
 				$: "jquery",
 				jQuery: "jquery",
-				console: [path.resolve(srcDir, 'consoleRedirector.mts'), 'redirector']
+				
+				// Experiments with lodash -- final solution of only using isEqual saves me 60kB
+				//_: 'lodash',
+				//isEqual: ['lodash', 'isEqual'],
+				
+				isEqual: 'lodash.isequal', 
+				console: [path.resolve(srcDir, 'consoleRedirector.mts'), 'redirector'],
 			}),
 			// DEFINES GLOBAL VARIABLES, but babel-loader must not be active
 			new webpack.DefinePlugin({
