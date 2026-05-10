@@ -13,6 +13,7 @@ export class Messager extends Observable implements IMessager {
 	localizer: ILocalizer;
 	eventView: Event[] = [];
 	max: number;
+	severity: number;
 	
 	/**
 	 * Constructor, localizer is injected.
@@ -23,6 +24,7 @@ export class Messager extends Observable implements IMessager {
 		super();
 		this.localizer = localizer;
 		this.max = 100;
+		this.severity = 1;
 	}
 	
 	/**
@@ -69,13 +71,22 @@ export class Messager extends Observable implements IMessager {
 		}
 	}
 	warn(...params) : void {
-		
+		if (this.severity <= 3) {
+			const [ msg ] = params;
+			this.push(new Event('LOG_WARN', msg, null));
+		}
 	}
 	info(...params) : void {
-		
+		if (this.severity <= 2) {
+			const [ msg ] = params;
+			this.push(new Event('LOG_INFO', msg, null));
+		}
 	}
 	debug(...params) : void {
-		
+		if (this.severity === 1) {
+			const [ msg ] = params;
+			this.push(new Event('LOG_DEBUG', msg, null));
+		}
 	}
 	
 	/**

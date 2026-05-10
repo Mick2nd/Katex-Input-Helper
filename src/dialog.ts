@@ -149,8 +149,8 @@ export class Dialog
 	public loadCss = async function(handle: any) : Promise<void> {
 		
 		// Probably not needed as this causes a FOUC : [ "./assets/main.css" ];
-		//let css = [ "./assets/main.css" ]; 
-		let css = [  ]; 
+		// let css = [  ]; 
+		let css = [ "./assets/css/initial.styles.css" ]; 
 		
 		for (const cssPath of css) {
 			await joplin.views.dialogs.addScript(handle, cssPath);

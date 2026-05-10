@@ -324,7 +324,7 @@ export class KatexInputHelper extends HintsClient implements IKatexInputHelper {
 		}
 		
 		console.info('Starting prefetch');
-		await this.parameters.queryParameters();				// from Plugin or web query parameters
+		await this.parameters.queryParametersDb();				// from Plugin or web query parameters
 		const app = this.parameters.isMobile ? 'mobile' : 'desktop';
 		const htmlString = (await import(`../dialog-${app}.hbs`)).default;
 		

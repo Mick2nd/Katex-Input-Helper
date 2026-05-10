@@ -1,249 +1,158 @@
 import { Buffer } from 'buffer';
+import { ParametersDb, common, ConfigurationType } from './db.mjs';
+
 
 /**
- * Factory method generating a Proxy for KIHParameters.
+ * Factory method generating a Proxy for KIHParameters. The proxy has a *set* trap
+ * to intercept write actions to the class. This writes settings either to the *idb*
+ * database, as cookies or prepares back-transfer to the plugin.
+ * 
+ * The **idb** database is a new store. To prevent data loss, the data must be migrated
+ * to this new store. Features must exist in parallel to support this.
  */
 export function ParametersProxy() {
-	let parameters = new KIHParameters();
+	const parameters = new KIHParameters();
+	
+	function hasGetter(o: any, prop: string) : boolean {
+		const descriptor = Object.getOwnPropertyDescriptor(o, prop);
+		if (descriptor) {
+			const result = descriptor?.get !== undefined;
+			return result;
+		}
+
+		const result = o.__lookupGetter__(prop) !== undefined;				// fallback method working only at the moment
+		return result;
+	}
+
+	function hasSetter(o: any, prop: string) : boolean {
+		const descriptor = Object.getOwnPropertyDescriptor(o, prop);
+		if (descriptor) {
+			const result = descriptor?.set !== undefined;
+			return result;
+		}
+		
+		const result = o.__lookupSetter__(prop) !== undefined;
+		return result;
+	}
+
 	return new Proxy(
 		parameters,
 		{
-			set(target: any, prop: string, value: any, receiver: any) {
-				let changed = !isEqual(target[prop], value); 	// TEST, was: target[prop] !== value;
-				if (changed) {
-					target[prop] = value;
-					target.storeCookie(prop, value);
-					if (!target.transaction.isOngoingTransaction) {				// not in queryParameters
-						// Reserved.
-						// console.debug(`Proxy : ${prop} = ${value}`);
-						target.changed.add(prop);								// -> register the change
-						target.transaction.complete();							// -> performs writeParameters
-					}
+			/**
+			 * **set** trap. Invoked by the Proxy when properties are set.
+			 */
+			set(target: KIHParameters, prop: string, value: any, receiver: any) {
+				
+				if (hasSetter(target.client, prop)) {
+					target.client[prop] = value;
+					return true;
 				}
+				
+				if (target.db.isConfigurationKey(prop)) {				
+					const changed = !isEqual(target.configuration[prop], value); 	// TEST, was: target[prop] !== value;
+					if (changed) {
+						target.configuration[prop] = value;						
+						if (!target.suppressWriteBack) {					// write back must be suppressed during initial load
+							target.db.enqueueParameter(prop, value);					
+						}
+					}
+					return true;
+				}
+				
+				Reflect.set(target, prop, value, receiver);
 				return true;
 			},
 			
 			/*
 			 */
 			get(target: any, prop: string, receiver: any) : any {
+				
+				if (hasGetter(target.client, prop)) {
+					return target.client[prop];
+				}
+				if (target.db.isConfigurationKey(prop)) {
+					return target.configuration[prop];
+				}
+				
 				return Reflect.get(target, prop, receiver);
 			}
 		});
 }
 
 /**
- * Manages control parameters, especially those which can be stored over sessions.
+ * Interface for communication between client and Katex Input Helper.
  * 
- * It is based on the communication of messages to gain the settings of the plugin.
+ * Design decision: 
+ * - all communication between client and Katex Input Helper is reduced in the
+ *   back direction.
+ * - remaining interface snippets may be truncated.
+ * - this only matters if the migration fails to succeed.
  */
-export class KIHParameters {
+interface IClient {
+	postMessage( msg: any ) : Promise<any>;
 	
-	id = 'Katex Input Helper';
-	style = "aguas";
-	localType = "en_US";
-	encloseAllFormula = false; 
-	autoUpdateTime = 500; 
-	menuupdateType = true; 
-	autoupdateType = true; 
+	mode: string;
+	get equation(): string;
+	set equation(value: string);
+	get displayMode() : boolean;
+	get isMobile() : boolean;
+	set migrated(value: boolean);
+}
 
-	equation = "";
-	equationCollection = [ ];
-	dialogSettingsPrefix = "KIH_Location_";
-	persistEquations = true;
-	persistWindowPositions = true;
-	blockWrite = false;
-	
-	transaction = null;
-	mouseState = null;
-	displayMode = true;
-	isMobilePlugin = false;
-	mode = "plugin";
-	available = false;
-	changed = new Set<string>();
-	
+class WebClient implements IClient {
+	_db: ParametersDb = null;
+	_configuration: any;
+	_equation: string = "";
+	mode = "web";
+
 	/**
 	 * Constructor.
-	 */
-	constructor() {
-		this.transaction = new Transaction();
-		this.transaction.configure(this.writeParameters.bind(this));
-		this.mouseState = new MouseState(this.transaction);
-		
+	 */	
+	constructor(db: ParametersDb, configuration: any) {
 		document.cookie = "mjx.menu=";
-		this.changed.add('persistEquations');
-		this.changed.add('persistWindowPositions');
+		this._db = db;
+		this._configuration = configuration;
 	}
 	
-	/**
-	 * Queries the parameters from the Plugin. They are persisted there as settings.
-	 * In the web variant they are stored as Cookies.
-	 */
-	async queryParameters() {
-				
-		let inst = this;
-		let api = window.webviewApi; 
-		if (!api) {
-			this.mode = "web";
-			api = { postMessage: async ( o: any ) => { 
-					return inst.loadCookies();
-				} 
-			}; 
+	async postMessage( msg: any ) : Promise<any> {
+		const response: any = this.loadCookies();
+		if (response.equation) {
+			this._equation = response.equation;
 		}
-		let response = await api.postMessage({
-			id: this.id,
-			cmd: 'getparams'
-		});
-		if (response) {
-			inst.transaction.begin();
-			for (const [key, val] of Object.entries(response)) {
-				if (key == 'displayMode') {
-					// Reserved.
-					// console.debug(`Parameters : queryParameters : displayMode ${val} `);
-				}
-				inst[key] = val;
-				/* ANALYSIS: this may be of no value as no panel is created at this time.
-				   PANELs exist in HTML !!
-				*/
-				if (key.startsWith('w')) {
-					inst.resizePanel(key);
-				}
-			}
-			inst.transaction.end();
-			inst.available = true;
-		} else {
-			console.warn(`The "Katex Input Helper" plugin did not return a response to get parameters `);
-		}
+		return response;
 	}
 	
-	/**
-	 * Returns true for web variant with query string mobile=true
-	 * Returns true if plugin is running on mobile device.
-	 */
-	get isMobile() : boolean {
-		if (this.mode != 'web') { return this.isMobilePlugin; }
+	get equation(): string {
+	    return this._equation;
+	}
+	
+	set equation(value: string) {
+		this._equation = value;
+		this.storeCookie("equation", value);
+	}
+	
+	get displayMode(): boolean {
 		
-		let searchParams = new URLSearchParams(window.location.search);
-		if (searchParams.has('mobile')) {
-			return searchParams.get('mobile') == 'true';
-		}
-		// Reserved.
-		// console.log(`Not Mobile`);
-		return false;
-	}
-	
-	async isMobileAsync() : Promise<boolean> {
-		await this.queryParameters();
-		return this.isMobile;
-	}
-	
-	/**
-	 * Returns the displayMode in web mode from query string.
-	 * Default is true.
-	 */
-	get isDisplayMode() : boolean {
-		let searchParams = new URLSearchParams(window.location.search);
+		const searchParams = new URLSearchParams(window.location.search);
 		if (searchParams.has('displayMode')) {
-			return searchParams.get('displayMode') == 'true';
+			return searchParams.get('displayMode') === 'true';
 		}
 		return true;
 	}
-
-	/**
-	 * Resets all window positions. Defaults will be activated.
-	 * 
-	 * The defaults are determined, when panel is first displayed after re-start.
-	 */	
-	resetWindowPositions() {
-		this.transaction.begin();
-
-		for (const [key] of Object.entries(this)) {
-			if (key.startsWith('w')) {
-				this[key].left = this[key].initialLeft;
-				this[key].top = this[key].initialTop;
-				this[key].width = this[key].initialWidth;
-				this[key].height = this[key].initialHeight;
-				this.resizePanel(key);
-			}
-		}
-
-		this.transaction.end();
-	}
 	
-	/**
-	 * Returns the window ids as array.
-	 */
-	get windowIds() {
-		return Object.keys(this).filter(key => key.startsWith('w'));
-	}
-	
-	/**
-	 * Returns the windows selectors as one string.
-	 */
-	get windowSelectors() {
-		return this.windowIds.map(key => `#${key}`).join(',');
-	}
-	
-	/**
-	 * Writes parameters to the HIDDEN field as required to return some values back
-	 * to the caller.
-	 */
-	writeParameters(_equation = "") {
-		let parameters = JSON.stringify(this.filteredParameters);
-		$('#hidden').attr('value', parameters);
-		//	Disturbes in tests
-		//this.debugPrint();
-	}
-	
-	/**
-	 * Filters some parameters out from the attributes of this instance.
-	 * Those are not needed as settings nor are they JSON stringifyable.
-	 * 
-	 * @returns the filtered settings keys
-	 */
-	get filteredParameters() {
-		let o = { };
-		let doNotUse = [ 
-			"transaction", 
-			"mouseState", 
-			"displayMode", "mode", "isMobile", "isMobilePlugin", 
-			"available", "changed" 
-		];
-		for (const [key, val] of Object.entries(this)) {
-			if (!doNotUse.some(item => item == key) && 
-				this.changed.has(key)) {
-				o[key] = val;
-			}
-		}
+	get isMobile(): boolean {
 		
-		return o;
+		const searchParams = new URLSearchParams(window.location.search);
+		if (searchParams.has('mobile')) {
+			return searchParams.get('mobile') === 'true';
+		}
+		return false;	    
 	}
 	
-	/**
-	 * Checks for a single key if its data item should be stored as Cookie.
-	 * 
-	 * @param key - the key to be checked
-	 * @param [persistEquations=true] - setting for equationCollection
-	 * @param [persistWindowPositions=true] - setting for window positions
-	 */
-	shouldBeStored(key: string, persistEquations = true, persistWindowPositions = true) {
-		// Doubled implementation => subtle differences
-		let doUse = [
-			"style", 
-			"localType", 
-			"equation",
-			"autoUpdateTime", 
-			"menuupdateType",
-			"autoupdateType", 
-			"persistEquations",
-			"persistWindowPositions"
-		];
-		return (
-			this.mode == 'web' && 
-			(doUse.some(item => item == key) || 
-			 (persistWindowPositions && key.startsWith('w')) ||
-		 	 (persistEquations && key == "equationCollection")));
+	set migrated(value: boolean) {
+	    
 	}
-	
+
 	/**
 	 * Store a single cookie after checking if it's desired.
 	 * 
@@ -251,22 +160,30 @@ export class KIHParameters {
 	 * @param val - value to be stored
 	 */
 	storeCookie(key: string, val: any) {
-		if (!window.localStorage) { return; }
-		if (this.shouldBeStored(key, this.persistEquations, this.persistWindowPositions)) {
+		if (!globalThis.localStorage) { return; }
+		
+		const persistEquations = this._configuration.persistEquations === true
+		const persistWindowPositions = this._configuration.persistWindowPositions === true;
+		if (this.shouldBeStored(key, persistEquations, persistWindowPositions)) {
 			let json = null;
+			if (!val) {
+				console.warn(`storeCookie error for key ${key}, no value`);
+				return;
+			}
 			try {
 				json = JSON.stringify(val);
 				let final = json;
 				if (key == 'equation' || key == 'equationCollection') {				
 					final = Buffer.from(json, 'utf8').toString('hex');
 				}
-				window.localStorage.setItem(key, final);
+				globalThis.localStorage.setItem(key, final);
+				
 			} catch(e) {
 				alert(`alert : ${json} : ${e}`);
-				window.localStorage.removeItem(key);
+				globalThis.localStorage.removeItem(key);
 			}
 		} else {
-			window.localStorage.removeItem(key);
+			globalThis.localStorage.removeItem(key);
 		}
 	}
 
@@ -274,17 +191,19 @@ export class KIHParameters {
 	 * Loads all cookies. Cookies must be defined and must not be deactivated.
 	 */
 	loadCookies() {
-		if (!window.localStorage) { return { }; }
+		if (!globalThis.localStorage) { return { }; }
 		try {
-			let cookies = { displayMode: this.isDisplayMode };
-			let persist = window.localStorage.getItem('persistEquations') != 'false';
+			const cookies = { };
+
+			let persist = globalThis.localStorage.getItem('persistEquations') != 'false';
 			const persistEquations = persist;
-			persist = window.localStorage.getItem('persistWindowPositions') != 'false';
+			persist = globalThis.localStorage.getItem('persistWindowPositions') != 'false';
 			const persistWindowPositions = persist;
 			
-			for (let idx = 0; idx < window.localStorage.length; idx++) {
-				const key = window.localStorage.key(idx);
-				let val = window.localStorage.getItem(key);
+			for (let idx = 0; idx < globalThis.localStorage.length; idx++) {
+				
+				const key = globalThis.localStorage.key(idx);
+				let val = globalThis.localStorage.getItem(key);
 				if (val == '') { continue; }
 				if (this.shouldBeStored(key, persistEquations, persistWindowPositions)) {
 					try {
@@ -302,28 +221,244 @@ export class KIHParameters {
 			return cookies;
 			
 		} catch(e) {
-			let msg = `Cookies inconsistent : ${e}`;
+			const msg = `Cookies inconsistent : ${e}`;
 			console.warn(msg);
 			alert(msg);
 			this.resetCookies();
 			return { };
 		}
 	}
-	
+
 	/**
 	 * Resets the cookies if they are in an inconsistent or fresh state.
 	 */
 	resetCookies() {
-		for (const [ key, val ] of Object.entries(this.filteredParameters)) {
+		for (const [ key, val ] of Object.entries(this._configuration)) {
 			this.storeCookie(key, val);
 		}
+	}
+
+	/**
+	 * Checks for a single key if its data item should be stored as Cookie.
+	 * 
+	 * @param key - the key to be checked
+	 * @param [persistEquations=true] - setting for equationCollection
+	 * @param [persistWindowPositions=true] - setting for window positions
+	 */
+	shouldBeStored(key: string, persistEquations = true, persistWindowPositions = true) {
+		return (
+			(key === 'equation' ||
+			 this._db.isCommonKey(key) || 
+			 (persistWindowPositions && this._db.isWindowKey(key)) ||
+		 	 (persistEquations && this._db.isEquationsKey(key))));
+	}
+
+}
+
+class PluginClient implements IClient {
+	_equation: string = "";
+	_displayMode: boolean = true;
+	_isMobile: boolean = false;
+	_migrated: boolean = false;
+	
+	mode = "plugin";
+
+	/**
+	 * Constructor.
+	 */	
+
+	async postMessage( msg: any ) : Promise<any> {
+		const response = await window.webviewApi.postMessage(msg);
+		if (response.equation) {
+			this._equation = response.equation;
+		}
+		this._displayMode = response.displayMode === true;
+		this._isMobile = response.isMobilePlugin === true;
+		return response;
+	}
+
+	get equation(): string {
+	    return this._equation;
+	}
+
+	set equation(value: string) {
+		this._equation = value;
+		this.write();
+	}
+
+	get displayMode(): boolean {
+	    return this._displayMode;
+	}
+
+	get isMobile(): boolean {
+		return this._isMobile;
+	}
+
+	set migrated(value: boolean) {
+		this._migrated = value;
+		this.write();
+	}
+	
+	write() {
+		const dialogResponse = {
+			equation: this.equation,
+			migrated: this._migrated
+		}
+		$('#hidden').attr('value', JSON.stringify(dialogResponse));
+		
+		if (!dialogResponse.migrated) {
+			console.warn(`Migration to database store failed, data may be lost`);
+		}
+	}
+}
+
+
+/**
+ * Manages control parameters, especially those which can be stored over sessions.
+ * 
+ * It is based on the communication of messages to gain the settings of the plugin.
+ */
+export class KIHParameters {
+	
+	id = 'Katex Input Helper';
+
+	client: IClient = null;
+	db: ParametersDb = null;
+	configuration: any = { };	
+	
+	suppressWriteBack = false;
+	
+	/**
+	 * Constructor.
+	 */
+	constructor() {
+		
+		this.db = new ParametersDb();										// instantiate the db
+		if (window.webviewApi) {											// configure the "Client" - side interface
+			this.client = new PluginClient();
+		} else {
+			this.client = new WebClient(this.db, this.configuration);
+		}
+	}
+	
+	/**
+	 * Queries the parameters from the Plugin. They are persisted there as settings.
+	 * In the web variant they are stored as Cookies.
+	 */
+	async queryParameters(migrated: boolean = false) {
+				
+		let inst = this;
+		
+		let response = await this.client.postMessage({
+			id: this.id,
+			cmd: 'getparams'
+		});
+		if (response) {
+			function filter(key: string) : boolean {
+				return !migrated && ( inst.db.isConfigurationKey(key) );				
+			}
+			
+			for (const [key, val] of Object.entries(response).filter(([key, val]) => filter(key))) {
+				if (this.db.isConfigurationKey(key)) {
+					inst[key] = val;										// TODO: addressed to Proxy set trap??
+
+					/* ANALYSIS: this may be of no value as no panel is created at this time.
+					 * PANELs exist in HTML !!
+					 */
+					if (this.db.isWindowKey(key)) {
+						inst.resizePanel(key);
+					}
+				}
+			}
+			return response;
+			
+		} else {
+			console.warn(`The "Katex Input Helper" plugin did not return a response to get parameters `);
+			return false;
+		}
+	}
+	
+	/**
+	 * Queries the parameters from the database. For the migration of old style 
+	 * storage to db parameters must be transferred.
+	 */
+	async queryParametersDb() {
+		try {
+			await this.db.open();												// also call upgrade
+
+			const migrated = await this.db.getCommon('migrated', false);		// entry may not exist - defaults to false
+			this.client.migrated = migrated;
+			const response = await this.queryParameters(migrated);				// old style parameters or rest of them
+			
+			if (!migrated) {
+				if (response) {
+					console.info(`About to migrate parameter representation`);
+					for (const [key, val] of Object.entries(response)) {		// this transfers them to the db
+						if (this.db.isConfigurationKey(key)) {
+							await this.db.putParameter(key, val);				// TODO: Is this doubled functionality?
+						}
+					}
+
+					await this.db.putCommon('migrated', true);					// for the next invocation
+					this.client.migrated = true;
+				}
+			}
+
+			this.suppressWriteBack = true;										// initial read does not permit write back
+			for (const [ store, key ] of this.db.configurationKeys) {			// in either case read parameters from the db
+				const value = await this.db.get(store, key);
+				this[key] = value;
+			}
+			this.suppressWriteBack = false;
+			
+		} catch(error) {
+			console.error('Could not query parameters from DB: %s', error);
+			this.suppressWriteBack = false;
+		}
+	}
+	
+	/**
+	 * Wrapper. Delegates to db.
+	 */
+	enqueueParameter(prop: string, value: any) {
+		if (this.db === null) { return; }
+		this.db.enqueueParameter(prop,  value);
+	}
+
+	/**
+	 * Resets all window positions. Defaults will be activated.
+	 * 
+	 * The defaults are determined, when panel is first displayed after re-start.
+	 */	
+	resetWindowPositions() {
+		for (const [ key, val ] of Object.entries(this.configuration)) {
+			if (this.db.isWindowKey(key)) {
+				Layout.revert(val, true);					// force revert to initial settings
+				this.resizePanel(key);
+				this.enqueueParameter(key, val);			// changes must be written to db
+			}
+		}
+	}
+	
+	/**
+	 * Returns the window ids as array.
+	 */
+	get windowIds() {
+		return this.db.windowKeys;
+	}
+	
+	/**
+	 * Returns the windows selectors as one string.
+	 */
+	get windowSelectors() {
+		return this.windowIds.map(key => `#${key}`).join(',');
 	}
 		
 	/**
 	 * onPanelMove handler for some dialogs and windows.
 	 */
 	onPanelMove(id: string, left: number|string, top: number|string, initial: boolean = false) {
-		if (!(id in this || this[id] == undefined)) {
+		if (!(id in this.configuration || this[id] == undefined)) {
 			this[id] = { };
 		}
 		
@@ -339,13 +474,7 @@ export class KIHParameters {
 		}
 
 		if (stateChanged) {
-			this.changed.add(id);					// mark this id as changed
-			this.mouseState.increment();			
-			this.transaction.complete();
-		}
-		
-		if (this.mode == 'web') {
-			this.storeCookie(id, this[id]);
+			this.enqueueParameter(id, this[id]);
 		}
 	}
 	
@@ -362,7 +491,7 @@ export class KIHParameters {
 	 * @param height - the height established by the user
 	 */
 	onPanelResize(id: string, width: number|string, height: number|string, initial: boolean = false) {
-		if (!(id in this) || this[id] == undefined) {
+		if (!(id in this.configuration) || this[id] == undefined) {
 			this[id] = { };
 		}
 
@@ -375,29 +504,10 @@ export class KIHParameters {
 			stateChanged = this[id].width != width || this[id].height != height;
 			this[id].width = width;
 			this[id].height = height;
-			// Reserved.
-			// console.debug(`onPanelResize id ${id} : ${JSON.stringify(this[id])}`);
 		}
 		
 		if (stateChanged) {
-			
-			this.changed.add(id);								// mark this id as changed
-			this.mouseState.increment();						// counts the number of resize / move events
-			this.transaction.complete();
-		}
-		
-		if (this.mode == 'web') {
-			this.storeCookie(id, this[id]);
-		}
-	}
-	
-	/**
-	 * Checks for discrepancy between handler and options dimensions.
-	 */
-	check(windowState: any, dimensions: any) {
-		if (Math.abs(windowState.width - dimensions.width) > 5 	||
-			Math.abs(windowState.height - dimensions.height) > 5) {
-			console.warn('KIHParameters : discrepancy deteced during window resize');
+			this.enqueueParameter(id, this[id]);
 		}
 	}
 	
@@ -409,63 +519,30 @@ export class KIHParameters {
 	 * @param id - the panel id as in HTML
 	 */
 	resizePanel(id: any) {
-		if (!this.isMobile && id in this && this[id] != undefined) {
+		if (!this.client.isMobile && id in this.configuration && this[id] != undefined) {
 			try {
 				let o = this[id];
-				if (o.left && o.top && o.width && o.height) {
+				//
+				// Solution: either position and / or dimension must be known
+				//
+				if ((o.left && o.top) || (o.width && o.height)) {
 					// Reserved.
 					// console.log(`${this.id} Panel at resizePanel: {${o.left}, ${o.top}}`);
 					$(`#${id}`).panel('resize', o);
+				} else {
+					console.warn(`Missing data for panel ${id} : ${JSON.stringify(o)}`);
 				}
 			} catch(e) {
 				console.error(`Exception resizing panel ${id} : %s`, e);
 			}
-		} else if (!this.isMobile) {
+		} else if (!this.client.isMobile) {
 			console.warn(`Missing id in parameters : ${id}`);
 		}
 	}
 	
 	/**
-	 * This can be used to change dimensions of a panel by using CSS.
-	 * 
-	 * @param id - panel id
-	 * @param dim - the dimension object
-	 */
-	resizeWithCss(id: any, dim: any) {
-		$(`#${id}`).css(dim);
-	}
-	
-	getConfiguredDimensions(id: string) : any {
-		if (id in this) {
-			const dimensions = this[id];
-			if (dimensions.width === undefined || dimensions.height === undefined) {
-				return { width: 'auto', height: 'auto' };
-			}
-			return { width: dimensions.width, height: dimensions.height };
-		}
-		
-		console.warn(`The panel ${id} is not known.`);
-		return { width: 'auto', height: 'auto' };
-	}
-	
-	/**
-	 * Returns the complete panel dimensions as from options.
-	 * 
-	 * Seems to be not correct!
-	 */
-	getPanelDimensions(id: string) {
-		let options = $(`#${id}`).panel('options');
-		let dimensions = { 
-			left: options.left, 
-			top: options.top, 
-			width: options.width, 
-			height: options.height 
-		};
-		return dimensions;
-	}
-	
-	/**
-	 * Selected console output of the attributes.
+	 * Selected console output of the attributes. This is diagnostic output and
+	 * normally deactivated.
 	 */
 	debugPrint() {
 		this.printEquation();
@@ -478,22 +555,22 @@ export class KIHParameters {
 	 * Console output of the equation.
 	 */
 	printEquation() {
-		console.debug(`Return-Parameter : ${JSON.stringify(this.equation)} `);
+		console.debug(`Return-Parameter : ${JSON.stringify(this.client.equation)} `);
 	}
 	
 	/**
 	 * Console output of the Custom Equations.
 	 */
 	printEquationCollection() {
-		console.debug(`Equations-Parameter : ${JSON.stringify(this.equationCollection)} `);
+		console.debug(`Equations-Parameter : ${JSON.stringify(this.configuration.equationCollection)} `);
 	}
 	
 	/**
 	 * Console output of the settings.
 	 */
 	printSettingsConfiguration() {
-		for (const key of this.configurationKeys) {
-			console.debug(`Settings-Parameters : ${key} : ${this[key]} `);
+		for (const key of this.db.commonKeys) {
+			console.debug(`Settings-Parameters : ${key} : ${this.configuration[key]} `);
 		}
 	}
 
@@ -501,37 +578,39 @@ export class KIHParameters {
 	 * Console output of the Window Size and Position.
 	 */
 	printWindowConfiguration() {
-		for (const key of this.windowKeys) {
-			console.debug(`Window-Parameters : ${key} : ${JSON.stringify(this[key])} `);
+		for (const key of this.db.windowKeys) {
+			console.debug(`Window-Parameters : ${key} : ${JSON.stringify(this.configuration[key])} `);
 		}
 	}
+}
+
+
+/**
+ * Design of helpers for window or panel dimensions.
+ */
+
+namespace Layout {
 	
-	/**
-	 * Returns the settings configuration keys.
-	 * 
-	 * @returns the configuration keys array.
-	 */
-	get configurationKeys() {
-		return [
-			"id",
-			"style",
-			"localType",
-			"encloseAllFormula", 
-			"autoUpdateTime", 
-			"menuupdateType", 
-			"autoupdateType", 
-			"persistEquations",
-			"persistWindowPositions"			
-		];
-	}
+	export function revert(layout: any, force: boolean = false) {
+		
+		if (layout.initialLeft && (force || !layout.left)) {
+			layout.left = layout.initialLeft;
+		}
+		if (layout.initialTop && (force || !layout.top)) {
+			layout.top = layout.initialTop;
+		}
+		if (layout.initialWidth && (force || !layout.width)) {
+			layout.width = layout.initialWidth;
+		}
+		if (layout.initialHeight && (force || !layout.height)) {
+			layout.height = layout.initialHeight;
+		}
 	
-	/**
-	 * Returns the window configuration keys.
-	 */
-	get windowKeys() {
-		return Object.keys(this).filter(s => s.startsWith('w'));
+		return this;
 	}
 }
+
+// #region Transaction
 
 /**
  * Supports transactions.
@@ -594,130 +673,9 @@ class Transaction {
 	}
 }
 
-/**
- * This class supports retrieval of css info from the *dialog.css* CSS file.
- * 
- * This is used to reset the dimensions of the dialogs.
- */
-class Css {
-	sheet = null;
-	
-	/**
-	 * Constructor.
-	 */
-	constructor() {
-		this.findSheet();
-	}
-	
-	/**
-	 * Finds the style sheet.
-	 */
-	findSheet() {
-		let sheets = [ ];
-		for (const sheet of document.styleSheets) {
-			if (sheet.href?.endsWith('main.css')) {
-				sheets.push(sheet);
-				this.sheet = sheet;
-				//return;
-			}
-		}
-		if (sheets.length != 1) {
-			console.warn(`Number of main.css sheets is ${sheets.length}`);
-		}
-	}
-	
-	/**
-	 * Searches for and retrieves the width and height given the window id. This
-	 * is no longer used as calculated expressions cannot be used by panel 'resize'.
-	 * 
-	 * @deprecated no longer to be used
-	 * @param id - the id of the window (id attribute)
-	 * @returns object with width and height entries, returns *auto* if not found
-	 */
-	dimensionsOf(id: string) {
-		try {
-			for (const rule of this.sheet.cssRules) {
-				if (rule.type == rule.STYLE_RULE && rule.selectorText.includes('#' + id) && rule.selectorText.includes('.desktop') && rule.styleMap != null) {
-					const width = rule.styleMap.get('width');
-					const height = rule.styleMap.get('height');
-					const dim = {
-						width: width.value + width.unit,
-						height: height.value + height.unit,
-						left: `calc(50vw - ${width.value / 2}${width.unit})`,
-						top: `calc(50vh - ${height.value / 2}${height.unit})`
-					};
-					
-					return dim;
-				}
-			}
-		} catch(e) {
-			const msg = `Style not found for ${id} : ${e}`;
-			console.warn(msg);
-		}
-		const msg = `Style not found for ${id}`;
-		console.warn(msg);
-		
-		const left = `calc-size(fit-content, calc(50vw - size / 2))`;
-		const top = `calc-size(fit-content, calc(50vh - size / 2))`;
-		return { width: 500, height: 500, left: 0, top: 0};
-	}
-}
-
-/**
- * Used to reduce write back to the hidden field based on the use of
- * Transactions and observation of the mouse state.
- * 
- * The hopes has not fulfilled as there is already a reduction of mouse events during
- * a size or position change.
- */
-class MouseState {
-
-	transaction = null;
-	windowEvents = 0;
-	mouseUp = true;
-	active = false;										// currently deactivated
-
-	constructor(transaction: any) {
-		this.transaction = transaction;
-		let inst = this;
-
-		if (this.active) {
-			$('body').on('mousedown', function (event) {
-				inst.mouseUp = false;
-				inst.reset();
-				inst.transaction.begin();
-			});
-			$('body').on('mouseup', function (event) {
-				inst.mouseUp = true;
-				if (inst.isWindowChanged) {
-					inst.transaction.end();
-					// Reserved.
-					// console.debug(`MouseState : ${inst.windowEvents} window events during transaction`);
-				} else {
-					inst.transaction.cancel();
-					// Reserved.
-					// console.debug(`MouseState : no window events during transaction`);
-				} 
-			});
-		}
-	}
-	
-	reset() {
-		this.windowEvents = 0;
-	}
-	
-	increment() {
-		this.windowEvents ++;
-		// Reserved.
-		// console.debug(`MouseState : incremented to : ${this.windowEvents} `);
-	}
-	
-	get isWindowChanged() {
-		return this.windowEvents > 0;
-	}
-}
+// #endregion
 
 // This helps to import symbols in test suite
 try {
-	module.exports = { Css, KIHParameters, ParametersProxy, Transaction };
+	module.exports = { KIHParameters, ParametersProxy, Transaction };
 } catch(e) { }

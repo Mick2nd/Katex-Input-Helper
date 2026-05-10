@@ -53,9 +53,13 @@ export class Settings
 	{
 		if (!this.fullyRegistered) {
 			this.mobile = (await joplin.versionInfo()).platform == 'mobile';
-			this.settings = await this.descriptions();
 			await joplin.settings.registerSection(this.sectionName(), this.sectionLabel());
-			await joplin.settings.registerSettings(this.settings);
+			
+			await joplin.settings.registerSettings(await this.durableSettings());
+			const migrated = await joplin.settings.value('migrated');
+			if (!migrated) {
+				await joplin.settings.registerSettings(this.legacySettings());
+			}
 		
 			await joplin.settings.onChange(this.onChange.bind(this));
 			
@@ -82,9 +86,35 @@ export class Settings
 	 * @param firstPass - true for the first pass invocation
 	 * @returns			- the descriptions for the settings
 	 */
-	async descriptions() : Promise<any>
+	legacySettings() : any
 	{
-		let settings = {
+		let settings = { };
+		
+		settings = Object.assign(settings, this.commonSettings());
+		settings = Object.assign(settings, this.locationSettings());
+		
+		return settings;
+	}
+	
+	locationSettings() : any {
+		let settings = { };
+
+		for (const dialog of this.dialogs) {
+			settings[`${this.dialogSettingsPrefix}${dialog}`] = {
+				'section': 'KatexInputHelper.settings',
+				'public': false,
+				'value': null,
+				'type': SettingItemType.Object,
+				'description': `Location settings for ${dialog} dialog`
+			}
+				
+		}
+
+		return settings;
+	}
+	
+	async durableSettings() : Promise<any> {
+		const settings = {											// those are never to be deleted
 			'enforce_mobile_mode':
 			{
 				section: 'KatexInputHelper.settings',
@@ -102,6 +132,22 @@ export class Settings
 				type: SettingItemType.String,
 				description: 'The data dir for the plugin.'
 			},
+			'migrated':												// state of migration to the indexedDB database
+			{
+				section: 'KatexInputHelper.settings',
+				public: false,
+				value: false,
+				type: SettingItemType.Bool,
+				description: 'The state of migration to indexedDB.'
+			},
+		
+		};
+
+		return settings; 
+	}
+	
+	commonSettings() : any {
+		const settings = {
 			'style':
 			{
 				section: 'KatexInputHelper.settings',
@@ -186,23 +232,6 @@ export class Settings
 			}
 		};
 		
-		return Object.assign(settings, this.locationSettings());
-	}
-	
-	locationSettings() : any {
-		let settings = { };
-
-		for (const dialog of this.dialogs) {
-			settings[`${this.dialogSettingsPrefix}${dialog}`] = {
-				'section': 'KatexInputHelper.settings',
-				'public': false,
-				'value': null,
-				'type': SettingItemType.Object,
-				'description': `Location settings for ${dialog} dialog`
-			}
-				
-		}
-
 		return settings;
 	}
 	
@@ -220,8 +249,11 @@ export class Settings
 	
 	async readSettings(parameters: any, text: string) : Promise<void> {
 		parameters.equation = text;
-		
 		parameters.enforceMobileMode = await this.enforceMobileMode();
+		if (await joplin.settings.value(`migrated`)) {
+			console.info(`Settings are migrated - no longer use them from Joplin`);
+			return; 
+		}
 		
 		parameters.style = await this.style();										// the style as stored in settings
 		parameters.localType = await this.localType();								// the localType
@@ -241,6 +273,12 @@ export class Settings
 	
 	async writeSettings(parameters: any, cancel: boolean = false) : Promise<void> {
 		console.info(`writeSettings: ${JSON.stringify(parameters)}`);
+		if (parameters.migrated) {
+			await joplin.settings.setValue(`migrated`, true);
+			console.info(`Settings migrated to indexedDB.`);
+			return;
+		}
+		
 		for (const [key, val] of Object.entries(parameters)) {
 			switch(key) {
 				case 'equation': await this.setEquation(val as string); break;

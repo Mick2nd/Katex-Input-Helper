@@ -23,10 +23,15 @@
 		display: none;
 	}
 }
- 
+
+html, body {
+	height: 100vh !important;
+	min-height: 100vh !important;
+}
+
 body {
 	/* essential: must be written at the correct moment */
-	height: 100vh;
+	// height: 100vh;
 	
 	@include menu_mixins.commonMenuMixin();
 	 
