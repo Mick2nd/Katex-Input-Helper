@@ -7,7 +7,8 @@
 		"allowJs": true,
 		"baseUrl": ".",
 		"esModuleInterop": true,
-		"experimentalDecorators": true
+		"experimentalDecorators": true,
+		"lib": ["ESNEXT"]
 	},
 	"files": ["src/index.ts"]
 }

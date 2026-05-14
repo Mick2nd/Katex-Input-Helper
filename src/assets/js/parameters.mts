@@ -1,5 +1,7 @@
 import { Buffer } from 'buffer';
-import { ParametersDb, common, ConfigurationType } from './db.mjs';
+import { openDB, deleteDB } from 'idb';
+import { ParametersDb } from './db.mjs';
+import { Schema, CommonType, LayoutType, ConfigType } from './schema.mjs';
 
 
 /**
@@ -39,7 +41,7 @@ export function ParametersProxy() {
 		parameters,
 		{
 			/**
-			 * **set** trap. Invoked by the Proxy when properties are set.
+			 * The **set** trap. Invoked by the Proxy when properties are set.
 			 */
 			set(target: KIHParameters, prop: string, value: any, receiver: any) {
 				
@@ -48,8 +50,8 @@ export function ParametersProxy() {
 					return true;
 				}
 				
-				if (target.db.isConfigurationKey(prop)) {				
-					const changed = !isEqual(target.configuration[prop], value); 	// TEST, was: target[prop] !== value;
+				if (target.schema.isConfigurationKey(prop)) {				
+					const changed = !isEqual(target.configuration[prop], value); 	// lodash
 					if (changed) {
 						target.configuration[prop] = value;						
 						if (!target.suppressWriteBack) {					// write back must be suppressed during initial load
@@ -63,14 +65,15 @@ export function ParametersProxy() {
 				return true;
 			},
 			
-			/*
+			/**
+			 * The **get** trap.
 			 */
 			get(target: any, prop: string, receiver: any) : any {
 				
 				if (hasGetter(target.client, prop)) {
 					return target.client[prop];
 				}
-				if (target.db.isConfigurationKey(prop)) {
+				if (target.schema.isConfigurationKey(prop)) {
 					return target.configuration[prop];
 				}
 				
@@ -78,6 +81,78 @@ export function ParametersProxy() {
 			}
 		});
 }
+
+/**
+ * A factory method to generate proxies for the individual configuration settings.
+ * Each config value is stored as object, simple data types are boxed. This proxy
+ * can do:
+ * - maintain 2 versions of the config: original and current
+ * - update from changed value
+ * - query current value and changes
+ * - initiate signals from changed values
+ * - detect changes inside composite types
+ */
+function ConfigProxy(key: string, config: ConfigType, cb: (key, config) => { }) {
+	
+	function box(config: ConfigType) : any {
+		if (typeof config === 'object') {
+			return config;
+		}
+		if (config === undefined) {
+			return { };
+		}
+		return { value: config };
+	}
+	function unbox(config: any) : ConfigType {
+		if (config.hasOwnProperty('value')) {
+			return config['value'];
+		}
+		return config;
+	}
+	function isBoxed(config: any) : boolean {
+		return config.hasOwnProperty('value');
+	}
+	
+	const original = box(config);
+	const current = $.extend({ }, original);
+	return new Proxy({
+			original: original,
+			current: current
+		}, 
+		{	
+			set(target: any, prop: string, value: any, receiver: any) {
+				
+				const original = target.original;
+				let current = target.current;
+				
+				if (prop === 'config') {
+					current = box(value);
+					target.current = current;
+				} else {
+					current[prop] = value;
+				}
+				if (!isEqual(original, current)) {
+					cb(key, unbox(current));
+				}
+
+				// Reflect.set(target, prop, value, receiver);
+				return true;			
+			},
+			get(target: any, prop: string, receiver: any) : any {
+
+				const original = target.original;
+				const current = target.current;
+				if (prop === 'hasChanged') {
+					return !isEqual(original, current);
+				}
+				if (prop === 'config') {
+					return unbox(current);
+				}
+				return current[prop]; 	// Reflect.get(target, prop, receiver);				
+			}
+		});
+}
+
 
 /**
  * Interface for communication between client and Katex Input Helper.
@@ -89,7 +164,8 @@ export function ParametersProxy() {
  * - this only matters if the migration fails to succeed.
  */
 interface IClient {
-	postMessage( msg: any ) : Promise<any>;
+	init(migrated: boolean) : Promise<void>;
+	get(keys: string[]) : Promise<any>;
 	
 	mode: string;
 	get equation(): string;
@@ -99,8 +175,11 @@ interface IClient {
 	set migrated(value: boolean);
 }
 
+/**
+ * The Web client.
+ */
 class WebClient implements IClient {
-	_db: ParametersDb = null;
+	_schema: Schema = null;
 	_configuration: any;
 	_equation: string = "";
 	mode = "web";
@@ -108,17 +187,21 @@ class WebClient implements IClient {
 	/**
 	 * Constructor.
 	 */	
-	constructor(db: ParametersDb, configuration: any) {
+	constructor(schema: Schema, configuration: any) {
 		document.cookie = "mjx.menu=";
-		this._db = db;
+		this._schema = schema;
 		this._configuration = configuration;
 	}
 	
-	async postMessage( msg: any ) : Promise<any> {
-		const response: any = this.loadCookies();
-		if (response.equation) {
-			this._equation = response.equation;
+	async init(migrated: boolean) {
+		const response = this.loadCookies([ 'equation' ]);
+		if (response['equation']) {
+			this._equation = response['equation'];
 		}
+	}
+	
+	async get(keys: string[]) {
+		const response = this.loadCookies(keys);
 		return response;
 	}
 	
@@ -164,6 +247,7 @@ class WebClient implements IClient {
 		
 		const persistEquations = this._configuration.persistEquations === true
 		const persistWindowPositions = this._configuration.persistWindowPositions === true;
+		
 		if (this.shouldBeStored(key, persistEquations, persistWindowPositions)) {
 			let json = null;
 			if (!val) {
@@ -188,44 +272,54 @@ class WebClient implements IClient {
 	}
 
 	/**
-	 * Loads all cookies. Cookies must be defined and must not be deactivated.
+	 * Loads selected cookies. Cookies must be defined and must not be deactivated.
 	 */
-	loadCookies() {
-		if (!globalThis.localStorage) { return { }; }
+	loadCookies(keys: string[]) {
+		const inst = this;
+		
+		function isInvalid(val: any) {
+			return val === undefined || val === null || val === 'null';
+		}
+		function defaultOf(key: string) {
+			return inst._schema.defaultOf(key) ?? '';
+		}
+		function fromHex(key: string, val: string) : string {
+			try {
+				return Buffer.from(val, 'hex').toString('utf-8');
+			} catch(e) { 
+				console.warn(`Hex Cookie conversion error : ${key} : ${e}`);
+				return val;
+			}
+		}
+		
+		// TODO: delete?
+		if (!globalThis.localStorage) { return { equation: '' }; }
 		try {
 			const cookies = { };
 
-			let persist = globalThis.localStorage.getItem('persistEquations') != 'false';
-			const persistEquations = persist;
-			persist = globalThis.localStorage.getItem('persistWindowPositions') != 'false';
-			const persistWindowPositions = persist;
+			const persistEquations = globalThis.localStorage.getItem('persistEquations') !== 'false';
+			const persistWindowPositions = globalThis.localStorage.getItem('persistWindowPositions') !== 'false';
 			
-			for (let idx = 0; idx < globalThis.localStorage.length; idx++) {
-				
-				const key = globalThis.localStorage.key(idx);
-				let val = globalThis.localStorage.getItem(key);
-				if (val == '') { continue; }
+			for (const key of keys) {
 				if (this.shouldBeStored(key, persistEquations, persistWindowPositions)) {
-					try {
-						if (key == 'equation' || key == 'equationCollection') {
-							val = Buffer.from(val, 'hex').toString('utf-8');
-						}
-					} catch(e) { 
-						alert(`Hex Cookie conversion error : ${key} : ${e}`);
+					let val = globalThis.localStorage.getItem(key);
+					if (isInvalid(val) || val === '') {
+						cookies[key] = defaultOf(key);
+						continue; 
+					}
+					if (key == 'equation' || key == 'equationCollection') {
+						val = fromHex(key, val);
 					}
 					val = JSON.parse(val); 
 					cookies[key] = val;
 				}
-			}
-			
+			}		
 			return cookies;
 			
 		} catch(e) {
 			const msg = `Cookies inconsistent : ${e}`;
 			console.warn(msg);
-			alert(msg);
-			this.resetCookies();
-			return { };
+			return this.resetCookies();
 		}
 	}
 
@@ -236,6 +330,7 @@ class WebClient implements IClient {
 		for (const [ key, val ] of Object.entries(this._configuration)) {
 			this.storeCookie(key, val);
 		}
+		return this._configuration;
 	}
 
 	/**
@@ -248,34 +343,72 @@ class WebClient implements IClient {
 	shouldBeStored(key: string, persistEquations = true, persistWindowPositions = true) {
 		return (
 			(key === 'equation' ||
-			 this._db.isCommonKey(key) || 
-			 (persistWindowPositions && this._db.isWindowKey(key)) ||
-		 	 (persistEquations && this._db.isEquationsKey(key))));
+			 this._schema.isCommonKey(key) || 
+			 (persistWindowPositions && this._schema.isWindowKey(key)) ||
+		 	 (persistEquations && this._schema.isEquationsKey(key))));
 	}
 
 }
 
+/**
+ * The **Plugin** client.
+ */
 class PluginClient implements IClient {
+	id = "Katex Input Helper";
 	_equation: string = "";
 	_displayMode: boolean = true;
 	_isMobile: boolean = false;
 	_migrated: boolean = false;
 	
 	mode = "plugin";
+	
+	constructor(private readonly schema: Schema) {
+		
+	}
+
+	private async create() {
+		const msg = {
+			id: this.id,
+			cmd: 'CREATE',
+			data: this.schema.defaults
+		};
+		await window.webviewApi.postMessage(msg);			
+	}
 
 	/**
-	 * Constructor.
+	 * Initialization.
 	 */	
-
-	async postMessage( msg: any ) : Promise<any> {
-		const response = await window.webviewApi.postMessage(msg);
-		if (response.equation) {
-			this._equation = response.equation;
+	async init(migrated: boolean) {
+		
+		const keys = [ 'equation', 'displayMode', 'isMobile' ];
+		const response = await this.get(keys);
+		if (response) {
+			this._equation = response.equation ?? "";
+			this._displayMode = response.displayMode === true;
+			this._isMobile = response.isMobile === true;
+			
+			if (!migrated) {
+				await this.create();
+			}
+		
+		} else {
+			console.warn(`The "Katex Input Helper" plugin did not return a response to get parameters `);
 		}
-		this._displayMode = response.displayMode === true;
-		this._isMobile = response.isMobilePlugin === true;
+	}
+	
+	/**
+	 * Queries initial settings or configuration settings.
+	 */
+	async get(keys: string[]) {
+		const msg = {
+			id: this.id,
+			cmd: 'READ',
+			data: keys
+		};
+		const response = await window.webviewApi.postMessage(msg);
 		return response;
 	}
+	
 
 	get equation(): string {
 	    return this._equation;
@@ -296,7 +429,17 @@ class PluginClient implements IClient {
 
 	set migrated(value: boolean) {
 		this._migrated = value;
-		this.write();
+		
+		const msg = {
+			id: this.id,
+			cmd: 'WRITE',
+			data: [ 'migrated', value ]
+		};
+		window.webviewApi.postMessage(msg).then(() => { });
+
+		if (!value) {
+			console.warn(`Migration to database store failed, data may be lost`);
+		}
 	}
 	
 	write() {
@@ -305,17 +448,12 @@ class PluginClient implements IClient {
 			migrated: this._migrated
 		}
 		$('#hidden').attr('value', JSON.stringify(dialogResponse));
-		
-		if (!dialogResponse.migrated) {
-			console.warn(`Migration to database store failed, data may be lost`);
-		}
 	}
 }
 
 
 /**
  * Manages control parameters, especially those which can be stored over sessions.
- * 
  * It is based on the communication of messages to gain the settings of the plugin.
  */
 export class KIHParameters {
@@ -324,6 +462,8 @@ export class KIHParameters {
 
 	client: IClient = null;
 	db: ParametersDb = null;
+	schema: Schema = null;
+	capabilities: Capabilities = null;
 	configuration: any = { };	
 	
 	suppressWriteBack = false;
@@ -333,11 +473,14 @@ export class KIHParameters {
 	 */
 	constructor() {
 		
-		this.db = new ParametersDb();										// instantiate the db
-		if (window.webviewApi) {											// configure the "Client" - side interface
-			this.client = new PluginClient();
+		this.schema = new Schema();
+		this.db = new ParametersDb(this.schema);							// instantiate the db
+		this.capabilities = new Capabilities();
+		
+		if (this.capabilities.isPlugin) {									// configure the "Client" - side interface
+			this.client = new PluginClient(this.schema);
 		} else {
-			this.client = new WebClient(this.db, this.configuration);
+			this.client = new WebClient(this.schema, this.configuration);
 		}
 	}
 	
@@ -346,36 +489,25 @@ export class KIHParameters {
 	 * In the web variant they are stored as Cookies.
 	 */
 	async queryParameters(migrated: boolean = false) {
-				
-		let inst = this;
-		
-		let response = await this.client.postMessage({
-			id: this.id,
-			cmd: 'getparams'
-		});
-		if (response) {
-			function filter(key: string) : boolean {
-				return !migrated && ( inst.db.isConfigurationKey(key) );				
-			}
 			
-			for (const [key, val] of Object.entries(response).filter(([key, val]) => filter(key))) {
-				if (this.db.isConfigurationKey(key)) {
-					inst[key] = val;										// TODO: addressed to Proxy set trap??
+		await this.client.init(migrated);
+		if (migrated) { return { }; }	
 
-					/* ANALYSIS: this may be of no value as no panel is created at this time.
-					 * PANELs exist in HTML !!
-					 */
-					if (this.db.isWindowKey(key)) {
-						inst.resizePanel(key);
-					}
+		let all = { };
+		for (const [ , key ] of this.schema.configurationKeys) {
+			const response = await this.client.get([ key ]);
+			if (response) {
+				this[key] = response[key];
+				if (this.schema.isWindowKey(key)) {
+					this.resizePanel(key);
 				}
+				
+				all = $.extend(all, response);
+			} else {
+				console.warn(`The "Katex Input Helper" plugin did not return a response to get parameters `);				
 			}
-			return response;
-			
-		} else {
-			console.warn(`The "Katex Input Helper" plugin did not return a response to get parameters `);
-			return false;
 		}
+		return all;
 	}
 	
 	/**
@@ -394,7 +526,7 @@ export class KIHParameters {
 				if (response) {
 					console.info(`About to migrate parameter representation`);
 					for (const [key, val] of Object.entries(response)) {		// this transfers them to the db
-						if (this.db.isConfigurationKey(key)) {
+						if (this.schema.isConfigurationKey(key)) {
 							await this.db.putParameter(key, val);				// TODO: Is this doubled functionality?
 						}
 					}
@@ -405,12 +537,12 @@ export class KIHParameters {
 			}
 
 			this.suppressWriteBack = true;										// initial read does not permit write back
-			for (const [ store, key ] of this.db.configurationKeys) {			// in either case read parameters from the db
+			for (const [ store, key ] of this.schema.configurationKeys) {	// in either case read parameters from the db
 				const value = await this.db.get(store, key);
 				this[key] = value;
 			}
 			this.suppressWriteBack = false;
-			
+
 		} catch(error) {
 			console.error('Could not query parameters from DB: %s', error);
 			this.suppressWriteBack = false;
@@ -432,7 +564,7 @@ export class KIHParameters {
 	 */	
 	resetWindowPositions() {
 		for (const [ key, val ] of Object.entries(this.configuration)) {
-			if (this.db.isWindowKey(key)) {
+			if (this.schema.isWindowKey(key)) {
 				Layout.revert(val, true);					// force revert to initial settings
 				this.resizePanel(key);
 				this.enqueueParameter(key, val);			// changes must be written to db
@@ -444,7 +576,7 @@ export class KIHParameters {
 	 * Returns the window ids as array.
 	 */
 	get windowIds() {
-		return this.db.windowKeys;
+		return this.schema.windowKeys;
 	}
 	
 	/**
@@ -569,7 +701,7 @@ export class KIHParameters {
 	 * Console output of the settings.
 	 */
 	printSettingsConfiguration() {
-		for (const key of this.db.commonKeys) {
+		for (const key of this.schema.commonKeys) {
 			console.debug(`Settings-Parameters : ${key} : ${this.configuration[key]} `);
 		}
 	}
@@ -578,7 +710,7 @@ export class KIHParameters {
 	 * Console output of the Window Size and Position.
 	 */
 	printWindowConfiguration() {
-		for (const key of this.db.windowKeys) {
+		for (const key of this.schema.windowKeys) {
 			console.debug(`Window-Parameters : ${key} : ${JSON.stringify(this.configuration[key])} `);
 		}
 	}
@@ -607,6 +739,50 @@ namespace Layout {
 		}
 	
 		return this;
+	}
+}
+
+/**
+ * Used to query capabilities of a running instance:
+ * - is this a plugin
+ * - is local storage enabled
+ * - is indexed db enabled
+ */
+class Capabilities {
+	
+	get isPlugin() : boolean {
+		return window.webviewApi !== undefined;
+	}
+	
+	get isLocalStorageEnabled() : boolean {
+		try {
+			const key = `__storage__test`;
+			window.localStorage.setItem(key, null);
+			window.localStorage.removeItem(key);
+			return true;
+		
+		} catch (e) {
+			return false;
+		}
+	}
+	
+	async isIndexedDbEnabled() : Promise<boolean> {
+		try {
+			const dbName = `__db__test`;
+			const db = await openDB(dbName, 1, {
+				upgrade(...params) { }
+			});
+			await deleteDB(dbName);
+			return true;
+			
+		} catch(e) {
+			return false;
+		}
+	}
+	
+	async toString() {
+		const enabled = await this.isIndexedDbEnabled();
+		return `Capabilities : ${this.isPlugin}, ${this.isLocalStorageEnabled}, ${enabled}`;
 	}
 }
 

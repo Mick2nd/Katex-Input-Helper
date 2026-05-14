@@ -60,22 +60,36 @@ export class Dialog
 		await this.loadJs(handle);
 
 		let inst = this;
-		await joplin.views.panels.onMessage(handle, async function(msg: any) {
+		await joplin.views.panels.onMessage(handle, async function(msg: { id: string, cmd: string, data: any }) {
 			
 			console.info(`Message from Webview: ${JSON.stringify(msg)}, setting dm to ${inst.displayMode} `);
 			let text = await joplin.commands.execute('selectedText') as string;			// the text of the selection
 			
-			if (msg.id == 'Katex Input Helper' && msg.cmd == 'getparams') {
-				await inst.settings.readSettings(msg, text);
-				msg.equation = text;
-				msg.displayMode = inst.displayMode;
-				msg.isMobilePlugin = inst.isMobile;								// the Plugin has its own copy
-				return msg;
-			}
-
-			if (msg.id == 'Katex Input Helper' && msg.cmd == 'sendparams') {
-				console.debug(`Message from WebView: %O`, msg);
-				return true;
+			if (msg.id == 'Katex Input Helper') { 
+				if (msg.cmd == 'getparams' || msg.cmd == 'READ') {
+					
+					const keys = new Set(msg.data);
+					const clientKeys = new Set([ 'equation', 'displayMode', 'isMobile' ]);
+					const legacyKeys = keys.difference(clientKeys);
+					
+					const reponse: any = { };
+					await inst.settings.readSettings(reponse, [ ...legacyKeys ]);
+					if (keys.has('equation')) { reponse.equation = text; }
+					if (keys.has('displayMode')) { reponse.displayMode = inst.displayMode; }
+					if (keys.has('isMobile')) { reponse.isMobile = inst.isMobile; }			// the Plugin has its own copy
+					
+					return reponse;
+					
+				} else if (msg.cmd == 'CREATE') {
+					
+					await inst.settings.create(msg.data);
+					return true;
+					
+				} else if (msg.cmd == 'WRITE') {
+					
+					await inst.settings.write(...msg.data);
+					return true;
+				}
 			}
 			return false;
 		});
@@ -103,13 +117,13 @@ export class Dialog
 			// handle = null;
 			return res;
 		}
+		console.debug(`Returned KATEX form : ${JSON.stringify(res.formData.KATEX)}`);	// More than one input field could have been returned
 		const json = res.formData.KATEX.hidden;
 		if (!json) {
 			console.warn(`No formData returned on ${res.id}`);
 			return res;
 		}
-		console.debug(`Returned Json : ${json} `);
-		let parameters = JSON.parse(json);
+		const parameters = JSON.parse(json);
 		if (res.id == 'okay') {
 			await joplin.commands.execute(										// okay button -> save equation
 				'editor.execCommand', 
@@ -118,7 +132,7 @@ export class Dialog
 					args: [ parameters.equation ?? "" ]
 				});
 		}
-		await this.settings.writeSettings(parameters, res.id != 'okay');		// save settings according to policy
+		// await this.settings.writeSettings(parameters, res.id != 'okay');		// save settings according to policy
 		
 		return res;
 	}
