@@ -39,7 +39,7 @@ const test_command = async () =>
 	try
 	{
 		const archive = "TEST";
-		var dlg = new TestDialog(archive);
+		let dlg = new TestDialog(archive);
 		await dlg.create();
 		let res = await dlg.open();
 		console.dir(res);

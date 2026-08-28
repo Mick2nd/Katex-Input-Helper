@@ -181,7 +181,7 @@ export class KatexInputHelper extends HintsClient implements IKatexInputHelper {
 		@inject(menusId) menus : IMenus,
 	) {
 		super();
-		window.vme = this;
+		globalThis.vme = this;
 	
 		$('body').on('error', (event) => {
 			console.error(`Error : %O`, event);
@@ -191,7 +191,7 @@ export class KatexInputHelper extends HintsClient implements IKatexInputHelper {
 		this.baseLocation = this.setBaseLocation();
 		
 		// Probably not needed
-		console.info(`Url: ${window.location}`);
+		console.info(`Url: ${globalThis.location}`);
 		
 		this.services = services;
 		this.parameters = services.parameters;
@@ -324,7 +324,7 @@ export class KatexInputHelper extends HintsClient implements IKatexInputHelper {
 		}
 		
 		console.info('Starting prefetch');
-		await this.parameters.queryParametersDb();				// from Plugin or web query parameters
+		await this.parameters.queryParametersNext();			// from Plugin or web query parameters
 		const app = this.parameters.isMobile ? 'mobile' : 'desktop';
 		const htmlString = (await import(`../dialog-${app}.hbs`)).default;
 		
@@ -350,7 +350,7 @@ export class KatexInputHelper extends HintsClient implements IKatexInputHelper {
 	 */
 	async initialise() { 
 
-		// TODO: test on submit -> NOT WORKING
+		// Test on submit -> NOT WORKING
 		/* No data return ... due to this handler ??
 		$('#KATEX').on('submit', function(event: Event) {
 			alert('Canceling the dialog');
@@ -1217,8 +1217,8 @@ export class KatexInputHelper extends HintsClient implements IKatexInputHelper {
 			.join('/')
 			.replace(/ /g, '%20') + '/';
 		if (bundlePath == '/' && 
-			window.location.protocol == 'file:') {		// local file system
-			bundlePath = `${window.location}`
+			globalThis.location.protocol == 'file:') {		// local file system
+			bundlePath = `${globalThis.location}`
 			.split('/')
 			.slice(0, -1)
 			.join('/')

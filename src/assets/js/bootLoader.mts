@@ -1,10 +1,6 @@
 
 /**
- *	TODO: Reduce functionality as most of the former functionality is now done
- *	by WEBPACK and INVERSIFY (see container.mts).
- *
- *	Could not bring asynchronous version of easyui to work. With little modification 
- *	it is possible to load EASYUI asynchronously.
+ *	With little modification it is possible to load EASYUI asynchronously.
  *	jquery node_module working with ProvidePlugin.
  */
  import { injectable, inject, Factory } from 'inversify';
@@ -119,7 +115,7 @@ export default class BootLoader implements IBootLoader {
 
 			await this.easyuiLoader.load();
 			this.vme = await this.factory();
-			window.vme = this.vme;							// prevents garbage collection?
+			globalThis.vme = this.vme;							// prevents garbage collection?
 			const prefetched = await this.vme.prefetch();		// prefetch can load another page
 			if (prefetched) {
 				await this.readyAsync();						// in this case must wait for ready.

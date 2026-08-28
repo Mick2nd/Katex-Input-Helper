@@ -1,5 +1,5 @@
 import joplin from 'api';
-import { SettingItemType, SettingItemSubType, SettingItem } from 'api/types';
+import { SettingItemType, SettingItem } from 'api/types';
 
 
 /**
@@ -57,6 +57,23 @@ export class Settings
 				label: this.mobile ? 'Enforce Desktop Mode' : 'Enforce Mobile Mode',
 				description: this.mobile ? 'Used to enforce desktop mode on mobile' : 'Used to enforce mobile mode on desktop'
 			},
+			'log_severity':
+			{
+				section: 'KatexInputHelper.settings',
+				public: true,
+				value: '1',
+				type: SettingItemType.Int,
+				isEnum: true,
+				options: {
+					4: 'Messages Only',
+					3: 'Error',
+					2: 'Warning',
+					1: 'Info',
+					0: 'Debug'
+				},
+				label: 'Log Severity',
+				description: 'The Log Severity for the Event Viewer'				
+			},
 			'data_dir':												// available for Content Scripts
 			{
 				section: 'KatexInputHelper.settings',
@@ -92,8 +109,9 @@ export class Settings
 	async readSettings(parameters: any, keys: string[]) : Promise<void> {
 		
 		if (await joplin.settings.value(`migrated`)) {
-			console.info(`Settings are migrated - no longer use them from Joplin`);
-			return; 
+			// It depends from webview which keys are queried
+			// console.info(`Settings are migrated - no longer use them from Joplin`);
+			// return; 
 		}
 		
 		for (const key of keys) {
@@ -104,44 +122,6 @@ export class Settings
 			}
 		}
 	}
-
-	/*	
-	async writeSettings(parameters: any, cancel: boolean = false) : Promise<void> {
-		
-		if (parameters.migrated) {
-			await joplin.settings.setValue(`migrated`, true);
-			console.info(`Settings migrated to indexedDB.`);
-			return;
-		}
-		
-		for (const [key, val] of Object.entries(parameters)) {
-			switch(key) {
-				case 'equation': await this.setEquation(val as string); break;
-				case 'enforceMobileMode': await this.setEnforceMobileMode(val as boolean); break;
-				case 'style': await this.setStyle(val as string); break;
-				case 'localType': await this.setLocalType(val as string); break;
-				case 'encloseAllFormula': await this.setEncloseAllFormula(val as boolean); break;
-				case 'autoUpdateTime': await this.setAutoUpdateTime(val as number); break;
-				case 'autoupdateType': await this.setAutoUpdateType(val as boolean); break;
-				case 'menuupdateType': await this.setMenuUpdateType(val as boolean); break;
-				case 'persistEquations': await this.setPersistEquations(val as boolean); break;
-				case 'persistWindowPositions': await this.setPersistWindowPositions(val as boolean); break;
-			
-			}
-		}
-				
-		if ((parameters.persistEquations || !cancel) && 'equationCollection' in parameters) {
-			await this.setEquationCollection(parameters.equationCollection);
-		}
-		if (parameters.persistWindowPositions) {
-			for (const id of this.dialogs) {
-				if (id in parameters) {
-					await this.setLocation(id, parameters[id]);
-				}
-			}			
-		}		
-	}
-	*/
 	
 	/**
 	 * Writes a single setting.
@@ -194,6 +174,11 @@ export class Settings
 	async enforceMobileMode() : Promise<boolean>
 	{
 		return await joplin.settings.value('enforce_mobile_mode');
+	}
+
+	async severity() : Promise<number>
+	{
+		return await joplin.settings.value('log_severity');
 	}
 
 	async setEnforceMobileMode(mode: boolean) : Promise<void> {

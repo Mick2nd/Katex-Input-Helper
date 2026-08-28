@@ -22,18 +22,17 @@ export default function inputOutputConfig(env: any) : any {
 				 * 	Each extra (chunk) component has its own file. We can name them
 				 *	according to development version and origin.
 				 */
-				 
 				let name: any = pathData.chunk?.name;
 				if (!name) { name = pathData.chunk?.id; }				// could be number
-				
+	
 				if (typeof name !== 'string') {
-					return 'js/[name].js';								// could be id
+					return `js/[id].js`;								// could be id
 				}
 				const ext = getExtension(name);				
 				if (ext == 'html' || ext == 'hbs' || ext == 'json') {
 					return `${ext}/[name].js`;
 				}
-				
+	
 				if (name.includes('i18n')) {
 					return 'js/i18n/[name].js';
 				}
@@ -50,6 +49,7 @@ export default function inputOutputConfig(env: any) : any {
 					return `js/localization/[name].js`;
 				}
 				return 'js/[name].js';
+				
 			},
 			path: path.resolve(rootDir, 'dist/assets'),
 			assetModuleFilename: 'misc/[name]-[hash][ext]',

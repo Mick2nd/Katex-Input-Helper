@@ -3,7 +3,7 @@ import { Versions } from './versions.mjs';
 
 import { inject, injectable, injectFromBase, Factory } from 'inversify';
 import { ILocalizer, IParser, IMath, IUtilities, categoriesTreeId, ICategoriesTree,
-	IMessager, dynamicParametersId, panelFactoryId, IPanel, IHints, ISelectedServices } from './interfaces.mjs';
+	IMessager, SEVERITY, dynamicParametersId, panelFactoryId, IPanel, IHints, ISelectedServices } from './interfaces.mjs';
 
 enum RESIZING_TYPE {
 	AUTO,
@@ -421,10 +421,10 @@ export class KIHPanel implements IPanel {
 			}
 		}
 		if (this.id == 'wEVENT_LIST') {
-			$('#wEVENT_LIST').html(this.messager.table);
+			$('#wEVENT_LIST').html(this.messager.getTable(this.parameters.severity));
 			if (initial) {
 				this.messager.subscribe(() => {
-					$('#wEVENT_LIST').html(this.messager.table);
+					$('#wEVENT_LIST').html(this.messager.getTable(this.parameters.severity));
 				})
 			} else {
 				await this.parser.parseAsync('#wEVENT_LIST table', 0, 100);		// only for orientation changes

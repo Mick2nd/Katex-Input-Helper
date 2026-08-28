@@ -30,6 +30,14 @@ export interface ILocalizer {
 	addResolver(func: any) : void;
 }
 
+export enum SEVERITY {
+	DEBUG = 0,
+	INFO = 1,
+	WARNING = 2,
+	ERROR = 3,
+	MESSAGES = 4
+}
+
 export interface IMessager {
 	showError(msgKey: string, e: any) : void;
 	show(titleKey: string, msgKey: string, e?: any) : void;
@@ -38,7 +46,7 @@ export interface IMessager {
 	warn(...params) : void;
 	info(...params) : void;
 	debug(...params) : void;
-	get table() : string;
+	getTable(severity: number) : string;
 	subscribe(func: any, ...args: any) : void;
 }
 

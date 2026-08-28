@@ -1,5 +1,5 @@
 import { inject, injectable } from 'inversify';
-import { ILocalizer, localizerId, IMessager, messagerId, IUtilities, State, IToggler } from './interfaces.mjs';
+import { ILocalizer, localizerId, IMessager, messagerId, SEVERITY, IUtilities, State, IToggler } from './interfaces.mjs';
 import { Observable } from './patterns/observable.mjs';
 import { RegionToggler, ContainerToggler } from './toggler.mjs';
 
@@ -24,7 +24,7 @@ export class Messager extends Observable implements IMessager {
 		super();
 		this.localizer = localizer;
 		this.max = 100;
-		this.severity = 1;
+		this.severity = SEVERITY.INFO;
 	}
 	
 	/**
@@ -34,11 +34,13 @@ export class Messager extends Observable implements IMessager {
 	showError(msgKey: string, e: any) {
 		let error = this.localizer.getLocalText('ERROR');
 		let msg = this.localizer.getLocalText(msgKey);
+		
+		this.push(new Event(SEVERITY.MESSAGES, error, msg, e));
 		$.messager.alert(`<span class='rtl-title-withicon'>${error}</span>`, `${msg} - ${e}`, 'warning'); 		
 	}
 	
 	/**
-	 * Shows an Panel with some information or hints.
+	 * Shows a Panel with some information or hints.
 	 * Title key and Message key are translated.
 	 */
 	show(titleKey: string, msgKey: string, e = null) {
@@ -52,7 +54,7 @@ export class Messager extends Observable implements IMessager {
 			msg = `<div>${msg}:</div><div style="color: red;">${e}</div>`;
 		}
 		
-		this.push(new Event(titleText, msgText, e));
+		this.push(new Event(SEVERITY.MESSAGES, titleText, msgText, e));
 		$.messager.show({ title: title, msg: msg });
 	}
 	
@@ -61,31 +63,31 @@ export class Messager extends Observable implements IMessager {
 	 * later inspection.
 	 */
 	error(...params: any[]) : void {
-		if (params.length == 2) {
-			const [ msg, e ] = params;
-			this.push(new Event('LOG_ERROR', msg.slice(0, -2), e));
-		}
-		if (params.length == 1) {
-			const [ msg ] = params;
-			this.push(new Event('LOG_ERROR', msg, null));
-		}
+		let [ msg, e ] = this.fromParams(...params);
+		this.push(new Event(SEVERITY.ERROR, 'LOG_ERROR', msg, e));
 	}
-	warn(...params) : void {
-		if (this.severity <= 3) {
-			const [ msg ] = params;
-			this.push(new Event('LOG_WARN', msg, null));
-		}
+	warn(...params: any[]) : void {
+		let [ msg, e ] = this.fromParams(...params);
+		this.push(new Event(SEVERITY.WARNING, 'LOG_WARN', msg, e));
 	}
-	info(...params) : void {
-		if (this.severity <= 2) {
-			const [ msg ] = params;
-			this.push(new Event('LOG_INFO', msg, null));
-		}
+	info(...params: any[]) : void {
+		const [ msg ] = params;
+		this.push(new Event(SEVERITY.INFO, 'LOG_INFO', msg, null));
 	}
-	debug(...params) : void {
-		if (this.severity === 1) {
-			const [ msg ] = params;
-			this.push(new Event('LOG_DEBUG', msg, null));
+	debug(...params: any[]) : void {
+		const [ msg ] = params;
+		this.push(new Event(SEVERITY.DEBUG, 'LOG_DEBUG', msg, null));
+	}
+	
+	/**
+	 * Normalizes the given parameters for use in the error / warn methods.
+	 */
+	fromParams(...params: any[]) : any[] {
+		let [ msg, ...e ] = params;
+		if (e.length > 0) {
+			return [ msg.slice(0, -2), e[0] ];
+		} else {
+			return [ msg, null ];
 		}
 	}
 	
@@ -104,12 +106,14 @@ export class Messager extends Observable implements IMessager {
 	/**
 	 * Gets a table out of the eventView
 	 */
-	get table() : string {
+	getTable(severity: number = SEVERITY.INFO) : string {
 		
 		let table = '<table cellspacing="0" class="events-table">\n';
 		table += this.head;
 		for (const event of this.eventView.toReversed()) {
-			table += event.row;
+			if (event.severity >= severity) {
+				table += event.row;
+			}
 		}
 		table += '</table>\n';
 		return table;
@@ -135,12 +139,14 @@ export class Messager extends Observable implements IMessager {
  */
 class Event {
 	
+	severity: number;
 	time: Date;
 	title: string;
 	msg: string;
 	e: Error;
 	
-	constructor(title: string, msg: string, e: Error = null) {
+	constructor(severity: number, title: string, msg: string, e: Error = null) {
+		this.severity = severity;
 		this.time = new Date(Date.now());
 		this.title = title;
 		this.msg = msg;
@@ -155,11 +161,11 @@ class Event {
 	}
 	
 	get formattedTime() : string {
-		return this.time.toISOString().replace('T', ' ').replace('Z', '');
+		return this.time.toISOString().replace('T', '&nbsp;').replace('Z', '');
 	}
 	
 	get row() : string {
-		return `<tr><td>${this.formattedTime}</td><td>${this.title}</td><td>${this.msg}</td><td>${this.exception}</td></tr>\n`;
+		return `<tr><td><nobr>${this.formattedTime}</nobr></td><td><nobr>${this.title}</nobr></td><td>${this.msg}</td><td><div style="color: red;">${this.exception}</div></td></tr>\n`;
 	}
 }
 
@@ -235,7 +241,7 @@ export class Utilities implements IUtilities {
 		let html = $.parseHTML(text);													// parse it into html object
 		let key = $(html).attr('locate') as string;										// extract the locate attribute
 		let located = this.localizer.getLocalText(key);									// use it to get localized text
-		// TODO: after change due to Typescript errors all seems to be okay
+		// After change due to Typescript errors all seems to be okay
 		let htmlString = (($(html).html(located)[0] as any) as Element).outerHTML;		// insert it into orginal html
 	
 		return htmlString;

@@ -1,5 +1,5 @@
 import { openDB } from 'idb';
-import { Schema, CommonType, LayoutType, ConfigType, ConfigurationEnum } from './schema.mjs';
+import { Schema, ConfigurationEnum } from './schema.mjs';
 
 
 /**
@@ -58,7 +58,7 @@ export class ParametersDb {
 	async open() {
 		try {
 			const inst = this;
-			this.db = await openDB(this.dbName, 11, {
+			this.db = await openDB(this.dbName, 12, {
 				
 				// ATTENTION! do not delete existing data.				
 				upgrade(...params) : Promise<void> {

@@ -39,8 +39,8 @@ class Redirector {
 			"warn"
 		];
 		for (const prop of consoleProps) {
-			if (!(prop in this) && (prop in window.console)) {		// all missing methods are transferred to this instance
-				this[prop] = window.console[prop];
+			if (!(prop in this) && (prop in globalThis.console)) {		// all missing methods are transferred to this instance
+				this[prop] = globalThis.console[prop];
 			}
 		}		
 	}
@@ -52,28 +52,28 @@ class Redirector {
 		this.messager = messager;
 		this.debug(`Messager injected`);
 		if (this['assert'] !== undefined) {
-			window.console.assert(this.messager !== null);
+			globalThis.console.assert(this.messager !== null);
 		}
 	}
 
 	error(...params) {
-		window.console.error(...params);
-		this.messager.error(...params);
+		globalThis.console.error(...params);
+		if (this.messager) { this.messager.error(...params); }
 	}
 
 	warn(...params) {
-		window.console.warn(...params);
-		this.messager.warn(...params);
+		globalThis.console.warn(...params);
+		if (this.messager) { this.messager.warn(...params); }
 	}
 
 	info(...params) {
-		window.console.info(...params);
-		this.messager.info(...params);
+		globalThis.console.info(...params);
+		if (this.messager) { this.messager.info(...params); }
 	}
 	
 	debug(...params) {
-		window.console.debug(...params);
-		this.messager.debug(...params);
+		globalThis.console.debug(...params);
+		if (this.messager) { this.messager.debug(...params); }
 	}
 }
 

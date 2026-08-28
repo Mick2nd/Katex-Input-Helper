@@ -86,7 +86,15 @@ export class MathFormulae implements IMath {
 				}
 			}
 			
-			this.katex.render(text, target, { throwOnError: true, strict: false, displayMode: displayMode, macros: { '\\box': '□' } });
+			this.katex.render(
+				text, 
+				target, { 
+					throwOnError: true, 
+					strict: false, 
+					displayMode: displayMode, 
+					macros: { '\\box': '□' }, 
+					//output: 'html' 
+				});
 		} catch(e) {
 			console.warn(`Katex: insertMath : ${e}`);
 			this.messager.show('KATEX', 'KATEX_NOT_RENDERED', e)

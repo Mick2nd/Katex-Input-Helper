@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 import { openDB, deleteDB } from 'idb';
 import { ParametersDb } from './db.mjs';
-import { Schema, CommonType, LayoutType, ConfigType } from './schema.mjs';
+import { Schema, ConfigType } from './schema.mjs';
 
 
 /**
@@ -16,6 +16,9 @@ export function ParametersProxy() {
 	const parameters = new KIHParameters();
 	
 	function hasGetter(o: any, prop: string) : boolean {
+		if (typeof o !== 'object' || o === null || o === undefined) {
+			return false;
+		}
 		const descriptor = Object.getOwnPropertyDescriptor(o, prop);
 		if (descriptor) {
 			const result = descriptor?.get !== undefined;
@@ -27,6 +30,9 @@ export function ParametersProxy() {
 	}
 
 	function hasSetter(o: any, prop: string) : boolean {
+		if (typeof o !== 'object' || o === null || o === undefined) {
+			return false;
+		}
 		const descriptor = Object.getOwnPropertyDescriptor(o, prop);
 		if (descriptor) {
 			const result = descriptor?.set !== undefined;
@@ -153,6 +159,303 @@ function ConfigProxy(key: string, config: ConfigType, cb: (key, config) => { }) 
 		});
 }
 
+/**
+ * The storage sink interface: writes a single value.
+ */
+interface IStorageSink {
+	write(key: string, value?: any) : void;
+}
+
+/**
+ * Abstract base class: provides the *shouldBeStored* ufnction.
+ */
+abstract class StorageSinkBase implements IStorageSink {
+	queue = [];
+	ongoingPut = false;
+	
+	constructor(protected readonly schema: Schema, protected readonly configuration: any) {
+		
+	}
+	
+	public write(key: string, value?: any) : void {
+		if (this.shouldBeStored(key)) {
+			const val = (value ?? this.configuration[key]);
+			this.enqueue(key, val);
+		}
+	}
+	
+	abstract put(key: string, value: any) : Promise<void>;
+
+	/**
+	 * Enqueues a single property to the property queue.
+	 */
+	protected enqueue(prop: string, value: any) {
+		this.queue.push([ prop, value ]);
+		if (!this.ongoingPut) {
+			this.ongoingPut = true;
+			this.startDequeue();
+		}
+	}
+
+	/**
+	 * Private *put queue* processing.
+	 */
+	private startDequeue() {
+		const [ prop, value ] = this.queue.shift(); 
+		this.put(prop, value)
+		.then(() => {
+			if (this.queue.length > 0) {
+				this.startDequeue();
+			} else {
+				this.ongoingPut = false;
+			}
+		})
+		.catch((err) => {
+			console.error(`Error during dequeue of ${prop} : %s`, err);
+		});
+	}
+	
+	protected shouldBeStored(key: string) {
+		return (
+			key == 'equation' ||
+			this.schema.isCommonKey(key) || 
+			(this.configuration.persistWindowPositions && this.schema.isWindowKey(key)) ||
+		 	(this.configuration.persistEquations && this.schema.isEquationsKey(key)));
+	}
+}
+
+/**
+ * The plugin storage sink.
+ */
+class PluginSink extends StorageSinkBase {
+	id = "Katex Input Helper";
+	
+	async put(key: string, value: any) : Promise<void> {
+		const msg = {
+			id: this.id,
+			cmd: 'WRITE',
+			data: [ key, value ]
+		};
+		await globalThis.webviewApi.postMessage(msg);			
+	}
+}
+
+/**
+ * The Web storage sink.
+ */
+class WebSink extends StorageSinkBase {
+	
+	async put(key: string, value: any) : Promise<void> {
+		this.storeCookie(key, value);			
+	}
+	
+	/**
+	 * Store a single cookie after checking if it's desired.
+	 * TODO: error & exception handling.
+	 * 
+	 * @param key - key, e.g. name of the item to be stored
+	 * @param val - value to be stored
+	 */
+	storeCookie(key: string, val: any) {
+		if (!globalThis.localStorage) { return; }
+		
+		if (this.shouldBeStored(key)) {
+			let json = null;
+			if (!val) {
+				console.warn(`storeCookie error for key ${key}, no value`);
+				return;
+			}
+			try {
+				json = JSON.stringify(val);
+				let final = json;
+				if (key == 'equation' || key == 'equationCollection') {				
+					final = Buffer.from(json, 'utf8').toString('hex');
+				}
+				globalThis.localStorage.setItem(key, final);
+				
+			} catch(e) {
+				console.warn(`Cookie store error : ${json} : ${e}`);
+				globalThis.localStorage.removeItem(key);
+			}
+		} else {
+			globalThis.localStorage.removeItem(key);
+		}
+	}
+
+	/**
+	 * Resets the cookies if they are in an inconsistent or fresh state.
+	 */
+	resetCookies() {
+		for (const [ key, val ] of Object.entries(this.configuration)) {
+			this.storeCookie(key, val);
+		}
+		return this.configuration;
+	}
+
+}
+
+/**
+ * The db storage sink.
+ */
+class DbSink extends StorageSinkBase {
+	
+	constructor(schema: Schema, configuration: any, private readonly db: ParametersDb, private readonly isPlugin: boolean = true) {
+		super(schema, configuration);
+	}
+	
+	async put(key: string, value: any) : Promise<void> {
+		if (key == 'equation') {
+			if (!this.isPlugin) {
+				await this.db.put('customEquationsStore', key, value);
+			}
+			return;
+		}
+		await this.db.putParameter(key, value);			// put needs store parameter		
+	}
+}
+
+/**
+ * The storage source interface: Initializes the storage source.
+ */
+interface IStorageSource {
+	configuration: any;
+	init() : Promise<void>;
+}
+
+/**
+ * The Plugin storage source.
+ */
+class PluginSource implements IStorageSource {
+	id = "Katex Input Helper";
+	
+	/**
+	 * Constructor.
+	 */
+	constructor(private readonly schema: Schema, public readonly configuration: any) {
+		
+	}
+	
+	/**
+	 * Init method. Sends register requests and queries the configuration settings.
+	 */
+	async init() : Promise<void> {
+		function filter(o: any) : any {
+			return Object.fromEntries(Object.entries(o).filter(([ , val ]) => val !== undefined));
+		}
+		
+		await this.create();
+		const keys: string[] = [ ...this.schema.configurationKeys ].map(([ , key ]: [string, string]) => key);
+		const response = filter(await this.get(keys));
+		$.extend(this.configuration, response);
+		
+		console.debug(`${JSON.stringify(response)}`);
+	}
+
+	private async create() {
+		const msg = {
+			id: this.id,
+			cmd: 'CREATE',
+			data: this.schema.defaults
+		};
+		await globalThis.webviewApi.postMessage(msg);			
+	}
+	
+	private async get(keys: string[]) {
+		const msg = {
+			id: this.id,
+			cmd: 'READ',
+			data: keys
+		};
+		const response = await globalThis.webviewApi.postMessage(msg);
+		return response;
+	}
+	
+}
+
+/**
+ * The Web storage source: implemented by *localStorage*.
+ */
+class WebSource implements IStorageSource {
+
+	constructor(private readonly schema: Schema, public readonly configuration: any) {
+		
+	}
+	
+	async init() : Promise<void> {
+		
+		const keys = [ ...this.schema.configurationKeys ].map(([ , key ]) => key);
+		const response = this.loadCookies(keys);
+		const equation = this.loadCookies([ 'equation' ]);
+		$.extend(this.configuration, response, equation);
+	}
+	/**
+	 * Loads selected cookies. Cookies must be defined and must not be deactivated.
+	 */
+	loadCookies(keys: string[]) {
+		const inst = this;
+		
+		function isInvalid(val: any) {
+			return val === undefined || val === null || val === 'null';
+		}
+		function defaultOf(key: string) {
+			return inst.schema.defaultOf(key) ?? '';
+		}
+		function fromHex(key: string, val: string) : string {
+			try {
+				return Buffer.from(val, 'hex').toString('utf-8');
+			} catch(e) { 
+				console.warn(`Hex Cookie conversion error : ${key} : ${e}`);
+				return val;
+			}
+		}
+		
+		try {
+			const cookies = { };
+
+			for (const key of keys) {
+				let val = globalThis.localStorage.getItem(key);
+				if (isInvalid(val) || val === '') {
+					cookies[key] = defaultOf(key);
+					continue; 
+				}
+				if (key == 'equation' || key == 'equationCollection') {
+					val = fromHex(key, val);
+				}
+				val = JSON.parse(val); 
+				cookies[key] = val;
+			}		
+			return cookies;
+			
+		} catch(e) {
+			const msg = `Cookies inconsistent : ${e}`;
+			console.warn(msg);
+			return { };
+		}
+	}
+
+}
+
+/**
+ * The Db storage source: implemented by *IndexedDB*.
+ */
+class DbSource implements IStorageSource {
+
+	constructor(private readonly schema: Schema, public readonly configuration: any, private readonly db: ParametersDb, private readonly isPlugin: boolean = true) {
+		
+	}
+
+	async init() : Promise<void> {
+		
+		for (const [ store, key ] of this.schema.configurationKeys) {
+			const config = await this.db.get(store, key);
+			this.configuration[key] = config;
+		}
+		
+		if (!this.isPlugin) {
+			this.configuration['equation'] = (await this.db.get('customEquationsStore', 'equation')) ?? '';
+		}
+	}
+}
 
 /**
  * Interface for communication between client and Katex Input Helper.
@@ -168,10 +471,12 @@ interface IClient {
 	get(keys: string[]) : Promise<any>;
 	
 	mode: string;
+	sink: IStorageSink;
 	get equation(): string;
 	set equation(value: string);
 	get displayMode() : boolean;
 	get isMobile() : boolean;
+	get severity() : number;
 	set migrated(value: boolean);
 }
 
@@ -179,29 +484,27 @@ interface IClient {
  * The Web client.
  */
 class WebClient implements IClient {
-	_schema: Schema = null;
-	_configuration: any;
 	_equation: string = "";
 	mode = "web";
 
 	/**
 	 * Constructor.
 	 */	
-	constructor(schema: Schema, configuration: any) {
+	constructor(private readonly source: IStorageSource, public readonly sink: IStorageSink) {
 		document.cookie = "mjx.menu=";
-		this._schema = schema;
-		this._configuration = configuration;
 	}
 	
 	async init(migrated: boolean) {
-		const response = this.loadCookies([ 'equation' ]);
-		if (response['equation']) {
-			this._equation = response['equation'];
+		await this.source.init();								// loads whole configuration inclusive equation
+		
+		const equation = this.source.configuration['equation'];
+		if (equation) {
+			this._equation = equation;
 		}
 	}
 	
 	async get(keys: string[]) {
-		const response = this.loadCookies(keys);
+		const response = { }; 			// Probably no longer required: this.loadCookies(keys);
 		return response;
 	}
 	
@@ -211,12 +514,12 @@ class WebClient implements IClient {
 	
 	set equation(value: string) {
 		this._equation = value;
-		this.storeCookie("equation", value);
+		this.sink.write("equation", value);
 	}
 	
 	get displayMode(): boolean {
 		
-		const searchParams = new URLSearchParams(window.location.search);
+		const searchParams = new URLSearchParams(globalThis.location.search);
 		if (searchParams.has('displayMode')) {
 			return searchParams.get('displayMode') === 'true';
 		}
@@ -225,129 +528,25 @@ class WebClient implements IClient {
 	
 	get isMobile(): boolean {
 		
-		const searchParams = new URLSearchParams(window.location.search);
+		const searchParams = new URLSearchParams(globalThis.location.search);
 		if (searchParams.has('mobile')) {
 			return searchParams.get('mobile') === 'true';
 		}
 		return false;	    
 	}
+
+	get severity(): number {
+		
+		const searchParams = new URLSearchParams(globalThis.location.search);
+		if (searchParams.has('severity')) {
+			return Number(searchParams.get('severity'));
+		}
+		return 1;	    
+	}
 	
 	set migrated(value: boolean) {
 	    
 	}
-
-	/**
-	 * Store a single cookie after checking if it's desired.
-	 * 
-	 * @param key - key, e.g. name of the item to be stored
-	 * @param val - value to be stored
-	 */
-	storeCookie(key: string, val: any) {
-		if (!globalThis.localStorage) { return; }
-		
-		const persistEquations = this._configuration.persistEquations === true
-		const persistWindowPositions = this._configuration.persistWindowPositions === true;
-		
-		if (this.shouldBeStored(key, persistEquations, persistWindowPositions)) {
-			let json = null;
-			if (!val) {
-				console.warn(`storeCookie error for key ${key}, no value`);
-				return;
-			}
-			try {
-				json = JSON.stringify(val);
-				let final = json;
-				if (key == 'equation' || key == 'equationCollection') {				
-					final = Buffer.from(json, 'utf8').toString('hex');
-				}
-				globalThis.localStorage.setItem(key, final);
-				
-			} catch(e) {
-				alert(`alert : ${json} : ${e}`);
-				globalThis.localStorage.removeItem(key);
-			}
-		} else {
-			globalThis.localStorage.removeItem(key);
-		}
-	}
-
-	/**
-	 * Loads selected cookies. Cookies must be defined and must not be deactivated.
-	 */
-	loadCookies(keys: string[]) {
-		const inst = this;
-		
-		function isInvalid(val: any) {
-			return val === undefined || val === null || val === 'null';
-		}
-		function defaultOf(key: string) {
-			return inst._schema.defaultOf(key) ?? '';
-		}
-		function fromHex(key: string, val: string) : string {
-			try {
-				return Buffer.from(val, 'hex').toString('utf-8');
-			} catch(e) { 
-				console.warn(`Hex Cookie conversion error : ${key} : ${e}`);
-				return val;
-			}
-		}
-		
-		// TODO: delete?
-		if (!globalThis.localStorage) { return { equation: '' }; }
-		try {
-			const cookies = { };
-
-			const persistEquations = globalThis.localStorage.getItem('persistEquations') !== 'false';
-			const persistWindowPositions = globalThis.localStorage.getItem('persistWindowPositions') !== 'false';
-			
-			for (const key of keys) {
-				if (this.shouldBeStored(key, persistEquations, persistWindowPositions)) {
-					let val = globalThis.localStorage.getItem(key);
-					if (isInvalid(val) || val === '') {
-						cookies[key] = defaultOf(key);
-						continue; 
-					}
-					if (key == 'equation' || key == 'equationCollection') {
-						val = fromHex(key, val);
-					}
-					val = JSON.parse(val); 
-					cookies[key] = val;
-				}
-			}		
-			return cookies;
-			
-		} catch(e) {
-			const msg = `Cookies inconsistent : ${e}`;
-			console.warn(msg);
-			return this.resetCookies();
-		}
-	}
-
-	/**
-	 * Resets the cookies if they are in an inconsistent or fresh state.
-	 */
-	resetCookies() {
-		for (const [ key, val ] of Object.entries(this._configuration)) {
-			this.storeCookie(key, val);
-		}
-		return this._configuration;
-	}
-
-	/**
-	 * Checks for a single key if its data item should be stored as Cookie.
-	 * 
-	 * @param key - the key to be checked
-	 * @param [persistEquations=true] - setting for equationCollection
-	 * @param [persistWindowPositions=true] - setting for window positions
-	 */
-	shouldBeStored(key: string, persistEquations = true, persistWindowPositions = true) {
-		return (
-			(key === 'equation' ||
-			 this._schema.isCommonKey(key) || 
-			 (persistWindowPositions && this._schema.isWindowKey(key)) ||
-		 	 (persistEquations && this._schema.isEquationsKey(key))));
-	}
-
 }
 
 /**
@@ -359,20 +558,12 @@ class PluginClient implements IClient {
 	_displayMode: boolean = true;
 	_isMobile: boolean = false;
 	_migrated: boolean = false;
+	_severity: number = 1;
 	
 	mode = "plugin";
 	
-	constructor(private readonly schema: Schema) {
+	constructor(private readonly source: IStorageSource, public readonly sink: IStorageSink) {
 		
-	}
-
-	private async create() {
-		const msg = {
-			id: this.id,
-			cmd: 'CREATE',
-			data: this.schema.defaults
-		};
-		await window.webviewApi.postMessage(msg);			
 	}
 
 	/**
@@ -380,16 +571,15 @@ class PluginClient implements IClient {
 	 */	
 	async init(migrated: boolean) {
 		
-		const keys = [ 'equation', 'displayMode', 'isMobile' ];
+		const keys = [ 'equation', 'displayMode', 'isMobile', 'severity' ];
 		const response = await this.get(keys);
 		if (response) {
 			this._equation = response.equation ?? "";
 			this._displayMode = response.displayMode === true;
 			this._isMobile = response.isMobile === true;
+			this._severity = response.severity;
 			
-			if (!migrated) {
-				await this.create();
-			}
+			await this.source.init();
 		
 		} else {
 			console.warn(`The "Katex Input Helper" plugin did not return a response to get parameters `);
@@ -405,7 +595,7 @@ class PluginClient implements IClient {
 			cmd: 'READ',
 			data: keys
 		};
-		const response = await window.webviewApi.postMessage(msg);
+		const response = await globalThis.webviewApi.postMessage(msg);
 		return response;
 	}
 	
@@ -416,7 +606,7 @@ class PluginClient implements IClient {
 
 	set equation(value: string) {
 		this._equation = value;
-		this.write();
+		this.writeResult();
 	}
 
 	get displayMode(): boolean {
@@ -427,22 +617,19 @@ class PluginClient implements IClient {
 		return this._isMobile;
 	}
 
+	get severity(): number {
+		return this._severity;
+	}
+
 	set migrated(value: boolean) {
 		this._migrated = value;
-		
-		const msg = {
-			id: this.id,
-			cmd: 'WRITE',
-			data: [ 'migrated', value ]
-		};
-		window.webviewApi.postMessage(msg).then(() => { });
-
+		this.sink.write('migrated', value);				// migrated must be listed in configuration (see sink)
 		if (!value) {
 			console.warn(`Migration to database store failed, data may be lost`);
 		}
 	}
 	
-	write() {
+	private writeResult() {
 		const dialogResponse = {
 			equation: this.equation,
 			migrated: this._migrated
@@ -461,10 +648,10 @@ export class KIHParameters {
 	id = 'Katex Input Helper';
 
 	client: IClient = null;
-	db: ParametersDb = null;
-	schema: Schema = null;
-	capabilities: Capabilities = null;
-	configuration: any = { };	
+	readonly db: ParametersDb;
+	readonly schema: Schema;
+	readonly capabilities: Capabilities;
+	readonly configuration: any;	
 	
 	suppressWriteBack = false;
 	
@@ -474,78 +661,30 @@ export class KIHParameters {
 	constructor() {
 		
 		this.schema = new Schema();
+		this.configuration = this.schema.defaults;
 		this.db = new ParametersDb(this.schema);							// instantiate the db
 		this.capabilities = new Capabilities();
+	}
+	
+	/**
+	 * Queries the parameters from the *Storage Source*. 
+	 * - in the Plugin they are persisted there as settings.
+	 * - in the web variant they are stored as Cookies.
+	 * - newest implementation is IndexedDB.
+	 */
+	async queryParametersNext() {
 		
-		if (this.capabilities.isPlugin) {									// configure the "Client" - side interface
-			this.client = new PluginClient(this.schema);
-		} else {
-			this.client = new WebClient(this.schema, this.configuration);
-		}
-	}
-	
-	/**
-	 * Queries the parameters from the Plugin. They are persisted there as settings.
-	 * In the web variant they are stored as Cookies.
-	 */
-	async queryParameters(migrated: boolean = false) {
-			
-		await this.client.init(migrated);
-		if (migrated) { return { }; }	
-
-		let all = { };
-		for (const [ , key ] of this.schema.configurationKeys) {
-			const response = await this.client.get([ key ]);
-			if (response) {
-				this[key] = response[key];
-				if (this.schema.isWindowKey(key)) {
-					this.resizePanel(key);
-				}
-				
-				all = $.extend(all, response);
-			} else {
-				console.warn(`The "Katex Input Helper" plugin did not return a response to get parameters `);				
-			}
-		}
-		return all;
-	}
-	
-	/**
-	 * Queries the parameters from the database. For the migration of old style 
-	 * storage to db parameters must be transferred.
-	 */
-	async queryParametersDb() {
 		try {
-			await this.db.open();												// also call upgrade
-
-			const migrated = await this.db.getCommon('migrated', false);		// entry may not exist - defaults to false
-			this.client.migrated = migrated;
-			const response = await this.queryParameters(migrated);				// old style parameters or rest of them
-			
-			if (!migrated) {
-				if (response) {
-					console.info(`About to migrate parameter representation`);
-					for (const [key, val] of Object.entries(response)) {		// this transfers them to the db
-						if (this.schema.isConfigurationKey(key)) {
-							await this.db.putParameter(key, val);				// TODO: Is this doubled functionality?
-						}
-					}
-
-					await this.db.putCommon('migrated', true);					// for the next invocation
-					this.client.migrated = true;
+			this.client = await this.capabilities.createClient(this.schema, this.configuration, this.db);
+			await this.client.init(false);										// reads all configuration and initial data
+			if (this.capabilities.migrate) {									// is this the MIGRATION session
+				for (const [ store, key ] of this.schema.configurationKeys) {	// in either case read parameters
+					await this.client.sink.write(key);							// => sink
 				}
+				this.client.migrated = true;									// used in next session to avoid double migration
 			}
-
-			this.suppressWriteBack = true;										// initial read does not permit write back
-			for (const [ store, key ] of this.schema.configurationKeys) {	// in either case read parameters from the db
-				const value = await this.db.get(store, key);
-				this[key] = value;
-			}
-			this.suppressWriteBack = false;
-
 		} catch(error) {
-			console.error('Could not query parameters from DB: %s', error);
-			this.suppressWriteBack = false;
+			console.error('Could not query parameters from source: %s', error);
 		}
 	}
 	
@@ -553,8 +692,7 @@ export class KIHParameters {
 	 * Wrapper. Delegates to db.
 	 */
 	enqueueParameter(prop: string, value: any) {
-		if (this.db === null) { return; }
-		this.db.enqueueParameter(prop,  value);
+		this.client.sink.write(prop, value);
 	}
 
 	/**
@@ -565,9 +703,9 @@ export class KIHParameters {
 	resetWindowPositions() {
 		for (const [ key, val ] of Object.entries(this.configuration)) {
 			if (this.schema.isWindowKey(key)) {
-				Layout.revert(val, true);					// force revert to initial settings
+				Layout.revert(val, true);							// force revert to initial settings
 				this.resizePanel(key);
-				this.enqueueParameter(key, val);			// changes must be written to db
+				this.enqueueParameter(key, val);					// changes must be written to db
 			}
 		}
 	}
@@ -747,18 +885,21 @@ namespace Layout {
  * - is this a plugin
  * - is local storage enabled
  * - is indexed db enabled
+ * 
+ * This is also the place, where knowledge is used to create an IClient instance.
  */
 class Capabilities {
+	migrate: boolean = false;
 	
 	get isPlugin() : boolean {
-		return window.webviewApi !== undefined;
+		return globalThis.webviewApi !== undefined;
 	}
 	
 	get isLocalStorageEnabled() : boolean {
 		try {
 			const key = `__storage__test`;
-			window.localStorage.setItem(key, null);
-			window.localStorage.removeItem(key);
+			globalThis.localStorage.setItem(key, null);
+			globalThis.localStorage.removeItem(key);
 			return true;
 		
 		} catch (e) {
@@ -768,15 +909,70 @@ class Capabilities {
 	
 	async isIndexedDbEnabled() : Promise<boolean> {
 		try {
+			// TEST
+			// return false;
 			const dbName = `__db__test`;
-			const db = await openDB(dbName, 1, {
-				upgrade(...params) { }
+			await openDB(dbName, 1, {
+				upgrade(db, _oldVersion, _newVersion, transaction, _event) { 
+					db.createObjectStore('xxx');
+					transaction.done.then(() => {
+					}); 
+				}
 			});
-			await deleteDB(dbName);
+			deleteDB(dbName).then(() => {});
 			return true;
 			
 		} catch(e) {
 			return false;
+		}
+	}
+	
+	/**
+	 * Creates an **IClient** instance. This can be a Web or a Plugin client.
+	 * Both of them have a Sink and a Source instance both of which can be
+	 * Plugin, IndexedDb or localStorage.
+	 */
+	async createClient(schema: Schema, configuration: any, db: ParametersDb) : Promise<IClient> {
+		
+		const dbAvailable = await this.isIndexedDbEnabled();
+		if (dbAvailable) {
+			await db.open();													// also creates ready to use db
+		}
+		const migrated = dbAvailable && (await db.getCommon('migrated', false));
+		let source: IStorageSource = null;
+		let sink: IStorageSink = null;
+
+		if (this.isPlugin) {
+			
+			if (migrated) {
+				source = new DbSource(schema, configuration, db);
+				sink = new DbSink(schema, configuration, db);
+			} else if (dbAvailable) {
+				source = new PluginSource(schema, configuration);
+				sink = new DbSink(schema, configuration, db);
+				this.migrate = true;
+			} else {
+				source = new PluginSource(schema, configuration);
+				sink = new PluginSink(schema, configuration);
+			}
+			const client: IClient = new PluginClient(source, sink);
+			return client;
+			
+		} else {
+			
+			if (migrated) {
+				source = new DbSource(schema, configuration, db, false);
+				sink = new DbSink(schema, configuration, db, false);
+			} else if (dbAvailable) {
+				source = new WebSource(schema, configuration);
+				sink = new DbSink(schema, configuration, db, false);
+				this.migrate = true;
+			} else {
+				source = new WebSource(schema, configuration);
+				sink = new WebSink(schema, configuration);
+			}
+			const client: IClient = new WebClient(source, sink);
+			return client;
 		}
 	}
 	

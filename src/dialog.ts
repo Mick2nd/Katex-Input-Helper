@@ -1,9 +1,9 @@
 import joplin from 'api';
-import { DialogResult, ButtonSpec } from 'api/types';
+import { DialogResult } from 'api/types';
 import { settings, Settings } from './settings';
 
 /**
- * @abstract Sleep function using Promise contract.
+ Sleep function using Promise contract.
  */
 function Sleep(milliseconds: number) {
 	return new Promise(resolve => setTimeout(resolve, milliseconds));
@@ -12,7 +12,7 @@ function Sleep(milliseconds: number) {
 let handle: any = null;
 
 /**
- * @abstract Encapsulates dialog functionality.
+ * Encapsulates dialog functionality.
  * 
  * Several trials have been performed to overcome the *start problem*:
  * - use require from Joplin
@@ -32,9 +32,10 @@ export class Dialog
 	useEasyLoader = false;
 	installationDir = "";
 	isMobile: boolean = false;
+	severity: number = 1;
 	
 	/**
-	 * @abstract Constructor
+	 * Constructor
 	 */
 	public constructor(displayMode: boolean)
 	{
@@ -43,8 +44,8 @@ export class Dialog
 	}
 	
 	/**
-	 * @abstract Creates the dialog and installs a message handler for handling messages sent back by
-	 * 			 the dialog.
+	 * Creates the dialog and installs a message handler for handling messages sent back by
+	 * the dialog.
 	 * 
 	 * Those messages are sent back as soon as the dialog is online and are meant to query for configuration 
 	 * data.
@@ -55,6 +56,7 @@ export class Dialog
 
 		this.installationDir = await joplin.plugins.installationDir();
 		this.isMobile = ((await joplin.versionInfo()).platform == 'mobile') !== (await this.settings.enforceMobileMode());
+		this.severity = await this.settings.severity();
 		
 		await this.loadCss(handle);
 		await this.loadJs(handle);
@@ -69,14 +71,19 @@ export class Dialog
 				if (msg.cmd == 'getparams' || msg.cmd == 'READ') {
 					
 					const keys = new Set(msg.data);
-					const clientKeys = new Set([ 'equation', 'displayMode', 'isMobile' ]);
+					const clientKeys = new Set([ 'equation', 'displayMode', 'isMobile', 'severity' ]);
 					const legacyKeys = keys.difference(clientKeys);
+					if (legacyKeys.has('migrated')) {
+						legacyKeys.delete('migrated');
+					}
 					
 					const reponse: any = { };
 					await inst.settings.readSettings(reponse, [ ...legacyKeys ]);
+					
 					if (keys.has('equation')) { reponse.equation = text; }
 					if (keys.has('displayMode')) { reponse.displayMode = inst.displayMode; }
 					if (keys.has('isMobile')) { reponse.isMobile = inst.isMobile; }			// the Plugin has its own copy
+					if (keys.has('severity')) { reponse.severity = inst.severity; }
 					
 					return reponse;
 					
@@ -102,7 +109,7 @@ export class Dialog
 	}
 	
 	/**
-	 * @abstract Opens the dialog and waits until user return.
+	 * Opens the dialog and waits until user return.
 	 * 
 	 * After return the data is evaluated and stored.
 	 * 
@@ -113,7 +120,7 @@ export class Dialog
 		let res = await joplin.views.dialogs.open(handle);
 		if (res.formData == undefined) {
 			console.warn(`No formData returned on ${res.id}`);
-			// TODO: joplin does not like re-creation of handles
+			// Joplin does not like re-creation of handles
 			// handle = null;
 			return res;
 		}
@@ -138,8 +145,8 @@ export class Dialog
 	}
 	
 	/**
-	 * @abstract Used to load the HTML for the dialog. Does this on behalf of WEBPACK.
-	 * 			 That's why the file name is hard coded.
+	 * Used to load the HTML for the dialog. Does this on behalf of WEBPACK.
+	 * That's why the file name is hard coded.
 	 * 
 	 * @returns the HTML document
 	 */
@@ -156,7 +163,7 @@ export class Dialog
 	}
 	
 	/**
-	 * @abstract Loads all required CSS files merely annoucing them to the dialog.
+	 * Loads all required CSS files merely annoucing them to the dialog.
 	 * 
 	 * @param handle - the dialog handle
 	 */
@@ -172,7 +179,7 @@ export class Dialog
 	}
 	
 	/**
-	 * @abstract Loads all required Js files merely annoucing them to the dialog.
+	 * Loads all required Js files merely annoucing them to the dialog.
 	 * 
 	 * @param handle - the dialog handle
 	 */
