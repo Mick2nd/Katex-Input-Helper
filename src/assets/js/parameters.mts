@@ -167,16 +167,22 @@ interface IStorageSink {
 }
 
 /**
- * Abstract base class: provides the *shouldBeStored* ufnction.
+ * Abstract base class: provides the *shouldBeStored* function.
  */
 abstract class StorageSinkBase implements IStorageSink {
 	queue = [];
 	ongoingPut = false;
 	
+	/**
+	 * Constructor.
+	 */
 	constructor(protected readonly schema: Schema, protected readonly configuration: any) {
 		
 	}
 	
+	/**
+	 * Write method.
+	 */
 	public write(key: string, value?: any) : void {
 		if (this.shouldBeStored(key)) {
 			const val = (value ?? this.configuration[key]);
@@ -184,6 +190,9 @@ abstract class StorageSinkBase implements IStorageSink {
 		}
 	}
 	
+	/**
+	 * Abstract Put method, implemented in derived classes.
+	 */
 	abstract put(key: string, value: any) : Promise<void>;
 
 	/**
@@ -215,6 +224,9 @@ abstract class StorageSinkBase implements IStorageSink {
 		});
 	}
 	
+	/**
+	 * Returns whether the selected setting should be stored.
+	 */
 	protected shouldBeStored(key: string) {
 		return (
 			key == 'equation' ||
@@ -230,6 +242,9 @@ abstract class StorageSinkBase implements IStorageSink {
 class PluginSink extends StorageSinkBase {
 	id = "Katex Input Helper";
 	
+	/**
+	 * Puts single setting into the sink.
+	 */
 	async put(key: string, value: any) : Promise<void> {
 		const msg = {
 			id: this.id,
@@ -245,6 +260,9 @@ class PluginSink extends StorageSinkBase {
  */
 class WebSink extends StorageSinkBase {
 	
+	/**
+	 * Puts single setting into the sink.
+	 */
 	async put(key: string, value: any) : Promise<void> {
 		this.storeCookie(key, value);			
 	}
@@ -298,11 +316,17 @@ class WebSink extends StorageSinkBase {
  * The db storage sink.
  */
 class DbSink extends StorageSinkBase {
-	
+
+	/**
+	 * Constructor.
+	 */	
 	constructor(schema: Schema, configuration: any, private readonly db: ParametersDb, private readonly isPlugin: boolean = true) {
 		super(schema, configuration);
 	}
 	
+	/**
+	 * Puts single setting into the sink.
+	 */
 	async put(key: string, value: any) : Promise<void> {
 		if (key == 'equation') {
 			if (!this.isPlugin) {
@@ -351,6 +375,9 @@ class PluginSource implements IStorageSource {
 		console.debug(`${JSON.stringify(response)}`);
 	}
 
+	/**
+	 * Sends a create request to the plugin.
+	 */
 	private async create() {
 		const msg = {
 			id: this.id,
@@ -360,6 +387,9 @@ class PluginSource implements IStorageSource {
 		await globalThis.webviewApi.postMessage(msg);			
 	}
 	
+	/**
+	 * Sends a get request to the plugin, returning available settings.
+	 */
 	private async get(keys: string[]) {
 		const msg = {
 			id: this.id,
@@ -377,10 +407,16 @@ class PluginSource implements IStorageSource {
  */
 class WebSource implements IStorageSource {
 
+	/**
+	 * Constructor
+	 */
 	constructor(private readonly schema: Schema, public readonly configuration: any) {
 		
 	}
 	
+	/**
+	 * Init method loads configuration settings and the equation from Cookies.
+	 */
 	async init() : Promise<void> {
 		
 		const keys = [ ...this.schema.configurationKeys ].map(([ , key ]) => key);
@@ -388,6 +424,7 @@ class WebSource implements IStorageSource {
 		const equation = this.loadCookies([ 'equation' ]);
 		$.extend(this.configuration, response, equation);
 	}
+	
 	/**
 	 * Loads selected cookies. Cookies must be defined and must not be deactivated.
 	 */
@@ -440,10 +477,17 @@ class WebSource implements IStorageSource {
  */
 class DbSource implements IStorageSource {
 
+	/**
+	 * Constructor.
+	 */
 	constructor(private readonly schema: Schema, public readonly configuration: any, private readonly db: ParametersDb, private readonly isPlugin: boolean = true) {
 		
 	}
 
+	/**
+	 * The init method loads the configuration settings and, in case of Web variant, the current 
+	 * equation from IndexedDB.
+	 */
 	async init() : Promise<void> {
 		
 		for (const [ store, key ] of this.schema.configurationKeys) {
@@ -559,9 +603,13 @@ class PluginClient implements IClient {
 	_isMobile: boolean = false;
 	_migrated: boolean = false;
 	_severity: number = 1;
+	_profile = "";
 	
 	mode = "plugin";
 	
+	/**
+	 * Constructor.
+	 */
 	constructor(private readonly source: IStorageSource, public readonly sink: IStorageSink) {
 		
 	}
@@ -571,13 +619,14 @@ class PluginClient implements IClient {
 	 */	
 	async init(migrated: boolean) {
 		
-		const keys = [ 'equation', 'displayMode', 'isMobile', 'severity' ];
+		const keys = [ 'equation', 'displayMode', 'isMobile', 'severity', 'profile' ];
 		const response = await this.get(keys);
 		if (response) {
 			this._equation = response.equation ?? "";
 			this._displayMode = response.displayMode === true;
 			this._isMobile = response.isMobile === true;
 			this._severity = response.severity;
+			this._profile = response.profile;
 			
 			await this.source.init();
 		
@@ -621,6 +670,10 @@ class PluginClient implements IClient {
 		return this._severity;
 	}
 
+	get profile(): number {
+		return this._profile;
+	}
+
 	set migrated(value: boolean) {
 		this._migrated = value;
 		this.sink.write('migrated', value);				// migrated must be listed in configuration (see sink)
@@ -629,6 +682,9 @@ class PluginClient implements IClient {
 		}
 	}
 	
+	/**
+	 * Equation is written back to the plugin.
+	 */
 	private writeResult() {
 		const dialogResponse = {
 			equation: this.equation,
@@ -679,7 +735,7 @@ export class KIHParameters {
 			await this.client.init(false);										// reads all configuration and initial data
 			if (this.capabilities.migrate) {									// is this the MIGRATION session
 				for (const [ store, key ] of this.schema.configurationKeys) {	// in either case read parameters
-					await this.client.sink.write(key);							// => sink
+					this.client.sink.write(key);								// => sink
 				}
 				this.client.migrated = true;									// used in next session to avoid double migration
 			}
@@ -891,10 +947,16 @@ namespace Layout {
 class Capabilities {
 	migrate: boolean = false;
 	
+	/**
+	 * Checks if running instance is a plugin.
+	 */
 	get isPlugin() : boolean {
 		return globalThis.webviewApi !== undefined;
 	}
 	
+	/**
+	 * Checks if LocalStorage (Cookies) is enabled.
+	 */
 	get isLocalStorageEnabled() : boolean {
 		try {
 			const key = `__storage__test`;
@@ -907,6 +969,9 @@ class Capabilities {
 		}
 	}
 	
+	/**
+	 * Checks if IndexedDB is enabled. It does this by creating a TEST database.
+	 */
 	async isIndexedDbEnabled() : Promise<boolean> {
 		try {
 			// TEST
