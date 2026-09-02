@@ -1,6 +1,7 @@
 import joplin from 'api';
 import { DialogResult } from 'api/types';
 import { settings, Settings } from './settings';
+const path = require('path');
 
 /**
  Sleep function using Promise contract.
@@ -33,6 +34,7 @@ export class Dialog
 	installationDir = "";
 	isMobile: boolean = false;
 	severity: number = 1;
+	profile = "";
 	
 	/**
 	 * Constructor
@@ -54,6 +56,10 @@ export class Dialog
 		
 		handle ??= await joplin.views.dialogs.create(this.id);
 
+		const dataDir = await joplin.plugins.dataDir();
+		const profileDir = path.resolve(`${dataDir}/../..`);
+		const profileName = path.basename(profileDir);
+		this.profile = profileName;
 		this.installationDir = await joplin.plugins.installationDir();
 		this.isMobile = ((await joplin.versionInfo()).platform == 'mobile') !== (await this.settings.enforceMobileMode());
 		this.severity = await this.settings.severity();
@@ -71,7 +77,7 @@ export class Dialog
 				if (msg.cmd == 'getparams' || msg.cmd == 'READ') {
 					
 					const keys = new Set(msg.data);
-					const clientKeys = new Set([ 'equation', 'displayMode', 'isMobile', 'severity' ]);
+					const clientKeys = new Set([ 'equation', 'displayMode', 'isMobile', 'severity', 'profile' ]);
 					const legacyKeys = keys.difference(clientKeys);
 					if (legacyKeys.has('migrated')) {
 						legacyKeys.delete('migrated');
@@ -84,6 +90,7 @@ export class Dialog
 					if (keys.has('displayMode')) { reponse.displayMode = inst.displayMode; }
 					if (keys.has('isMobile')) { reponse.isMobile = inst.isMobile; }			// the Plugin has its own copy
 					if (keys.has('severity')) { reponse.severity = inst.severity; }
+					if (keys.has('profile')) { reponse.profile = inst.profile; }
 					
 					return reponse;
 					

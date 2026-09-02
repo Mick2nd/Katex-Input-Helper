@@ -6,7 +6,7 @@
 	"name": "Katex Input Helper",
 	"description": "Provides interactive input support for math formulae via Katex",
 	"author": "Jürgen Habelt",
-	"homepage_url": "https://github.com/Mick2nd/Katex-Input-Helper#readme",
+	"homepage_url": "https://github.com/Mick2nd/Katex-Input-Helper/wiki",
 	"repository_url": "https://github.com/Mick2nd/Katex-Input-Helper",
 	"keywords": [
 		"joplin-plugin",

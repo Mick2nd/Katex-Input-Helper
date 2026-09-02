@@ -57,22 +57,22 @@ class Redirector {
 	}
 
 	error(...params) {
-		globalThis.console.error(...params);
+		if (globalThis.console) { globalThis.console.error(...params); }
 		if (this.messager) { this.messager.error(...params); }
 	}
 
 	warn(...params) {
-		globalThis.console.warn(...params);
+		if (globalThis.console) { globalThis.console.warn(...params); }
 		if (this.messager) { this.messager.warn(...params); }
 	}
 
 	info(...params) {
-		globalThis.console.info(...params);
+		if (globalThis.console) { globalThis.console.info(...params); }
 		if (this.messager) { this.messager.info(...params); }
 	}
 	
 	debug(...params) {
-		globalThis.console.debug(...params);
+		if (globalThis.console) { globalThis.console.debug(...params); }
 		if (this.messager) { this.messager.debug(...params); }
 	}
 }

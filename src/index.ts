@@ -57,6 +57,7 @@ const test_command = async () =>
 
 joplin.plugins.register({
 	onStart: async function() {
+		
 		// eslint-disable-next-line no-console
 		console.info('Hello world. Test plugin started!');
 		

@@ -1,6 +1,26 @@
 import { openDB } from 'idb';
 import { Schema, ConfigurationEnum } from './schema.mjs';
 
+/*	RESERVED for later use.
+export interface Lazy<T> {
+	(): T;
+	isLazy: boolean;
+};
+
+export default const lazy = <T>(getter: () => T): Lazy<T> => {
+	let evaluated: boolean = false;
+	let _res: T = null;
+	const res = <Lazy<T>>function (): T {
+		if (evaluated) return _res;
+		_res = getter.apply(this, arguments);
+		evaluated = true;
+		return _res;
+	}
+	res.isLazy = true;
+	return res;
+};
+*/
+
 
 /**
  * Wrapper and adapter for *idb* functionality.
@@ -55,10 +75,11 @@ export class ParametersDb {
 	 * Opens an instance of the *idb* database. This is able to perform upgrades,
 	 * if the schema / version of the database has changed.
 	 */
-	async open() {
+	async open(profile: string) {
 		try {
 			const inst = this;
-			this.db = await openDB(this.dbName, 12, {
+			const dbName = (profile == '' ? this.dbName : this.dbName + '~' + profile);
+			this.db = await openDB(dbName, 12, {
 				
 				// ATTENTION! do not delete existing data.				
 				upgrade(...params) : Promise<void> {

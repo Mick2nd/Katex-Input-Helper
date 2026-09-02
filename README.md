@@ -126,7 +126,7 @@ This does not appear on the *Chrome* browser on desktop.
 - Joplin API updated together with node modules, reduced the number of vulnerabilities
 - Improvements for a nice UI
 - Added an Event Viewer dialog
-- Use the IndexedDB store for settings where the environment supports it 
+- Used the IndexedDB store for settings where the environment supports it 
 - Bug fixes
 
 ### 3.0.1

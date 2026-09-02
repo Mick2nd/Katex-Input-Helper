@@ -83,6 +83,9 @@ export function ParametersProxy() {
 					return target.configuration[prop];
 				}
 				
+				// TODO: TRIAL
+				
+				
 				return Reflect.get(target, prop, receiver);
 			}
 		});
@@ -167,7 +170,8 @@ interface IStorageSink {
 }
 
 /**
- * Abstract base class: provides the *shouldBeStored* function.
+ * Abstract base class: provides the *shouldBeStored* function. Provides a *write* implementation
+ * supported by *put*.
  */
 abstract class StorageSinkBase implements IStorageSink {
 	queue = [];
@@ -344,6 +348,7 @@ class DbSink extends StorageSinkBase {
 interface IStorageSource {
 	configuration: any;
 	init() : Promise<void>;
+	get?(keys: string[]) : Promise<any>;
 }
 
 /**
@@ -390,7 +395,7 @@ class PluginSource implements IStorageSource {
 	/**
 	 * Sends a get request to the plugin, returning available settings.
 	 */
-	private async get(keys: string[]) {
+	public async get(keys: string[]) : Promise<any> {
 		const msg = {
 			id: this.id,
 			cmd: 'READ',
@@ -502,6 +507,41 @@ class DbSource implements IStorageSource {
 }
 
 /**
+ * Provides Sink and Source.
+ */
+interface IStorage {
+	sink: IStorageSink;
+	source: IStorageSource;
+	init() : Promise<void>;
+}
+
+/**
+ * Single implementation of IStorage.
+ */
+class Storage implements IStorage {
+	_equation = "";
+	
+	/**
+	 * Constructor.
+	 */	
+	constructor(public readonly source: IStorageSource, public readonly sink: IStorageSink) {
+	}
+
+	/**
+	 * Initialization - Reads configuration from the source.
+	 */
+	async init() {
+		await this.source.init();								// loads whole configuration including equation
+		
+		const equation = this.source.configuration['equation'];
+		if (equation) {
+			this._equation = equation;
+		}
+	}
+
+}
+
+/**
  * Interface for communication between client and Katex Input Helper.
  * 
  * Design decision: 
@@ -511,56 +551,82 @@ class DbSource implements IStorageSource {
  * - this only matters if the migration fails to succeed.
  */
 interface IClient {
-	init(migrated: boolean) : Promise<void>;
+	inject(storage: IStorage) : void;
+	init() : Promise<void>;
 	get(keys: string[]) : Promise<any>;
 	
 	mode: string;
-	sink: IStorageSink;
 	get equation(): string;
 	set equation(value: string);
 	get displayMode() : boolean;
 	get isMobile() : boolean;
 	get severity() : number;
-	set migrated(value: boolean);
+	get profile(): string;
 }
 
 /**
  * The Web client.
  */
 class WebClient implements IClient {
-	_equation: string = "";
+	
+	storage: IStorage = null;
 	mode = "web";
+	_equation: string = "";
 
 	/**
 	 * Constructor.
 	 */	
-	constructor(private readonly source: IStorageSource, public readonly sink: IStorageSink) {
+	constructor() {
 		document.cookie = "mjx.menu=";
 	}
 	
-	async init(migrated: boolean) {
-		await this.source.init();								// loads whole configuration inclusive equation
-		
-		const equation = this.source.configuration['equation'];
+	/**
+	 * Injection of storage instance.
+	 */
+	inject(storage: IStorage) : void {
+		this.storage = storage;
+	}
+	
+	/**
+	 * Initialization. Provides equation.
+	 */
+	async init() {
+		if (this.storage == null) {
+			console.warn(`WebClient.init: storage not injected, equation cannot be displayed.`);
+			return;
+		}
+		const equation = this.storage.source.configuration['equation'];
 		if (equation) {
 			this._equation = equation;
 		}
 	}
 	
+	/**
+	 * OBSOLETE.
+	 */
 	async get(keys: string[]) {
 		const response = { }; 			// Probably no longer required: this.loadCookies(keys);
 		return response;
 	}
 	
+	/**
+	 * Interface for equation persistence.
+	 */
 	get equation(): string {
 	    return this._equation;
 	}
 	
+	/**
+	 * Interface for equation persistence.
+	 */
 	set equation(value: string) {
 		this._equation = value;
-		this.sink.write("equation", value);
+		this.storage.sink.write("equation", value);
 	}
-	
+
+	/**
+	 * Query string for display mode.
+	 */	
 	get displayMode(): boolean {
 		
 		const searchParams = new URLSearchParams(globalThis.location.search);
@@ -570,6 +636,9 @@ class WebClient implements IClient {
 		return true;
 	}
 	
+	/**
+	 * Query string for mobile mode.
+	 */	
 	get isMobile(): boolean {
 		
 		const searchParams = new URLSearchParams(globalThis.location.search);
@@ -579,6 +648,9 @@ class WebClient implements IClient {
 		return false;	    
 	}
 
+	/**
+	 * Query string for severity (Event Viewer).
+	 */	
 	get severity(): number {
 		
 		const searchParams = new URLSearchParams(globalThis.location.search);
@@ -587,9 +659,12 @@ class WebClient implements IClient {
 		}
 		return 1;	    
 	}
-	
-	set migrated(value: boolean) {
-	    
+
+	/**
+	 * Profile for DB. Not used by Web variant.
+	 */
+	get profile(): string {
+		return '';
 	}
 }
 
@@ -598,6 +673,7 @@ class WebClient implements IClient {
  */
 class PluginClient implements IClient {
 	id = "Katex Input Helper";
+	source: IStorageSource = null;
 	_equation: string = "";
 	_displayMode: boolean = true;
 	_isMobile: boolean = false;
@@ -605,30 +681,36 @@ class PluginClient implements IClient {
 	_severity: number = 1;
 	_profile = "";
 	
+	storage: IStorage = null;
 	mode = "plugin";
 	
 	/**
 	 * Constructor.
 	 */
-	constructor(private readonly source: IStorageSource, public readonly sink: IStorageSink) {
-		
+	constructor() {
+		this.source = new PluginSource(null, null);			// provides 'GET'
+	}
+
+	/**
+	 * Injection of storage instance.
+	 */
+	inject(storage: IStorage) : void {
+		this.storage = storage;
 	}
 
 	/**
 	 * Initialization.
 	 */	
-	async init(migrated: boolean) {
+	async init() {
 		
 		const keys = [ 'equation', 'displayMode', 'isMobile', 'severity', 'profile' ];
-		const response = await this.get(keys);
+		const response = await this.get(keys);					// DRY
 		if (response) {
 			this._equation = response.equation ?? "";
 			this._displayMode = response.displayMode === true;
 			this._isMobile = response.isMobile === true;
 			this._severity = response.severity;
 			this._profile = response.profile;
-			
-			await this.source.init();
 		
 		} else {
 			console.warn(`The "Katex Input Helper" plugin did not return a response to get parameters `);
@@ -639,13 +721,7 @@ class PluginClient implements IClient {
 	 * Queries initial settings or configuration settings.
 	 */
 	async get(keys: string[]) {
-		const msg = {
-			id: this.id,
-			cmd: 'READ',
-			data: keys
-		};
-		const response = await globalThis.webviewApi.postMessage(msg);
-		return response;
+		return await this.source.get(keys);
 	}
 	
 
@@ -670,16 +746,8 @@ class PluginClient implements IClient {
 		return this._severity;
 	}
 
-	get profile(): number {
+	get profile(): string {
 		return this._profile;
-	}
-
-	set migrated(value: boolean) {
-		this._migrated = value;
-		this.sink.write('migrated', value);				// migrated must be listed in configuration (see sink)
-		if (!value) {
-			console.warn(`Migration to database store failed, data may be lost`);
-		}
 	}
 	
 	/**
@@ -704,6 +772,7 @@ export class KIHParameters {
 	id = 'Katex Input Helper';
 
 	client: IClient = null;
+	storage: IStorage = null;
 	readonly db: ParametersDb;
 	readonly schema: Schema;
 	readonly capabilities: Capabilities;
@@ -731,13 +800,24 @@ export class KIHParameters {
 	async queryParametersNext() {
 		
 		try {
-			this.client = await this.capabilities.createClient(this.schema, this.configuration, this.db);
-			await this.client.init(false);										// reads all configuration and initial data
+			this.client = await this.capabilities.createClient();
+			this.storage = await this.capabilities.createStorage(
+				this.schema, 
+				this.configuration, 
+				this.db);
+			
+			await this.storage.init();											// reads all configuration and initial data
+			if (!this.capabilities.isPlugin) {
+				this.client.inject(this.storage);								// inject the storage instance
+				await this.client.init();
+			}
 			if (this.capabilities.migrate) {									// is this the MIGRATION session
 				for (const [ store, key ] of this.schema.configurationKeys) {	// in either case read parameters
-					this.client.sink.write(key);								// => sink
+					this.storage.sink.write(key);								// => sink
 				}
-				this.client.migrated = true;									// used in next session to avoid double migration
+				// TODO: use sink directly!
+				// this.client.setMigrated(this.storage.sink, true);			// used in next session to avoid double migration
+				this.storage.sink.write('migrated', true);
 			}
 		} catch(error) {
 			console.error('Could not query parameters from source: %s', error);
@@ -748,7 +828,7 @@ export class KIHParameters {
 	 * Wrapper. Delegates to db.
 	 */
 	enqueueParameter(prop: string, value: any) {
-		this.client.sink.write(prop, value);
+		this.storage.sink.write(prop, value);
 	}
 
 	/**
@@ -946,6 +1026,7 @@ namespace Layout {
  */
 class Capabilities {
 	migrate: boolean = false;
+	profile = "";
 	
 	/**
 	 * Checks if running instance is a plugin.
@@ -994,14 +1075,35 @@ class Capabilities {
 	
 	/**
 	 * Creates an **IClient** instance. This can be a Web or a Plugin client.
-	 * Both of them have a Sink and a Source instance both of which can be
+	 */
+	async createClient() : Promise<IClient> {
+		let client: IClient = null;
+		if (this.isPlugin) {
+			client = new PluginClient();
+			await client.init();
+			this.profile = client.profile;
+		} else {
+			client = new WebClient();
+		}
+		// Postpone Web Client invokation
+		// await client.init();
+		// this.profile = client.profile;
+		
+		return client;
+	}
+	
+	/**
+	 * Creates an **IStorage** instance.
+	 * It has a Sink and a Source instance both of which can be
 	 * Plugin, IndexedDb or localStorage.
 	 */
-	async createClient(schema: Schema, configuration: any, db: ParametersDb) : Promise<IClient> {
+	async createStorage(schema: Schema, configuration: any, db: ParametersDb) : Promise<IStorage> {
+		
+		const profile = this.profile;
 		
 		const dbAvailable = await this.isIndexedDbEnabled();
 		if (dbAvailable) {
-			await db.open();													// also creates ready to use db
+			await db.open(profile);													// also creates ready to use db
 		}
 		const migrated = dbAvailable && (await db.getCommon('migrated', false));
 		let source: IStorageSource = null;
@@ -1020,8 +1122,6 @@ class Capabilities {
 				source = new PluginSource(schema, configuration);
 				sink = new PluginSink(schema, configuration);
 			}
-			const client: IClient = new PluginClient(source, sink);
-			return client;
 			
 		} else {
 			
@@ -1036,9 +1136,9 @@ class Capabilities {
 				source = new WebSource(schema, configuration);
 				sink = new WebSink(schema, configuration);
 			}
-			const client: IClient = new WebClient(source, sink);
-			return client;
 		}
+		const storage: IStorage = new Storage(source, sink);
+		return storage;
 	}
 	
 	async toString() {
