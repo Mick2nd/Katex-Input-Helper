@@ -1,0 +1,231 @@
+<!DOCTYPE html><html class="default" lang="en"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>Katex Input Helper</title><meta name="description" content="Documentation for Katex Input Helper"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><div class="table-cell" id="tsd-search" data-base="."><div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="assets/icons.svg#icon-search"></use></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div><div class="field"><div id="tsd-toolbar-links"></div></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">Katex Input Helper</a></div><div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="assets/icons.svg#icon-menu"></use></svg></a></div></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><h1>Katex Input Helper</h1></div><div class="tsd-panel tsd-typography"><a id="md:katex-input-helper-joplin-plugin" class="tsd-anchor"></a><h1 class="tsd-anchor-link">Katex Input Helper Joplin Plugin<a href="#md:katex-input-helper-joplin-plugin" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1><p>This plugin can be used to support the input of Mathematical formulae. It does this by opening an input dialog by command, then generating the formula and finally returning the edited formula back to the original note.</p>
+<p>For improved documentation see the following <a href="/Mick2nd/Katex-Input-Helper/wiki">Wiki</a>.</p>
+<a id="md:basic-instructions" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Basic Instructions<a href="#md:basic-instructions" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><ol>
+<li>Open a note with a formula area, select a piece of the formula to be processed.</li>
+<li>Invoke the Katex Input Helper dialog with a keyboard shortcut.</li>
+<li>Process the formula in the upper part of the dialog in Katex format.</li>
+<li>Get feedback in the lower part of the dialog where the generated formula is displayed.</li>
+<li>Finally leave the dialog either by pressing the <strong>Okay</strong> or the <strong>Cancel</strong> button.</li>
+<li>By pressing Okay the changed content is returned to the note and replaces the original selection.</li>
+<li>By pressing Cancel nothing is changed.</li>
+</ol>
+<a id="md:step---by---step-instructions" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Step - by - Step Instructions<a href="#md:step---by---step-instructions" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><ol>
+<li>Enter the <em>Katex Input Helper</em> with a certain selection of a formula. With no selection in the current note the editor will be opened empty.</li>
+<li>Insertion of formulae from the palette window(s)
+<ol>
+<li>Open the palette with the desired template, f.i. an integral</li>
+<li>Click the template to insert it into the editor window</li>
+<li>Fill in the missing pieces of the formula</li>
+<li>This filling can be recursive, e.g. require another click on a different template</li>
+<li>The same can be done with the usage of other auxiliary windows, f.i. horizontal or vertical spacing, matrices or sample equations</li>
+<li>Many of them don't use placeholders as the &quot;templates&quot; often do</li>
+</ol>
+</li>
+<li>Returning a processed formula
+<ol>
+<li>Simply leave the dialog with <em>Okay</em> and the content of the editor area will be returned back to the Joplin note and replaces the original selection.</li>
+<li>Pressing <em>Cancel</em> leaves the original note as it was before invocation of the dialog</li>
+</ol>
+</li>
+<li>Loading and saving the editor area
+This can be done by invoking the menu commands <em>File - Open</em> or <em>File - Save</em> respectively</li>
+<li>Working with the <em>Custom Equations</em> dialog.
+One can invoke this dialog by clicking <em>Insert - Custom Equations</em>.
+It is possible to perform the following tasks:
+<ol>
+<li>Save the set of formulae into a json file</li>
+<li>Load a set of formulae from a json file</li>
+<li>Add a formula from the editor area</li>
+<li>Remove checked formulae from the datagrid</li>
+<li>Click a formula to insert it into the editor area</li>
+<li>Edit the <em>Title</em> field of a formula by double - clicking it</li>
+<li>Filter the set of formulae by a filter expression. Actually this checks if the filter expression is contained in the title field</li>
+<li>Sort the formulae by title</li>
+<li>Select pages of a huge formula set</li>
+<li>Edit the new <em>Categories</em> tree on the left side. Categories are divided into folders and leafs. Only the leafs can contain formulae.</li>
+<li>By selecting a Leaf one can select the formulae contained in it.</li>
+<li>One can sort existing formulae into different Leafs.</li>
+<li>The old style formula collection is not lost. Such formulae are sorted into a <em>Default</em> leaf node.</li>
+</ol>
+</li>
+<li>Retaining window positions and sizes.
+By default the window positions and sizes are retained leaving them intact through invocations of the window itself or the whole Katex Input Helper.
+This feature can be deactivated by deselecting the appropriate checkbox in the Settings dialog (Menu command <em>Options - Editor Parameters...</em>).
+These <em>Hidden settings</em> can be reset on behalf of the <em>Settings</em> dialog.</li>
+</ol>
+<a id="md:origin-of-the-software" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Origin of the Software<a href="#md:origin-of-the-software" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><p>The plugin is based on the <em>Visual Math Editor</em> by David Grima, a freeware which can be changed and distributed freely. I made the following changes to this software:</p>
+<ol>
+<li>Reverse engineering</li>
+<li>Updated the included software libraries to current ones.</li>
+<li>Replaced the MathJax package by a Katex package.</li>
+<li>Removed some components of the software not needed for this purpose, like:
+<ol>
+<li>AsciiMath support</li>
+<li>Translation of the Katex expression into MathML</li>
+<li>A HTML mode to support html input</li>
+<li>Some dialogs and menu items</li>
+<li>Some MathJax expressions are not supported in Katex and removed for this reason</li>
+</ol>
+</li>
+<li>But most components are left as is and the external appearance is preserved</li>
+</ol>
+<p>As You can see, this software is feature rich and alleviates the creation of formulae. My hope is one will get further support by the integration into <em>Joplin</em> as a plugin.</p>
+<p>This software is available on the net <a href="https://visualmatheditor.equatheque.net/VisualMathEditor.html?runLocal&amp;codeType=Latex&amp;encloseAllFormula=false&amp;style=aguas&amp;localType=en_US" target="_blank" class="external">here</a> and You can view at it to get an impression.</p>
+<a id="md:features" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Features<a href="#md:features" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><ol>
+<li>Editing in a text editor like the one in Joplin</li>
+<li>Feedback in the formula output area</li>
+<li>16 palettes with formula templates like Sum and Product, Integral and much more</li>
+<li>Formula dialogs with samples with can be incorporated easily or studied for learning the Katex language</li>
+<li>A <strong>custom equations</strong> dialog which can be used to maintain one's own formula library and with the possibility to Add, Remove, Load, Save the formula set. This set is persisted through invocations of Joplin as hidden setting.</li>
+<li>Window positions and sizes are persisted</li>
+</ol>
+<a id="md:special-features-of-the-mobile-version" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Special Features of the Mobile Version<a href="#md:special-features-of-the-mobile-version" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><ol>
+<li>The user interface is somewhat different, but functionality is the same</li>
+<li>The Latex input area and the Formula output area are reversed for a better experience with mobile screen keyboards</li>
+<li>Navigation panels are used and dialogs, the side panels and the menus are moved out from the main screen to such panels</li>
+<li>Implemented swipe gestures to simplify navigation between panels: they are always processed on the title bars only
+<ol>
+<li>Use swipe left and swipe right on the main panel to navigate to the appropriate side panels</li>
+<li>Use swipe left or swipe right to navigate back to the main panel</li>
+<li>Use swipe down to dismiss the side menu or the dialog wrapper panels</li>
+</ol>
+</li>
+</ol>
+<a id="md:some-screenshots" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Some Screenshots<a href="#md:some-screenshots" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><p>The main dialog window</p>
+<p><img src="media/Katex-Input-Helper.png" alt="Main Dialog Window"></p>
+<p>The custom equations dialog</p>
+<img src="media/Custom-Equations.png" width="400" />
+<p>The custom equations dialog with categories tree</p>
+<img src="media/Custom-Equations-with-Categories.png" width="600" />
+<p>The symbol bar with button for the Katex Input Helper (Square Root symbol)</p>
+<p><img src="media/Symbol-Bar.png" alt="Symbol Bar"></p>
+<a id="md:known-problems" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Known Problems<a href="#md:known-problems" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><ul>
+<li>A minor problem is a missing update of the language of the data grid paging bar in the <em>Custom Equations</em> dialog. This only appears during language change during an actual activation of the dialog.</li>
+<li>The persistence of custom equations can be damaged when a filter is active.</li>
+<li>The <em>web</em> version of this app does work bad on <em>Firefox</em> and on mobile devices in that many dialogs are sized wrong.
+This does not appear on the <em>Chrome</em> browser on desktop.</li>
+<li>The mobile version does regularly pop-up the screen keyboard. No mechanism is known to avoid this.</li>
+</ul>
+<a id="md:release-notes" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Release Notes<a href="#md:release-notes" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><a id="md:302" class="tsd-anchor"></a><h3 class="tsd-anchor-link">3.0.2<a href="#md:302" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Migration of the <em>Inversify</em> package to version 8, project to ECMA script</li>
+<li>Assets webpack configuration in <em>Typescript</em> and divided into sub configurations</li>
+<li>Postponed loading of certain assets</li>
+<li>Used the <em>easyloader</em> of the easyui library to improve the start experience</li>
+<li>Improved the FOUC behavior</li>
+<li>Joplin API updated together with node modules, reduced the number of vulnerabilities</li>
+<li>Improvements for a nice UI</li>
+<li>Added an Event Viewer dialog</li>
+<li>Used the IndexedDB store for settings where the environment supports it</li>
+<li>Bug fixes</li>
+</ul>
+<a id="md:301" class="tsd-anchor"></a><h3 class="tsd-anchor-link">3.0.1<a href="#md:301" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Bug fixing on the mobile version:</li>
+<li>The icons of sub menu items are now fully visible</li>
+<li>Improved the handling of themes and the start behavior, no more flickering of colors on the progress dialog</li>
+<li>Implemented the menu item separators like those in the desktop version</li>
+<li>Implemented swipe gestures to simplify navigation between panels</li>
+<li>Improved <em>responsiveness</em> in the mobile version, especially the handling of orientation changes and the dimensions of dialogs</li>
+</ul>
+<a id="md:300" class="tsd-anchor"></a><h3 class="tsd-anchor-link">3.0.0<a href="#md:300" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Introduced a mobile version of the plug-in (experimental)</li>
+<li>One code base</li>
+<li>Divided HTML code to avoid duplication, introduced Handlebars tool for support</li>
+<li>Resizing of windows is more or less deactivated, Window size adapted to content.</li>
+<li>Migrated this release to Code Mirror 6</li>
+</ul>
+<a id="md:211" class="tsd-anchor"></a><h3 class="tsd-anchor-link">2.1.1<a href="#md:211" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Removed function-less code.</li>
+<li>Minor bug fixes.</li>
+<li>Added unit tests (still under development).</li>
+<li>MathJax list replaced by a supported Katex functions link.</li>
+</ul>
+<a id="md:210" class="tsd-anchor"></a><h3 class="tsd-anchor-link">2.1.0<a href="#md:210" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><p><strong>New features</strong></p>
+<ul>
+<li>The plug-in was migrated to typescript as programming language.</li>
+<li>A dependency injection framework was introduced.</li>
+<li>The handling of the information window was improved.</li>
+<li>The web version of this app now supports a mobile parameter in the query string. But this is
+merely an experimental feature in an early stage. Use <strong>?mobile=true</strong>.</li>
+<li>Extensive re-factorings of the source code to improve the code structure.</li>
+</ul>
+<a id="md:201" class="tsd-anchor"></a><h3 class="tsd-anchor-link">2.0.1<a href="#md:201" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><p><strong>New features</strong></p>
+<ul>
+<li>The language switcher is now equipped with country flags.</li>
+<li>The functionality of this plug-in is now also available as <a href="https://mick2nd.github.io/Katex-Input-Helper/index.html" target="_blank" class="external">Web app</a>
+hosted on Github. This can be used as Demo or to have a look at pre-published versions.
+It's also running on mobile devices.</li>
+<li>The browser version is equipped with cookies to support persistence of settings.</li>
+<li>Made the production version working hereby reducing the size of the plug-in.</li>
+<li>The browser version (see above) is also adapted for mobile devices.</li>
+</ul>
+<p><strong>Bug fixes</strong></p>
+<ul>
+<li>The context menus crashed on the trial to invoke and click them. A workaround helps here.
+This fact is completely invisible to the user.</li>
+<li>The &quot;Reset Windows Positions&quot; functionality was broken, which is fixed now.</li>
+</ul>
+<a id="md:200" class="tsd-anchor"></a><h3 class="tsd-anchor-link">2.0.0<a href="#md:200" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Fixed the start problem, e.g. the known problems <a href="media/KNOWN-PROBLEMS.md">document</a> is no longer valid.</li>
+<li>The functionality is more or less the same.</li>
+<li>Fixed all problems detected during the adjustment to usage of Webpack as a bundler.</li>
+<li>After the adjustment I had no single start failure.</li>
+</ul>
+<a id="md:1010" class="tsd-anchor"></a><h3 class="tsd-anchor-link">1.0.10<a href="#md:1010" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Fixed a lot of warnings in HTML.</li>
+<li>Bug fix: 2 of the diagrams in CD dialog did not render properly.</li>
+<li>Bug fix: a tool tip in the CD dialog did not show up properly.</li>
+<li>Improvement: the tool tip handling was unified, all tool tips use <em>Themes</em> now.</li>
+</ul>
+<a id="md:109" class="tsd-anchor"></a><h3 class="tsd-anchor-link">1.0.9<a href="#md:109" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Bug fix: A bug caused a circular reference during JSON conversion.</li>
+<li>Bug fix: A bug caused crash during closure of the dialog.</li>
+<li>Improvement on start handling.</li>
+<li>Update Katex to version 0.16.22</li>
+</ul>
+<a id="md:108" class="tsd-anchor"></a><h3 class="tsd-anchor-link">1.0.8<a href="#md:108" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>For the last selected node in the tree of the <em>Custom Equations</em> dialog the path is stored to reproduce this node over invocations.</li>
+<li>Some buttons (links) are equipped with tool tips and click handlers to enable for instance the invocation of the <em>issues</em> page in the Internet.</li>
+</ul>
+<a id="md:107" class="tsd-anchor"></a><h3 class="tsd-anchor-link">1.0.7<a href="#md:107" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Bug fix: <em>Custom Equations</em> dialog did not work properly.</li>
+<li>The invocation context (e.g. if invoked from display mode or not) is now used in the Katex Input Helper.</li>
+</ul>
+<a id="md:106" class="tsd-anchor"></a><h3 class="tsd-anchor-link">1.0.6<a href="#md:106" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>The <em>Custom Equations</em> dialog is now equipped with a categories tree and with tooltips to get usage hints.</li>
+<li>All dialog windows are now resizable, the <em>Parameters</em> dialog is now equipped with a <em>Reset Window Positions</em> button.</li>
+<li>The <em>Unicode</em> dialog was improved. The codes now correctly are displayed in the <em>Katex</em> editor and the app will no longer crash, if a code section is selected on the left side.</li>
+<li>The documentation commands did no longer work. This is fixed now and documentation from external sources is displayed in a Browser window.</li>
+<li>The localization was completed including the Copyright line.</li>
+<li>The <em>Informations</em> dialog was completed with some new version information.</li>
+<li>The equations of the <em>Custom Equations</em> dialog were not fully persisted but shrinked to the current page instead. This is fixed now.</li>
+</ul>
+<a id="md:105" class="tsd-anchor"></a><h3 class="tsd-anchor-link">1.0.5<a href="#md:105" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><ul>
+<li>Bug fix: <em>Custom Equations</em> dialog removal problem.</li>
+</ul>
+<a id="md:104" class="tsd-anchor"></a><h3 class="tsd-anchor-link">1.0.4<a href="#md:104" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><p>Fixed the following problems:</p>
+<ul>
+<li>The <em>Custom Equations</em> dialog did not persist the equations added to data grid nor did it persist removed equations.</li>
+</ul>
+<a id="md:103" class="tsd-anchor"></a><h3 class="tsd-anchor-link">1.0.3<a href="#md:103" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><p>Fixed the following problems:</p>
+<ul>
+<li><em>Custom Equations</em> dialog inserted formula twice on click.</li>
+<li>Certain insertions did select the insertion afterwards. This is fixed now and enables easy successive insertions.</li>
+<li>The sort functionality of the <em>Custom Equations</em> dialog did not work properly. One can click on the <em>Title</em> head to sort formulae.</li>
+<li>Some dialog windows were modal ones instead of non-modal. This prevented the selection of text in the editor during display of the dialog.</li>
+<li>The restore of window size and position was not reliable.</li>
+</ul>
+<a id="md:102" class="tsd-anchor"></a><h3 class="tsd-anchor-link">1.0.2<a href="#md:102" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><p>In the last release a few bugs have sneaked in. Those have been fixed now:</p>
+<ul>
+<li>Info dialog did not show the content of 3 tabs</li>
+<li>The resources dialog did not show completely</li>
+<li>The Title field in the <em>Custom Equations</em> dialog was no longer editable</li>
+</ul>
+<a id="md:101" class="tsd-anchor"></a><h3 class="tsd-anchor-link">1.0.1<a href="#md:101" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><p>Bug fixes and improvements</p>
+<ul>
+<li>Some localizations in Custom Equations dialog have been improved</li>
+<li>Persistence concept was improved</li>
+<li>Added filtering to the Custom Equations dialog</li>
+<li>Architectural changes</li>
+</ul>
+<a id="md:100" class="tsd-anchor"></a><h3 class="tsd-anchor-link">1.0.0<a href="#md:100" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><p>Initial release</p>
+</div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><use href="assets/icons.svg#icon-chevronDown"></use></svg>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><use href="assets/icons.svg#icon-chevronDown"></use></svg>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#md:katex-input-helper-joplin-plugin"><span>Katex <wbr/>Input <wbr/>Helper <wbr/>Joplin <wbr/>Plugin</span></a><ul><li><a href="#md:basic-instructions"><span>Basic <wbr/>Instructions</span></a></li><li><a href="#md:step---by---step-instructions"><span>Step -<wbr/> by -<wbr/> <wbr/>Step <wbr/>Instructions</span></a></li><li><a href="#md:origin-of-the-software"><span>Origin of the <wbr/>Software</span></a></li><li><a href="#md:features"><span>Features</span></a></li><li><a href="#md:special-features-of-the-mobile-version"><span>Special <wbr/>Features of the <wbr/>Mobile <wbr/>Version</span></a></li><li><a href="#md:some-screenshots"><span>Some <wbr/>Screenshots</span></a></li><li><a href="#md:known-problems"><span>Known <wbr/>Problems</span></a></li><li><a href="#md:release-notes"><span>Release <wbr/>Notes</span></a></li><li><ul><li><a href="#md:302"><span>3.0.2</span></a></li><li><a href="#md:301"><span>3.0.1</span></a></li><li><a href="#md:300"><span>3.0.0</span></a></li><li><a href="#md:211"><span>2.1.1</span></a></li><li><a href="#md:210"><span>2.1.0</span></a></li><li><a href="#md:201"><span>2.0.1</span></a></li><li><a href="#md:200"><span>2.0.0</span></a></li><li><a href="#md:1010"><span>1.0.10</span></a></li><li><a href="#md:109"><span>1.0.9</span></a></li><li><a href="#md:108"><span>1.0.8</span></a></li><li><a href="#md:107"><span>1.0.7</span></a></li><li><a href="#md:106"><span>1.0.6</span></a></li><li><a href="#md:105"><span>1.0.5</span></a></li><li><a href="#md:104"><span>1.0.4</span></a></li><li><a href="#md:103"><span>1.0.3</span></a></li><li><a href="#md:102"><span>1.0.2</span></a></li><li><a href="#md:101"><span>1.0.1</span></a></li><li><a href="#md:100"><span>1.0.0</span></a></li></ul></li></ul></div></details></div><div class="site-menu"><nav class="tsd-navigation"><a href="modules.html" class="current"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="assets/icons.svg#icon-1"></use></svg><span>Katex Input Helper</span></a><ul class="tsd-small-nested-navigation" id="tsd-nav-container" data-base="."><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>
